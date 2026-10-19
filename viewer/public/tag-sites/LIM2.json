@@ -1,0 +1,159 @@
+{
+  "has_data": true,
+  "gene_symbol": "LIM2",
+  "uniprot_acc": "P55344",
+  "sites": [
+    {
+      "site_id": "LIM2-snorkel-c",
+      "gene_symbol": "LIM2",
+      "uniprot_acc": "P55344",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 173,
+      "residue_before": "R",
+      "residue_after": null,
+      "residue_label": "R173",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 62.5,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "LIM2-disorder-58::iso::P55344-2",
+      "isoform_id": "P55344-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 58,
+      "canonical_residue": 58,
+      "left_pct": 26.976744186046513
+    },
+    {
+      "site_id": "LIM2-disorder-66::iso::P55344-2",
+      "isoform_id": "P55344-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 66,
+      "canonical_residue": null,
+      "left_pct": 30.697674418604652
+    },
+    {
+      "site_id": "LIM2-disorder-74::iso::P55344-2",
+      "isoform_id": "P55344-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 74,
+      "canonical_residue": null,
+      "left_pct": 34.418604651162795
+    },
+    {
+      "site_id": "LIM2-disorder-83::iso::P55344-2",
+      "isoform_id": "P55344-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 83,
+      "canonical_residue": null,
+      "left_pct": 38.604651162790695
+    },
+    {
+      "site_id": "LIM2-disorder-93::iso::P55344-2",
+      "isoform_id": "P55344-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 93,
+      "canonical_residue": null,
+      "left_pct": 43.25581395348837
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "LIM2-disorder-171::iso::G7PYH7",
+      "isoform_id": "G7PYH7",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 171,
+      "canonical_residue": 129,
+      "left_pct": 79.53488372093022
+    },
+    {
+      "site_id": "LIM2-disorder-56::iso::G7PYH7",
+      "isoform_id": "G7PYH7",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 56,
+      "canonical_residue": 56,
+      "left_pct": 26.046511627906977
+    },
+    {
+      "site_id": "LIM2-disorder-66::iso::G7PYH7",
+      "isoform_id": "G7PYH7",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 66,
+      "canonical_residue": null,
+      "left_pct": 30.697674418604652
+    },
+    {
+      "site_id": "LIM2-disorder-77::iso::G7PYH7",
+      "isoform_id": "G7PYH7",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 77,
+      "canonical_residue": null,
+      "left_pct": 35.81395348837209
+    },
+    {
+      "site_id": "LIM2-disorder-91::iso::G7PYH7",
+      "isoform_id": "G7PYH7",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 91,
+      "canonical_residue": null,
+      "left_pct": 42.32558139534884
+    },
+    {
+      "site_id": "LIM2-disorder-99::iso::G7PYH7",
+      "isoform_id": "G7PYH7",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 99,
+      "canonical_residue": null,
+      "left_pct": 46.04651162790698
+    }
+  ]
+}

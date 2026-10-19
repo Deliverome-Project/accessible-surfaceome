@@ -18,11 +18,20 @@ import {
   type TriageHeadlinePayload,
   type TriageRunsPayload,
 } from "../../lib/triage-headline";
+import { fetchTaggedSites } from "../../lib/tag-sites-client";
+import type { TaggedSitesFile } from "../../lib/tag-sites-types";
 import type { CatalogRow, GeneEntry } from "../../lib/surfaceome";
 import {
   buildGeneJumpEntries,
   type SynonymOverlay,
 } from "../../lib/gene-jump-entries";
+import {
+  parseFgLibrary,
+  inFgLibrary as symbolInFgLibrary,
+  isOversized as symbolIsOversized,
+  oversizedOrfKb as symbolOversizedOrfKb,
+  type FgLibraryData,
+} from "../../lib/fg-library";
 import type {
   BenchmarkRow as BenchmarkRowPayload,
   Evidence,
@@ -121,6 +130,10 @@ function adaptCatalogRow(j: unknown): CatalogRow | null {
     deep_dive: Boolean(r.deep_dive),
     surface_bind_sites:
       typeof r.surface_bind_sites === "number" ? r.surface_bind_sites : undefined,
+    // in_fg_library / tag_site_counts are left out: the /v1/catalog/{sym}
+    // endpoint doesn't carry those viewer-side overlays (the badge/nav/pills
+    // read the fetched snapshot separately), and the DB-presence strip this
+    // row feeds never reads them.
   };
 }
 
@@ -156,19 +169,40 @@ interface ReadyData {
   papers?: PaperMetadataMap;
   geneName: { name: string; synonyms: string[] } | null;
   structureData: StructureViewerData | null;
+  taggedSites: TaggedSitesFile | null;
   schwekeHomomer: SchwekeHomomerLoaderRow | null;
   catalogRow: CatalogRow | null;
   benchmarkRow: BenchmarkRowPayload | null;
   triageHeadline: TriageHeadlinePayload | null;
+  /** Deep-dive gene index, used only to order the FG-library prev/next nav.
+   *  Empty until fetched — and only fetched (after first paint) when this
+   *  gene is itself a library member, so the ~1.7 MB index stays off the
+   *  load path for every other gene. */
+  deepDiveGenes: readonly GeneEntry[];
+  /** Lazy loader for the GeneJump typeahead universe — the ~1.7 MB
+   *  `/v1/genes` index is fetched only when the reader opens the jump box
+   *  (or the library nav needs it), never on the page's initial load. */
+  loadGenes: () => Promise<readonly GeneEntry[]>;
+  /** Parsed FG-library membership overlay (fetched from `/data/fg-library.json`),
+   *  or null on a fetch/parse miss. Drives the header "In library" badge, the
+   *  prev/next library navigation, and the isoform/ortholog in-library pills. */
+  fgLibrary: FgLibraryData | null;
+  /** Whether THIS gene's symbol is in the FG library (derived from `fgLibrary`).
+   *  Threaded to <GeneHeader> for the badge. */
+  inFgLibrary: boolean;
+  /** Whether THIS gene is an oversized truncation candidate (clears every gate
+   *  but the ~5 kb ORF cap). Threaded to <GeneHeader> for the "Oversized" chip. */
+  oversized: boolean;
+  /** Full-length ORF size (kb) for an oversized gene, for the chip tooltip. */
+  oversizedOrfKb: number | null;
+  /** Tedman GPCR canonical surface expression (PME); null for non-GPCRs.
+   *  Threaded to <GeneHeader> for the "Low surface" chip. */
+  tedmanPme: number | null;
   /** Latest archived revision (record history), from
    *  `/v1/genes/{sym}/revisions`. Null until fetched or on a miss (network
    *  error, 404, or a gene the archiver hasn't seen yet) — the strip is
    *  then omitted. */
   revisions: Revisions | null;
-  /** Lazy loader for the GeneJump typeahead universe — the ~1.7 MB
-   *  `/v1/genes` index is fetched only when the reader opens the jump box,
-   *  never on the gene page's initial load. */
-  loadGenes: () => Promise<readonly GeneEntry[]>;
 }
 
 type State =
@@ -191,21 +225,22 @@ export default function GeneShellPage() {
       return;
     }
 
-    // Lazy typeahead loader. The ~1.7 MB `/v1/genes` index (+ the synonym
-    // overlay) is fetched only when the reader opens the GeneJump box — kept
-    // entirely off the gene page's initial critical path.
-    const loadGenes = async (): Promise<readonly GeneEntry[]> => {
-      const [genesJson, synonymsJson] = await Promise.all([
+    // Lazy gene-index loader. The ~1.7 MB `/v1/genes` index (+ the synonym
+    // overlay) is fetched only when the reader opens the GeneJump box, or in
+    // the background after first paint when the library prev/next nav needs
+    // it. Memoized so those two callers share one fetch.
+    let genesPromise: Promise<readonly GeneEntry[]> | null = null;
+    const loadGenes = (): Promise<readonly GeneEntry[]> => {
+      genesPromise ??= Promise.all([
         fetchJson(`${API_BASE}/v1/genes`),
         // Build-baked synonym overlay (site origin, not the Worker) so the
         // GeneJump dropdown matches alias queries like "Nav1.7" → SCN9A,
         // the same way the homepage catalog search does.
         fetchJson("/data/gene-synonyms.json"),
-      ]);
-      return buildGeneJumpEntries(
-        genesJson,
-        synonymsJson as SynonymOverlay | null,
+      ]).then(([genesJson, synonymsJson]) =>
+        buildGeneJumpEntries(genesJson, synonymsJson as SynonymOverlay | null),
       );
+      return genesPromise;
     };
 
     (async () => {
@@ -234,7 +269,6 @@ export default function GeneShellPage() {
         if (!cancelled) setState({ kind: "error", symbol });
         return;
       }
-      if (cancelled) return;
 
       // ── Backward-compatible evidence handling ─────────────────────────
       // The Worker is moving the citation ledger (verbatim quotes +
@@ -265,9 +299,10 @@ export default function GeneShellPage() {
       // SURFACE-Bind proteins; null → GeneHeader shows the bare symbol.
       const proteinName = rec.deterministic_features.surface_bind.protein_name;
 
-      // First paint: the record + everything derivable from it. The triage /
-      // catalog / benchmark strips start null (each is null-tolerant and
-      // degrades to a record-derived fallback) and hydrate just below.
+      // First paint: the record + everything derivable from it. Every other
+      // strip starts empty (each is null-tolerant and degrades to a
+      // record-derived fallback or is simply omitted) and hydrates just below,
+      // so a slow or cold secondary endpoint never holds the page back.
       setState({
         kind: "ready",
         data: {
@@ -277,6 +312,7 @@ export default function GeneShellPage() {
             rec.gene.uniprot_acc,
             rec.deterministic_features.canonical_topology,
           ),
+          taggedSites: null,
           schwekeHomomer: loadSchwekeHomomer(
             rec.gene.uniprot_acc,
             rec.deterministic_features.homo_oligomerization,
@@ -284,8 +320,14 @@ export default function GeneShellPage() {
           catalogRow: null,
           benchmarkRow: null,
           triageHeadline: null,
-          revisions: null,
+          deepDiveGenes: [],
           loadGenes,
+          fgLibrary: null,
+          inFgLibrary: false,
+          oversized: false,
+          oversizedOrfKb: null,
+          tedmanPme: null,
+          revisions: null,
         },
       });
 
@@ -327,23 +369,56 @@ export default function GeneShellPage() {
         })();
       }
 
-      // ── Secondary enrichments — small, fast, null-tolerant. Fetched after
-      // first paint and merged in progressively; a miss degrades gracefully
-      // rather than failing (or delaying) the page. ─────────────────────
-      const [triageJson, benchJson, catalogJson, revisionsJson] =
-        await Promise.all([
-          fetchJson(`${API_BASE}/v1/triage/${symbol}`),
-          fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
-          // Slim per-gene DB-vote row from /v1/catalog/{sym} — the 5-DB
-          // presence strip. Null-tolerant: 404 for genes outside the
-          // candidate universe → strip omitted.
-          fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
-          // Record-history strip. Null-tolerant: 404 when the archiver
-          // hasn't seen this gene yet, or the endpoint doesn't exist yet
-          // in production — the strip is then simply omitted.
-          fetchJson(`${API_BASE}/v1/genes/${symbol}/revisions`),
-        ]);
+      // ── Secondary enrichments — null-tolerant, fetched after first paint
+      // and merged in progressively; a miss degrades gracefully rather than
+      // failing (or delaying) the page. ───────────────────────────────────
+      const [
+        triageJson,
+        benchJson,
+        catalogJson,
+        fgLibraryJson,
+        taggedSitesResult,
+        tedmanSurfaceJson,
+        revisionsJson,
+      ] = await Promise.all([
+        fetchJson(`${API_BASE}/v1/triage/${symbol}`),
+        fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
+        // Slim per-gene DB-vote row from /v1/catalog/{sym} — the 5-DB
+        // presence strip. Null-tolerant: 404 for genes outside the
+        // candidate universe → strip omitted.
+        fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
+        // Committed FG-library membership overlay (site origin). Drives the
+        // "In library" badge, the prev/next library nav, and the
+        // isoform/ortholog in-library pills. A miss → null → no badge / nav /
+        // pills (graceful).
+        fetchJson("/data/fg-library.json"),
+        // Tag sites from the D1-backed Worker, falling back to the static
+        // asset. API_BASE must be passed or the Worker branch never runs (the
+        // static /tag-sites/{SYM}.json is not in the deployment).
+        fetchTaggedSites(symbol, API_BASE),
+        // Tedman GPCR surface-expression overlay (site origin). Drives the
+        // "Low surface" chip on library GPCRs (PME ≤ 1000). Miss → no chip.
+        fetchJson("/data/tedman-surface.json"),
+        // Record-history strip. Null-tolerant: 404 when the archiver has not
+        // seen this gene yet — the strip is then simply omitted.
+        fetchJson(`${API_BASE}/v1/genes/${symbol}/revisions`),
+      ]);
       if (cancelled) return;
+
+      const fgLibrary = fgLibraryJson ? parseFgLibrary(fgLibraryJson) : null;
+      const inLibrary = symbolInFgLibrary(fgLibrary, symbol);
+
+      // Tedman GPCR canonical surface expression (PME) for this gene, or null
+      // when Tedman didn't measure it (non-GPCR). Drives the "Low surface" chip.
+      const tedmanSurfacePme =
+        tedmanSurfaceJson &&
+        typeof tedmanSurfaceJson === "object" &&
+        (tedmanSurfaceJson as { pme?: Record<string, number> }).pme
+          ? ((tedmanSurfaceJson as { pme: Record<string, number> }).pme[
+              symbol
+            ] ?? null)
+          : null;
+
       setState((prev) =>
         prev.kind === "ready"
           ? {
@@ -355,11 +430,30 @@ export default function GeneShellPage() {
                 triageHeadline: triageJson
                   ? parseTriageHeadline(triageJson as TriageRunsPayload)
                   : null,
+                taggedSites: taggedSitesResult,
+                fgLibrary,
+                inFgLibrary: inLibrary,
+                oversized: symbolIsOversized(fgLibrary, symbol),
+                oversizedOrfKb: symbolOversizedOrfKb(fgLibrary, symbol),
+                tedmanPme: tedmanSurfacePme,
                 revisions: parseRevisions(revisionsJson),
               },
             }
           : prev,
       );
+
+      // The library prev/next nav orders library members that have a deep
+      // dive, which needs the gene index. Only a library member shows the nav,
+      // so only it pays for the index — and only after everything above.
+      if (inLibrary) {
+        const deepDiveGenes = await loadGenes().catch(() => []);
+        if (cancelled) return;
+        setState((prev) =>
+          prev.kind === "ready"
+            ? { kind: "ready", data: { ...prev.data, deepDiveGenes } }
+            : prev,
+        );
+      }
     })();
 
     return () => {

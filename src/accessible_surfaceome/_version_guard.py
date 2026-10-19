@@ -37,7 +37,7 @@ from accessible_surfaceome.tools._shared.models import (
 # Bump this whenever any agents/*/prompts/*.md file changes, then run
 # scripts/update_version_fingerprints.py. One global version covers the whole
 # prompt corpus (the chosen granularity).
-PROMPT_CORPUS_VERSION = "2.50.2"
+PROMPT_CORPUS_VERSION = "2.50.3"
 
 
 def _repo_root() -> Path:
@@ -58,12 +58,24 @@ def schema_fingerprint(model: type[BaseModel]) -> str:
 
 
 def prompt_files() -> list[Path]:
-    """Every agent prompt markdown file, sorted by repo-relative path for a
-    deterministic corpus order."""
+    """Every deep-dive agent prompt markdown file, sorted by repo-relative path
+    for a deterministic corpus order.
+
+    The ``internalization`` package is a separate, standalone pass with its own
+    schema/runner versioning (``agents/internalization/models.py``). Its prompts
+    are intentionally excluded from the deep-dive prompt corpus so an
+    internalization prompt edit does not bump the deep-dive corpus version or
+    invalidate in-flight deep-dive resume checkpoints.
+    """
     root = _repo_root()
     agents = root / "src" / "accessible_surfaceome" / "agents"
     return sorted(
-        agents.glob("*/prompts/*.md"), key=lambda p: str(p.relative_to(root))
+        (
+            p
+            for p in agents.glob("*/prompts/*.md")
+            if p.parent.parent.name != "internalization"
+        ),
+        key=lambda p: str(p.relative_to(root)),
     )
 
 

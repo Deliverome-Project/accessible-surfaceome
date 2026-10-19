@@ -1,0 +1,761 @@
+"use client";
+
+import { type ReactNode, useMemo, useState } from "react";
+import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";
+import { SectionCard } from "../SectionCard/SectionCard";
+import type {
+  EvidenceSource,
+  IsoformTagPin,
+  OtherPosition,
+  TaggedSite,
+  TaggedSitesFile,
+} from "../../../lib/tag-sites-types";
+import {
+  CATEGORY_HEX,
+  CATEGORY_LABEL,
+  tagSiteCategory,
+} from "../../../lib/tag-sites-types";
+import styles from "./TaggedSitesCard.module.css";
+
+const KIND_LABEL: Record<TaggedSite["site_kind"], string> = {
+  terminal_n: "N-terminus",
+  terminal_c: "C-terminus",
+  internal: "Internal loop",
+};
+
+const CONF_RANK: Record<string, number> = { high: 3, medium: 2, low: 1 };
+
+/** Sort strongest-evidence-first, which is the order a reader wants. */
+const VALIDATION_RANK: Record<string, number> = {
+  surface_and_function: 5,
+  surface_only: 4,
+  function_only: 3,
+  detected_only: 2,
+  expressed_only: 1,
+  not_measured: 0,
+};
+const POSITION_RANK: Record<string, number> = {
+  validated: 3,
+  topology_derived: 2,
+  inferred: 1,
+};
+
+/** Display token for the junction: prefer the canonical residue_label
+ *  ("G101"), else derive a readable fallback from site_kind. */
+function residueDisplay(s: TaggedSite): string {
+  if (s.residue_label) return s.residue_label;
+  if (s.site_kind === "terminal_c") return "C-term";
+  if (s.site_kind === "terminal_n") {
+    // Tag downstream of the mature N-terminus (post-SP): "after N".
+    if (s.insert_after_residue != null) return `after ${s.insert_after_residue}`;
+    // Bare N-terminal tag sits BEFORE residue 1 — name that residue (e.g.
+    // "before M1") so the reader sees the exact position, not just "N-term".
+    return s.residue_after ? `before ${s.residue_after}1` : "N-term";
+  }
+  if (s.insert_after_residue != null) return `after ${s.insert_after_residue}`;
+  return "—";
+}
+
+/** Numeric position for sorting the Residue column: junction residue, or the
+ *  end for a C-terminal tag (sorts last), 0 for a bare N-terminal tag. */
+function residueSortVal(s: TaggedSite): number {
+  if (s.insert_after_residue != null) return s.insert_after_residue;
+  if (s.site_kind === "terminal_c") return Number.MAX_SAFE_INTEGER;
+  return 0;
+}
+
+/** Parse a residue_range like "H27-K159" / "89-120" -> [27, 159]; null if
+ *  absent/malformed. Mirrors parseSpan in tag-sites-overlay so the table's loop
+ *  grouping matches the 3D overlay's collapse. */
+function parseRange(range: string | null | undefined): [number, number] | null {
+  if (!range) return null;
+  const m = /^[A-Za-z]?(\d+)\s*-\s*[A-Za-z]?(\d+)$/.exec(range.trim());
+  if (!m) return null;
+  const a = Number(m[1]);
+  const b = Number(m[2]);
+  if (!Number.isFinite(a) || !Number.isFinite(b) || a < 1 || b < a) return null;
+  return [a, b];
+}
+
+/** One representative row per loop: deterministic sites that share a
+ *  residue_range (+ det_path) collapse to the residue closest to the span
+ *  midpoint — the SAME anchor the 3D overlay's collapseBySpan picks, so the table
+ *  and the structure agree. Sites with no range (termini, single-residue) pass
+ *  through unchanged. */
+function collapseByLoop(sites: TaggedSite[]): TaggedSite[] {
+  const groups = new Map<string, TaggedSite[]>();
+  const passthrough: TaggedSite[] = [];
+  for (const s of sites) {
+    const span = parseRange(s.residue_range);
+    if (!span) {
+      passthrough.push(s);
+      continue;
+    }
+    const key = `${s.det_path}:${span[0]}-${span[1]}`;
+    const g = groups.get(key);
+    if (g) g.push(s);
+    else groups.set(key, [s]);
+  }
+  const reps: TaggedSite[] = [];
+  for (const g of groups.values()) {
+    const span = parseRange(g[0].residue_range) as [number, number];
+    const mid = (span[0] + span[1]) / 2;
+    g.sort(
+      (a, b) => Math.abs(residueSortVal(a) - mid) - Math.abs(residueSortVal(b) - mid),
+    );
+    reps.push(g[0]); // representative anchor closest to the loop midpoint
+  }
+  return [...passthrough, ...reps];
+}
+
+// --- chips ------------------------------------------------------------------
+
+/** Normalize a compartment to a human label. Accepts both the human words
+ *  ("extracellular") and raw DeepTMHMM topology chars (O/I/M/S) so a site whose
+ *  `compartment` is missing (older data falls back to `topology_state`, a char)
+ *  still reads "extracellular", never a bare "O". */
+const TOPO_CHAR_LABEL: Record<string, string> = {
+  O: "extracellular",
+  I: "intracellular",
+  M: "membrane",
+  S: "signal",
+};
+
+function compartmentLabel(value: string | null): string {
+  if (!value) return "—";
+  return TOPO_CHAR_LABEL[value] ?? value;
+}
+
+function CompartmentChip({ value }: { value: string | null }) {
+  const v = compartmentLabel(value);
+  const tone =
+    v === "extracellular"
+      ? styles.chipEc
+      : v === "intracellular"
+        ? styles.chipIc
+        : v === "signal"
+          ? styles.chipSig
+          : v === "membrane"
+            ? styles.chipTm
+            : "";
+  return <span className={`${styles.chip} ${tone}`}>{v}</span>;
+}
+
+function ConfidenceChip({ value }: { value: string | null }) {
+  if (!value) return <span className={styles.muted}>—</span>;
+  const tone =
+    value === "high"
+      ? styles.chipHigh
+      : value === "medium"
+        ? styles.chipMed
+        : styles.chipLow;
+  return <span className={`${styles.chip} ${tone}`}>{value}</span>;
+}
+
+/** Tag types as chips — a multi-tag string ("ALFA, DogTag") splits into one
+ *  chip per tag. */
+function TagChips({ value }: { value: string | null }) {
+  const tags = (value ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  if (!tags.length) return <span className={styles.muted}>—</span>;
+  return (
+    <span className={styles.chipRow}>
+      {tags.map((t, i) => (
+        <span key={i} className={`${styles.chip} ${styles.chipTag}`}>
+          {t}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+// --- sources + evidence drawer ---------------------------------------------
+
+/** Resolve an evidence source to an external href: explicit url, else a
+ *  PubMed link from the PMID, else a doi.org link. Null if unlinkable. */
+function sourceHref(src: EvidenceSource): string | null {
+  if (src.url) return src.url;
+  if (src.pmid) return `https://pubmed.ncbi.nlm.nih.gov/${src.pmid}/`;
+  if (src.doi) return `https://doi.org/${src.doi}`;
+  return null;
+}
+
+function Sources({ sources }: { sources: EvidenceSource[] }) {
+  if (!sources.length) return <span className={styles.muted}>—</span>;
+  return (
+    <span className={styles.sources}>
+      {sources.map((src, i) => {
+        const href = sourceHref(src);
+        const label =
+          src.citation ||
+          (src.pmid ? `PMID ${src.pmid}` : src.doi ? `DOI ${src.doi}` : "source");
+        return href ? (
+          <a key={i} href={href} target="_blank" rel="noopener noreferrer">
+            {label}
+          </a>
+        ) : (
+          <span key={i}>{label}</span>
+        );
+      })}
+    </span>
+  );
+}
+
+/** Expandable evidence drawer for one literature site — mirrors the main
+ *  sections' ReasoningDrawer. Shows the exact entailment-checked quote(s)
+ *  (from sources[].claim), the agent rationale, and the linked sources. */
+/** How far the cited study went. The agent's six levels collapse to four
+ *  readable ones, because "did they show it on the surface" and "did they show
+ *  it still works" are the two questions a reader is actually asking. */
+const VALIDATION_LABEL: Record<string, { text: string; cls: string; title: string }> = {
+  surface_and_function: {
+    text: "Surface + function",
+    cls: "badgeBoth",
+    title: "The paper showed the tag on the cell surface AND that the tagged protein still works.",
+  },
+  surface_only: {
+    text: "Surface",
+    cls: "badgeSurface",
+    title: "The paper showed the tag on the cell surface; function was not measured.",
+  },
+  function_only: {
+    text: "Function",
+    cls: "badgeWeak",
+    title: "The paper showed the tagged protein still works; surface display was not measured.",
+  },
+  detected_only: {
+    text: "Detected",
+    cls: "badgeWeak",
+    title: "The tagged protein was detected (e.g. by blot or pull-down), but neither surface display nor function was measured.",
+  },
+  expressed_only: {
+    text: "Expressed",
+    cls: "badgeWeak",
+    title: "The construct was expressed; neither surface display nor function was measured.",
+  },
+  not_measured: {
+    text: "Not measured",
+    cls: "badgeNone",
+    title: "The paper reports the construct but measures neither surface display nor function.",
+  },
+};
+
+/** Where the junction number came from — the difference between a position the
+ *  paper states and one we derived, which a reader has to be able to see. */
+const POSITION_LABEL: Record<string, { text: string; cls: string; title: string }> = {
+  validated: {
+    text: "Stated",
+    cls: "badgeBoth",
+    title: "The paper names this exact insertion position.",
+  },
+  topology_derived: {
+    text: "Topology",
+    cls: "badgeSurface",
+    title: "The paper tags a terminus without naming a residue, and this protein has exactly one extracellular terminus — so the junction follows from the topology.",
+  },
+  inferred: {
+    text: "Inferred",
+    cls: "badgeWeak",
+    title: "Reasoned from a tag the paper places nearby rather than stated outright.",
+  },
+};
+
+/** Readable prose for `position_frame` — which proteoform's numbering the
+ *  paper was using, when it was not this construct's own.
+ *
+ *  Load-bearing rather than decorative. The "Stated" badge claims "the paper
+ *  names this exact insertion position", and for a frame-mapped site that is
+ *  true only in ANOTHER protein's coordinates: a library member's ordered form
+ *  is frequently an isoform or a designed ORF, so a paper citing canonical
+ *  residue 246 is naming member residue 458. Without the frame on the page, a
+ *  reader cannot tell a position the paper stated outright from one we mapped,
+ *  and the mapping is the step most likely to be wrong. */
+function frameNote(frame: string | null | undefined): string | undefined {
+  if (!frame) return undefined;
+  const mapped = "and mapped onto this construct's own numbering.";
+  if (frame === "canonical")
+    return `Stated in canonical UniProt numbering, ${mapped}`;
+  if (frame === "mature")
+    return `Stated in mature-protein numbering — counting from the signal-peptide cleavage site — ${mapped}`;
+  if (frame.startsWith("isoform:"))
+    return `Stated in the numbering of isoform ${frame.slice(8)}, ${mapped}`;
+  if (frame.startsWith("ortholog:"))
+    return `Stated in the numbering of the ${frame.slice(9).replace(/:/g, " ")} orthologue, ${mapped}`;
+  return `Stated in the ${frame.replace(/_/g, " ")} frame, ${mapped}`;
+}
+
+function Badge({
+  map,
+  value,
+  extra,
+}: {
+  map: Record<string, { text: string; cls: string; title: string }>;
+  value: string | null | undefined;
+  extra?: string;
+}) {
+  if (!value) return <span className={styles.muted}>—</span>;
+  const spec = map[value];
+  if (!spec) return <span className={styles.muted}>{value.replace(/_/g, " ")}</span>;
+  return (
+    <span
+      className={`${styles.badge} ${styles[spec.cls]}`}
+      title={extra ? `${spec.title} ${extra}` : spec.title}
+    >
+      {spec.text}
+    </span>
+  );
+}
+
+function SiteEvidenceDrawer({ site }: { site: TaggedSite }) {
+  const quotes = site.sources
+    .map((src) => src.claim)
+    .filter((c): c is string => Boolean(c && c.trim()));
+  if (!quotes.length && !site.rationale)
+    return <span className={styles.muted}>—</span>;
+  return (
+    <ReasoningDrawer
+      eyebrow={`Tag site · ${residueDisplay(site)}`}
+      title="Supporting evidence"
+      ariaLabel={`Supporting evidence for ${residueDisplay(site)}`}
+      triggerLabel="Quote ↗"
+    >
+      {quotes.map((q, i) => (
+        <blockquote key={i} className={styles.quote}>
+          &ldquo;{q}&rdquo;
+        </blockquote>
+      ))}
+      {site.rationale ? (
+        <p className={styles.drawerRationale}>{site.rationale}</p>
+      ) : null}
+      <div className={styles.drawerSources}>
+        <Sources sources={site.sources} />
+      </div>
+    </ReasoningDrawer>
+  );
+}
+
+// --- generic sortable table -------------------------------------------------
+
+type SortDir = "asc" | "desc";
+
+interface Column {
+  key: string;
+  label: string;
+  /** Sort accessor; omit to make the column non-sortable (plain header). */
+  sortVal?: (s: TaggedSite) => string | number;
+  render: (s: TaggedSite) => ReactNode;
+  cellClass?: string;
+}
+
+function SortableTable({
+  sites,
+  columns,
+}: {
+  sites: TaggedSite[];
+  columns: Column[];
+}) {
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const sorted = useMemo(() => {
+    const col = columns.find((c) => c.key === sortKey && c.sortVal);
+    if (!col || !col.sortVal) return sites;
+    const sv = col.sortVal;
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...sites].sort((a, b) => {
+      const av = sv(a);
+      const bv = sv(b);
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+      return String(av).localeCompare(String(bv)) * dir;
+    });
+  }, [sites, columns, sortKey, sortDir]);
+
+  function onSort(c: Column) {
+    if (!c.sortVal) return;
+    if (sortKey === c.key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(c.key);
+      setSortDir("asc");
+    }
+  }
+
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            {columns.map((c) => (
+              <th
+                key={c.key}
+                className={styles.head}
+                aria-sort={
+                  sortKey === c.key
+                    ? sortDir === "asc"
+                      ? "ascending"
+                      : "descending"
+                    : undefined
+                }
+              >
+                {c.sortVal ? (
+                  <button
+                    type="button"
+                    className={styles.sortBtn}
+                    onClick={() => onSort(c)}
+                  >
+                    {c.label}
+                    <span aria-hidden="true" className={styles.sortArrow}>
+                      {sortKey === c.key ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
+                    </span>
+                  </button>
+                ) : (
+                  c.label
+                )}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((s) => (
+            <tr key={s.site_id}>
+              {columns.map((c) => (
+                <td key={c.key} className={c.cellClass}>
+                  {c.render(s)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// --- column definitions -----------------------------------------------------
+
+const LIT_COLUMNS: Column[] = [
+  { key: "residue", label: "Residue", sortVal: residueSortVal, render: residueDisplay, cellClass: styles.residue },
+  { key: "placement", label: "Placement", sortVal: (s) => KIND_LABEL[s.site_kind], render: (s) => KIND_LABEL[s.site_kind] },
+  { key: "compartment", label: "Compartment", sortVal: (s) => compartmentLabel(s.compartment ?? s.topology_state), render: (s) => <CompartmentChip value={s.compartment ?? s.topology_state} /> },
+  { key: "tag", label: "Tag", sortVal: (s) => s.tag_type ?? "", render: (s) => <TagChips value={s.tag_type} /> },
+  {
+    key: "evidence",
+    label: "Evidence",
+    sortVal: (s) => s.evidence_type ?? "",
+    render: (s) => (
+      <>
+        {s.evidence_type || "—"}
+        {s.functional_impact_measured ? (
+          <span className={styles.detail}>{s.functional_impact_measured}</span>
+        ) : null}
+      </>
+    ),
+    cellClass: styles.evidence,
+  },
+  {
+    key: "validation",
+    label: "Validation",
+    sortVal: (s) => VALIDATION_RANK[s.validation_level ?? ""] ?? 0,
+    render: (s) => <Badge map={VALIDATION_LABEL} value={s.validation_level} />,
+  },
+  {
+    key: "position",
+    label: "Position",
+    sortVal: (s) => POSITION_RANK[s.position_evidence ?? ""] ?? 0,
+    render: (s) => (
+      <Badge
+        map={POSITION_LABEL}
+        value={s.position_evidence}
+        // An inferred junction is only checkable if the reader can see which
+        // real tag it was reasoned from — and a STATED one is only checkable
+        // if they can see whose numbering the paper stated it in.
+        extra={
+          s.position_evidence === "inferred" && s.cited_tag_residue != null
+            ? `Reasoned from a cited tag at residue ${s.cited_tag_residue}.`
+            : frameNote(s.position_frame)
+        }
+      />
+    ),
+  },
+  { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },
+  { key: "sources", label: "Sources", sortVal: (s) => s.sources.length, render: (s) => <Sources sources={s.sources} /> },
+  { key: "details", label: "Details", render: (s) => <SiteEvidenceDrawer site={s} /> },
+];
+
+const DET_COLUMNS: Column[] = [
+  { key: "residue", label: "Residue", sortVal: residueSortVal, render: residueDisplay, cellClass: styles.residue },
+  { key: "range", label: "Range", sortVal: (s) => s.residue_range ?? "", render: (s) => <span className={styles.muted}>{s.residue_range ?? "—"}</span> },
+  { key: "placement", label: "Placement", sortVal: (s) => KIND_LABEL[s.site_kind], render: (s) => KIND_LABEL[s.site_kind] },
+  { key: "compartment", label: "Compartment", sortVal: (s) => compartmentLabel(s.compartment ?? s.topology_state), render: (s) => <CompartmentChip value={s.compartment ?? s.topology_state} /> },
+  { key: "path", label: "Path", sortVal: (s) => s.det_path ?? "", render: (s) => (s.det_path ? <span className={`${styles.chip} ${styles.chipPath}`}>{s.det_path}</span> : <span className={styles.muted}>—</span>) },
+  { key: "plddt", label: "pLDDT", sortVal: (s) => s.plddt ?? -1, render: (s) => (s.plddt != null ? s.plddt.toFixed(1) : "—") },
+  { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },
+];
+
+const OTHER_KIND: Record<string, { text: string; cls: string; title: string }> = {
+  intracellular: {
+    text: "Intracellular",
+    cls: "badgeSurface",
+    title: "A published insertion the protein tolerates, but facing the cytoplasm — usable for an intracellular label or a snorkel, not for surface display.",
+  },
+  abrogates_function: {
+    text: "Abrogates function",
+    cls: "badgeWeak",
+    title: "The paper reports that inserting a tag here destroyed the protein's function. A known-bad position.",
+  },
+  other: {
+    text: "Other",
+    cls: "badgeNone",
+    title: "Published, but neither tolerated-intracellular nor function-abrogating.",
+  },
+};
+
+/** Published insertion points that are NOT surface tag sites.
+ *
+ *  A scanning paper names positions the agent must not propose as surface
+ *  sites, and they used to be dropped on the floor: a tolerated insertion
+ *  facing the cytoplasm is the right answer for a snorkel or an intracellular
+ *  label, and a position a paper reports as abrogating function is evidence
+ *  about a site NOT to use. Both are worth more per character than most of
+ *  what a candidate table carries. */
+function OtherPositionsTable({ positions }: { positions: OtherPosition[] }) {
+  const sorted = [...positions].sort((a, b) => a.residue - b.residue);
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th scope="col">Residue</th>
+            <th scope="col">Finding</th>
+            <th scope="col">What the paper reports</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((o, i) => {
+            const spec = OTHER_KIND[o.kind] ?? OTHER_KIND.other;
+            return (
+              <tr key={`${o.residue}-${o.kind}-${i}`}>
+                <td className={styles.residue}>{o.residue}</td>
+                <td>
+                  <span
+                    className={`${styles.badge} ${styles[spec.cls]}`}
+                    title={spec.title}
+                  >
+                    {spec.text}
+                  </span>
+                </td>
+                <td className={styles.evidence}>
+                  {o.note || <span className={styles.muted}>—</span>}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** Compact table for per-isoform CONTROL pins (e.g. Tedman screen): each row is
+ *  one alternative isoform that carries the same N-terminal control tag, with its
+ *  own measured surface expression. These also render on the Isoforms tab's
+ *  topology bars + 3D variant tabs; this table just makes them legible here. */
+function IsoformControlTable({ pins }: { pins: IsoformTagPin[] }) {
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th className={styles.head}>Isoform</th>
+            <th className={styles.head}>Placement</th>
+            <th className={styles.head}>Tag</th>
+            <th className={styles.head}>Surface expression</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pins.map((p) => (
+            <tr key={p.site_id}>
+              <td className={styles.residue}>{p.isoform_id}</td>
+              <td>
+                {p.isoform_residue <= 1
+                  ? "N-terminus"
+                  : `after ${p.isoform_residue}`}
+              </td>
+              <td>
+                <TagChips value={p.tag_type} />
+              </td>
+              <td className={styles.evidence}>{p.note ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export interface TaggedSitesCardProps {
+  taggedSites: TaggedSitesFile | null;
+  n?: number;
+}
+
+/**
+ * §Tag sites — a dedicated section (its own tab, distinct from
+ * Internalization) listing engineered epitope/tag insertion points for the
+ * protein. Three provenances, matching the structure-viewer overlay legend:
+ *   • screen_validated — control tag sites confirmed by a parallel
+ *     surface-display screen (e.g. Tedman et al.), with a measured PME;
+ *   • literature_retrieved — tags published + validated in the literature
+ *     (hybrid lit-search + web_search agent), with linked sources;
+ *   • deterministic_computed — computed candidate insertion points from the
+ *     disorder / surface-loop pipeline (pLDDT + RSA/DSSP, feature-veto).
+ * All columns are sortable; tag/compartment/confidence render as chips.
+ * `validated_literature` provenance is validation-only and never rendered.
+ */
+export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
+  const sites = taggedSites?.sites ?? [];
+  // Surface-accessible literature sites only (N-terminal tags are extracellular
+  // by construction — placed after signal-peptide cleavage — even if the residue
+  // topology reads "signal").
+  const lit = sites.filter(
+    (s) =>
+      s.provenance === "literature_retrieved" &&
+      (s.extracellular || s.site_kind === "terminal_n"),
+  );
+  // One representative row per loop (mirrors the 3D overlay's collapse) so a long
+  // disordered ectodomain shows one row per loop, not a dense run of adjacent rows.
+  const det = collapseByLoop(
+    sites.filter((s) => s.provenance === "deterministic_computed"),
+  );
+  // Screen-validated controls (e.g. Tedman-style parallel surface-display
+  // screens) — surface-accessible the same way literature sites are (an
+  // N-terminal tag is extracellular by construction, post signal-cleavage).
+  const screenSites = sites.filter(
+    (s) =>
+      s.provenance === "screen_validated" &&
+      (s.extracellular || s.site_kind === "terminal_n"),
+  );
+  // Per-isoform control pins (e.g. Tedman screen) — surfaced as their own
+  // section so the alternative-isoform tag sites are legible here, not just
+  // edge pins on the Isoforms tab's topology bars.
+  const isoformCtrl = (taggedSites?.isoform_pins ?? []).filter(
+    (p) => p.classification === "control",
+  );
+  // Published positions that are not surface sites. Per-gene, not per-site —
+  // they are reasons NOT to tag somewhere, so they have no site row.
+  const otherPositions = taggedSites?.literature_other_positions ?? [];
+
+  // The agent stamps prompt_sha on every result INCLUDING an empty one, so its
+  // presence is the claim "this gene was searched" — which is what makes a zero
+  // reportable instead of invisible.
+  const searched = Boolean(taggedSites?.prompt_sha);
+  const searchedOn = taggedSites?.generated_at
+    ? new Date(taggedSites.generated_at).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : null;
+
+  const legendCategories = Array.from(
+    new Set([...lit, ...det, ...screenSites].map((s) => tagSiteCategory(s))),
+  );
+
+  // `has_data` is false for a searched gene with no sites, and bailing on it
+  // threw away the one thing that gene has to say.
+  if (
+    lit.length + det.length + screenSites.length + isoformCtrl.length === 0 &&
+    otherPositions.length === 0 &&
+    !searched
+  ) {
+    return (
+      <SectionCard n={n} title="Tag sites">
+        <p className={styles.empty}>No tag-site suggestions for this protein yet.</p>
+      </SectionCard>
+    );
+  }
+
+  return (
+    <SectionCard
+      n={n}
+      title="Tag sites"
+      lede="Engineered epitope/tag insertion points — literature-validated tags and computed candidate positions. Highlighted on the structure viewer above. Click any column header to sort."
+    >
+      <p className={styles.legend}>
+        {legendCategories.map((c) => (
+          <span key={c} className={styles.legendItem}>
+            <span
+              className={styles.dot}
+              style={{ background: CATEGORY_HEX[c] }}
+              aria-hidden="true"
+            />
+            {CATEGORY_LABEL[c]}
+          </span>
+        ))}
+      </p>
+
+      {/* Literature first: a published, validated tag site is the strongest
+          thing on this card, and it was sitting below the screen controls. */}
+      {lit.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>Literature-validated ({lit.length})</h3>
+          <SortableTable sites={lit} columns={LIT_COLUMNS} />
+        </>
+      ) : searched ? (
+        /* A searched gene with no published site is a FINDING, and it used to
+           render as nothing at all — identical to a gene nobody had looked at.
+           Saying "0" and when we looked is the whole difference. */
+        <>
+          <h3 className={styles.subhead}>Literature-validated (0)</h3>
+          <p className={styles.zeroState}>
+            <strong>No published tag-insertion site found for this protein.</strong>{" "}
+            The literature agent searched and found no paper that pins a tag to a
+            specific extracellular position
+            {searchedOn ? ` (last searched ${searchedOn})` : null}. This is a
+            result, not a gap — the computed candidates below are the starting
+            point.
+          </p>
+        </>
+      ) : null}
+
+      {screenSites.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>Screen-validated ({screenSites.length})</h3>
+          <SortableTable sites={screenSites} columns={LIT_COLUMNS} />
+        </>
+      ) : null}
+
+      {isoformCtrl.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>
+            Isoform control sites ({isoformCtrl.length})
+          </h3>
+          <IsoformControlTable pins={isoformCtrl} />
+        </>
+      ) : null}
+
+      {det.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>Computed candidates ({det.length})</h3>
+          <SortableTable sites={det} columns={DET_COLUMNS} />
+        </>
+      ) : null}
+
+      {otherPositions.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>
+            Published, not surface sites ({otherPositions.length})
+          </h3>
+          <p className={styles.lede}>
+            Insertion points named in the literature that are not surface tag
+            sites — tolerated but facing the cytoplasm (use these for an
+            intracellular label or a snorkel), or reported to abrogate function
+            (positions to avoid).
+          </p>
+          <OtherPositionsTable positions={otherPositions} />
+        </>
+      ) : null}
+    </SectionCard>
+  );
+}

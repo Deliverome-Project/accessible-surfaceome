@@ -9,11 +9,37 @@ import type {
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/enums";
 import { tooltips } from "../../../lib/tooltips";
+import {
+  orthologKey,
+  surfaceIsoformIds,
+  surfaceOrthologKeys,
+  type FgLibraryData,
+} from "../../../lib/fg-library";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { isoformNumber } from "../GeneHeader/GeneHeader";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { TopologyBar, TopologyLegend } from "./TopologyBar";
+import type { TopologyPin } from "./TopologyBar";
+import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import styles from "./IsoformsCard.module.css";
+
+/** The "In library" marker rendered inside a variant cell when a specific
+ *  isoform / ortholog is one of the analysis's precomputed surface-competent
+ *  variants for an FG-library gene. Kept a small green pill, distinct from the
+ *  neutral/lavender class pills already in the cell. */
+function inLibraryPill() {
+  return (
+    <StatusPill
+      tone="success"
+      size="sm"
+      nativeTooltip
+      title="Surface-competent variant included in the Deliverome FG library"
+    >
+      In library
+    </StatusPill>
+  );
+}
 
 function presentStates(topologies: string[]): string[] {
   const seen = new Set<string>();
@@ -219,7 +245,13 @@ function paralogRiskValue(p: ParalogEntry): number | null {
  * (full-length %identity, ECD %identity, ECD %similarity) against the
  * human canonical — those populate the comparison columns directly.
  */
-function orthologRow(e: OrthologEntry, key: string, species: string, maxResidues: number) {
+function orthologRow(
+  e: OrthologEntry,
+  key: string,
+  species: string,
+  maxResidues: number,
+  inLibrary: boolean,
+) {
   const ecdMissing = e.ecd_pct_identity_to_human_canonical == null;
   // ICD length / terminal orientations / signal-peptide length aren't in
   // the Compara record, but they're derivable from the ortholog's own
@@ -252,6 +284,7 @@ function orthologRow(e: OrthologEntry, key: string, species: string, maxResidues
             {prettyEnum(e.type)}
             {e.is_canonical ? "" : " · alt isoform"}
           </span>
+          {inLibrary ? inLibraryPill() : null}
         </div>
       </td>
       <td>
@@ -381,6 +414,14 @@ function paralogRow(p: ParalogEntry, key: string, maxResidues: number) {
 interface Props {
   rec: SurfaceomeRecord;
   n: number;
+  /** Parsed FG-library membership overlay (or null on a miss). When the parent
+   *  gene is in the library, its precomputed surface-competent isoforms +
+   *  orthologs get an "In library" pill in the variants table. Paralogs never
+   *  do — they're different genes, not part of the parent's library entry. */
+  fgLibrary?: FgLibraryData | null;
+  /** Per-gene tag sites; its `isoform_pins` drive the per-isoform topology-bar
+   *  pins (shared vs unique). Optional — absent when the gene has no tag data. */
+  taggedSites?: TaggedSitesFile | null;
 }
 
 /**
@@ -413,11 +454,33 @@ interface Props {
  *   ECD %id is the load-bearing signal for antibody-cross-reactivity
  *   risk.
  */
-export function IsoformsCard({ rec, n }: Props) {
+export function IsoformsCard({ rec, n, fgLibrary, taggedSites }: Props) {
+  // Per-isoform tag pins (deterministic, classified shared/unique) keyed by
+  // isoform_id -> TopologyBar pins on the isoform's OWN residue axis.
+  const pinsFor = (isoformId: string): TopologyPin[] =>
+    (taggedSites?.isoform_pins ?? [])
+      .filter((pin) => pin.isoform_id === isoformId)
+      .map((pin) => ({
+        siteId: pin.site_id,
+        leftPct: pin.left_pct,
+        provenance: "deterministic_computed" as const,
+        tagType: pin.tag_type ?? "tag",
+        classification: pin.classification,
+        note: pin.note ?? null,
+      }));
   const df = rec.deterministic_features;
   const ct = df.canonical_topology;
   const orthologs = df.orthologs;
   const paralogs = df.paralogs;
+  // FG-library surface-competent variant sets for THIS gene (empty when the
+  // gene isn't in the library or fgLibrary is null). Isoform rows match on the
+  // UniProt isoform id; ortholog rows match on `${SYMBOL}|${species}` — the
+  // ortholog's own symbol plus the display species passed to `orthologRow`
+  // ("Mouse"/"Cyno"), case-folded by `orthologKey`. Prefer these precomputed
+  // ids over re-deriving topology so the marker matches the analysis exactly.
+  const librarySymbol = rec.gene.hgnc_symbol;
+  const libIsoformIds = surfaceIsoformIds(fgLibrary, librarySymbol);
+  const libOrthologKeys = surfaceOrthologKeys(fgLibrary, librarySymbol);
   // Close paralogs (>80% on the colored identity — ECD when present, else
   // full-length) that carry real DeepTMHMM topology get promoted to full
   // rows in the variants table — the "multitarget likely" set (HPA antigen
@@ -600,9 +663,23 @@ export function IsoformsCard({ rec, n }: Props) {
                   table honest until it lands. */}
               {df.isoform_topologies
                 .filter((iso) => iso.isoform_id !== rec.gene.uniprot_acc)
+                /* The API returns `isoform_topologies` ordered by
+                   `uniprot_acc_full ASC` — a TEXT sort — so `P15941-10`
+                   precedes `P15941-2` and this table opened on "Isoform
+                   P15941-10 / -11 / -12". MUC1 (17 isoforms) is the case that
+                   surfaced it; it reads as library contamination or a wrong
+                   record rather than a sort. Same numeric comparison the 3D
+                   tab strip uses for its 3-isoform cap, via the shared
+                   `isoformNumber` — see viewer/tests/isoform_cap_order.test.ts.
+                   `.filter()` already copied, so sorting in place is safe. */
+                .sort(
+                  (a, b) =>
+                    isoformNumber(a.isoform_id) - isoformNumber(b.isoform_id),
+                )
                 .map((iso, i) => {
                 const fullId = iso.full_length_pct_identity_to_canonical;
                 const ecdId = iso.ecd_pct_identity_to_canonical;
+                const isoPins = pinsFor(iso.isoform_id);
                 return (
                   <tr key={`iso-${i}`}>
                     <td>
@@ -618,6 +695,9 @@ export function IsoformsCard({ rec, n }: Props) {
                         >
                           <span className={styles.mono}>{iso.isoform_id}</span>
                         </a>
+                        {libIsoformIds.has(iso.isoform_id)
+                          ? inLibraryPill()
+                          : null}
                       </div>
                     </td>
                     <td>{similarityCell(fullId, orthologToneClass(fullId))}</td>
@@ -636,7 +716,17 @@ export function IsoformsCard({ rec, n }: Props) {
                         topology={iso.per_residue_topology}
                         ariaLabel={`${rec.gene.hgnc_symbol} ${iso.isoform_id} topology`}
                         maxResidues={maxResidues}
-                        canonicalFrame={iso.per_residue_topology_canonical_frame}
+                        // Pins are on the isoform's OWN residue axis, so when this
+                        // isoform has pins render the bar on that axis (skip the
+                        // canonical frame) — otherwise a unique pin (no canonical
+                        // coordinate) couldn't be placed. Unpinned rows keep the
+                        // shared canonical frame for cross-row alignment.
+                        canonicalFrame={
+                          isoPins.length > 0
+                            ? undefined
+                            : iso.per_residue_topology_canonical_frame
+                        }
+                        pins={isoPins.length > 0 ? isoPins : undefined}
                       />
                     </td>
                   </tr>
@@ -646,10 +736,22 @@ export function IsoformsCard({ rec, n }: Props) {
               {/* Orthologs — mouse then cynomolgus, with real alignment
                   numbers against the human canonical. */}
               {orthologs.mouse.map((e, i) =>
-                orthologRow(e, `mouse-${i}`, "Mouse", maxResidues),
+                orthologRow(
+                  e,
+                  `mouse-${i}`,
+                  "Mouse",
+                  maxResidues,
+                  libOrthologKeys.has(orthologKey(e.ortholog_symbol, "Mouse")),
+                ),
               )}
               {orthologs.cynomolgus.map((e, i) =>
-                orthologRow(e, `cyno-${i}`, "Cyno", maxResidues),
+                orthologRow(
+                  e,
+                  `cyno-${i}`,
+                  "Cyno",
+                  maxResidues,
+                  libOrthologKeys.has(orthologKey(e.ortholog_symbol, "Cyno")),
+                ),
               )}
               {/* Close paralogs (>=80% full-length) — within-species, with
                   their own real DeepTMHMM topology + ECD identity/similarity.

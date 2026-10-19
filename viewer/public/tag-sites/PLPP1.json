@@ -1,0 +1,109 @@
+{
+  "has_data": true,
+  "gene_symbol": "PLPP1",
+  "uniprot_acc": "O14494",
+  "sites": [
+    {
+      "site_id": "PLPP1-snorkel-c",
+      "gene_symbol": "PLPP1",
+      "uniprot_acc": "O14494",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 284,
+      "residue_before": "P",
+      "residue_after": null,
+      "residue_label": "P284",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 58.4,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "PLPP1-surface_loop-51",
+      "gene_symbol": "PLPP1",
+      "uniprot_acc": "O14494",
+      "provenance": "deterministic_computed",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "insert_after_residue": 51,
+      "residue_before": "E",
+      "residue_after": "D",
+      "residue_label": "E51",
+      "residue_range": "K46-P55",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA, DogTag",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (surface_loop path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "ordered surface loop (10 aa): pLDDT>=70, DSSP loop/turn, exposed junction residue (max RSA), indel-tolerant, 3D-clear of features",
+      "sources": [],
+      "plddt": 96.4,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "PLPP1-surface_loop-31::iso::O14494-2",
+      "isoform_id": "O14494-2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 31,
+      "canonical_residue": 30,
+      "left_pct": 10.87719298245614
+    },
+    {
+      "site_id": "PLPP1-surface_loop-52::iso::O14494-2",
+      "isoform_id": "O14494-2",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 52,
+      "canonical_residue": 51,
+      "left_pct": 18.24561403508772
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "PLPP1-surface_loop-51::iso::A0A2K5URB3",
+      "isoform_id": "A0A2K5URB3",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 51,
+      "canonical_residue": 51,
+      "left_pct": 17.95774647887324
+    },
+    {
+      "site_id": "PLPP1-surface_loop-51::iso::Q61469",
+      "isoform_id": "Q61469",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 51,
+      "canonical_residue": 51,
+      "left_pct": 18.021201413427562
+    }
+  ]
+}

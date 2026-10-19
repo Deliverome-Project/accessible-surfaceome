@@ -186,7 +186,7 @@ DropReason = Literal[
 class PreTrimDecision:
     """One paper's filter outcome — kept or dropped with reason."""
 
-    paper_pmid: int
+    paper_pmid: int | None
     paper_title: str
     kept: bool
     drop_reason: DropReason | None = None

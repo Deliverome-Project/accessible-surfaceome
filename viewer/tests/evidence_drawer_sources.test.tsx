@@ -19,9 +19,33 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   SourceList,
+  EvidenceCard,
   type SourceEntry,
 } from "../components/surfaceome/EvidenceDrawer/EvidenceDrawer";
-import type { PaperMetadata } from "../lib/surfaceome-types";
+import type { Evidence, PaperMetadata } from "../lib/surfaceome-types";
+
+test("DOI-only internalization citations show bibliography and never link to PMC/None", () => {
+  const sid = "DOI:10.1101/2025.06.08.658482";
+  const ev = {
+    evidence_id: "int_evi_01", claim: "Measured uptake", spans: [{
+      quote: "An uptake assay.", source: {
+        source_id: sid, pmc_id: null,
+        url: "https://www.ncbi.nlm.nih.gov/pmc/articles/None/",
+      },
+    }],
+  } as unknown as Evidence;
+  const html = renderToStaticMarkup(<EvidenceCard ev={ev} onClose={() => {}} papers={{
+    [sid]: meta({ source_id: sid, pmc_id: null,
+      title: "EndoNB: A general strategy to study the internalization of cell surface proteins",
+      authors_short: "Lenaerts et al.", journal: "bioRxiv (preprint)", year: 2025,
+    }),
+  }} />);
+  assert.match(html, /https:\/\/doi.org\/10.1101\/2025.06.08.658482/);
+  assert.doesNotMatch(html, /articles\/None/);
+  assert.match(html, /EndoNB/);
+  assert.match(html, /Lenaerts et al./);
+  assert.match(html, /bioRxiv \(preprint\) 2025/);
+});
 
 const PMC_HREF = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6199259/";
 

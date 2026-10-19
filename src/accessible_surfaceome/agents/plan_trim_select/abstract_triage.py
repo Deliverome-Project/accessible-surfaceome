@@ -20,6 +20,8 @@ warrant inclusion are already preview clips.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import json
 import logging
 import os
@@ -57,6 +59,7 @@ from accessible_surfaceome.tools._shared.models import (
     IdentifierBundle,
     Paper,
     PaperSection,
+    paper_source_id,
 )
 from accessible_surfaceome.tools._shared.ncbi import add_ncbi_api_key_param
 from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
@@ -330,28 +333,10 @@ def _format_synonyms(bundle: IdentifierBundle | None) -> str:
     return ", ".join(parts)
 
 
-def paper_source_id(paper: Paper) -> str:
-    """Canonical pool/source key for a paper: ``PMC:<id>`` > ``PMID:<id>``
-    > ``DOI:<doi>``.
-
-    This is the key both the clip pool's ``source_id`` and the triage
-    outcome's ``paper_id`` agree on, so the runner can join triage
-    outcomes back to discovered papers and to the body pool. DOI is the
-    third-tier fallback so DataCite-routed preprints (no PMID / PMC ID)
-    still get a stable distinct key — otherwise they all collide on
-    ``UNKNOWN`` and downstream resolvers that guard on
-    ``source_id != "UNKNOWN"`` short-circuit.
-    """
-    if paper.pmc_id:
-        return f"PMC:{paper.pmc_id}"
-    if paper.pmid:
-        return f"PMID:{paper.pmid}"
-    if paper.doi:
-        return f"DOI:{paper.doi}"
-    return "UNKNOWN"
-
-
-# Internal alias retained for the existing call sites in this module.
+# ``paper_source_id`` now lives in tools/_shared/models.py (the shared layer,
+# next to ``Paper``) so the shared europepmc converter + harvested_paper key on
+# the same helper. Imported at the top; still exported from this module for
+# back-compat with existing importers. Internal alias kept for local call sites.
 _paper_source_id = paper_source_id
 
 
@@ -692,13 +677,14 @@ class _BodyFetch:
     oa_license: str | None = None
 
 
-def _fetch_body_drafts(
+def _fetch_body_drafts(  # noqa: PLR0913
     paper: Paper,
     *,
     http: CachedHTTP,
     retraction_index: RetractionIndex,
     pmcid_override: str | None = None,
     pmcid_lookup_done: bool = False,
+    relevance: Callable[[str], float] | None = None,
 ) -> _BodyFetch:
     """Pull the full body for ``paper`` and convert to drafts.
 
@@ -735,6 +721,7 @@ def _fetch_body_drafts(
                     source_id=f"PMC:{pmcid}",
                     abstract=body_paper.abstract,
                     sections=body_paper.sections,
+                    relevance=relevance,
                 )
                 if drafts:
                     return _BodyFetch(drafts=drafts, source="pmc_xml")
@@ -743,7 +730,8 @@ def _fetch_body_drafts(
         # PMC resolved but JATS was empty/errored (PMC-PDF-only) — fall through.
 
     # Step 2: Unpaywall OA PDF.
-    pdf_drafts, oa_license = _fetch_body_via_unpaywall_pdf(paper, http=http)
+    pdf_drafts, oa_license = _fetch_body_via_unpaywall_pdf(
+        paper, http=http, relevance=relevance)
     if pdf_drafts:
         return _BodyFetch(
             drafts=pdf_drafts, source="unpaywall_pdf", oa_license=oa_license
@@ -763,7 +751,7 @@ def _fetch_body_drafts(
 
 
 def _fetch_body_via_unpaywall_pdf(
-    paper: Paper, *, http: CachedHTTP
+    paper: Paper, *, http: CachedHTTP, relevance: Callable[[str], float] | None = None
 ) -> tuple[list[EvidenceClaimDraft], str | None]:
     """Fetch the paper's OA PDF via Unpaywall and parse it into body drafts.
 
@@ -824,7 +812,8 @@ def _fetch_body_via_unpaywall_pdf(
             )
         return (
             extract_paper_drafts(
-                source_id=source_id, abstract=paper.abstract, sections=sections
+                source_id=source_id, abstract=paper.abstract, sections=sections,
+                relevance=relevance,
             ),
             oa_license,
         )
@@ -1214,6 +1203,7 @@ def apply_triage_outcomes(
     retraction_index: RetractionIndex,
     add_to_pool_fn: Any,
     fetch_concurrency: int = 5,
+    relevance: Callable[[str], float] | None = None,
 ) -> list[TriageAction]:
     """Apply all triage outcomes.
 
@@ -1248,8 +1238,11 @@ def apply_triage_outcomes(
                     p,
                     http=http,
                     retraction_index=retraction_index,
-                    pmcid_override=pmcid_by_pmid.get(p.pmid),
+                    pmcid_override=(
+                        pmcid_by_pmid.get(p.pmid) if p.pmid is not None else None
+                    ),
                     pmcid_lookup_done=bool(p.pmid and not p.pmc_id),
+                    relevance=relevance,
                 ): o.paper_id
                 for o, p in to_fetch
             }

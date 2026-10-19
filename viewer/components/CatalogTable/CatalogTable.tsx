@@ -9,6 +9,14 @@ import type {
   DeepDiveFilters,
   TriageCell,
 } from "../../lib/surfaceome";
+// Client-safe module (no node:fs) — value-importing the grade list from
+// surfaceome.ts would drag its build-cache snapshot code into the browser bundle.
+import {
+  INTERNALIZATION_GRADES,
+  INTERNALIZATION_LIT_GRADES,
+  type InternalizationGrade,
+  type InternalizationLitGrade,
+} from "../../lib/internalization";
 import { prettyEnum } from "../../lib/enums";
 import {
   DD_BOOL_FIELDS,
@@ -69,19 +77,26 @@ const ROW_OVERSCAN = 12;
 // `_check_surface_call_reason_aligns_with_accessibility` for the deep
 // dive) — only the juxtaposition was misleading.
 //
-// 14 columns: Symbol | DB votes | U G S C H | Triage verdict |
+// 16 columns: Symbol | DB votes | U G S C H | Triage verdict |
 // Triage reason | Deep-dive reason | Deep dive | Conf | Evidence |
-// State dep. The 4 deep-dive vital columns reuse the gene-page
-// traffic-light tones, are sortable, and each links to the gene's
-// deep-dive page.
+// State dep. | Intern · seq | Intern · lit. The 4 deep-dive vital columns
+// reuse the gene-page traffic-light tones, are sortable, and each links to
+// the gene's deep-dive page. The two trailing Internalization columns are a
+// SEPARATE facet (the opus-5 sequence prior + the literature grade),
+// independent of deep-dive coverage.
 //
-// Fixed tracks are sized to their measured content (header label or
-// widest pill, plus cell padding), not rounded up: the minimum sums to
-// ~74.6rem (~1,194px) so the grid fits the 1,280px page width — and a
-// ~1,230px laptop viewport — without a horizontal scrollbar. The DB-dot
-// columns hold an 8px dot, so their header label sets the width.
+// Fixed tracks are sized to fit the page, not rounded up: main re-measured its
+// 14 to sum to ~74.6rem (~1,194px) so the grid fits the 1,280px page width —
+// and a ~1,230px laptop viewport — without a horizontal scrollbar. dev's two
+// Internalization tracks are kept, and every track is narrowed to stay inside
+// that same budget (Becca, 2026-10-12): 16 tracks, ~74.8rem (~1,197px).
+//
+// NOTE these widths are apportioned to hit the budget, not measured against
+// rendered content the way main's 14 were. The DB-dot columns hold an 8px dot
+// so their header label sets the width; the grade pills are the ones at risk
+// of clipping. Worth a visual pass at 1,280px and 1,230px.
 const GRID_TEMPLATE =
-  "10rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 7rem minmax(7rem, 1fr) minmax(7rem, 1fr) 6rem 5.6rem 5.6rem 5.6rem";
+  "9.2rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 6.2rem minmax(5.6rem, 1fr) minmax(5.6rem, 1fr) 5.4rem 4.4rem 4.4rem 4.4rem 4.4rem 4.4rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -148,7 +163,9 @@ type SortKey =
   | "dd_access"
   | "dd_conf"
   | "dd_evidence"
-  | "dd_state";
+  | "dd_state"
+  | "intern"
+  | "intern_lit";
 type SortDir = "asc" | "desc";
 // The Quick-filters row is a two-view toggle over the deep-dive dimension:
 // "All" (the full cohort) vs "Deep dive" (only genes with a deep-dive
@@ -270,6 +287,35 @@ const DD_TONE_CLASS: Record<VitalTone, string> = {
   danger: styles.ddToneDanger,
   neutral: styles.ddToneNeutral,
 };
+
+// Internalization sequence-prior grade → compact catalog display. Same
+// traffic-light scale as the deep-dive vitals: the two "high" bands read
+// success(green), moderate amber, the two "low" bands danger(red), unknown
+// neutral. `rank` orders the sort (very_high high → very_low low, unknown last).
+const INTERN_META: Record<
+  InternalizationGrade,
+  { label: string; full: string; tone: VitalTone; rank: number }
+> = {
+  very_high: { label: "v.high", full: "very high", tone: "success", rank: 6 },
+  high: { label: "high", full: "high", tone: "success", rank: 5 },
+  moderate: { label: "mod", full: "moderate", tone: "amber", rank: 4 },
+  low: { label: "low", full: "low", tone: "danger", rank: 3 },
+  very_low: { label: "v.low", full: "very low", tone: "danger", rank: 2 },
+  unknown: { label: "?", full: "unknown", tone: "neutral", rank: 1 },
+};
+// Internalization LITERATURE-track grade → compact catalog display. Different
+// enum from the seq prior (adds `no` = observed non-internalizing, drops the
+// `very_*` bands). Same traffic-light tones; `rank` orders the sort high→low.
+const INTERN_LIT_META: Record<
+  InternalizationLitGrade,
+  { label: string; full: string; tone: VitalTone; rank: number }
+> = {
+  high: { label: "high", full: "high", tone: "success", rank: 5 },
+  moderate: { label: "mod", full: "moderate", tone: "amber", rank: 4 },
+  low: { label: "low", full: "low", tone: "danger", rank: 3 },
+  no: { label: "no", full: "no internalization observed", tone: "danger", rank: 2 },
+  unknown: { label: "?", full: "unknown", tone: "neutral", rank: 1 },
+};
 function accessibilityTone(v: string | null | undefined): VitalTone {
   if (v === "high") return "success";
   if (v === "moderate") return "amber";
@@ -322,6 +368,27 @@ interface CatalogTableProps {
    *  TSV download filename so a downloaded snapshot is traceable. */
   universe_version?: string;
 }
+
+// Tag-site catalog facets — per-category thresholds over the build-time
+// tag_site_counts overlay (public/data/tag-site-counts.json). Deterministic
+// lanes + termini, plus literature-validated surface sites. opts = selectable
+// minimum-count thresholds (termini are presence-only, >=1).
+const TAG_SITE_FACETS = [
+  { key: "nterm_ec", label: "Ecto N-term", det: true, opts: [1] },
+  { key: "cterm_ec", label: "Ecto C-term", det: true, opts: [1] },
+  { key: "internal", label: "Internal loop", det: true, opts: [1, 3] },
+  { key: "disorder", label: "Disordered loop", det: true, opts: [1, 3] },
+  { key: "lit_ec", label: "Literature surface", det: false, opts: [1, 3] },
+] as const;
+type TagSiteFacetKey = (typeof TAG_SITE_FACETS)[number]["key"];
+type TagSiteFilterState = Record<TagSiteFacetKey, 0 | 1 | 3>;
+const EMPTY_TAG_SITE_FILTER: TagSiteFilterState = {
+  nterm_ec: 0,
+  cterm_ec: 0,
+  internal: 0,
+  disorder: 0,
+  lit_ec: 0,
+};
 
 export function CatalogTable({
   rows,
@@ -432,6 +499,14 @@ export function CatalogTable({
   const [deepDiveFilter, setDeepDiveFilter] = useState<"yes" | "no" | null>(
     null,
   );
+  // FG surface-protein library membership — a binary radio on the top-level
+  // `row.in_fg_library` flag (same shape as deepDiveFilter). ``null`` = off.
+  // Surfaced as a chip in the presetBar (composes with the tier presets under
+  // AND), but reset by "clear advanced filters" and counted in the advanced
+  // active-filter tally.
+  const [fgLibraryFilter, setFgLibraryFilter] = useState<"yes" | "no" | null>(
+    null,
+  );
   // SURFACE-Bind filter — 4-way exclusive: any / scored ≥1 / scored
   // ≥3 / not in dataset. ``null`` = filter off (all rows pass).
   //  - "any" → ``surface_bind_sites != null`` (in dataset, scored)
@@ -444,6 +519,20 @@ export function CatalogTable({
   type SurfaceBindFilter = "any" | "ge1" | "ge3" | "not_in" | null;
   const [surfaceBindFilter, setSurfaceBindFilter] =
     useState<SurfaceBindFilter>(null);
+  // Tag-site facet filters — per-category min-count thresholds (0=off). AND
+  // across active facets; reads the tag_site_counts overlay on each row.
+  const [tagSiteFilter, setTagSiteFilter] =
+    useState<TagSiteFilterState>(EMPTY_TAG_SITE_FILTER);
+  // Internalization sequence-prior grade filter — a SEPARATE catalog category
+  // (its own top-level group), NOT part of the deep-dive filter set. Multi-
+  // select over the SeqGrade values (OR within the set); empty = off. Reads the
+  // top-level `row.internalization`, so it applies to any cohort gene
+  // regardless of deep-dive coverage (mirrors the standalone SURFACE-Bind facet).
+  const [internalizationFilter, setInternalizationFilter] = useState<
+    Set<InternalizationGrade>
+  >(() => new Set());
+  const [internalizationGroupOpen, setInternalizationGroupOpen] =
+    useState(false);
   // Deep-dive filters — 13 enum-valued + 8 boolean. Enum filters use
   // OR-semantics within a field (any of the checked values passes)
   // and AND across fields. Bool filters are tri-state — "any"
@@ -513,9 +602,24 @@ export function CatalogTable({
     // other chip switches to it. yes/no are mutually exclusive.
     setDeepDiveFilter((prev) => (prev === key ? null : key));
   }
+  function toggleFgLibraryFilter(key: "yes" | "no") {
+    // Radio, same contract as toggleDeepDiveFilter. The presetBar chip only
+    // exposes "yes" (toggles in-library ↔ off); the "no" arm exists for
+    // symmetry with the tri-state predicate.
+    setFgLibraryFilter((prev) => (prev === key ? null : key));
+  }
   function toggleSurfaceBindFilter(key: NonNullable<SurfaceBindFilter>) {
     // 4-way radio — clicking the active chip clears, otherwise switches.
     setSurfaceBindFilter((prev) => (prev === key ? null : key));
+  }
+  function toggleInternalizationGrade(grade: InternalizationGrade) {
+    // Multi-select (OR within the set) — clicking toggles the grade in/out.
+    setInternalizationFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(grade)) next.delete(grade);
+      else next.add(grade);
+      return next;
+    });
   }
   function toggleDdEnumFilter(field: DdEnumKey, value: string) {
     setDdEnumFilters((prev) => {
@@ -538,7 +642,10 @@ export function CatalogTable({
     setVerdictFilter(new Set());
     setReasonFilter(new Set());
     setDeepDiveFilter(null);
+    setFgLibraryFilter(null);
     setSurfaceBindFilter(null);
+    setTagSiteFilter(EMPTY_TAG_SITE_FILTER);
+    setInternalizationFilter(new Set());
     setDdEnumFilters(() => {
       const out = {} as Record<DdEnumKey, Set<string>>;
       for (const f of DD_ENUM_FIELDS) out[f.key] = new Set();
@@ -694,13 +801,18 @@ export function CatalogTable({
   const ddActiveCount =
     ddEnumActiveCount +
     ddBoolActiveCount +
-    (surfaceBindFilter !== null ? 1 : 0);
+    (surfaceBindFilter !== null ? 1 : 0) +
+    Object.values(tagSiteFilter).filter((v) => v > 0).length;
 
   const activeFilterCount =
     dbFilter.size +
     verdictFilter.size +
     reasonFilter.size +
     (deepDiveFilter !== null ? 1 : 0) +
+    (fgLibraryFilter !== null ? 1 : 0) +
+    // Internalization is its own top-level category — counted here, but kept
+    // OUT of ddActive so it never forces the deep-dive presence gate.
+    internalizationFilter.size +
     ddActiveCount;
   // `ddActive` gates the deep-dive predicate (requires deep_dive=true
   // and applies enum/bool filters). It does NOT include the SURFACE-
@@ -864,6 +976,12 @@ export function CatalogTable({
         const k = r.deep_dive ? "yes" : "no";
         if (k !== deepDiveFilter) return false;
       }
+      // FG-library membership — binary facet on the top-level `in_fg_library`
+      // flag (baked at build time). Composes with everything else under AND.
+      if (fgLibraryFilter !== null) {
+        const k = r.in_fg_library ? "yes" : "no";
+        if (k !== fgLibraryFilter) return false;
+      }
       if (surfaceBindFilter !== null) {
         const sb = r.surface_bind_sites;
         switch (surfaceBindFilter) {
@@ -881,6 +999,20 @@ export function CatalogTable({
             if (sb != null) return false;
             break;
         }
+      }
+      // Tag-site facet filters — per-category thresholds (>=1 / >=3) over the
+      // build-time tag_site_counts overlay; AND across active facets.
+      for (const f of TAG_SITE_FACETS) {
+        const thr = tagSiteFilter[f.key];
+        if (thr > 0 && (r.tag_site_counts?.[f.key] ?? 0) < thr) return false;
+      }
+      // Internalization grade filter — standalone facet on the top-level
+      // `internalization` field. OR within the selected grades; a gene with no
+      // internalization record drops when any grade is selected. Independent of
+      // deep-dive coverage (that's the point of it being its own category).
+      if (internalizationFilter.size > 0) {
+        const g = r.internalization;
+        if (g == null || !internalizationFilter.has(g)) return false;
       }
       // Preset filter — runs the chosen preset's predicate against
       // the row's `deep_dive_filters`. Rows without a deep-dive
@@ -959,7 +1091,10 @@ export function CatalogTable({
     verdictFilter,
     reasonFilter,
     deepDiveFilter,
+    fgLibraryFilter,
     surfaceBindFilter,
+    tagSiteFilter,
+    internalizationFilter,
     ddActive,
     ddEnumFilters,
     ddBoolFilters,
@@ -1215,6 +1350,42 @@ export function CatalogTable({
                 </p>
                 <p>
                   <em>{DEEP_DIVE_ONLY_NOTE}</em>
+                </p>
+              </InfoTip>
+            </span>
+          );
+        })()}
+        {/* In FG library — standalone facet on the top-level `in_fg_library`
+         *  flag (baked from the committed membership snapshot). INDEPENDENT of
+         *  the tier presets — composes with them under AND (does not clear
+         *  them), same pattern as the Low-lit + UniProt facet above. */}
+        {(() => {
+          const count = rows.reduce((n, r) => (r.in_fg_library ? n + 1 : n), 0);
+          const on = fgLibraryFilter === "yes";
+          return (
+            <span className={styles.presetChipWrap}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={on}
+                className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
+                onClick={() => {
+                  // Independent facet — toggles on its own (in-library ↔ off),
+                  // composing with any active tier presets (AND).
+                  toggleFgLibraryFilter("yes");
+                }}
+              >
+                In FG library
+                <span className={styles.presetCount}>
+                  {count.toLocaleString()}
+                </span>
+              </button>
+              <InfoTip label="About the In FG library facet" wide>
+                <p>
+                  Genes in the Deliverome FG surface-protein library — the
+                  curated set carried in the delivery library. Narrows the
+                  catalog to library members; composes with the tier presets
+                  (AND) rather than replacing them.
                 </p>
               </InfoTip>
             </span>
@@ -1757,6 +1928,52 @@ export function CatalogTable({
                         {`"any" includes proteins scored with 0 patches; "not in" = filtered at structural QC. Click an active chip to clear.`}
                       </span>
                     </div>
+                    {/* Tag sites — per-category thresholds over the build-time
+                     *  tag_site_counts overlay (deterministic lanes + termini +
+                     *  literature surface sites). Each facet is off / >=1 / >=3
+                     *  (termini presence-only). AND across active facets. */}
+                    <div className={styles.filterRow}>
+                      <span className={styles.filterLabel}>Tag sites</span>
+                      <span className={styles.filterHint}>
+                        Engineered tag-insertion sites — deterministic lanes +
+                        termini, and literature-validated surface sites. Click an
+                        active chip to clear.
+                      </span>
+                    </div>
+                    {TAG_SITE_FACETS.map((f) => (
+                      <div
+                        key={`ts-filter-${f.key}`}
+                        className={styles.filterRow}
+                        role="radiogroup"
+                        aria-label={`Tag sites: ${f.label}`}
+                      >
+                        <span className={styles.filterLabel}>
+                          {f.det ? f.label : `${f.label} (lit)`}
+                        </span>
+                        <div className={styles.filterChips}>
+                          {f.opts.map((thr) => {
+                            const on = tagSiteFilter[f.key] === thr;
+                            return (
+                              <button
+                                key={`ts-filter-${f.key}-${thr}`}
+                                type="button"
+                                role="radio"
+                                aria-checked={on}
+                                className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                                onClick={() =>
+                                  setTagSiteFilter((prev) => ({
+                                    ...prev,
+                                    [f.key]: prev[f.key] === thr ? 0 : thr,
+                                  }))
+                                }
+                              >
+                                {`\u2265${thr}`}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                     {DD_ENUM_FIELDS.filter(
                       (f) => f.provenance === "deterministic",
                     ).map(renderDdEnumRow)}
@@ -1767,7 +1984,70 @@ export function CatalogTable({
                 ) : null}
               </div>
             ) : null}
-          </div>
+          </div>{/* end .filterGroup (Deep Dive) */}
+
+          {/* === Internalization group ==============================
+           *  A SEPARATE top-level category — NOT part of the deep-dive
+           *  or DB-vote groups. Reads the top-level `row.internalization`
+           *  (opus-5 sequence prior), so it filters across the whole
+           *  internalization cohort regardless of deep-dive coverage
+           *  (same standalone-facet shape as SURFACE-Bind's predicate).
+           *  Multi-select over the 5-point SeqGrade + unknown. */}
+          <div className={styles.filterGroup}>
+            <div className={styles.groupHeaderRow}>
+              <button
+                type="button"
+                className={styles.groupHeader}
+                onClick={() => setInternalizationGroupOpen((v) => !v)}
+                aria-expanded={internalizationGroupOpen}
+                aria-controls="catalog-filter-group-internalization"
+              >
+                <span className={styles.groupHeaderChevron} aria-hidden="true">
+                  {internalizationGroupOpen ? "▾" : "▸"}
+                </span>
+                Internalization
+                {!internalizationGroupOpen && internalizationFilter.size > 0 ? (
+                  <span className={styles.chipCount}>
+                    {internalizationFilter.size}
+                  </span>
+                ) : null}
+              </button>
+              <InfoTip label="About the Internalization filter" wide>
+                {tooltips.catalog_internalization_group}
+              </InfoTip>
+            </div>
+            {internalizationGroupOpen ? (
+              <div id="catalog-filter-group-internalization">
+                <div
+                  className={styles.filterRow}
+                  role="group"
+                  aria-label="Internalization sequence-prior grade"
+                >
+                  <span className={styles.filterLabel}>Grade</span>
+                  <div className={styles.filterChips}>
+                    {INTERNALIZATION_GRADES.map((g) => {
+                      const on = internalizationFilter.has(g);
+                      return (
+                        <button
+                          key={`intern-filter-${g}`}
+                          type="button"
+                          role="checkbox"
+                          aria-checked={on}
+                          className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                          onClick={() => toggleInternalizationGrade(g)}
+                        >
+                          {INTERN_META[g].full}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className={styles.filterHint}>
+                    {`Opus-5 sequence prior — intrinsic endocytic propensity from amino-acid sequence + E/C topology, blind to protein identity. Select any grades (OR). Click an active chip to clear.`}
+                  </span>
+                </div>
+              </div>
+            ) : null}
+          </div>{/* end .filterGroup (Internalization) */}
 
           {activeFilterCount > 0 ? (
             <div className={styles.filterFoot}>
@@ -1931,6 +2211,28 @@ export function CatalogTable({
             extraClass={styles.ddHeaderCell}
             info="How much the surface verdict depends on cell state or context (e.g. activation, stress) — low, moderate, or high."
           />
+          <SortableHeader
+            label="Intern · seq"
+            k="intern"
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onClick={setSort}
+            align="center"
+            title="Internalization SEQUENCE-prior grade — model estimate from sequence + topology (sort)"
+            extraClass={styles.ddHeaderCell}
+            info={tooltips.catalog_internalization}
+          />
+          <SortableHeader
+            label="Intern · lit"
+            k="intern_lit"
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onClick={setSort}
+            align="center"
+            title="Internalization LITERATURE-track grade — PMID/DOI-anchored observed evidence (sort)"
+            extraClass={styles.ddHeaderCell}
+            info={tooltips.catalog_internalization_lit}
+          />
         </div>
 
         {/* Body — a single positioned container whose height is the
@@ -2052,6 +2354,8 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
     "sonnet_ncbi_verdict", "sonnet_ncbi_reason",
     "opus_ncbi_verdict",   "opus_ncbi_reason",
     "has_deep_dive",
+    "internalization_grade",
+    "internalization_lit_grade",
   ];
   const body: TsvCell[][] = rows.map((r) => [
     r.symbol,
@@ -2068,6 +2372,8 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
     r.triage_by_model[1]?.verdict ?? "", r.triage_by_model[1]?.reason ?? "",
     r.triage_by_model[2]?.verdict ?? "", r.triage_by_model[2]?.reason ?? "",
     r.deep_dive ? 1 : 0,
+    r.internalization ?? "",
+    r.internalization_lit ?? "",
   ]);
   return buildTsv(headers, body);
 }
@@ -2120,6 +2426,18 @@ function sortValue(r: CatalogRow, k: SortKey): string | number {
   if (k === "dd_state") {
     const v = r.deep_dive_filters?.state_dependence;
     return v === "high" ? 3 : v === "moderate" ? 2 : v === "low" ? 1 : 0;
+  }
+  if (k === "intern") {
+    // Internalization sequence-prior grade → its ordinal rank (very_high 6 …
+    // very_low 2, unknown 1). No record sorts to 0 (bottom on DESC).
+    const g = r.internalization;
+    return g ? INTERN_META[g].rank : 0;
+  }
+  if (k === "intern_lit") {
+    // Internalization literature grade → its ordinal rank (high 5 … no 2,
+    // unknown 1). No literature record sorts to 0 (bottom on DESC).
+    const g = r.internalization_lit;
+    return g ? INTERN_LIT_META[g].rank : 0;
   }
   return 0;
 }
@@ -2419,6 +2737,56 @@ function CatalogRowView({
               ddf?.state_dependence ?? "—",
               `Deep-dive state dependence: ${ddf?.state_dependence ?? "n/a"}`,
             )}
+            {(() => {
+              // Internalization sequence-prior grade — a SEPARATE facet, not a
+              // deep-dive vital, so it's a plain toned pill (no deep-dive link):
+              // the value exists for the internalization cohort regardless of
+              // deep-dive coverage. Reuses the vital pill styling for visual
+              // consistency across the trailing columns.
+              const g = row.internalization;
+              if (!g) {
+                return (
+                  <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
+                    <span className={styles.dim}>—</span>
+                  </div>
+                );
+              }
+              const m = INTERN_META[g];
+              return (
+                <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
+                  <span
+                    className={`${styles.ddVital} ${DD_TONE_CLASS[m.tone]}`}
+                    title={`Internalization sequence prior: ${m.full}`}
+                  >
+                    {m.label}
+                  </span>
+                </div>
+              );
+            })()}
+            {(() => {
+              // Internalization LITERATURE-track grade — the observed-evidence
+              // facet, its own column next to the seq prior above. Different
+              // enum (INTERN_LIT_META); shown only for genes with a lit run.
+              const g = row.internalization_lit;
+              if (!g) {
+                return (
+                  <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
+                    <span className={styles.dim}>—</span>
+                  </div>
+                );
+              }
+              const m = INTERN_LIT_META[g];
+              return (
+                <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
+                  <span
+                    className={`${styles.ddVital} ${DD_TONE_CLASS[m.tone]}`}
+                    title={`Internalization literature grade: ${m.full}`}
+                  >
+                    {m.label}
+                  </span>
+                </div>
+              );
+            })()}
           </>
         );
       })()}

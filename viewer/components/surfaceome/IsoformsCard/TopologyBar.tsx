@@ -1,4 +1,7 @@
-import { MEMBRANE_COLOR, TOPOLOGY_COLORS } from "../../../lib/structure-viewer-types";
+import { MEMBRANE_COLOR, RESIDUE_HIGHLIGHT_COLOR, TOPOLOGY_COLORS } from "../../../lib/structure-viewer-types";
+import type { MouseEvent } from "react";
+import { CATEGORY_LABEL, CATEGORY_TOKEN } from "../../../lib/tag-sites-types";
+import type { TagSiteCategory } from "../../../lib/tag-sites-types";
 import styles from "./TopologyBar.module.css";
 
 interface Props {
@@ -26,6 +29,39 @@ interface Props {
    *  paralogs. When absent, the bar falls back to raw ``topology`` length
    *  scaling (``maxResidues``), so pre-backfill records still render. */
   canonicalFrame?: string | null;
+  /** Optional tag-insertion-site markers drawn as absolutely-positioned pins
+   *  above the bar, keyed by ``siteId`` and positioned by ``leftPct`` (0..100)
+   *  along the linear axis, colored by ``provenance``. Omit for a plain bar. */
+  pins?: TopologyPin[];
+  /** Makes the bar clickable: reports the 1-indexed residue under the
+   *  click, snapping to a pin's ``residue`` when the click lands on a pin. */
+  onResidueClick?: (residue: number) => void;
+  /** Draws a pink marker at this 1-indexed residue (the 3D viewer's
+   *  highlighted residue). */
+  markerResidue?: number | null;
+}
+
+export interface TopologyPin {
+  siteId: string;
+  leftPct: number; // 0..100
+  provenance: "literature_retrieved" | "deterministic_computed" | "screen_validated";
+  tagType: string;
+  /** 1-indexed residue the pin marks; lets a click on the pin select it. */
+  residue?: number;
+  /** Fine-grained overlay category (matches the 3D spheres' color axis via
+   *  CATEGORY_TOKEN). When present, takes priority over the coarse
+   *  literature/deterministic provenance fallback below — this is what lets a
+   *  screen_validated pin render its own --tag-site-screen-validated color
+   *  instead of falling into the deterministic bucket. Optional so legacy
+   *  callers (isoform pins, which color by `classification` instead) don't
+   *  need to supply it. */
+  category?: TagSiteCategory;
+  /** When set (isoform pins), colors the pin by shared-vs-unique classification
+   *  (--tag-site-isoform-*) instead of by provenance/category. */
+  classification?: "shared" | "unique" | "control";
+  /** Optional free-text (e.g. isoform surface-expression PME) appended to the
+   *  classification-branch tooltip when present. */
+  note?: string | null;
 }
 
 interface Run {
@@ -78,7 +114,15 @@ const STATE_LABELS: Record<string, string> = {
  *  segment so the covered residues still land at their canonical x-position. */
 const CANONICAL_FRAME_GAP = "-";
 
-export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame }: Props) {
+export function TopologyBar({
+  topology,
+  ariaLabel,
+  maxResidues,
+  canonicalFrame,
+  pins,
+  onResidueClick,
+  markerResidue = null,
+}: Props) {
   // Prefer the canonical-frame projection when the record carries it: every
   // row's canonical-frame string is the SAME length (the canonical sequence
   // length), so rendering each full-width on a shared axis lines homologous
@@ -96,36 +140,91 @@ export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame }
     !aligned && maxResidues && maxResidues > 0
       ? `${Math.min(100, (topology.length / maxResidues) * 100)}%`
       : "100%";
+  const nResidues = source.length;
+  const handleClick = onResidueClick
+    ? (e: MouseEvent<HTMLDivElement>) => {
+        const pinResidue = (e.target as HTMLElement).dataset?.residue;
+        if (pinResidue) {
+          onResidueClick(Number(pinResidue));
+          return;
+        }
+        const rect = e.currentTarget.getBoundingClientRect();
+        if (rect.width <= 0) return;
+        const frac = (e.clientX - rect.left) / rect.width;
+        onResidueClick(Math.min(nResidues, Math.max(1, Math.round(frac * nResidues))));
+      }
+    : undefined;
+  const showMarker =
+    markerResidue != null && markerResidue >= 1 && markerResidue <= nResidues;
   return (
     <div
-      className={styles.bar}
-      role="img"
-      aria-label={ariaLabel ?? "Per-residue topology bar"}
+      className={styles.barWrap}
       style={{ width: widthPct }}
+      data-clickable={onResidueClick ? "true" : undefined}
+      onClick={handleClick}
     >
-      {segments.map((seg, i) => {
-        // A gap run in the canonical frame → a blank, transparent spacer that
-        // still consumes its canonical-coordinate width, so the covered
-        // residues on either side keep their shared-axis x-position.
-        const isGap = aligned && seg.state === CANONICAL_FRAME_GAP;
-        return (
-          <div
-            key={i}
-            className={styles.seg}
-            style={{
-              flexGrow: seg.length,
-              background: isGap
-                ? "transparent"
-                : (TOPOLOGY_COLORS[seg.state] ?? "transparent"),
-            }}
-            title={
-              isGap
-                ? `Not covered by this variant · canonical residues ${seg.start}–${seg.end} (${seg.length} aa)`
-                : `${STATE_LABELS[seg.state] ?? seg.state} · ${aligned ? "canonical " : ""}residues ${seg.start}–${seg.end} (${seg.length} aa)`
-            }
-          />
-        );
-      })}
+      <div
+        className={styles.bar}
+        role="img"
+        aria-label={ariaLabel ?? "Per-residue topology bar"}
+      >
+        {segments.map((seg, i) => {
+          // A gap run in the canonical frame → a blank, transparent spacer that
+          // still consumes its canonical-coordinate width, so the covered
+          // residues on either side keep their shared-axis x-position.
+          const isGap = aligned && seg.state === CANONICAL_FRAME_GAP;
+          return (
+            <div
+              key={i}
+              className={styles.seg}
+              style={{
+                flexGrow: seg.length,
+                background: isGap
+                  ? "transparent"
+                  : (TOPOLOGY_COLORS[seg.state] ?? "transparent"),
+              }}
+              title={
+                isGap
+                  ? `Not covered by this variant · canonical residues ${seg.start}–${seg.end} (${seg.length} aa)`
+                  : `${STATE_LABELS[seg.state] ?? seg.state} · ${aligned ? "canonical " : ""}residues ${seg.start}–${seg.end} (${seg.length} aa)`
+              }
+            />
+          );
+        })}
+      </div>
+      {showMarker ? (
+        <span
+          className={styles.marker}
+          style={{ left: `${(markerResidue / nResidues) * 100}%`, background: RESIDUE_HIGHLIGHT_COLOR }}
+          title={`Highlighted residue ${markerResidue}`}
+          aria-hidden="true"
+        />
+      ) : null}
+      {(pins ?? []).map((pin) => (
+        <span
+          key={pin.siteId}
+          className={styles.pin}
+          data-residue={onResidueClick && pin.residue != null ? pin.residue : undefined}
+          data-provenance={pin.provenance}
+          data-classification={pin.classification}
+          style={{
+            left: `${pin.leftPct}%`,
+            background: pin.classification
+              ? `var(--tag-site-isoform-${pin.classification})`
+              : pin.category
+                ? `var(${CATEGORY_TOKEN[pin.category]})`
+                : `var(--tag-site-${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`,
+          }}
+          title={
+            (pin.classification
+              ? `${pin.tagType} (${pin.classification})${pin.note ? " — " + pin.note : ""}`
+              : pin.category
+                ? `${pin.tagType} (${CATEGORY_LABEL[pin.category]})`
+                : `${pin.tagType} (${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`) +
+            (pin.residue != null ? ` · residue ${pin.residue}` : "")
+          }
+        />
+      ))}
     </div>
   );
 }

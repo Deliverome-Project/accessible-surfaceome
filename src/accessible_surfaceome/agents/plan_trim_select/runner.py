@@ -1008,7 +1008,8 @@ def _execute_plan(
                     # so the selector can request fetch_abstract on iteration.
                     assert isinstance(res, LiteraturePack)
                     for paper in res.papers:
-                        discovered_papers.setdefault(paper.pmid, paper)
+                        if paper.pmid is not None:
+                            discovered_papers.setdefault(paper.pmid, paper)
                     n_papers = len(res.papers)
                 elif req.mode == "topic_search":
                     if not req.anchors:
@@ -1027,7 +1028,8 @@ def _execute_plan(
                     )
                     assert isinstance(res, LiteraturePack)
                     for paper in res.papers:
-                        discovered_papers.setdefault(paper.pmid, paper)
+                        if paper.pmid is not None:
+                            discovered_papers.setdefault(paper.pmid, paper)
                     n_papers = len(res.papers)
                 elif req.mode == "recent_corpus":
                     res = gene_literature(
@@ -1041,7 +1043,8 @@ def _execute_plan(
                     )
                     assert isinstance(res, LiteraturePack)
                     for paper in res.papers:
-                        discovered_papers.setdefault(paper.pmid, paper)
+                        if paper.pmid is not None:
+                            discovered_papers.setdefault(paper.pmid, paper)
                     n_papers = len(res.papers)
                 elif req.mode == "fetch_abstract":
                     if not req.pmid:

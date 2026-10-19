@@ -1,0 +1,6 @@
+source	all_genes	unique_genes	cellphonedb_any_binder	therasabdab_any_ab_epitope	extracellular_all	extracellular_cellphonedb	extracellular_therasabdab_ab
+Previous pipeline, same curated denominators	1136	NA	332	131	386	166	112
+Mature-protein topology repair	1133	NA	330	131	407	168	116
+Plus expanded PDB/PDBe retrieval	1680	NA	451	131	661	276	116
+Plus IntAct binding regions	2391	NA	539	131	855	343	116
+Plus IntAct mutation effects	2431	NA	539	131	871	348	116

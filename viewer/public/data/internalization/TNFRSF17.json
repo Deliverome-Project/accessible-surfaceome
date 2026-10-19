@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.2.1",
+  "gene_symbol": "TNFRSF17",
+  "hgnc_id": "HGNC:11913",
+  "uniprot_acc": "Q02223",
+  "model_priors": [
+    {
+      "model": "claude-sonnet-4-6",
+      "scope": "intrinsic_propensity",
+      "overall_grade": "high",
+      "overall_confidence": "high",
+      "model_reasoning": "TNFRSF17 (BCMA, B-cell maturation antigen) is a well-characterized TNF receptor superfamily member expressed on plasma cells and B cells. It is the receptor for APRIL and BAFF. BCMA is well-known in the literature for constitutive, rapid internalization — it has one of the highest basal endocytic rates among TNFRSF members, which is why it is a challenging ADC target and why surface levels are low despite high mRNA expression. The canonical isoform has a single-pass type I topology with a substantial cytoplasmic tail (~108 aa). Inspection of the cytoplasmic tail reveals a YKSL sequence (Y at position ~168, context YCKSL) that resembles a YXX[hydrophobic] motif, as well as the overall length of the cytoplasmic domain that is permissive for adaptor interactions. Beyond motifs, the known biology of BCMA strongly supports high constitutive internalization: surface BCMA is shed/internalized rapidly, and soluble BCMA in serum is a biomarker of plasma cell burden partly reflecting this turnover. The protein's known behavior dominates the assessment.",
+      "per_isoform": [
+        {
+          "isoform_id": "Q02223-1",
+          "is_canonical": true,
+          "length_aa": 184,
+          "topology_summary": "Single-pass type I transmembrane protein; N-terminus extracellular (~53 aa), single TM helix, C-terminus cytoplasmic (~108 aa).",
+          "endocytic_motifs_noted": "Cytoplasmic tail (~aa 77–184): contains a YCKSL sequence (Y168 context) resembling a YXX[hydrophobic] internalization motif; the long cytoplasmic tail (108 aa) is generally permissive for adaptor/ubiquitin-mediated uptake. No canonical NPXY or dileucine [DE]XXXL[LI] motifs clearly identified, but motif absence is not limiting given known biology.",
+          "grade": "high",
+          "confidence": "high",
+          "rationale": "BCMA (TNFRSF17) is one of the most rapidly internalizing members of the TNFRSF. Its constitutive endocytosis is well-established: surface expression is low relative to transcript levels, soluble BCMA is shed into serum as a consequence of rapid turnover, and the protein internalizes constitutively as well as upon APRIL/BAFF binding. The 108-aa cytoplasmic tail provides ample opportunity for adaptor interactions. A YXX[hydrophobic]-like motif is present in the cytoplasmic region. Taken together, known biology and sequence features both strongly support a high intrinsic internalization grade."
+        }
+      ]
+    }
+  ],
+  "literature": {
+    "grades_by_mode": {
+      "basal": {
+        "grade": "unknown",
+        "confidence": "low",
+        "rationale": "",
+        "cited_source_ids": []
+      },
+      "native_ligand": {
+        "grade": "unknown",
+        "confidence": "low",
+        "rationale": "",
+        "cited_source_ids": []
+      },
+      "therapeutic": {
+        "grade": "unknown",
+        "confidence": "low",
+        "rationale": "",
+        "cited_source_ids": []
+      }
+    },
+    "overall_grade": "unknown",
+    "overall_confidence": "low",
+    "rationale": "",
+    "cross_condition_note": "",
+    "species_scope": "unspecified",
+    "species_inferred": false,
+    "observations": [],
+    "sources": [],
+    "n_observations": 0,
+    "n_papers_discovered": 102,
+    "n_papers_fetched": 1
+  },
+  "generated_at": "2026-08-13T20:30:32.765519Z",
+  "runner_version": "internalization-literature/0.1.0"
+}

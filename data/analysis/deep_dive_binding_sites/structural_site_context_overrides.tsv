@@ -1,0 +1,3 @@
+hgnc_id	hgnc_symbol	uniprot_acc	ensembl_gene	ncbi_gene_id	pdb_id	context	reason	reference
+HGNC:31422	CFAP95	Q5VTT2	ENSG00000204711	138255	7ung	non_extracellular:axonemal_complex	Deposited respiratory microtubule complex conflicts with predicted UniProt EC topology; do not infer extracellular binding from this assembly.	https://www.rcsb.org/structure/7UNG
+HGNC:31422	CFAP95	Q5VTT2	ENSG00000204711	138255	8j07	non_extracellular:axonemal_complex	Deposited respiratory microtubule complex conflicts with predicted UniProt EC topology; do not infer extracellular binding from this assembly.	https://www.rcsb.org/structure/8J07

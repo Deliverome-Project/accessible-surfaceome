@@ -1,0 +1,34 @@
+{
+  "denominator": 5130,
+  "previous_overlap": 4081,
+  "unique_accessions": 5115,
+  "ambiguous_rows": 24,
+  "ambiguous_accessions": {
+    "Q5JQC4": 7,
+    "P59665": 2,
+    "Q8NG35": 2,
+    "P47929": 2,
+    "Q8NGT9": 2,
+    "Q6IEY1": 3,
+    "Q02325": 2,
+    "P23471": 2,
+    "Q96QH8": 2
+  },
+  "gtopdb": {
+    "unmapped_or_outside_cohort": 6000,
+    "single_protein_interactions": 13660,
+    "interactions_with_thera_sequence_match": 318,
+    "nonhuman_or_unspecified_species": 4977,
+    "complex_interactions": 297
+  },
+  "biogrid": {
+    "proteins_downloaded": 608,
+    "matched_interactions": 550,
+    "nonhuman_interactions": 285,
+    "outside_cohort": 343
+  },
+  "inputs": {
+    "annotations.json": "fbd680ac9543bd0408c7282191df96044240b84fc797c36f86bab56309c55c51",
+    "identifiers.json": "05b6ed36781f288afde0b777a52fea83058c20e8f45c91f95a4b399323029001"
+  }
+}

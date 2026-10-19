@@ -146,7 +146,7 @@
  * to match PR24. */
 .brandLocal {
   display: inline-flex;
-  /* `flex-end` (was `baseline`) so the v1.0 pill sits at the bottom
+  /* `flex-end` (was `baseline`) so the release pill sits at the bottom
    * of the wordmark line — its lower edge aligns with the base of the
    * "Surfaceome" letters rather than floating mid-cap-height. The
    * version mark reads as metadata clipped onto the bottom of the
@@ -172,7 +172,7 @@
   white-space: nowrap;
 }
 
-/* Small "v1.0" mark beside the Surfaceome wordmark — mono so it reads
+/* Small release-version mark beside the Surfaceome wordmark — mono so it reads
    as metadata next to the display-font wordmark, muted color so it
    doesn't compete with the sub-brand itself. Hover state stays muted —
    the link affordance is on the wordmark, not the version. */

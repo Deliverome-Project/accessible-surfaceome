@@ -31,6 +31,9 @@
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
+// Type-only import (erased at compile) so `CatalogRow.internalization` can be
+// typed here; the runtime list is re-exported below from the client-safe module.
+import type { InternalizationGrade, InternalizationLitGrade } from "./internalization";
 
 // Build-time snapshot cache for the two over-2MB Worker endpoints
 // (/v1/catalog ≈ 5.7 MB, /v1/benchmark/matrix ≈ 3 MB). Pre-written by
@@ -55,6 +58,12 @@ function readBuildCache<T>(file: string): T | null {
   }
 }
 import { pickDeepDiveFilters } from "./deep-dive-fields";
+// Client-safe FG-library overlay (no node:fs). The build reads the committed
+// snapshot via fs below and hands the parsed object to these helpers; the
+// same module is value-imported client-side by the gene page.
+import { parseFgLibrary, fgLibrarySymbolSet } from "./fg-library";
+import { parseTagSiteCounts } from "./tag-site-counts";
+import type { TagSiteCounts, TagSiteCountsMap } from "./tag-site-counts";
 import { renumberEvidenceIds } from "./evidenceRenumber";
 import { parseTriageHeadline } from "./triage-headline";
 import type {
@@ -110,6 +119,29 @@ const HGNC_TSV = path.join(
   "external",
   "hgnc",
   "hgnc_complete_set.tsv",
+);
+
+// Committed FG-library membership snapshot (2,346 genes), shipped as a
+// static asset AND read here at build time so the catalog row's
+// `in_fg_library` flag bakes into the static export. Lives under
+// `public/data/` (not `../data/external/`) because it's a viewer-owned
+// overlay generated from the deliverome-analysis library, and the gene
+// page fetches the same file at runtime.
+const FG_LIBRARY_JSON = path.join(
+  process.cwd(),
+  "public",
+  "data",
+  "fg-library.json",
+);
+
+// Per-gene tag-site category counts overlay (built by
+// scripts/build-tag-site-counts.mjs). Same public/data/ location + build-time
+// overlay pattern as fg-library.json.
+const TAG_SITE_COUNTS_JSON = path.join(
+  process.cwd(),
+  "public",
+  "data",
+  "tag-site-counts.json",
 );
 
 /**
@@ -285,6 +317,13 @@ export interface DeepDiveFilters {
   has_native_direct_surface_evidence?: boolean;
 }
 
+// Internalization grade type + ordered list live in the client-safe
+// `./internalization` module (this file imports `node:fs` for the build-cache
+// snapshot, so client components must not value-import from here). Re-exported
+// for back-compat with existing `from "./surfaceome"` type imports.
+export type { InternalizationGrade, InternalizationLitGrade };
+export { INTERNALIZATION_GRADES, INTERNALIZATION_LIT_GRADES } from "./internalization";
+
 export interface CatalogRow {
   symbol: string;
   uniprot: string;
@@ -314,11 +353,37 @@ export interface CatalogRow {
    *  ``undefined`` here also covers the pre-Worker-deploy interim
    *  where the field hasn't shipped yet. */
   surface_bind_sites?: number;
+  /** Internalization sequence-prior grade (Worker `intern`, row_schema 8+).
+   *  A SEPARATE catalog facet — populated for the internalization cohort
+   *  independently of deep-dive coverage, so it lives at the top level (not
+   *  inside `deep_dive_filters`). ``undefined`` = gene not yet in the cohort. */
+  internalization?: InternalizationGrade;
+  /** True when a literature-track internalization grade also exists for the
+   *  gene (Worker `intern_lit`). Undefined/absent = sequence prior only. */
+  internalization_has_lit?: boolean;
+  /** Internalization LITERATURE-track overall grade (Worker `intern_lit_grade`,
+   *  row_schema 9+). A SEPARATE facet from the sequence prior above — different
+   *  enum (adds `no`, drops `very_*`). ``undefined`` = no literature run yet. */
+  internalization_lit?: InternalizationLitGrade;
   /** Slimmed deep-dive `filters` projection — present only when
    *  `deep_dive=true` AND the annotation_json parsed. See the
    *  DeepDiveFilters docstring for the field set; the catalog
    *  filter panel reads this for the "Deep Dive" filter group. */
   deep_dive_filters?: DeepDiveFilters;
+  /** True when this gene's symbol is a member of the Deliverome FG
+   *  surface-protein library (`public/data/fg-library.json`). Baked at
+   *  build time by an overlay step (`enrichRowsWithFgLibrary`) modeled on
+   *  `enrichRowsWithNames`; a TOP-LEVEL catalog facet, independent of
+   *  deep-dive coverage. Present (`true`) only on members — absent means
+   *  not in the library, so the 17k non-member rows don't each ship a
+   *  `false` in the homepage payload. The public Worker does NOT serve this
+   *  flag — it's a viewer-side overlay. */
+  in_fg_library?: boolean;
+  /** Per-gene tag-site category counts (deterministic lanes + termini +
+   *  literature), overlaid at build time from public/data/tag-site-counts.json
+   *  (enrichRowsWithTagSiteCounts). Absent (or null) when the gene has no
+   *  tag sites. */
+  tag_site_counts?: TagSiteCounts | null;
   /** Worker-computed low-literature badge. Authoritative: the Worker
    *  evaluates it against the SurfaceBench-OPTIMIZED UniProt cutoff,
    *  which `db.uniprot` (the native 5-DB strip flag) cannot express.
@@ -515,6 +580,68 @@ function enrichRowsWithNames(
   });
 }
 
+// Module-level memo — the committed snapshot is small (~550 KB / 2,346
+// genes) but `_loadCatalogImpl` is memoized and only runs once per build,
+// so this mostly guards against redundant fs reads if the loader is
+// re-entered. Empty set on a read/parse miss → the flag stays false for
+// every row (graceful, like the gene-names overlay).
+let _fgLibrarySymbolsCache: Set<string> | null = null;
+
+function loadFgLibrarySymbols(): Set<string> {
+  if (_fgLibrarySymbolsCache) return _fgLibrarySymbolsCache;
+  let symbols = new Set<string>();
+  try {
+    const raw = readFileSync(FG_LIBRARY_JSON, "utf-8");
+    symbols = fgLibrarySymbolSet(parseFgLibrary(JSON.parse(raw)));
+  } catch {
+    // Missing/malformed snapshot — leave the flag false everywhere.
+    // Deliberately swallowed: the overlay is an enrichment, not a gate.
+  }
+  _fgLibrarySymbolsCache = symbols;
+  return symbols;
+}
+
+/** Set the top-level `in_fg_library` flag on every row from the committed
+ *  membership snapshot. Modeled on `enrichRowsWithNames` — a build-time
+ *  overlay step keyed by symbol. Rows arrive without the key (absent =
+ *  not a member); this sets it to true for library members. */
+function enrichRowsWithFgLibrary(
+  rows: CatalogRow[],
+  symbols: Set<string>,
+): CatalogRow[] {
+  if (symbols.size === 0) return rows;
+  return rows.map((r) =>
+    symbols.has(r.symbol) ? { ...r, in_fg_library: true } : r,
+  );
+}
+
+let _tagSiteCountsCache: TagSiteCountsMap | null = null;
+
+function loadTagSiteCounts(): TagSiteCountsMap {
+  if (_tagSiteCountsCache) return _tagSiteCountsCache;
+  let map: TagSiteCountsMap = {};
+  try {
+    map = parseTagSiteCounts(JSON.parse(readFileSync(TAG_SITE_COUNTS_JSON, "utf-8")));
+  } catch {
+    // Missing/malformed snapshot — no tag-site counts overlaid (graceful).
+  }
+  _tagSiteCountsCache = map;
+  return map;
+}
+
+/** Overlay per-gene tag-site category counts onto rows, keyed by symbol. Build-
+ *  time step modeled on enrichRowsWithFgLibrary; rows for genes with no tag
+ *  sites stay without the key. */
+function enrichRowsWithTagSiteCounts(
+  rows: CatalogRow[],
+  counts: TagSiteCountsMap,
+): CatalogRow[] {
+  if (Object.keys(counts).length === 0) return rows;
+  return rows.map((r) =>
+    counts[r.symbol] ? { ...r, tag_site_counts: counts[r.symbol] } : r,
+  );
+}
+
 /**
  * The Worker (`row_schema: 3`) packs each row's per-model NCBI
  * verdicts into a 3-slot tuple at `r.tr` — `[haiku?, sonnet?, opus?]`
@@ -558,7 +685,19 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
   // either. Type-cast pass-through; the field is fully optional and
   // the catalog filter pass guards `r.deep_dive_filters` before reading.
   const ddf = (r.ddf ?? r.deep_dive_filters) as DeepDiveFilters | undefined;
-  return {
+  // Worker row_schema v8+ ships an optional top-level ``intern`` field — the
+  // internalization sequence-prior SeqGrade. Present only for the
+  // internalization cohort; a SEPARATE facet (not inside ``ddf``). Snapshot
+  // fallbacks may carry the inflated `internalization` key instead.
+  const intern = (r.intern ?? r.internalization) as
+    | InternalizationGrade
+    | undefined;
+  // Worker row_schema v9+ adds ``intern_lit_grade`` — the literature-track
+  // overall grade (different enum from the seq prior). Its own catalog facet.
+  const internLit = (r.intern_lit_grade ?? r.internalization_lit) as
+    | InternalizationLitGrade
+    | undefined;
+  const row: CatalogRow = {
     symbol: r.symbol as string,
     uniprot: (r.uniprot as string | undefined) ?? "",
     name: r.name as string | undefined,
@@ -568,10 +707,33 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     triage_by_model,
     deep_dive: Boolean(r.deep_dive),
     surface_bind_sites: typeof sb === "number" ? sb : undefined,
+    internalization: intern,
+    internalization_has_lit:
+      Boolean(r.intern_lit ?? r.internalization_has_lit) || undefined,
+    internalization_lit: internLit,
     deep_dive_filters: ddf,
+    // Absent unless true — the build-time `enrichRowsWithFgLibrary` overlay
+    // sets it for library members (the Worker doesn't ship this facet). A
+    // snapshot fallback carrying `in_fg_library` is honored if present.
+    in_fg_library: r.in_fg_library ? true : undefined,
+    // tag_site_counts is left absent; enrichRowsWithTagSiteCounts fills it.
     low_lit_uniprot:
       typeof r.low_lit_uniprot === "boolean" ? r.low_lit_uniprot : undefined,
   };
+  return omitUndefined(row);
+}
+
+/** Drop keys whose value is `undefined`. The home page hands all ~19k rows
+ *  to a client component, and React's flight serializer writes an
+ *  undefined-valued key as the literal `"$undefined"` rather than omitting
+ *  it — on the internalization fields alone that was ~2 MB of the home
+ *  page's HTML. Every reader treats an absent key and an undefined one the
+ *  same, so omitting them changes nothing but the payload size. */
+function omitUndefined<T extends object>(obj: T): T {
+  for (const k of Object.keys(obj) as (keyof T)[]) {
+    if (obj[k] === undefined) delete obj[k];
+  }
+  return obj;
 }
 
 /** Look up the descriptive gene name for a symbol. Used by the gene
@@ -721,7 +883,13 @@ async function _loadCatalogImpl(): Promise<Catalog> {
       ? r
       : { ...r, deep_dive: deepDiveGenes.has(r.symbol) },
   );
-  const rows = enrichRowsWithNames(reconciled, names);
+  // Two build-time overlays keyed by symbol: HGNC names/uniprot, then the
+  // FG-library membership flag from the committed snapshot.
+  const named = enrichRowsWithNames(reconciled, names);
+  const rows = enrichRowsWithTagSiteCounts(
+    enrichRowsWithFgLibrary(named, loadFgLibrarySymbols()),
+    loadTagSiteCounts(),
+  );
   const n_with_deep_dive = rows.reduce(
     (n, r) => n + (r.deep_dive ? 1 : 0),
     0,

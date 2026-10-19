@@ -1,0 +1,126 @@
+{
+  "has_data": true,
+  "gene_symbol": "F11R",
+  "uniprot_acc": "Q9Y624",
+  "sites": [
+    {
+      "site_id": "F11R-terminal-n",
+      "gene_symbol": "F11R",
+      "uniprot_acc": "Q9Y624",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": 27,
+      "residue_before": "G",
+      "residue_after": "S",
+      "residue_label": "G27",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "mature extracellular N-terminus after signal-peptide cleavage (signal 1-27, 'O' at residue 28) \u2014 N-terminal tag placed just after the cleavage site",
+      "sources": [],
+      "plddt": 80.2,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "F11R-disorder-67::iso::Q9Y624-2",
+      "isoform_id": "Q9Y624-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 67,
+      "canonical_residue": 67,
+      "left_pct": 26.8
+    },
+    {
+      "site_id": "F11R-surface_loop-34::iso::Q9Y624-2",
+      "isoform_id": "Q9Y624-2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 34,
+      "canonical_residue": 34,
+      "left_pct": 13.600000000000001
+    },
+    {
+      "site_id": "F11R-surface_loop-43::iso::Q9Y624-2",
+      "isoform_id": "Q9Y624-2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 43,
+      "canonical_residue": 43,
+      "left_pct": 17.2
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "F11R-disorder-181::iso::O88792",
+      "isoform_id": "O88792",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 181,
+      "canonical_residue": 181,
+      "left_pct": 60.333333333333336
+    },
+    {
+      "site_id": "F11R-surface_loop-173::iso::O88792",
+      "isoform_id": "O88792",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 173,
+      "canonical_residue": 174,
+      "left_pct": 57.666666666666664
+    },
+    {
+      "site_id": "F11R-surface_loop-181::iso::A0A2K5WS58",
+      "isoform_id": "A0A2K5WS58",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 181,
+      "canonical_residue": 181,
+      "left_pct": 52.312138728323696
+    },
+    {
+      "site_id": "F11R-surface_loop-185::iso::O88792",
+      "isoform_id": "O88792",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 185,
+      "canonical_residue": 185,
+      "left_pct": 61.66666666666667
+    },
+    {
+      "site_id": "F11R-surface_loop-27::iso::O88792",
+      "isoform_id": "O88792",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 27,
+      "canonical_residue": 28,
+      "left_pct": 9.0
+    }
+  ]
+}

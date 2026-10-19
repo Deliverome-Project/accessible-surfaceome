@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-09-17T18:02:33.043453+00:00",
+  "ligand_status_counts": {
+    "yes": 3157,
+    "no": 1973
+  },
+  "explicit_yes_without_rationale": 0,
+  "surfacebind_versions": {
+    "2024-08-09": 2708
+  },
+  "inputs": {
+    "ligand_flags": {
+      "sha256": "e92ec9f3df7829ef68d274ad5770f933546e044f43861484940fce843379dd57",
+      "retrieved_at": "2026-09-17T18:01:30.198803+00:00",
+      "query": "SELECT json_extract(annotation_json, '$.gene.hgnc_id') AS hgnc_id, json_extract(annotation_json, '$.filters.has_known_ligand') AS has_known_ligand, json_extract(annotation_json, '$.filters.has_known_ligand_rationale') AS rationale FROM surface_annotation"
+    },
+    "surfacebind": {
+      "sha256": "b6f90391df9afa63260df82f0f7ca339a3d25aa0c7725dc07ad0532222cb19a9",
+      "retrieved_at": "2026-09-17T18:01:30.501466+00:00",
+      "query": "SELECT * FROM surface_bind_protein"
+    }
+  },
+  "coverage_sha256": "3e2c5043dfc9587a0f9f045d1814b3963192de81ba1696d3a9b3719f69a3f1e5"
+}

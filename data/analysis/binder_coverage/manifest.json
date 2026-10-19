@@ -1,0 +1,3160 @@
+{
+  "generated_at": "2026-09-16T21:37:57.877236+00:00",
+  "generator": "src/accessible_surfaceome/binders/coverage.py",
+  "generator_sha256": "4f630c3848f03389ffa4e979fcb68b588529cc609a52481769f5c776bfb9f534",
+  "inputs": [
+    {
+      "path": "data/external/binder_coverage/annotations.json",
+      "sha256": "fbd680ac9543bd0408c7282191df96044240b84fc797c36f86bab56309c55c51"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_0.json",
+      "sha256": "5083455baa87483a0b4b4d6e54d4cb3607539ebb5b05b666263bd76b1b1ac9a3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_500.json",
+      "sha256": "ed971fdf8ac764015d52d6e5c4512ab192faa98170600cdb7311661f36ead0dd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_1.html",
+      "sha256": "33927615328a2b0453892a51112d51bf9b09a6fcdf4fca4adaa90169168722f1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_10.html",
+      "sha256": "42939f37e6fae813ed8ea9c7c48e9a59d1f9c56534593b05315918935c7907c0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_100.html",
+      "sha256": "11bc7f9ebf6a8b38787a619c9759b3eec6600c4f7e0562884722e220f35699a1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_101.html",
+      "sha256": "87cfe9bb72ae0607fbc9aaf34f02b929cf21dcadaaaf1dde9bddca88b241cd6b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_102.html",
+      "sha256": "36f3874c7babc1a7276443ff7629d10878d4b427bd94af280667cd601fb66f15"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_103.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_104.html",
+      "sha256": "0061eed8e55298292d56e63694017547b6f4cdfccfba8eeaf944b5b313f91947"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_105.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_106.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_107.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_108.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_109.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_11.html",
+      "sha256": "ac231dea0c7836ca573f4fa19f9edc1e6c53405b7bb3146dd311dc4148c0beb7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_110.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_111.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_112.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_113.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_114.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_115.html",
+      "sha256": "4d31609dfd43ebd098fe128cdf5e096bd73db60febfec35df6b6a90771c5d21f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_116.html",
+      "sha256": "841f65b88f0566bbcc940be50485c776b2174baf6ae9d9ddd39bff16a60d3dbe"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_117.html",
+      "sha256": "9a73976ee5ba8387b275b1f434cd5b8425d79778b2703fe47fa3c022fb739c62"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_118.html",
+      "sha256": "b5c177432a0332905924f2a05bca4bbde5c2887880f4f2bf41c381e880a34bca"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_119.html",
+      "sha256": "5d97eea65f192e2e53d79d37bbc59b520eff93e0ae867855d46e6344306f9167"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_12.html",
+      "sha256": "7bf95102f3481c183b12714390c33952b7882cb4fa53f80cc7d10ce6786cb466"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_120.html",
+      "sha256": "c7c3bb8b66a4302c84ad348c9c13507811e60d53e37883f7aeed9ee540e21add"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_121.html",
+      "sha256": "a375927ce39766e688dcc2930fb2e8567804427fb7f9bee97621e52205721164"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_122.html",
+      "sha256": "9e2ae74e47ce69195fc6e17d5a2de389a41824ff1cc5ad66c4660ab88f98bb0d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_123.html",
+      "sha256": "225684fc6b9310731fe251483bc7599c38f80cdbb90565c433be9cd2d5ecaf87"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_124.html",
+      "sha256": "8b8f529ba11fdcb2cd6934fab92531fa2515d5e1c317412cf3cf03136b420c4b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_125.html",
+      "sha256": "44847e2a9f195a73ef1041ca2327e3b8a9fb67edddee44767accac97fffdb9ef"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_126.html",
+      "sha256": "d27632d12c21cf719dfa8d9a434e08a923c76cf10e0afd4f9762f952eed7853f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_127.html",
+      "sha256": "645b59865058f2a45d61230feac4b7551f823b9343f23dc81d6745d85af2941f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_128.html",
+      "sha256": "14fd864957fc99f4d1a3f27abc2f53e43771894a03ece1bff935962f701831a0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_129.html",
+      "sha256": "31263e9fcd3c2083d8b3997a077606e35523abb002341c72c07f132220b735e5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_13.html",
+      "sha256": "c2224d3d85425230ea20f4f66aa7570d624d5465ec8d08f73d42a0e91d69cb6c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_130.html",
+      "sha256": "1d69a5c5423963c707abd57ba2126ae026602a92af88dfcc60dcbe9f167bcb41"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_131.html",
+      "sha256": "3fcbe8937443b2c5f6629e91fbea1e3e2fc2022de41ec0ff84aea5a47c55af77"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_132.html",
+      "sha256": "a0c25faa2275904fd2545926cf49fe1ff9792f76191365a108a6e5f27b34a7e7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_133.html",
+      "sha256": "57f9d1d3d1088fb8f2a629f1fc9d8a7c8a0a084eb8a8b7699ed9240537f8e179"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_134.html",
+      "sha256": "9c375a8100976f7ed2871673cfd2b255c32a7a8847f5d1a3845bb75d6c992421"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_135.html",
+      "sha256": "5ae85d7cdcf221e59b4e46693e62beefd3b5de8c33be69c50f6c763994114615"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_136.html",
+      "sha256": "3b8e734d058fb3157f782f77eb203f1cad94974a13dc82c5d8e11c32993d7bbb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_137.html",
+      "sha256": "1c55772fa0eebd990667109b78fc14b86f47c78d5bb15d189392a7bcc25a0343"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_138.html",
+      "sha256": "008810c54cf1f3aefad66b25082cb6f4e6ecfbe11607a66fbf6f09501d691ee7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_139.html",
+      "sha256": "83822341833e00092936a7eb30b95df17172634e047c88f6a02867a58ec7660f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_14.html",
+      "sha256": "ebef311669f1c87aca03bb69cf5627073fdddb53ff6d3d3317b72f1fa594f300"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_140.html",
+      "sha256": "f7b2d59b6fd598c5beeb2c62161b026635e15cf86218400bb94c35efa03265cb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_141.html",
+      "sha256": "ad67b87e84ddbbd808a88fc3b0290e81e9bb2932929f4e7a3c9d1f87234fd59e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_142.html",
+      "sha256": "17a9873d8365c6a151968d8330cfbd581c65e3d219850ad7fc9edfb123271398"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_143.html",
+      "sha256": "8dc91560eaf597f9b013d5db8e3caec06614f062f361162534a88134ed2f907f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_144.html",
+      "sha256": "012260bbf6eee04fe408ff7dcc61b9c30740253775a751964da6e83efd4cadc2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_145.html",
+      "sha256": "16e720ad6bba3187eab51ab8e48be0b18ddc9b44b2b49d885abd7c7f4176512a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_146.html",
+      "sha256": "1c55c02fb321508d2fd7832d358edfa32c6c88056eb8b956aa25b71a4d8b4897"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_147.html",
+      "sha256": "e2e1afe64bfafff3b1e7291dfd5a64c0d0afd8c38b102838982af5670b9e6587"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_148.html",
+      "sha256": "c52569194701af8fa68b7652e5efc82a980b1b2f8d5a1ad16143dff1733e77fd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_149.html",
+      "sha256": "f5fde1b697ccbc29add919aae906a2ff1e12797d612903ce7c8a968ad6e4c3a4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_15.html",
+      "sha256": "b3b8ec35905926674a8508f88d396b3f1ba9ce80742bae01f4c443ed3b9a6315"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_150.html",
+      "sha256": "88bd5b5faa256ac68ab09f6e4ce530a61091056f625b9903225896cca74c4a82"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_151.html",
+      "sha256": "f52763d31f48b39c6b27ade5b0084cb338211ba243497b97322e86cad3d74ed4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_152.html",
+      "sha256": "78030cbd8ee6c5b156b2fe80d6cc6641b57894af79aeb0870853c0e48577c7cd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_153.html",
+      "sha256": "70247477a26769562b5f6a42089ab732e0876169b37e808bcf8882f151cc610a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_154.html",
+      "sha256": "0edec7a52ebaa1b9c3567892baadb8cfbd808780ef1588fb8962156f69e9a4a3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_155.html",
+      "sha256": "59d302c29179d17963dfdfc95585dbb73719b92e37dd97b30087458326c70d9b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_156.html",
+      "sha256": "bbb6dd54d44eeb21814e8dd7eae5d111af5a8fc3ff3baa9bc899d1ef9098e8b6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_157.html",
+      "sha256": "adb3d96a78ba22145bf4688086fc303c7ec20615864d004b485a16f4a4c3c6fb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_158.html",
+      "sha256": "f1f8b47f4d942966cf4c929f1c14df3fda6898de502a5f08f6a414b8ed37f373"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_159.html",
+      "sha256": "e4ebf639fc7cdf45c80ebec93287e8ac2afcc83a3f8f21a0aaa5848556cfd04d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_16.html",
+      "sha256": "56ad0ccda6b9f332c4aca5d0002adfbd1e4a3d2a1369b5aaf093298d4f137095"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_160.html",
+      "sha256": "904730bc1307ba4fdc8aa990f994a3065f0af27384a19074c063f567d614c987"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_161.html",
+      "sha256": "657f4b94b4b8247928070346bbd2ebb7572653e550cceb118cfe57fe7b3fc82a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_162.html",
+      "sha256": "a7eeef898b45acb6503ebed2d88dd78aed39d10b632992d5b4a9e095f0888577"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_163.html",
+      "sha256": "5074b0d2d6814aab8f376c730526c044c6dd2c66770c1b039f0dccc212202523"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_164.html",
+      "sha256": "6293164ca65b2351666292cdb7427ca88f4a209730c14ae81059fee95e44eb5f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_165.html",
+      "sha256": "00a6d10bb2798b2b3b6c155445936920dfff23609ed3921fac855ba3b68afc43"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_166.html",
+      "sha256": "fb1426d708499078f65388efa83fde41b2fe089ea2aa828b9de4a94c775501e6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_167.html",
+      "sha256": "77219a952007f553d83db611b618d84bfd45400627d0b57455d67de1996e4ae4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_168.html",
+      "sha256": "c685f00b6fea53fd700797e47a021d1c11233b31beaae15230e08c8f6fd88a74"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_169.html",
+      "sha256": "d54c2503e872c179a97c107b558bbb9182eef043991734c5c5298b417fbb81b6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_17.html",
+      "sha256": "b51eb25008cd8813414429901a1ad941dae7086d7e1455faaa3682cdf21d2aa9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_170.html",
+      "sha256": "967403635e7cfe5db34933fc97b2e94d6b0c17b6c6e0394df8a8cd738fb7d298"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_171.html",
+      "sha256": "c90ec4e7db3ae2cca7b8a58604b4218bec1d920bb9042256fdf178b8960afda7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_172.html",
+      "sha256": "e1ee188ff2969c279072e9f154b100dceab5105586243e92869dc9635a900d56"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_173.html",
+      "sha256": "85f2cb20c2e1be9ce37c9e3f759063af867af25b9f324b1ce8b1b3e1763fd6d1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_174.html",
+      "sha256": "02a501d4ce54b5d330fb9dfd3caada6ed57ea2baf4e1db3d8cd0e5030a6dd6ba"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_175.html",
+      "sha256": "f7f105352b2b5909db955aac03dcbf4227fe9f8665eaf27085a356e3ea7dddd1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_176.html",
+      "sha256": "76163456f20ecc353282ceb2d891015a386953df1323ea8045a65f7f4045e53a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_177.html",
+      "sha256": "d4508e3b4c7b35b8b0e602b232a8ebd717e66656a77ab18ec1bc826ffb892c94"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_178.html",
+      "sha256": "4b686be10d8f517629ceac9118d1b5582641d868b21d750e53bcc0894fbcfe08"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_179.html",
+      "sha256": "8b55dc2e2dba4053618e8518e3316fe5a2c5a7f8ffd1f3a78b8464ee20204abb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_18.html",
+      "sha256": "63407601225bb4560420645e380c07c43d047f464c3237336cc687f767aa9888"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_180.html",
+      "sha256": "bc92035ae07c17ed89c4db79a1314b7d6d640023a09bc6e3d9b770a089e80b87"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_181.html",
+      "sha256": "9de8e5510152e8b8494035c4a7d45d52c4d17cff69d14e6e6a1f6bcc3418f461"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_182.html",
+      "sha256": "28ae1190459ee77c7389fa71c5066ad7a043136f5b80d604b908f617c7f29592"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_183.html",
+      "sha256": "e468a18a7250350f8612ba9ed028cb0380de6764499c8e3e2bea5a0c83b980d1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_184.html",
+      "sha256": "ae1ed4e19d99894b26c740cf5bbcd66b70fb3a8f065fa3052bb8e36ace57aa8b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_185.html",
+      "sha256": "1c518f0b9813e66b00f6ed8b91ca5a2575fe9b66d17d715d9c7d2321529fda1c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_186.html",
+      "sha256": "1c518f0b9813e66b00f6ed8b91ca5a2575fe9b66d17d715d9c7d2321529fda1c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_187.html",
+      "sha256": "dbe61bd01c3c01c4ece70b3cbab02d952765ec0dc381edc789d11984c7e2078d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_188.html",
+      "sha256": "dbe61bd01c3c01c4ece70b3cbab02d952765ec0dc381edc789d11984c7e2078d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_189.html",
+      "sha256": "dbe61bd01c3c01c4ece70b3cbab02d952765ec0dc381edc789d11984c7e2078d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_19.html",
+      "sha256": "a1fb15283b8e5ba264314f39e223df24f676e4340cea9e5bd1f8be180ad17546"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_190.html",
+      "sha256": "dbe61bd01c3c01c4ece70b3cbab02d952765ec0dc381edc789d11984c7e2078d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_191.html",
+      "sha256": "19694a372d51920c713efbe233996acb4201dfadbc56a5e618011a3d07a1ee53"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_192.html",
+      "sha256": "19694a372d51920c713efbe233996acb4201dfadbc56a5e618011a3d07a1ee53"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_193.html",
+      "sha256": "19694a372d51920c713efbe233996acb4201dfadbc56a5e618011a3d07a1ee53"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_194.html",
+      "sha256": "19694a372d51920c713efbe233996acb4201dfadbc56a5e618011a3d07a1ee53"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_195.html",
+      "sha256": "89cb3a7875c66d34e8010a581c27fe819cb331de2534203f123c02b658fc69ab"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_196.html",
+      "sha256": "c1eb97466efe59b2c84fa9e858e4eff249d26765fa217ab22f752c5fa9c1b0e9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_197.html",
+      "sha256": "bf904f24bb932fe9aae60a7cc3cb8a0ecec0f45d4bc4c801105279b2dc2a1f08"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_198.html",
+      "sha256": "4db1689379c3affb3901cdb0ce6c5c77e173704e471f68b92e320495c57b752f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_199.html",
+      "sha256": "e9cd871df21b4767304cfe97e0be5b868b598da831b288fabd2a5698c2381910"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_2.html",
+      "sha256": "8074d0350874d79b73cee20df63d00853ac8f0a7c261b88eb9a55b8f07ea214e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_20.html",
+      "sha256": "bc414c1968c96b87da6159aeece4a26d4be68699e813ca70b90050bd8b7ba62e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_200.html",
+      "sha256": "99fadf34e09c144beb0e432aeb81c658f4cbdeb0381cbd3218173ac259c03714"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_201.html",
+      "sha256": "0c46be95e80eed745752271275bc8fb6cad23e33d550cd8f70950e3d82122ee6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_202.html",
+      "sha256": "2efce841ba3261c4cfa81d2a74b7f1007c2498aa9a1fa85c5e26473b991a9de4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_203.html",
+      "sha256": "48349580cd2c8cb5cb0cf7417e7f8e19dbb266d55f522758e1320e3d09dacfc0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_204.html",
+      "sha256": "827843a0e1678f7b5b7225d514ac2fd1cb01cf2a44af45e0e5c46b3d13102f9d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_205.html",
+      "sha256": "e698fb13064b827722a48ddad2b51a8f9d4e6d41151b559be6beb44a10207a03"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_206.html",
+      "sha256": "ad06c1ed83fe9f78d3432f10735d04a58f437d5822cc3945068ba58c5c033d8d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_207.html",
+      "sha256": "0babe50aa9e062513a39246b2299d0ab469da60a51ae1422fa4e9405a5c0c819"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_208.html",
+      "sha256": "8910c4ea9f0b72ed395e436aeb29e99a032c2b9074e3267161e25396439f64cf"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_209.html",
+      "sha256": "dd7033c472b887b2d0ee176948b45aef5dc4eb7cb1a8e9a0035c2c56cfe40a72"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_21.html",
+      "sha256": "ce388e9d92bd0b751f5e39cc8dbda6f882d240c9b7f825d282cdc8b5298b41d3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_210.html",
+      "sha256": "9ff3994ab358a7f30262fdb405aa0ef9c61f8e36e47a0178fc442f937d5345f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_211.html",
+      "sha256": "ac2fa2665f526048ffe55fabf85ce98fa40a6e536bde9e27689eb6b537ffa8e5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_212.html",
+      "sha256": "c46affb8fdbc05874b4b6226e7e88f7b77c9e70329489658cfe879445d5f2a7c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_213.html",
+      "sha256": "ee138a03484495b8fa815cc4cf6b7b1f5e11f65f17158d74a2fe40bb90bfcef1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_214.html",
+      "sha256": "1578828095cca47a000656c6338636f386329f6ce750a2228408e0cc36dd7064"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_215.html",
+      "sha256": "d06ec646e2c12035a629dc78feb86511718d23b0ca5ed1d4a37f08e75e6bde59"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_216.html",
+      "sha256": "bcc1e0047e80904831239711b47659390baab22f928ab96cce44ecebf2c78b5a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_217.html",
+      "sha256": "edee6a296485a9b9aedd7a779df07b249bc323432f511730af6994c3ae95430c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_218.html",
+      "sha256": "ce3bf65377b6a17689dbc36409d4a5f12d4df98ab4593ad2acff8335a861c5d8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_219.html",
+      "sha256": "368d201b12102b8ffb1594b683ad355b14587f002cef659e07ca4dfe7b9fe4b3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_22.html",
+      "sha256": "ad3519a1634d14fdd82ebae63d3d793499aedddf72e96a3284b8403e84f63c2c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_220.html",
+      "sha256": "a56ab31c06ff951cac66d405a8358007a9dd7f7fe8a3183f92967b5d3c94c0bc"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_221.html",
+      "sha256": "2b4321f731e8bf1a7c747b0e6b13a84a5b874763bca5b8ec0f0bec5f68b47dd6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_222.html",
+      "sha256": "9305f0221e397821d31f34ed8e72859f23f70d6f9332433a2d1026c8245a8f2c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_223.html",
+      "sha256": "20fd03a1af9f16198621481bc74078cac911cfe70b74f3f8e83a56b34bc15528"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_224.html",
+      "sha256": "83db81d401a79a0c097513bd13d688ae10fe250ed2a90dd70d0425b9c67e98c3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_225.html",
+      "sha256": "52be8ae1e6b940127cd4a7975847c31b4d5459047bacfd4453cce5b43ff170ee"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_226.html",
+      "sha256": "97862c15e0a488bcebedfa3c29f122baa09d8e0274fde3496166232efe1f7db0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_227.html",
+      "sha256": "bd95208a0fcbc46a1064a211a5ad4531ff983667c9a6e27ceb5c00adb2b204ca"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_228.html",
+      "sha256": "90ccc0a1a988472872ae5c7b16b841315052e7e2a7682dac2a1a6d5c267fb0e0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_229.html",
+      "sha256": "3294e69d2e69cfd45ad59e827f605aa630a893a465894af552e454c0b36ef22f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_23.html",
+      "sha256": "d17496f0afa4ccd1e3399edd7687630752ec40a2dbc15b6aee29e256270e6d30"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_230.html",
+      "sha256": "7abaa3f3189f0263cedbf19592d1cd0fd5a58baf4a22df91a3049a351c76945a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_231.html",
+      "sha256": "44854b07ed7745f92b76a08bd8df0a724ea46fb0d86fcb034cfb84b0bae3a18e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_232.html",
+      "sha256": "07e9031cb50553e3a10e529f330f57bc90cdd2ae947af733eb2a86558cc5f010"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_233.html",
+      "sha256": "4ede1edc986da6ca4da994422a02afc7ad0a331edb5eb4e38f94cf0381aa9567"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_234.html",
+      "sha256": "c130a39ff08660e46f95966b2328e322a0be0d20b5ccd52ce9a3ebc62ed767ad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_235.html",
+      "sha256": "447e43462f575f1acd6135fb1447f002168a0bfc88bbfe855459e1272952b633"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_236.html",
+      "sha256": "16b2032701359489394e5bdb5ba44093fbbff44b25f42c6b5d3650fa9d2fc472"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_237.html",
+      "sha256": "8aa1d32b1485c5c65c2412045a40ccec5b248a467d1a3aa3d91c45704be06a9c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_238.html",
+      "sha256": "a594b0abaa1f6633836890540f07ece6c0918b84e4ae58023e76727577d8c090"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_239.html",
+      "sha256": "fce1d76adb5b104a16abc403ff7e23e8b3dc9397f650ed9d937f2b9b636d7402"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_24.html",
+      "sha256": "2c004d17d9f2d147a5599e9ecb115588aa085d8e4f8e01403582fa1f685d0c38"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_240.html",
+      "sha256": "2c1bc18c409f4ca6158b7231d8c84afff5698d3cbf9e0bc18e10d90a030c2387"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_241.html",
+      "sha256": "746f27706cdd0ec8c94ea48386e726e3a0cfa6e105cf452741733176926be280"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_242.html",
+      "sha256": "c18aab6d2f5fbf5995f4134fd1ff43bb1c233fa901b0403729ef54f356fc6dd3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_243.html",
+      "sha256": "fce1d76adb5b104a16abc403ff7e23e8b3dc9397f650ed9d937f2b9b636d7402"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_244.html",
+      "sha256": "617f9b029cb50b9a5487f9c5716dcc5d03f77500a1949ae967796dbb6278a6c8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_245.html",
+      "sha256": "f7013d98fe3d495f4d465398b82e4931bf267f64674b5f4145374857042c8717"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_246.html",
+      "sha256": "cb47c7052d6849f40ef714c1779a42d48274f5e2d55e67d902d64ad41c6fbea1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_247.html",
+      "sha256": "d1513a7cfd907e6d723642eda8c90180434ae92694ee644faddcec936af535e6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_248.html",
+      "sha256": "14838ea3414093ec123ff59322da703a7a5109accd571ee004c96f163658ac43"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_249.html",
+      "sha256": "747dd75fd0f59babbeffcfb91aa7a55f24ee86042b6274bf15a24cfbb340c5f6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_25.html",
+      "sha256": "5b6359a6acf038f686717829dbde358e96b9cfa65d9c899ade805827dd6c0b5b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_250.html",
+      "sha256": "f54dae0808247617ba32b84397420c4781d33a03490b1d94ab2a8c3cd6822163"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_251.html",
+      "sha256": "f54dae0808247617ba32b84397420c4781d33a03490b1d94ab2a8c3cd6822163"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_252.html",
+      "sha256": "f54dae0808247617ba32b84397420c4781d33a03490b1d94ab2a8c3cd6822163"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_253.html",
+      "sha256": "27115b857d9a122ef2a70daec81f9a5a06ca66968547b6c9e6375e3b0abb9886"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_254.html",
+      "sha256": "4667be0d2afa4672c20184144a3e9c0e76953e867fc24bc515a026a347f24805"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_255.html",
+      "sha256": "8167a887fa84dd9bbbe4dc4609c7c8511206678bf4d86993ab2e86a54226b713"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_256.html",
+      "sha256": "51f3dcf4bb7b70fc92e173386fee01571235a4595edd63a4d3becd744ca53268"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_257.html",
+      "sha256": "c4a81b26c984ab90e4e6f2014b2942c680f9d17c1f0f6b2b56f7621eecc93369"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_258.html",
+      "sha256": "6ea23fdd3b03a66373f8333b18fad836373d5f40dd299bd0b2c2e4d3f5fedd2e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_259.html",
+      "sha256": "6ea23fdd3b03a66373f8333b18fad836373d5f40dd299bd0b2c2e4d3f5fedd2e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_26.html",
+      "sha256": "5b6359a6acf038f686717829dbde358e96b9cfa65d9c899ade805827dd6c0b5b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_260.html",
+      "sha256": "6ea23fdd3b03a66373f8333b18fad836373d5f40dd299bd0b2c2e4d3f5fedd2e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_261.html",
+      "sha256": "b3e247b9811ff2edf548ecd451f8b7e211f3dc0078b56613acae0edff502c125"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_262.html",
+      "sha256": "6ea23fdd3b03a66373f8333b18fad836373d5f40dd299bd0b2c2e4d3f5fedd2e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_263.html",
+      "sha256": "e78d997859449e5f17782811a7ee29f4c50c6a03dcba8db88268fdae0d3b3ec7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_264.html",
+      "sha256": "e78d997859449e5f17782811a7ee29f4c50c6a03dcba8db88268fdae0d3b3ec7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_265.html",
+      "sha256": "7d531a0d1ace66b2d59fbd3d558591fa10ccf5bb60e23b97b3c8cfd93b4a32a8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_266.html",
+      "sha256": "c0d36ba86c1f7afd152425ea572c13731137502799ab977af43226bad4a5fedd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_267.html",
+      "sha256": "0d37f7721976c0ed75e86494ca3d57dbab46ccf7fdaa156f86525ea9ed3567c5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_268.html",
+      "sha256": "8be64b4c44a3b1f7f8eca760c1acfe021d48266b2cc0787a0241b7ed95852f6f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_269.html",
+      "sha256": "dd9c901097abbdfe2fa3a8eef7e79560d53583ba920c6078da096788909a6eb1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_27.html",
+      "sha256": "b53eddf32b2fa8f283a1c40f3f701fdaa60fba90df4736f88d153da40f884c78"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_270.html",
+      "sha256": "05af554477aec9a6fdbd88d6f29218c28672c1602d6b76328e1a637b199399dd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_271.html",
+      "sha256": "f4ea46c538b1b9e2b6e74493d75c2c10728e790bf04bc00548df316607bff64f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_272.html",
+      "sha256": "1f9c2284c94b91117857d53b6f73e66d2fa13ca383d8d3d96dd2e41f39a577cc"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_273.html",
+      "sha256": "4faf3c2917ad6aef8e1555f841743e6a0d8cf53b21702f9d6d0b66bd743caddb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_274.html",
+      "sha256": "5e204e6458b424a498f4ac291dbde1e5350c108958767e4882c096db1e84cf57"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_275.html",
+      "sha256": "87e879ba6515ff253f620acb7efdada64c05b836f10a72acb457de40744e5eaf"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_276.html",
+      "sha256": "fcdda048341e7ceee1c4c0b2150c6bfe5572fa581edf9b8196519a8be031c928"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_277.html",
+      "sha256": "b595ce89394caf96383bb64e58de3d1163c5e74fab501d16729cb03b7f0d2ce7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_278.html",
+      "sha256": "8fe2e1f0121c4c78304d89f427bd8dccadc527344a161fcd45a7c14a17962851"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_279.html",
+      "sha256": "e2b4b5651dec7b05e3b520eafba65a311b1965495976b8d913a3f029a1dc604d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_28.html",
+      "sha256": "259b94e01ec1ba1f2125d32eab83a9c27c11777e5e951ee90f5da9db04dd5cdc"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_280.html",
+      "sha256": "2ac5b74cba811f167a7edddd8dc36684bed0c89861b6a956bda502967e62a58f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_281.html",
+      "sha256": "37d4cdd0be81dba9ac23b2e4c359350a27c09759a4960a087abc270f5f389cb7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_282.html",
+      "sha256": "37d4cdd0be81dba9ac23b2e4c359350a27c09759a4960a087abc270f5f389cb7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_283.html",
+      "sha256": "92d9a066941b56be799b7a1cbd0940f391d50017d1dd65bf7718bef8129e063f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_284.html",
+      "sha256": "da06ab07e0317e6deb58cf18148c7213cb4272fc12a828bf7270adf1261e60d9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_285.html",
+      "sha256": "da06ab07e0317e6deb58cf18148c7213cb4272fc12a828bf7270adf1261e60d9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_286.html",
+      "sha256": "00eecb964bd5b119f179462b51b50f92dbd6b9971262c8469312df4791fdfd75"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_287.html",
+      "sha256": "f5093777a0c2eb7a3a0ecd9196ca03c7eb7afcb938384887878207a011ca4fb4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_288.html",
+      "sha256": "da06ab07e0317e6deb58cf18148c7213cb4272fc12a828bf7270adf1261e60d9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_289.html",
+      "sha256": "da06ab07e0317e6deb58cf18148c7213cb4272fc12a828bf7270adf1261e60d9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_29.html",
+      "sha256": "9ff3994ab358a7f30262fdb405aa0ef9c61f8e36e47a0178fc442f937d5345f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_290.html",
+      "sha256": "ceca277b472ea1948d6ea681633902479614eab85c8f946241df5a10a8ca7d72"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_291.html",
+      "sha256": "a3fc8574a99af0eeeee85986eef963a929f7792c8543874deaa34310da98c25b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_292.html",
+      "sha256": "4a0a6ce5408c4c7c6dc15fc964ce2a225ca9ffc856ff2e21dc9acaf733d5728c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_293.html",
+      "sha256": "1bedf336372448b520327b0cbb934aa68f617c6dda7583fb94c187541ead081d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_294.html",
+      "sha256": "984ca0ff046dc478c9d5528821289c48094556ef891d8d58780d44e4d66c7655"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_295.html",
+      "sha256": "1d6c73e574c79f5c78186ab68d30b9a60414304fe56f28d12947dad43dfb7b2a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_296.html",
+      "sha256": "ed7036477a7769aa00f28db0487719a0107878b81977254af3abc3a4ce0ce46a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_297.html",
+      "sha256": "9d113718678851ab42b9793d1d9e6fdc73b4cc06a42f2ba404e208c2b3567397"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_298.html",
+      "sha256": "395b7ed05ebf66af14cadde991181848a509e34790d35d5aa1ec2b9ea6415c29"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_299.html",
+      "sha256": "6581091cb57cd228a04b560af2d3bdbce60a6be5027a994243cb8e770917ae95"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_3.html",
+      "sha256": "d36188afeeb29a0d0e0f5f904ae765e6d9f9afbbfb0081ddea5cc1988598712f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_30.html",
+      "sha256": "9ff3994ab358a7f30262fdb405aa0ef9c61f8e36e47a0178fc442f937d5345f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_300.html",
+      "sha256": "ad59194f4b836aa6a87d97eb9340c9f223dc2dd7ab89339473c53ff71a35081f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_301.html",
+      "sha256": "5711b6474f9b2d36b3060cfff0a63fe32a136fa753c94f8ea264fc8cadddf794"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_302.html",
+      "sha256": "c23fcbd8584fa0842a6be65e6ac5ee0e337889f3e9e09dfa3f1ed285d8e50d67"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_303.html",
+      "sha256": "d3813b973ab9ff8e6b01a2e86ef97dfc9651a3aceff612b7e918ca8896fa642a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_304.html",
+      "sha256": "6fd4c3ac236996054615c4a2939d5da5e56ad6525135928b620832c13693bcfd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_305.html",
+      "sha256": "d450c311550bcc7094bad9b52c406454bf1f2ed489b7cda5c691c063d7b1b783"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_306.html",
+      "sha256": "ba97da08cc6509f9cfe8ad4b24bd3a71eea6088bfdd206b5bab63a9842c8f0a1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_307.html",
+      "sha256": "5b2c5413245299a461ce52969accf4539583a01924d9490c168eaa07ad9657bd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_308.html",
+      "sha256": "7d122ed23fbbea3477c9b8db2c00b346c99f807df2c953e784dd112790d73f41"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_309.html",
+      "sha256": "e7e438373a8eef839e59c86cae4d23c5d9c4d25a3ca8aaa09cce3ebb707df06d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_31.html",
+      "sha256": "9ff3994ab358a7f30262fdb405aa0ef9c61f8e36e47a0178fc442f937d5345f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_310.html",
+      "sha256": "35b06d35aa60e16ac3646824d20bd1182b044a49fd29cb129949b2239c2acd78"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_311.html",
+      "sha256": "82a8e45b251ab468375768b42c72d39e17279695d76d04d4d7e01f6ec1695b50"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_312.html",
+      "sha256": "b9f9834f2cd2b14ee1abac9c674603f596738c3dcff352580512782beb72aa53"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_313.html",
+      "sha256": "c4a58c28a6f5bd1178c9ca9eb2e97140301ab76db4cafa4f51cc68139799a5f0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_314.html",
+      "sha256": "219aa801bbc3bfdc446a92c61eec22c0310d6aad13207a2f0ddaf67819888388"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_315.html",
+      "sha256": "f1db98d96c3ec7232cf04cab16c669c3e3a75e00737f3d8c7b0b5768ee2cd19b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_316.html",
+      "sha256": "47d86391f67540084d856d70fc15f4385eb9ce0eff45abb158370a0feaa40bbd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_317.html",
+      "sha256": "cd8ec6210f3f25a7d2288bc41c6a0a3eaf30d5e0114712b223fd830cffef5439"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_318.html",
+      "sha256": "6cb1b98f65af8a87ebd394447c14b81b6c4f9ce804e7c93ab9b9fcc44ea1c2b1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_319.html",
+      "sha256": "fc9aed6ede89f89ced080b1bd1fd5cc9af45a93702b6cfa87026d7a4aab3eef6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_32.html",
+      "sha256": "9ff3994ab358a7f30262fdb405aa0ef9c61f8e36e47a0178fc442f937d5345f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_320.html",
+      "sha256": "8903addbf96e6c2654f460abce7d2bff8cf0d40824b62b0f97f28cbaf1aba600"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_321.html",
+      "sha256": "eed1185bf41ec26dbd89073c88d65b57829a99db4f993e208d3211e026ef408d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_322.html",
+      "sha256": "24f8281fe20f5aab56b5a05989c0d7ce3605951fa33d64070f925e5e269a554c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_323.html",
+      "sha256": "610157323421a3a4f326648eddd30d50bd636efe6b281fe32abf03b68fb0ad1d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_324.html",
+      "sha256": "039e421d41c536116e515eb43cbcba2a80c86158acaaf6a04ead5e8447304351"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_325.html",
+      "sha256": "222c4eac5f0e783873fd71223fc0efa492c2dde66359440381eddba00ed1f7ed"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_326.html",
+      "sha256": "1469dcd75801ceb94c9d7c2c4170fc2d1a16834bea7524e24ebed71fd47e5033"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_327.html",
+      "sha256": "0ac17166536adf972b0b42b5466bb997541fce5c34702eb91836ea1423f6b59f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_328.html",
+      "sha256": "47ea1b87c540a46c0f8872907ebd12e8e7d855340e1b6c83ea88fbac2933cf99"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_329.html",
+      "sha256": "ba86fac45eff4a05b9b8e35b4ca4fffaf0c56c99ccef4914bb21bed05a6e576f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_33.html",
+      "sha256": "9ff3994ab358a7f30262fdb405aa0ef9c61f8e36e47a0178fc442f937d5345f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_330.html",
+      "sha256": "d3afa05118a992f9694aae6710de1f697d2d2e1d7175e54ef6996a1c6b5595d4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_331.html",
+      "sha256": "f189c70d0db0ca0757dc0843b6a655876eff07b83d064049f8edc02ff1fb5b65"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_332.html",
+      "sha256": "7a7af3a426856b3d7fe8c72b36126a706f84bfe406d4838ea65dd1ec91c1fe0e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_333.html",
+      "sha256": "67fc6d3f218e432afc405ea9f906f585cb8ca07f935405b99a185bdc9e3bf88e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_334.html",
+      "sha256": "d22248b3c0bd347acdcadaaca5ad9653ccd2f6c49697075918abe42c67f78b3c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_335.html",
+      "sha256": "d22248b3c0bd347acdcadaaca5ad9653ccd2f6c49697075918abe42c67f78b3c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_336.html",
+      "sha256": "7c2c812b96fdc91b20b219e26b692afa7ed6b602f1127c3bcc95d3f92139f181"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_337.html",
+      "sha256": "7c2c812b96fdc91b20b219e26b692afa7ed6b602f1127c3bcc95d3f92139f181"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_338.html",
+      "sha256": "7c2c812b96fdc91b20b219e26b692afa7ed6b602f1127c3bcc95d3f92139f181"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_339.html",
+      "sha256": "7c2c812b96fdc91b20b219e26b692afa7ed6b602f1127c3bcc95d3f92139f181"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_34.html",
+      "sha256": "9ff3994ab358a7f30262fdb405aa0ef9c61f8e36e47a0178fc442f937d5345f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_340.html",
+      "sha256": "df39a9c205835e2ada14dd128ebfbeecafb26e484cf14feca9e3acc0b8ea9d4d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_341.html",
+      "sha256": "e837ab7cc2666839726f08fd85a8ad386dc8de727da30bf02879153a4936bd4a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_342.html",
+      "sha256": "806375f0718dbf2935276725ab9077309549a11d606c20df64ba503378bb23b9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_343.html",
+      "sha256": "9d4b43e586cb17323175e26bb3a7d3781405c3d546b3305c1fd2adaa3803b918"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_344.html",
+      "sha256": "163a3a51005cb1c4a9f55dc489608236424a587b863d0346b35a7959c2537725"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_345.html",
+      "sha256": "15ded274b942c072d3510744605816322664f0a4dbf588ce6dee879d2276fa90"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_346.html",
+      "sha256": "5aa46b6ae4cd8b195b17d5752f3a70db74700afbfe269ce560b1d3ff3d8d10ad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_347.html",
+      "sha256": "5aa46b6ae4cd8b195b17d5752f3a70db74700afbfe269ce560b1d3ff3d8d10ad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_348.html",
+      "sha256": "ae2a1d74c94cc04e5862bebb4d37420472cf1be5db3cfe82a2f07e89a36fea35"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_349.html",
+      "sha256": "5aa46b6ae4cd8b195b17d5752f3a70db74700afbfe269ce560b1d3ff3d8d10ad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_35.html",
+      "sha256": "d3c85ed1d20998fb873a31cee87774fbc3f272b4b7219f879e80665fba718c5f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_350.html",
+      "sha256": "2ff5701c46e2ee1238a2e0f416d57f262936927a5c1d468db982f5189d9f7433"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_351.html",
+      "sha256": "5aa46b6ae4cd8b195b17d5752f3a70db74700afbfe269ce560b1d3ff3d8d10ad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_352.html",
+      "sha256": "83268bbe8edaba22755cad1d3c8a612aacf395d138505e1c4e6977c933eaaa87"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_353.html",
+      "sha256": "5aa46b6ae4cd8b195b17d5752f3a70db74700afbfe269ce560b1d3ff3d8d10ad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_354.html",
+      "sha256": "1151342f929c81151c5a254aae06e745852be0873855a290753213e97affe09c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_355.html",
+      "sha256": "288f1be3cb3dc2202ff9741daef624ccd7fce917c25a18b7678115d2a8828778"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_356.html",
+      "sha256": "d6e3a4fb15f31e0fdab7d4dd9b7d236ab2ec1db5ce8c782cab57be208cac81bd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_357.html",
+      "sha256": "ef5fd2b2469ed2e0848c7a7d7d6fdf2b6501d1f00bb18acf48651c96a2f53d5c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_358.html",
+      "sha256": "8a41f27b74ac196324536124876edffb8db26e1bfc1b0f0a253e367c67b3e48e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_359.html",
+      "sha256": "6dfd6e4d3fd0e1e8b291aea62b87ba8f3d571ad57c67b2bb16d5afc5b944531d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_36.html",
+      "sha256": "76f4c0a9f1964b46c36fc6c751d667c0415d89a573e200e0cc013f983a38976f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_360.html",
+      "sha256": "ac822129da935e783609caaf839f7e890b4d029cf9590cb6b6ab2f58b50fcfa2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_361.html",
+      "sha256": "a36d439ebab5ee89c5aec5863f8e1314b15d0a20d58720b792d3534755ba5820"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_362.html",
+      "sha256": "a36d439ebab5ee89c5aec5863f8e1314b15d0a20d58720b792d3534755ba5820"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_363.html",
+      "sha256": "c1f93e4a24e42e9343ada1935b5b14bd05d45c8083a1ef55c27fadc8f5ace76a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_364.html",
+      "sha256": "ffc19afe2c5340b40ee7134432ee39b61ccfa1c9879207dfcde3057b4931fe47"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_365.html",
+      "sha256": "ffc19afe2c5340b40ee7134432ee39b61ccfa1c9879207dfcde3057b4931fe47"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_366.html",
+      "sha256": "fa50e92b08c74c7fb81d12e2424d90ddcf44b0a30191a0da7facf852ba51f40f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_367.html",
+      "sha256": "875ca1ca7dae27be796784fa5482555b4b1c0eeca4e3873f5ee2bb3f9a565290"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_368.html",
+      "sha256": "8311de3b00acdbade463e2913aa46cffa00ff19bdf200df79ec741013230df7a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_369.html",
+      "sha256": "8311de3b00acdbade463e2913aa46cffa00ff19bdf200df79ec741013230df7a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_37.html",
+      "sha256": "ef1a2147f12d74efbf634d6f6039905abc119e2e944e6e8fd60284524f491867"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_370.html",
+      "sha256": "5f1032cc817f99cc7d4636060936b187f51cdc335f1ba1d92e5544e67e5362be"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_371.html",
+      "sha256": "c8a51580fa72f55237f96be5e571681d0c73e461bab5876a931f14bf7cba689f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_372.html",
+      "sha256": "eb2758e1d021861de5afe08d9f411e44d2b22b20d5120eaaae743e947bc6a1db"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_373.html",
+      "sha256": "8525a5aeea7ea2c0278acad5c5ec0611e2b8259b8578bee128b7e741fe91a5b9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_374.html",
+      "sha256": "23b9403c8c130bc829f2686266cb8fd4cb0d170be2057fcc33ab85498aa73183"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_375.html",
+      "sha256": "af1255fb3bac2de057b78718602a0bd867dbcd052c59b11f4e12ec56d6429be5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_376.html",
+      "sha256": "fd8eb5e0486c4949e1424fe599390fd42346767bc90a23c6b51e72a0a1cf76aa"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_377.html",
+      "sha256": "425e714f1b7807242e080d1ce343377b03206c1dc93e269b727ee68c69955a9c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_378.html",
+      "sha256": "1a77bce0fc9a12b9bf4777df9af2ae23225eeef5ccf04b7bd3d023570959577e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_379.html",
+      "sha256": "3db884dd47881185ace07d28184ea8b559fad6563433ef2e9b0ecc0dcdca44cf"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_38.html",
+      "sha256": "0531912c1dc3d315c369db8d4f54ab59b9c6a8689c91071af0db03432bd7e2ac"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_380.html",
+      "sha256": "892aa68615380b34b8334da5997d5bb4d2b0913f4ca0077ad7779f000724b34a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_381.html",
+      "sha256": "8f49841b476868ed4cc4273da4cb5662f47836a211026ee5b66fae2e40bb87da"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_382.html",
+      "sha256": "cec2332027c6d2e07db810762fc015f628436edd8898b958b0f57f812d2f3aaa"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_383.html",
+      "sha256": "1526f0cad2f61c69ec41d3e94abe373793b90cd24de4db399154c0688bcc5f15"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_384.html",
+      "sha256": "44d7d7a538584710bcfdc8e9342829c2b609f697aeaecb2d3ae2015fd29106dc"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_385.html",
+      "sha256": "5337961cbe06d0b69ee975c6e8db296be12d4ed03ffbec9cc0bafde3c3c8c6b0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_386.html",
+      "sha256": "128cfa5afb92955cd49da58e1033884dd573b8bcbdb6f70c322d8ade6da55ff9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_387.html",
+      "sha256": "96c15d84f5ab95be90d209820ee285e694a40bdbd2e6a18e1eff1b71b84eb151"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_388.html",
+      "sha256": "24d439621b55f3bcfb4dbb56ec9e73a3bfcd87b301840dfde1891e147654938a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_389.html",
+      "sha256": "13fe831499921ba909ad79931d7d7732de51a945b76d27ed119f3aebd0ed5ce2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_39.html",
+      "sha256": "e12543dbd8386b73ecdaf524ec80cf430d0c219c97c68e087d6283fd30d6d1b0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_390.html",
+      "sha256": "1ec6035cfda3f8b30aaa80733b0cb5a9fd57d25eded4504efce9ddffd5231552"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_391.html",
+      "sha256": "3d43680a9694f921fcce4ec732beb068165676669c141248cc6da3442f141918"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_392.html",
+      "sha256": "fff20c96cb27f04f137fc4d9fd73a04664256f4558998d2cc1f94805ac51e7ad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_393.html",
+      "sha256": "d1eeecdbe7a46e71fda091b4c86ec89260a303100fe6b41dacb46fd216586116"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_394.html",
+      "sha256": "a81036239dbd3588cd27a8d8701aca4b59340fd18503c73227e17ef22fbac595"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_395.html",
+      "sha256": "2e28d534ed82f0fcd0eebe049307ce89f9b7e6c5584d9e9da3f72bc5e893df29"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_396.html",
+      "sha256": "6ef36c41dbaa4f0275eb0ec267d1711c483b31d747b75b78759c2106c653e47e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_397.html",
+      "sha256": "74a0643ba504fe6e8d8730f03a8a0ce418327b94aa67f0adbcf95d04282f255a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_398.html",
+      "sha256": "30f39383cbfc470f9981da3f173699a0f35340c08a7d6b2c190a32b55e71bb63"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_399.html",
+      "sha256": "0ecf6f5fa6c37a7c9289dabf2d382adb8b1413d166501880e62b85f36e3ed00d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_4.html",
+      "sha256": "d45f3b6883f9b96889c15b2fce34648d91bfafaecb4b776240f8337515d76fad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_40.html",
+      "sha256": "0fe7264bbd9921f05dd277ebc87a9a22d6365eb11a91a8a2ad1fb2282e3c2fef"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_400.html",
+      "sha256": "5c7b28e373efff1bbb4c530241c5dfb81ae1b97993b62d154752a940e016d8e2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_401.html",
+      "sha256": "cde2cf12c7a3a152f97a8d8bc7f2f146ee101c4b18814fed832b64a291bd2502"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_402.html",
+      "sha256": "dffabe9f1fa5f4a3d6bf60d7a68b67471813a85ee49d3119f206f3234441281a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_403.html",
+      "sha256": "7fe6ed4c9b9355c5d68fe6b4f2b32a997adf3682f48623814354035bd124d102"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_404.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_405.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_406.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_407.html",
+      "sha256": "3df1fb70b69924a96f338f2e61315024b2c5fe264546fcbdbf97944b010acc02"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_408.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_409.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_41.html",
+      "sha256": "879c05be45ad833406fc9914f4b6dd2fb03ed76b5d3930c80e7730206dfb91b1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_410.html",
+      "sha256": "c01966a92b7296bfddbaee90746b1890ae498b282286869099df98dc6875e272"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_411.html",
+      "sha256": "15d2f8d7c46dde1fe07ea9803bc7cb8bda481d67e0512861b9bb203e2383ceb0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_412.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_413.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_414.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_415.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_416.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_417.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_418.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_419.html",
+      "sha256": "e6174f48196f66653a6b9edf1c7a477927f2e60a78550eebfdb7650579e8546a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_42.html",
+      "sha256": "e189fc5cb976ae51e07e96f86607f148e2c4b8798727804647293bba789be7b2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_420.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_421.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_422.html",
+      "sha256": "81f5761dd2f69f8f489f0b42ca6407d52a3531ded644a90e14de51cb76f8a3a0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_423.html",
+      "sha256": "bbd30db68cb80c3c4e0635fc590861c3726b9c0eb3313d6a602630e63b594906"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_424.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_425.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_426.html",
+      "sha256": "6d69e614ebdfb76d515a776afcaa692fed891be13fcac604d207f0f9e3bf4b87"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_427.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_428.html",
+      "sha256": "5faf67c1cf407970bf25910564354902ee875f8a8e1c37055703cf31f643cb9d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_429.html",
+      "sha256": "84246f59f3f5d9fcdcf5a9896218d9ed548f6b79acc3b71282d0d9162ce74424"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_43.html",
+      "sha256": "2c15343a3a22f67aefb9114b4d029f0c8ec974e39ef82526cdec112b6c55fbad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_430.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_431.html",
+      "sha256": "80185ba7e006a6a00b74751e54d40928ef97e10aa50ba7a0cc64de02bef29fc5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_432.html",
+      "sha256": "8c688ff8a03fab7ed72447a808662dc3ff197aca3641d6691a352bda1821b2e2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_433.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_434.html",
+      "sha256": "4734a8dc53f704f7a19cec04ecf0cad160df1c0cd05ebaa04bf4519d35577725"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_435.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_436.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_437.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_438.html",
+      "sha256": "29c88702f7013ad6ed053174dc1868bdd8d90af38732c826ed99314db1a5f5ac"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_439.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_44.html",
+      "sha256": "33e02a8df2c2a3eb2931dca0bf6006b970b4f10854c5509309397552fecc0db7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_440.html",
+      "sha256": "6f7db795533db3ce87ac0db84faf84e4b737d923dfdc46466b3d002c031bcb28"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_441.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_442.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_443.html",
+      "sha256": "2b1139a16f005763a2c1786246ca63ece4b322858437b3a69f88cf8b6f067e73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_444.html",
+      "sha256": "9016c067155c76bb3c95194f9b32e5770487cf510ba79cbb1233103c6451bc61"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_445.html",
+      "sha256": "c1d5c3a64a7e0885b2a6382273f2713344748707cd33234aa6af52eb8fb70c04"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_446.html",
+      "sha256": "8f15253cc76f4b6682a5ed0a278da153d99e9f231529bf578a71325ca7fc712a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_447.html",
+      "sha256": "19e0b69a53ae731068b7aa04de86190e83dc3bffd0e54c41e8cecde7f3b0e80e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_448.html",
+      "sha256": "599e516629db4fa7803a18bf57e86a3890bac968039a22b14583a9f16ba178b3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_449.html",
+      "sha256": "e0a6161236f35e3ec8d3d1e1ca42995e2ae867c276d87c18cef2778260c1ec18"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_45.html",
+      "sha256": "a0ea8686fdbd0aa28b6bc880ea25d61dc2522fb936ba1a66f491ffc428689f1e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_450.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_451.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_452.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_453.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_454.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_455.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_456.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_457.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_458.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_459.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_46.html",
+      "sha256": "f139a04c4b0d4de198cddf66752c92908c97cb67b403553ca099b04cccf45aa6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_460.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_461.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_462.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_463.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_464.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_465.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_466.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_467.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_468.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_469.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_47.html",
+      "sha256": "6742f19feaa79b6a79f0cd3f819fc81fa08d1a40f7b67e205756d47061588176"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_470.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_471.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_472.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_473.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_474.html",
+      "sha256": "120ca97e2ad477401f091894f0398c20c6c669ffe2ffb916dd7e0873829a9016"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_475.html",
+      "sha256": "7a4618bb31da41385d9d9553ab16945b867497c6e1aea14f735eebd642a5c28a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_476.html",
+      "sha256": "ca45f9f6b2bb3ae96b939fc2419b45fcaff2b16f71282b41d2aa782879afbe47"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_477.html",
+      "sha256": "e51c2b452c08813b70af4b2813bf1ffee8d3a89c25d4afa771dcb03afbeee3c7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_478.html",
+      "sha256": "2fdcf969af2db51bd15bfda0cfef7922f0b9b659436e902af1d4b78d5e05f58b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_479.html",
+      "sha256": "b8d13c0959bfc674509e758a6ba3606184311e8485311a08038ab256588e9a35"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_48.html",
+      "sha256": "19ae02aeb43c4d3138fbe6deaa84ef2b863fc37e51768271bbb18375c11beaf3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_480.html",
+      "sha256": "ee9fda6ef8dad2e409ab004f232a20a667fb91636ea2e32708b1b57449bd6193"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_481.html",
+      "sha256": "5803500db0a7f45979a324bf3b9c0fda501faed65f2077ec05b6f83164125d98"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_482.html",
+      "sha256": "2ead45c2d87477a272d0a57b92f71ae9f85e05bd4e616abe14e70187049d2fae"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_483.html",
+      "sha256": "7dccc99eaa90bc679e6292be802b971408ea2783e24df195fa2dc04d628065be"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_484.html",
+      "sha256": "2f42df2d59f8d0b242db4c8195ef4bf3fd17b35ef0430ae2eb7d51d5b9c1e3b8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_485.html",
+      "sha256": "c0ef05be2787d82162dc76ac1e3f915c8637d134f53abb48ae27f2bf4652f29d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_486.html",
+      "sha256": "0c3b07b5b740eafad67054bd1ca231fcc23a2e2d70ec1e6c5ed986d0345affe5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_487.html",
+      "sha256": "a875cc63dc2a4782730d037e5fc4e65fe04302c201d70114b4556e86b311ce47"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_488.html",
+      "sha256": "8651d2347cdeedf0df2d9d5b0890376ba948c7f19a99a85406eff85136b9667c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_489.html",
+      "sha256": "a856894273284fd46d485cdd78915a168e5112f7337516219d7508ae4cda7cd5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_49.html",
+      "sha256": "e8386be5f040d3ea070507a992cf383ce2f40344da2e8198fba3a6d0b7220034"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_490.html",
+      "sha256": "2c5bbe35a41403b24975e321ca87c5526ddccfcfc7d519f8da01429cf0491fa7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_491.html",
+      "sha256": "4d0972e2f1cffa7c02269ce2fc23df3ec2e0f6784e24ced40aea465467c84960"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_492.html",
+      "sha256": "ee709e69a9b16ce6c613366ac3d5927925060d7d79d998539639eb6a3bec2a0d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_493.html",
+      "sha256": "ea05ce17b97a100c28a3d4dbaf8a7223a765b67984e4be27e3cd175fb7735c2c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_494.html",
+      "sha256": "0b6313fdd2373ef084d0d756d570ed5bbfec9c5eb44fa0b7f124ae2b65c9d015"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_495.html",
+      "sha256": "a0bca7779050fbe56050a1200008cc2a4cd21e485f5c2549e48679714e28df21"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_496.html",
+      "sha256": "91a9fb601865c26d26ce7fd303f471c2bff18d4e18b2f5efd4fdefc784b679eb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_497.html",
+      "sha256": "2a2ebb5551c54e17987f389bf6c21ab43207fda973dbaa754645a533c35fe215"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_498.html",
+      "sha256": "288382241dec85d1eea4555d49b93b6e15fbd240123d0ff805f80c3d5f740e1e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_499.html",
+      "sha256": "c5aa08330626e835b4552b0c84a7040e68fff94a51dd0c2861b5109b98235240"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_5.html",
+      "sha256": "7ca49f67022a08ce739c00889aaa048de9e86e548f90e1eccf0d45349a2e9500"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_50.html",
+      "sha256": "4b8e6fa125706e7e6617ad4813d16220001ba48345cf7fc580469639a5023d3a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_500.html",
+      "sha256": "ad6a5dd84fc487e470b64de27ecdceb14b985e546a757e794386aaaad50c6a53"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_501.html",
+      "sha256": "4a24fef3c9f3cd475bd9520ee683d9161378308b6a406880bd34ad4bda910afe"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_502.html",
+      "sha256": "cbb2854916189d7f2a6c40d053603c9a97639214449e5105ebacdc7c2fffd4d4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_503.html",
+      "sha256": "b5e4301b3d1be1e9a25189dee37c756606c0c6f05c3b3e403faaa79f44abaf8d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_504.html",
+      "sha256": "9983f8f0b2996d2a10f98fa69669169c2c0c0b27fd0f1eee52724e132985791d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_505.html",
+      "sha256": "8196ad6fde6fcf792776fb814eb69090107fcb1ff0a92a3dc2d0e659ee5d0b14"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_506.html",
+      "sha256": "193eecd539ec2f307cae9cfac2816a713a755ce65a8d6f8862520e6bad277502"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_507.html",
+      "sha256": "edd06913098c9ed9e8e237391085d9731bd3375e31459e66a2d270f483adaaf0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_508.html",
+      "sha256": "f6ef86837eb8a000abc9faf5d0893bbc48a308ac4219f6b16ec2b040c2352fb3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_509.html",
+      "sha256": "3326378b9d91e8a0965b52c7d8976d9aa78545989281d96bf73ba488aa27f4bb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_51.html",
+      "sha256": "a6bdb5fbccad3361c2dae5d69977797644e7bc7950c35263ec6da667fb07e83c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_510.html",
+      "sha256": "6cab5d790dc35aff1bde6fd44c266b472a466ff126d757daa5b09d0e29dd0ebe"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_511.html",
+      "sha256": "7c9c32e9d45aafeba269d18173aa4cbabda32f013b9b4654b674fb0f4c97e1c9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_512.html",
+      "sha256": "c6ff20b8d31d7b19d0e996ae65dda87b57a5a913b993dbd6071f6ed980dea5e6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_513.html",
+      "sha256": "bafbd42b4ec39aa7fe5f32e4dd298adab2ff8f6f3d3c16a84154c0a0304fc5d9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_514.html",
+      "sha256": "34cfd281fd2f4a64407f6e3b3a33d49e96d253c46c8a4f5e0a082c466d5a94d0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_515.html",
+      "sha256": "56da599e1a80170cfd4de3ac589c68f632a0667a0781362c5bcdd9a89214642d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_516.html",
+      "sha256": "d59e2d634369bc2ad1e8eb385668fb4cc273cb7accf526cd36a9308b1a8e030f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_517.html",
+      "sha256": "22e273ff74a0f2fd04037866aa4d290ce8779af134545ca47dae1ccd822ecb9e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_518.html",
+      "sha256": "8a80078cf621be83038231a9e282d301b787116ac89d1c0f142cf4cdb9e4203f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_519.html",
+      "sha256": "7d709783782c32ba5195e5d25dd54447554593af152e04bdf2bc61c87ae752d1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_52.html",
+      "sha256": "b86d51fc09b7ed9f8a71594715c7e2a2659d11cf8f3fba4bdbc3fad321e28803"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_520.html",
+      "sha256": "0865f2e82e4c6885a2a96a1324bdace0423796399aa0b3ddeb977f635fc77d06"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_521.html",
+      "sha256": "a0ebc30b8e5aca4c79d613073c6ce17cf569b6a09db904e9b1636a98af80cf6c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_522.html",
+      "sha256": "b7be6e5962c821f17029fb364581fe9b5c959e9a675a3328d11346f9bd5bf37f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_523.html",
+      "sha256": "7633551d8521750a62864f5f8343a7c69521341e625e55de4948cfd237be8ab1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_524.html",
+      "sha256": "b2e545498a7ee9d0a8b3efc550377c91482c2b9b5b23901c3f46ad7530605b3e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_525.html",
+      "sha256": "ee0526a8fcce22d85efe6f7b1561d9bd5b83fc00a2263ff81b844078edd032cd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_526.html",
+      "sha256": "aecfed8e376a70cf5170e82ee9eea6b6b7118ab0e3c82a1fa07254d170790e95"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_527.html",
+      "sha256": "4f97f2a0c9d55eaf708e66b06eddc6a50ba2b4fe5dc9a08d2536ae42fcf2003e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_528.html",
+      "sha256": "afde42d13ffe24355f11afb4b66754108f8d9220d7724eececd02529ea3a9648"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_529.html",
+      "sha256": "372c4b10daab3647986443ff69e2ad4d9eeef063cf075fd98c90223f1f38eca8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_53.html",
+      "sha256": "36dcaa6d4e88ae6cb49c99f28a2ad8163583fde2b656dbe1352e4f2a9ceddb3b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_530.html",
+      "sha256": "2e09cbb5125fdf18e4984b618cb20b68bf49ee9d99d095f59cc7ee5e407cfa71"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_531.html",
+      "sha256": "06259a699f9722ee20d8e1e97604a8cd5090503174df00afe906c4f1f5503e8e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_532.html",
+      "sha256": "d37fd2d49d00f2e29cc57d3e2554edd9c9294663deb2b171c73737e999fb80fe"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_533.html",
+      "sha256": "18e9217b651c50c6b9c5352ea5c11d1cc3a0920059dac5969ca20df7f77dc5f8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_534.html",
+      "sha256": "9c61b09ff8f187d6605b209c6ea3446f6abe8fbf2f8b24151734d208d2b8bfeb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_535.html",
+      "sha256": "8551086d1cda64a2dca0701c7548075e46c5a0af5f838c46300edf8ba7ecec4f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_536.html",
+      "sha256": "a0330ce82f39bf3da0150ca5b8594d3e6feaadf65dbced00e79d427d7c72ef9f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_537.html",
+      "sha256": "1a857869720559e9fb10117c13db65a88c579b57011c85ee0452508d35be4b5f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_538.html",
+      "sha256": "b5c765b10865707df730c77a5a80a7b47684350cf47641ba221ff06d060815a6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_539.html",
+      "sha256": "ea2d10849ed9ffafabdcbc3f4c0aae6bd91830faf00445580c4aa7ebf2fb61f8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_54.html",
+      "sha256": "8cee7d72e8ed3e0bad625bc5eb81353d718010fa97a4369f883722fdd6257537"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_540.html",
+      "sha256": "4e2f9910b183ee11b5980f17da58d7febe38f6869103966f79b493e4aed5375e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_541.html",
+      "sha256": "3c7f857584002e351d0af6bb83523635db69681fed066871a505828b361a91eb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_542.html",
+      "sha256": "f184dc89797922d49d5c23312c7fac0b05d0fa02be01b997e6e3f9ab0f49463b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_543.html",
+      "sha256": "42a30d7f44d521c9307ef010cc63d44b898c5aa8c58e7214aca164553d428eac"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_544.html",
+      "sha256": "b971bd029b5b3a6cea3ff55d666f3dbd57ca36102103c8210b89f62b72aa436b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_545.html",
+      "sha256": "9535ee37138662b0eb49a049098e46cafcb353c707f1fad7eed448b383f27cc0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_546.html",
+      "sha256": "7b668d756431e4c93e661278beb14be565ed7004d9605101966e60e190c7250a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_547.html",
+      "sha256": "da8dd7aa1b676509f7748b15cb81a66bac13b150d561dcc33073224c883166a3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_548.html",
+      "sha256": "b23d6ca11c31159e9af5d306b0d5ad95de1cd03f64baff604ba4152bc4962dd4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_549.html",
+      "sha256": "34cfd281fd2f4a64407f6e3b3a33d49e96d253c46c8a4f5e0a082c466d5a94d0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_55.html",
+      "sha256": "c85df6b6e11fccf403ce8b6baf75c967db7443b2ae14f7d3c8a9d03a597f9125"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_550.html",
+      "sha256": "975339558059bbd99583b9f205cc151476c957c0ce706b4e43737932b611985e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_551.html",
+      "sha256": "531503e51abfa0e5b4ed7ce0b412dc905ffe4511cc843ad604a586ae9f683a4a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_552.html",
+      "sha256": "14c9fd199fd930bacaac7a67a703debbf9933f8303805ed84ccaa29ecc69f964"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_553.html",
+      "sha256": "0873b76b9cd99baf07db66b2c7faafc2c84255852485e37a5b7832c14a85499b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_554.html",
+      "sha256": "5ee7c9f1f79dc1ccd5009529d175ffca2afeecd9f36687baf3b2ceeefd9e51fc"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_555.html",
+      "sha256": "136f0e7c4cf73bc895222254f57205ab73d9fcd0268a61ad974f0447a2b07d2f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_556.html",
+      "sha256": "55877de89736a2aeb369b9b9825031aaadc678fb20e328af00f741765d3c4ea9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_557.html",
+      "sha256": "9ec84fe396f37b02fddb389fa6c3f1d21021bfda5d2b030eb65318c710a5c2f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_558.html",
+      "sha256": "0108cee34a1acf243f3727252d2f99817b2969f0555442b7f84a5bd1b32366f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_559.html",
+      "sha256": "6d4acb6c84c7079bc3f5362d15f068a432e93b3c661a3885ebcae1f0d5897396"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_56.html",
+      "sha256": "d6296231dcbf8132ff10d6ba0a14753a9a20f8bdbe8074aa7710ffe9f4ff9008"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_560.html",
+      "sha256": "5d98fabbaf251912b3cb63f4d9aea0d912d5e3cadc344f9f504271405f383a4e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_561.html",
+      "sha256": "73dfd70ad0f5a92aaeb4973e7809977dd25049ba45bf8b60b5e91288c4a0304e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_562.html",
+      "sha256": "044bbea73cf7621a012f638bde964056c11c7516b0d069accdc91233c8458aa3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_563.html",
+      "sha256": "18184a7af3b5d467774e6a5de39c9a93d05c6fd01f7f2dbbd2aec53fe39f1fc9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_564.html",
+      "sha256": "be4bffc963e5511cb42fd81f64a489b048774b8b070a88a1aded22139b368cb9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_565.html",
+      "sha256": "3e2f666e2238e73c9a2f5fd28052b1a598ab60f17137895ebb7b1f859f8fe2eb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_566.html",
+      "sha256": "cb7af0a7d2c9cd1eac4ee4106357ca030fa5fba6150f689f7ddf2a5889d7cdde"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_567.html",
+      "sha256": "de61267f751e56707082c6a136b4c44eba1ef134f0666b3f39d38b46f0adffac"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_568.html",
+      "sha256": "5c211173eb7810ec7c188423dc037ba301d8ea0d2286472e399ee57222d5576d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_569.html",
+      "sha256": "ac3379b87057bc7fdb4d4b8b7a51010453b980efca410b497417a658d7deb011"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_57.html",
+      "sha256": "e40ce84e3fc5ad4f69b5d9eb602bd9337b61af9e0e914cd781a341403f7173fe"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_570.html",
+      "sha256": "40e5b3e78ba50eef6f6bb492567ac2c7ab5ad2a438e16db84c57d6dc5a8bca3a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_571.html",
+      "sha256": "0deeff3c8c2fa68feee2529481c9c908088637bd9ec02e89e5e7d930a3b7ddad"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_572.html",
+      "sha256": "dca67bd8a5c30c7b844292dfb26e2745b94006abfe14cf9046d60fd170a041d6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_573.html",
+      "sha256": "9c2e996142643620f5a672c3fff0725793cfb5a27e8c5a38c7ee50608484c7f5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_574.html",
+      "sha256": "2f8f025aeb3fdf5150f8e097b5544b5bb8a26ce7cdce43ca72cd7fb73ad9559b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_575.html",
+      "sha256": "dae88529528bb0145a78533b78d8292e94bdd82104b8f9a50c78c20738b231cf"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_576.html",
+      "sha256": "b17f2062d6fba1e89a87ebde78a37ef533b1728a73a6e6f7cb75e70935b21783"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_577.html",
+      "sha256": "19c340c524c82538bafdba0e406d3888323287ff504741823c2fd054a1fe6224"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_578.html",
+      "sha256": "13a87119196af41a7723519d5414324d1ac00a11a2e53289f9f9b86a48e233d9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_579.html",
+      "sha256": "7968f594f2dbfd9386403cc9dbdc330fa3643f368b6dcdb8f636864e4c291162"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_58.html",
+      "sha256": "708af4f9c77218fce9aa32097d57c75e839acd3c13aa28b253f036f9e10f25fc"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_580.html",
+      "sha256": "21280c803a8fb778b06460cc3d1f463a26f4840e62fed176c32249c7734cfb29"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_581.html",
+      "sha256": "c151be8e7ed912ccf58c8d4c5d2639682d7f8b9e42925a7544509c0652ca9e19"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_582.html",
+      "sha256": "667142f08c8fe962021998a9e541e29ffec8ad5df67eb24a08b317e6ae217182"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_583.html",
+      "sha256": "1f045faef3c21a616189239289ff94d755e7e5c97fa68177ef0d3b2bc9a85d24"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_584.html",
+      "sha256": "1f045faef3c21a616189239289ff94d755e7e5c97fa68177ef0d3b2bc9a85d24"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_585.html",
+      "sha256": "80ec23e64b37534283767ace8e6a4184483c3d523072898e0f0be21737e5b5da"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_586.html",
+      "sha256": "80ec23e64b37534283767ace8e6a4184483c3d523072898e0f0be21737e5b5da"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_587.html",
+      "sha256": "cbcf20afdc8a58c4ad3690bc757918e4dee6f7dca67a3d42cf66ac5856857486"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_588.html",
+      "sha256": "80ec23e64b37534283767ace8e6a4184483c3d523072898e0f0be21737e5b5da"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_589.html",
+      "sha256": "7eb10d874766be85cc64a2f336ba76d00a0ca68381e376cba79f4713bd072730"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_59.html",
+      "sha256": "0ac281c564dc7646104e7a4c8a634a88c39c761fcb4dffcb24209a10281328b1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_590.html",
+      "sha256": "55ca66542d068f6c6bc58c657c46aeb45fe66618fb20e6d17361e87a45401cab"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_591.html",
+      "sha256": "1f045faef3c21a616189239289ff94d755e7e5c97fa68177ef0d3b2bc9a85d24"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_592.html",
+      "sha256": "e003b7f4cc8cf12be87e1ac8bbac7e402436397b499d434cecf5ccc835b1b12e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_593.html",
+      "sha256": "6cbce3135a78e2de76bab2663e8a99689fe9edcf3b8951bd8077ab75fce7cece"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_594.html",
+      "sha256": "edaca9fa34c6b99bef646ac2c40eaa095b296e83929157349ad61587243d5596"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_595.html",
+      "sha256": "937ac07fe1f7331504e74481c83e0184bffdc9753d4598cd5a882c4d3a691395"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_596.html",
+      "sha256": "fea07992aa32cf4fe7ad234da506c0f833c4b815f583a122fbb34a3473883e8a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_597.html",
+      "sha256": "fe07743e5633be61f2799933738f867b84e4ee4a2f83b7c75da71bad877b733b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_598.html",
+      "sha256": "2b1f35be89b7539c884fe00cfcc9b87640947c4e2edf731aaea1b3841d1da124"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_599.html",
+      "sha256": "790b080f45e4fb94c3d5cdef44fc93ed178c8b953f688cff758baa398f6ac472"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_6.html",
+      "sha256": "279e3ab2558d15b5c8792f339194341e708af44135a815ada4c7917f8892c0db"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_60.html",
+      "sha256": "a7841ae13c4dde1ba6a6e136f2f74f76c35825b62f124afdaca0613175b82925"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_600.html",
+      "sha256": "c4564bf9db5af0c41a184528860c06fabbbd6a9bba09e25437edadffa0b28d6f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_601.html",
+      "sha256": "650f7e14b5d830154a00fe107afca9bb2b64ef620f90ad81d09c0124bf7fdcfb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_602.html",
+      "sha256": "d07ea440c25bd5857b1b5d50357d5b31022b6c998dc752cf55d1ec012902ecb4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_603.html",
+      "sha256": "085e6ee55c367fdbbb9d6b1b7ae1a0cc7f9c4ab9bd9f45dd5b974cc7d71f8358"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_604.html",
+      "sha256": "1dc2a5fa2c546daf7124d87b976bafb26e72d6681d8ac3f9fdb7a2e8de220973"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_605.html",
+      "sha256": "580f6059429253fe7d0943005099a74a3a326185276b18f053f5a4c3a31148a8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_606.html",
+      "sha256": "0af5e271f66ea2c36e3912fcb86453e97dab8feaa2c0c1b0764c972170667328"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_607.html",
+      "sha256": "e43f72f3b6edbd14156448510b0349ea895a37e0cfaac3f2231f2d4dada296b5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_608.html",
+      "sha256": "646286d393729afd209ae55936cae0847c060195945ef5592dbd0a7149068d32"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_61.html",
+      "sha256": "a8bd8d05361152e55a031ccf159c67aaa3084e13dd0119899ded4543696cad2f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_62.html",
+      "sha256": "d94d0a66627563049842516f0a9e978b44bfa361e50f18d9df6ba8ded8571aeb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_63.html",
+      "sha256": "8812dd4bd81d664aa25277c69cb852c3c53840a285fb7091d2776f445e52d4c6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_64.html",
+      "sha256": "34b2eac752787eb013971cf7e7f0101233ba1a6b6fa9882687d57010d636cc85"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_65.html",
+      "sha256": "a54a7f58ceaee18f3c3345f317ca9f3beafcbd88f0bf7c7368e84c26c547b9d9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_66.html",
+      "sha256": "e80356a45d9e0a300beed7c3b290ab4aff0d842077cbe95aae82a360b94d0bc2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_67.html",
+      "sha256": "9ff3994ab358a7f30262fdb405aa0ef9c61f8e36e47a0178fc442f937d5345f7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_68.html",
+      "sha256": "5f89ba4420bc1483a8140a0c8dd7321111a0037a5ab26604802a5ba47fb91af3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_69.html",
+      "sha256": "4cbd7897992206c78fea119e9ea21b83449bcbd5196f388b9e710c1f056ba081"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_7.html",
+      "sha256": "ec61ca9160041a142d91e7c281a499963f6f3aef8d7c0c367e147d89ac3e76fe"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_70.html",
+      "sha256": "439b8aa04530fef1a0a87c11202e8ed1d58846bdba2ae6df4ec4fa36f78a41b9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_71.html",
+      "sha256": "959516aad5c6dcd387748a48e35379903ce8dd4ccaa6b3fda158dfbd14326725"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_72.html",
+      "sha256": "2c0171234f77b207f99046342dc20365cb04d9a5128e6228ac6fc899d682006e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_73.html",
+      "sha256": "4ba7ddf3dcc522bfda590d7b88860f99f302d9ccc8b350d394e64fd44036fd53"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_74.html",
+      "sha256": "53d983d82ae5e2960d819cee17982dce6eeb4d186bc5dffc4cdb79cc12198cfd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_75.html",
+      "sha256": "452eede2e1d5246f9792c999610b8834243710650a72b71b35f9fd76b297a778"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_76.html",
+      "sha256": "73f806ff9cd665a51c0c9dcffafe5b0c737795bf002a72951ba9e312cbb4fac3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_77.html",
+      "sha256": "82086eff5cdf821974ff6146cee86233b493f009b6d54f6762acb299ab68b6a1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_78.html",
+      "sha256": "b3cc60e0bbbeb5a21985220aae52bf833ed6bd78b60146a4a4a6b61bc1eb51c5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_79.html",
+      "sha256": "d400712e26c213a48f0ce24185b31a1036cef449ec87865dc117763ad48ab075"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_8.html",
+      "sha256": "572933ef01967e12856e69ca63c26a319f6d03c5a604423919f4db496aafa8d6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_80.html",
+      "sha256": "96389c775a432b27c355108bde4b42c749e8aee13d1fc95f4e3b26cfb3096fe5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_81.html",
+      "sha256": "d4a694c26c7f7a4b435785f1f4f1aeab250d3a09a1a3d8eb6e78c450332ac89b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_82.html",
+      "sha256": "ab0fb0e258d5abda11d6be89135cffbda1977211f370d6a8c8748531c163f68d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_83.html",
+      "sha256": "779d4a03e5943e7001599827e35c381613b381c89625cf0c18031a80c36efe89"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_84.html",
+      "sha256": "0f01e02794181fb5d5157fdd884682d2f25102b9996ff17f48e37c425507f90b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_85.html",
+      "sha256": "fe18abc768bda6ae62e176e3f68d2c7a17cbf468a4020f9ab48758fed00cb7c4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_86.html",
+      "sha256": "fe18abc768bda6ae62e176e3f68d2c7a17cbf468a4020f9ab48758fed00cb7c4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_87.html",
+      "sha256": "d259d557d5b805c67220e4698106e981af82e14af5f5b7514a12383ad559194e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_88.html",
+      "sha256": "6f56b3525996072f882323aac3f0e9e0b88fbb11084686e4b19b62a2cbc1dee8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_89.html",
+      "sha256": "7f30086a9d4f99c36d7a3f771494d944613dd20a727a60912a3fd0183f3dabd4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_9.html",
+      "sha256": "8753dbcb81c9036be8513638747a949b02618ccd9128b540018b3422dd764cb6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_90.html",
+      "sha256": "1b3dd9bb5b0b928fd5e18575d4d2e3380cfa1245c2065ecd4c11893f90c20cf9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_91.html",
+      "sha256": "b9d667e127cff63bc3adbe655e76e8aff6a44e75d98d740b84b4f025d6a2e859"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_92.html",
+      "sha256": "56f994b9f292de447baeba60b063055882d5a85408637ae86bc157b984618326"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_93.html",
+      "sha256": "46b66ebf689f24f310c994263d895f9277f8fcb5eaf13f6f7c582e17ca47c708"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_94.html",
+      "sha256": "fd854a2870ed6e1deae08afa9ef352e25ee9b6c02665b01374b108cec4e2795b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_95.html",
+      "sha256": "5248b6d86717098578b45f7cb397dc858e10f29522851106bd30a349582f9e59"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_96.html",
+      "sha256": "3b816a76150811ee763deeaa78544f7a58e7b433881d52066213d246b06787d7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_97.html",
+      "sha256": "7116b57a0256bc963b703065e232e51a7b8ebf50ff9fd03a1d5ee165c8772e78"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_98.html",
+      "sha256": "50388d4ad00dfecf30fd59ce3535655fa665759bd782573f87886b265a7b2f6b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_detail_99.html",
+      "sha256": "dfe4baa973b206cfae63df0fdf3f9f81583240dc862bcfc89339d5c5f84d28a7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_header.json",
+      "sha256": "b7613a6a7339c6bbfd951f52a09c6a2585a6d6106d793a048abe5ee085ba5c0e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_106543.html",
+      "sha256": "d043a09ff6e963329bf20d552e67557148df82b09b822b3c8adf545d439fc19d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_106545.html",
+      "sha256": "c03d14de3d27e9e4dc5052d003cb683e76032bd4c955d5dcb9e79ccd3f2586a2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_106848.html",
+      "sha256": "24353ebe66911dfb70d88d00712da7458d536017ffde0603f1c2ce5d961d61f4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_106924.html",
+      "sha256": "a49e6b9668340cbd07ac2d5d4b3c2ae5b817c290431128ff9da9c8240462f74c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107068.html",
+      "sha256": "3d856691d0dbd50b6637918fd94b43f193c034cd99fa1976c5b19b70e0c7383c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107069.html",
+      "sha256": "54150e3ff1e82f81be49a5838b795c9981d18d81f740710f0b8b90fbfa85bcd1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107070.html",
+      "sha256": "f51bbc876bf22f9e31d1fd3d7765cd57718a9430f77b6d2d4370aca1556f16e1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107071.html",
+      "sha256": "1a6607642e9cfd3efba38bbf14709c8bded17cbc0a0f7440d83961b6205aac49"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107109.html",
+      "sha256": "245598c19a2e0013c479639628f80c7e166480ec10ea27a6c0f8554396d94118"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107188.html",
+      "sha256": "09714a6231214163907e5736e3687a066ef04ae36da4b2de1a87aa0f3a5d47bc"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107250.html",
+      "sha256": "8ae8cb4cea7d7d5dacc572ba162321be6de98aa3e97600dd138dd3c2fd8a4fd9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107262.html",
+      "sha256": "e6c777f2c12feb37f1e700389ef61c8fc6db26ad4ae8d5485d986e79f6d5df3c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107296.html",
+      "sha256": "d883586f6cf9635986e1ffdf01e4335ba04939023c7b20f43b80ea0927e83b6d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107353.html",
+      "sha256": "b61d60968150179f4ab82b15531a7625f27d914d4574a1379c1a68128bdaf151"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107358.html",
+      "sha256": "d247adcd84febba7b546b0e29141f87ea25f3bf5de712a0a24957af2bc097eaa"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107404.html",
+      "sha256": "5e51abbc0e318fa1c0fa0d1018e9567e1433cf5d1505e9d9ed9f623cec21be2a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107499.html",
+      "sha256": "e341db7a9729b6fae7d2a9683fcc75c1b63c42791ae1a0ea8635d71505eb134b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107819.html",
+      "sha256": "3c900c83c9070dd3dc0c953d624668086714afcd2560d018fa546d68e43d298e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107872.html",
+      "sha256": "f46ff3ac3d9691f30a8c768d0f9c9cef215402ba5a465cb6ac4b9d4ae3e83255"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107875.html",
+      "sha256": "bc225235c2201247dc639c14f731d6e4ea2260fbc009af9b0adbeb1b65f81690"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_107880.html",
+      "sha256": "588947e0733d58757e2cb27c0b5f9f3b3d84d3f92944367847e7da32878330f6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108276.html",
+      "sha256": "fec0c3903c0a961ff9ee5ebd94d8f2edd48d9f9562ad33194783b43df5cef598"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108288.html",
+      "sha256": "58b046a7ba4a37f01ec5762adf60a5c19313a5f02ad985b415d16829b4c65664"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108344.html",
+      "sha256": "00b1154ab0558e775bc217fdb7ae9f64ad42ae9d0e9d3d18adbe0de8a606d8f1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108376.html",
+      "sha256": "c7535bf4a86a1ffc8daec42df8d074e79008c1aa500de2eaeaa7993d05edc866"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108377.html",
+      "sha256": "75114d0598964c9d28ab55f0099b8a0980d24b5aac05234d4e9b1f7b39b093e2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108551.html",
+      "sha256": "de3bfcf4029c489624750e9c6024c5ab97276809f31bbb80e46bb8dc9dbb5744"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108552.html",
+      "sha256": "a6fc83eab8a0ece1bd25149f8b290a9f5b14d62de0a94498ebbf52894e78d45f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108554.html",
+      "sha256": "0f6b389b00fb6eae596d6ead6d1ffe192e052d4d1d496c7491e384fe7f9c8d78"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108555.html",
+      "sha256": "01a9f29266aec0880e8b238b315655735916d82124bf5a4b47463cd12d0a1bb7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108912.html",
+      "sha256": "f75405fc4f181ae2c4c12a363c5c3923ae18197934128f4f5396e2bd30ce94b1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_108963.html",
+      "sha256": "5e904118c4ae4e30f1cc0ba0572ad3fd859dfe4eb22ed97c17e0659d5733b11b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109002.html",
+      "sha256": "d4b319aeb25b33aa3efbbf35bb0b019a48f17416e728edfed5540fdfffb58f9c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109038.html",
+      "sha256": "9567fe5fd47f45bdba4144e69707e424c2e34f1ac20a1de231738c76263468d5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109143.html",
+      "sha256": "c846050ed7afd7b589e1bbd97cb027bdec89421caf6b817c7686cc76af207787"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109239.html",
+      "sha256": "b4df8f48c01e71df7df0854046171ef1d206eca3b82dbd4e0bb005a8b7cde61d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109501.html",
+      "sha256": "2d3401d87bf33a844f4c3c8148515fc12ce810ff7e7ccb86a8d620628b26163d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109544.html",
+      "sha256": "3506e856a4e7273f307fce40a85a3bdffc0fdcfee8b1bfb60f0a09d807d948b0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109677.html",
+      "sha256": "5b6361cfed59742b7e42549591c9e84c1cbd6c62d5a0e768eeb69aa8e5dc3f8b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109701.html",
+      "sha256": "d0742633ecd340102f1ee21a5a0ddca631460318817b73ad686b4ff222a181d1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109703.html",
+      "sha256": "b9e429fce0aff82a9e5dc1f9c171386fddaebb5a5dd40f50c36fc62a9470d04c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109721.html",
+      "sha256": "24f9be7167fe7d5edb1f781694d4ee4172a57d012f5d856211cc10777e44c60f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109770.html",
+      "sha256": "b8a5f3a469cec839acdc2cc4be6d7cedc2a10e6e4e29a03474a691124ebc4c8d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109775.html",
+      "sha256": "9158be5e7c3369fe21b74ad126661ac3fc5cae6632ccd07c77c297427df88017"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109776.html",
+      "sha256": "85ff0b0ce557129fac9b1f222aee4a9fed462f614e2d1e2e31002e56c3020523"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109782.html",
+      "sha256": "820dcdbf18650f9d534bfde7e6922b903b792bcea09ab82b2113ca46953a1442"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109784.html",
+      "sha256": "ed969ca30c7f271d4c558709128f32dd6b426bf3e57c17e287e8815a5f7c6cdb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109786.html",
+      "sha256": "7ce19136af4714a31ad1b54e782394f5e3decb05e34061732f9bcabff886bc12"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109789.html",
+      "sha256": "f87dac8247999ea10c38e8eb8b7af95fad6a6652326f46c26d392e27e83e10a1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109800.html",
+      "sha256": "dc1c2aeaa9ce3241c5c0d0324205f1242d313a7bee0c894bc4b364d3bd8bf9c6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109803.html",
+      "sha256": "a95968a16225a58b6e6e49260c54a009ee8c8301806e9326e76748dcacfea552"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109817.html",
+      "sha256": "cba330cfa242584c8a485888758042fecd09790021d0d17393d3e992fb16f325"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109818.html",
+      "sha256": "75821432632c0a6670edf9c53bd294e8a97e0954f38fd6b1bdde2d8cc6362881"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109854.html",
+      "sha256": "a4fe6d79fca92262ffc7a7b0a2d9c001f7c8453d9b8d92ffec7b74d3acf93bdc"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109891.html",
+      "sha256": "a4cfe80fd41f97bfd9399675b3b1a0d1b37c0b759935ec674303d949dc6a3ee2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109900.html",
+      "sha256": "c0f35b70bc959f7069bb604c9cee50311a4e60ecfb113ff40e76809861a7d662"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109902.html",
+      "sha256": "5856d921463dda1e6501fc016686295b39b7cbecafa2de7716f0724f1e0bc8f0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_109992.html",
+      "sha256": "794e9119a6f821f662a35fe63c49887c18ff852e94ca929efd0cf8eb123a98ff"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_110043.html",
+      "sha256": "c67fab2367ce29d756fe761fbf2e77a01968cf98e13e29111265a0725c38526d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_110250.html",
+      "sha256": "e2a62a91097b264039e7aeca2ee67e888fa611022d88c6a3b6ed9cf229d77282"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_110262.html",
+      "sha256": "51fe9f70b9fef2d8ddc3e754f747d1d68b5b4cbe3bfdc514ce013bd32ea348b6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_110308.html",
+      "sha256": "db6be5fb83dfa182d4ff9aa41cad06671295d2c7bd1efc389507b49e13296a81"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_110330.html",
+      "sha256": "987389441c6d64bbe3c913d7c35f5e79bf305138211aa3f2814b29669bceedca"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_110338.html",
+      "sha256": "e6a037be38357b168a602220da77e1ac6bc53aed1032cd96f1b2a578e2257a53"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_110358.html",
+      "sha256": "aefd87511efe661215f385160be6e799ba37397836ea22978f7fdd494ed87c7d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_110764.html",
+      "sha256": "af122e9aa5090bbe4738d5deddca2637af281794cc8b39d07cb04baac7b54225"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_110969.html",
+      "sha256": "1fd9211a675e818e4470f8386616005084e146f0271f819e196e1fe819bc2ed5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111160.html",
+      "sha256": "5da53326c78c4b2e472d74902778ec5215584fe85272c23ac6a373ed3fbe3b81"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111185.html",
+      "sha256": "66dbc15a15c775a535c5926923758e530a7d5df3ac8697937f354994d74eac6c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111272.html",
+      "sha256": "235f886f7c6a20c4674e17c3ba731dfde4f4cea0b571b2404aa73448294d7cb9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111580.html",
+      "sha256": "1bacab3c48e0f6906bb55ac69fe276b51a1c87832994b3aec57ee6c7f0604628"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111581.html",
+      "sha256": "3291cca7df2b98000a76ccdf25ae20ce2a250c023b573b7cbde98fdeb03b546e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111587.html",
+      "sha256": "9d94be8d04b8f5d8dd0a1f5649efa5a1d01af695e9c4e62e57e0d438ecf6a502"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111688.html",
+      "sha256": "cb53b985ca62dcebd0d551a103c8939e51fa76ff456c4299fd3cf1777ffd31a3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111717.html",
+      "sha256": "98be861cf84418abe2aabc71e944a882e139d5c82b63f766d93f21deecccd2b5"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111752.html",
+      "sha256": "4a5902915b7a29d8fb4e6721668b026bb400eb97a347b8f924de14f0d43eedc6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_111973.html",
+      "sha256": "83706c1569e821e0e4e03ce7560e4461f0d34227efe8138f5e2a5f7e128ff135"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112180.html",
+      "sha256": "c8052cd04fe1c377efe97af10c7e530472e9117270d0d321e1cfb4177d5b2169"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112196.html",
+      "sha256": "cc798cd7cb38ba0d4d8c461d0b3562731b3f0e98176eb7c5db81281a7eeec717"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112427.html",
+      "sha256": "c65ea46f026cefc76bd276afaa71569f42134732d312f7659a9b5ccb04931d73"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112506.html",
+      "sha256": "a99a3e828b096ac38d2f165f7f7929946917dbcd091fb69d72e4ff0b130397bb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112629.html",
+      "sha256": "700dee577c193cf42f27e6721423691248c15679d0c9a843858b439c18397c94"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112630.html",
+      "sha256": "2002a48e48ccaa1a6a53ceafd1013139fb296d5ed1e3149940fdb898d1f61abd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112631.html",
+      "sha256": "918f8abd250dbe264581c90c86144365d4f076583ee2376d9f52feaecd764928"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112633.html",
+      "sha256": "8916a6404de345a7fb9e0351b151d404795245567cbacde3f49e05cb40708231"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112666.html",
+      "sha256": "52636a7a00a401b34185cb7f6eda612e7ec3fe57522c641f5e4c70b199af5c05"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112717.html",
+      "sha256": "7b6f0c7202d69436bfe116a36c0e4f082c10dcd3fbedec3c66f875035dd2d119"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112863.html",
+      "sha256": "86326c096bbde22cc927b9948380d1a3a31d4b4947490581e33d7b37e017d662"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112869.html",
+      "sha256": "ea79856f2f75c7262d80b73277fa04a55b1e4cd676cb74602bea2f75615f86e0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112895.html",
+      "sha256": "6c33a1b17ad44af4e5ac2eba0853bdf833a499e2c009a1fb28b81e61bd429947"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112898.html",
+      "sha256": "e03ab40c10cf21f7f3ae3198adcee4d95c0c0c85eb9976c6389b210808675e6f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112906.html",
+      "sha256": "f9be04fd1c2f10262371bff216c7ad9e2589d447dda20bf4618ac0cbfd7acc5b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112915.html",
+      "sha256": "4ee1ef0ec37b3078a4b99d8d7309c28228beae505b0783ead3cbaed7100d5441"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112953.html",
+      "sha256": "4fdd3bbdc093efd2b7056d127c7a04630b2fd8c962b0d97d5627a0af1854970e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112979.html",
+      "sha256": "293c38107784fa40f4f9ded37e324c39fe861944bdd2640502a7fe503829ea6d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112986.html",
+      "sha256": "191735f2a01658c60bc676d35f34836123a270627bac5419888edba56ea06799"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_112987.html",
+      "sha256": "cf42867dbc729b5a61411df15a87a5db0798539d7b165a460bce1f161fde8bb9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_113127.html",
+      "sha256": "2db420caa09084825c1269d4be2700efc826776d03f195f25908cfcb0d122c9a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_113144.html",
+      "sha256": "168a9a29ac42d7077121eefed9eead38f8338eef17e10dd60d19b263156f14d6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_113188.html",
+      "sha256": "af2924c7c56cddb4106ba0cb15ee75bccb8830a131059a8428876010bba589c7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_113265.html",
+      "sha256": "64cd9d23b65929e2d8da2b3a782713654fd83f47817fe7e109cbe40f5fe9e95b"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_113289.html",
+      "sha256": "355c9caeca696dc54599d9afa61da678c333897d0fb87012111087272fbc79d3"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_113540.html",
+      "sha256": "b4cb660b6b63ea2015ffbe5911dfca19125290369d70cb2b34df23aaa140be21"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_113607.html",
+      "sha256": "bc9fef29af69295dc882a5eb0e209ffe4684ef5d12566669a2fdf1f15bb6b34d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_113715.html",
+      "sha256": "9bcd02f3a315670e4f21268cdd9fba3c2aab9ef61394b9ea52d0485628b0c9fa"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_113729.html",
+      "sha256": "d665880f0032b6a665c5b193961a16dd686566944e723281034d2c2cd3c14b06"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_114265.html",
+      "sha256": "138347e730abad37529acc179297d59b6dd8e85dd5fd10aa9bc648e9675f803f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_114533.html",
+      "sha256": "30828434633d8eb1c38a6b27b236960764c9ead6edb942ae5d617a9b98b9c36f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_114621.html",
+      "sha256": "dfeda6c6a729af2a5f1379216a7f725ab0b8982bb1098fe66876e6db4b1cb1c8"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_114746.html",
+      "sha256": "cf68d58757df85e0ab6073a16fd918920ae364b2800ad44d1dfe0104d0750e23"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_115156.html",
+      "sha256": "d4a38c184931a4a4e09a48ea484394b9b34d92c5c751ebb79377b08a98d15011"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_115247.html",
+      "sha256": "f7cc5e1ab4f4eb02a8cd273d9e054eb9caedf15cf800da4e1cbdc1a725e71bd4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_115330.html",
+      "sha256": "48fa74840b8d906dcd9a63d7b8e12edd3ab5520aac7f6fd4a3bef06faf5fadb9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_115334.html",
+      "sha256": "cc45789ef194918f7fb1c9b2a1dc49b57f0a0b0a59106ea4458e367c9b00e162"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_115440.html",
+      "sha256": "9b8c79971adce9cf3edad06260e6170e098f7ce9e25ab3fdfa33ea4bd86b552f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_115900.html",
+      "sha256": "6f0911170aaafe7d5c8b1f0c2f8877d07ceb0e3b940227b370339307fabaa167"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_116465.html",
+      "sha256": "0726966e8b368a98f7a288cf5036ab48d0d514c1d3b91fc072f9dd75356ba4d4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_116751.html",
+      "sha256": "549575774ebc020f8dd3228bf85764d8e6e32e77ca1e849ef293405effb4afb1"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_117036.html",
+      "sha256": "79bcd36453d6261b0b44e612542bcc59aa5b9edd823fdbe32ed4147159c1cbc6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_117064.html",
+      "sha256": "c6bc93366724531202aecb6221a3b1a1409ae02c54829c6ada78d889536d0173"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_117111.html",
+      "sha256": "0538c27056fba963727267ee58bcb709a5847836a5c5c07c1a25226d3676ede2"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_117170.html",
+      "sha256": "b757a624ca38c904c5740fabf83b224ab2f49246d754f4d8a6036923eba72e9d"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_117223.html",
+      "sha256": "cafe145a69ce43f6d577d1fdb453a0dcec88e69a20f2d54520f2ca0c5b82c7e9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_118891.html",
+      "sha256": "3fe80147f62088b1d64201b2b86b257f8dc09627f045e9201f81812a50e6618c"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_118953.html",
+      "sha256": "10f66653453edee6a6de6a38d861cc91e0fba178b4b69bc3695286df0b7c95d9"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_119611.html",
+      "sha256": "a957dde5d377a4ffea9f0bcd35ba04eedb5edc4cfdf2d7283d1b27229d0ff89f"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_1205537.html",
+      "sha256": "bcba1e7bf2d0c48f8a73e6a753e1b17b850980c754e207208d638b2445be7205"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_1205544.html",
+      "sha256": "4ce49636c9d808cd7e0930c8a0065aa6aaf48d954f9e82a75b15609aa39d4024"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_122035.html",
+      "sha256": "56a02fef4c977e57391bb21871a9229e308e6b1e98045b25963686fec237b4d0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_123066.html",
+      "sha256": "9a9b376a34dc654502ac135334aabe2399c96473cbaef675ff4fcfd0cf91fa24"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_123260.html",
+      "sha256": "eb4b2470e2776b2f3f8c2dc23e6b2181c357ab53eecbfabee4ac0f378aaddcaf"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_123331.html",
+      "sha256": "aa23c81ddf023565839786ee795ae140344057ed34002b4488321d0c5cc1c8e6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_125466.html",
+      "sha256": "82419f1f09dcfedc14a7632a1b639d80ccf51eeb0cf86d2c39110519dc4cbccb"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_127199.html",
+      "sha256": "910ba40dd3f085a8448365edfa6a93407262d5377e58388f640f70bb94f41553"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_128206.html",
+      "sha256": "45f119eeff2773a5c54b22ae9879aa3759d5a3128987aef55125e47eaed5ec22"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_128244.html",
+      "sha256": "17c113cf635aa6f7653a6ae4e4c74a72af6a1d60312678fe020468c962532a46"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_129116.html",
+      "sha256": "7d3d233a32ef7d17640640a9c8080f85d0eb9616e1639b1ea35f0a6b4d32bfb4"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_132223.html",
+      "sha256": "abe7f0ede86d107a46f30992bf324081698d4b42585378d4ac2090683cacf439"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_134738.html",
+      "sha256": "87ebd8924413b690fdbd9d2907fbd599e1857ff0a278ba88eb8613411e285b80"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_199469.html",
+      "sha256": "3e21a47af0a1ac318621e2ac93b68bc427b6b1ac4129b995345005d3481ddc89"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_199473.html",
+      "sha256": "837454f52f4cca7665176a44fae5324734e40fa6bb0743dc7b92d644c6733078"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_199475.html",
+      "sha256": "eaf0a7571196ba024ef1b4e6cc95b509f9a364128fea3fe3d18441d2b82da1b7"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_199488.html",
+      "sha256": "4ce452a3dcf289222b9a5a8748491320446b0b4744c64752413dda5b2eba2982"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_200633.html",
+      "sha256": "2d4b8f669059b1a09073c7f8d327c40c4c3519a4f39704a2fbacad2fb813ad78"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_200634.html",
+      "sha256": "f341091beb2cae89c7868829a3b5ada287e72d17d3ccf6cbdf64fb3f5b6263ef"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_200923.html",
+      "sha256": "5f3712eb04e8f2dbcbd4cbbce60cd0216dfb400b7d7a5a2539eec18b1b357891"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_232303.html",
+      "sha256": "4fa87362495922839c29ecb64e1e26cacb93f6fd14ee7d6e3b6a260d9ef4e2d0"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_250505.html",
+      "sha256": "bc53415d00b11116e84f8d2918ff76b27a021ced4c72bccd6c25b11998dab755"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_3069046.html",
+      "sha256": "e08eafc0aad64fa237842cd6a932a24cf75f22d1075ce5d10bf58f4e56216aa6"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_31749.html",
+      "sha256": "854fd5127d5d12c6a9708e45e0828fa4b751b4241e7f54c4a9311185caaaaf1a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_32647.html",
+      "sha256": "b6a502f2de05cb89198ea4ae19ddd77a110d6488443b2b2bd0e4dac089fb1545"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_35923.html",
+      "sha256": "a8a8b9193c671992fb5bd965a4d44d5f8fd9b57377e1d111c64b4990ebc0a98e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_36869.html",
+      "sha256": "d3393e8e2d954507492c6788a476718c26428dcbdb6910cc4a8bff44bbba0494"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_4263557.html",
+      "sha256": "dab4d1a54c02fc612a0f4f8bcfcb4839f6a90a03c7a27b3089909ea825f05fea"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_4383848.html",
+      "sha256": "793b08a6e3ed9517d8fd46e4900023a66fdae062d344cf6a1f3285bc07cbca5e"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_4383879.html",
+      "sha256": "de5a9802e08152572c6969e5ac87d5ab3b2fb1394f081da5cd6d8ef63c86300a"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_4383915.html",
+      "sha256": "02ddd9deb65a0bd21a176138957bc7ce0deff5909506e029d5b2ac11843031fa"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_714387.html",
+      "sha256": "19c087c09a49ddb25284e2fab7b2f584e1389fd806bee9e7051ec1c87b371304"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_850125.html",
+      "sha256": "896fcc0b502935875880dfd69ca3766a0edb912880f92c7f29c9476102622bfd"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_852739.html",
+      "sha256": "adb26ab8d52c641baa086a1ddaf1247a1085c64bffb8103fa932ea6938484751"
+    },
+    {
+      "path": "data/external/binder_coverage/biogrid_target_852832.html",
+      "sha256": "fa4b69568f1ee6e637e53958bf3ecb4c6e0677f6a57fef263acc595ab9f55b78"
+    },
+    {
+      "path": "data/external/binder_coverage/gtop_interactions.txt",
+      "sha256": "f574b999ee99c1ecced83876db6a35d8d1b1d607392fc13fb2025e0f1029de64"
+    },
+    {
+      "path": "data/external/binder_coverage/gtop_ligands.txt",
+      "sha256": "17602dd76f6745fd6c91e4ffaa87dcbb61f0885581fd75b9c21729fb1be8328d"
+    },
+    {
+      "path": "data/external/binder_coverage/identifiers.json",
+      "sha256": "05b6ed36781f288afde0b777a52fea83058c20e8f45c91f95a4b399323029001"
+    },
+    {
+      "path": "data/external/binder_coverage/sources.json",
+      "sha256": "9c40bd1efaef412f456b3c37d4a3e1cddcdf40ebc984438bc9d22429167d6a65"
+    },
+    {
+      "path": "data/external/binder_coverage/thera.csv",
+      "sha256": "cc9402788297ed7b6ab3d676daa21953a6d28ebbd9cc78ec7248b19f74d49d6d"
+    },
+    {
+      "path": "data/processed/candidate_universe/candidate_universe.tsv",
+      "sha256": "f81302541b7583bf7c6ed57fd828a011bd1df1578f8e5ef8d8c95276b2211083"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "data/analysis/binder_coverage/coverage_summary.tsv",
+      "sha256": "7f3517fe0a653e69b1740cf78d1a6a714f33b9075644e71fbc47c93e478ed863"
+    },
+    {
+      "path": "data/analysis/binder_coverage/gene_coverage.tsv",
+      "sha256": "586de5f15c26d73eaa7bbb7a9adf96efe82ce1cbc7db84bca2b11fd6cc0c56ba"
+    },
+    {
+      "path": "data/analysis/binder_coverage/literature_examples.tsv",
+      "sha256": "7011e81d102977803b5c5a62703255b1812801c58810f7188f712103656e8fd2"
+    },
+    {
+      "path": "data/analysis/binder_coverage/literature_retrieval.tsv",
+      "sha256": "5cd532f469c7f655c76780832d994a68d687926f36692d1abbd670b328381b42"
+    },
+    {
+      "path": "data/analysis/binder_coverage/observations.tsv",
+      "sha256": "2d55570096d4a30ad9dcc9b4790ffe604d145104d89d96196d71c5a2cada286d"
+    },
+    {
+      "path": "data/analysis/binder_coverage/observations.tsv.gz",
+      "sha256": "b6fd73910f22452932a3c777d3138afdbad34dd1d0ebe334f3071b65b975f9f4"
+    }
+  ],
+  "assumptions": [
+    "Unique HGNC genes, not accession rows, form denominators.",
+    "Receptor subset means triage reason classical_surface_receptor, not all possible receptors.",
+    "Complex-component associations are retained but excluded from named single-protein binder coverage.",
+    "Exact existing antibody requires clone, catalog, or RRID; extracted metadata has not been independently reaudited.",
+    "Thera sequence-name matches enrich IUPHAR pairs; they do not add symbol-mapped targets.",
+    "Thera exact-sequence structure hits are leads, not verified antigen complexes or residue epitopes.",
+    "Residue-level epitope coverage has not been measured by this pilot.",
+    "BioGRID Surface Display is not assumed to be mammalian live-cell binding.",
+    "Binder counts are source IDs; cross-source identities are not fully deduplicated."
+  ]
+}

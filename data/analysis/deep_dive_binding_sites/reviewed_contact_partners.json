@@ -1,0 +1,558 @@
+{
+  "review_date": "2026-09-18",
+  "targets": [
+    "P04626",
+    "Q15116",
+    "P08581",
+    "P08887",
+    "Q9NZQ7",
+    "P35968"
+  ],
+  "rules": [
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "Herceptin",
+        "Herceptin, trastuzumab",
+        "anti-ErbB2 antibody Herceptin (trastuzumab)",
+        "Trastuzumab"
+      ],
+      "canonical_name": "Trastuzumab",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/1N8Z",
+      "reason": "Alias/fragment label consolidated for browsing; original construct names and individual residue observations are retained.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "chA21",
+        "chA21 scFv"
+      ],
+      "canonical_name": "chA21",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3H3B",
+      "reason": "Alias/fragment label consolidated for browsing; original construct names and individual residue observations are retained.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "HuA21",
+        "HuA21 scFv"
+      ],
+      "canonical_name": "HuA21",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/6J71",
+      "reason": "Alias/fragment label consolidated for browsing; original construct names and individual residue observations are retained.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "F0178C1",
+        "hHERmAb-F0178C1"
+      ],
+      "canonical_name": "F0178C1",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3WSQ",
+      "reason": "Alias/fragment label consolidated for browsing; original construct names and individual residue observations are retained.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "2Rs15d Nanobody"
+      ],
+      "canonical_name": "2Rs15d Nanobody",
+      "category": "tool",
+      "pdb": "5my6",
+      "reference": "https://www.rcsb.org/structure/5MY6",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "37",
+        "Fab37"
+      ],
+      "canonical_name": "37",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3N85",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "39S"
+      ],
+      "canonical_name": "39S",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/6ATT",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "bH1"
+      ],
+      "canonical_name": "bH1",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3BE1",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "H218",
+        "anti-ErbB2 domain I"
+      ],
+      "canonical_name": "H218",
+      "category": "tool",
+      "pdb": "3wlw",
+      "reference": "https://www.rcsb.org/structure/3WLW",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "NM-02"
+      ],
+      "canonical_name": "NM-02",
+      "category": "tool",
+      "pdb": "7qvk",
+      "reference": "https://www.rcsb.org/structure/7QVK",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "EGFR"
+      ],
+      "canonical_name": "EGFR",
+      "category": "receptor_partner",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/8HGP",
+      "reason": "Receptor heterodimer partner; not a soluble activating ligand.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "ERBB3"
+      ],
+      "canonical_name": "ERBB3",
+      "category": "receptor_partner",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/7MN6",
+      "reason": "Receptor heterodimer partner; not a soluble activating ligand.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "ERBB4"
+      ],
+      "canonical_name": "ERBB4",
+      "category": "receptor_partner",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/8U4K",
+      "reason": "Receptor heterodimer partner; not a soluble activating ligand.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "CMJ112"
+      ],
+      "canonical_name": "Unresolved HER2 antibody (9IUT)",
+      "category": "unclassified",
+      "pdb": "9iut",
+      "reference": "https://www.rcsb.org/structure/9IUT",
+      "reason": "Identity conflict: the IEDB-derived label is CMJ112, whereas the cited PDB entry identifies H2Mab-250 bound to a HER2 peptide. Quarantined pending assay-level reconciliation; neither identity nor epitope is silently reassigned.",
+      "exclude_from_overview": true
+    },
+    {
+      "uniprot_acc": "P04626",
+      "names": [
+        "H10-03-06"
+      ],
+      "canonical_name": "H10-03-06 / STAB19-related construct",
+      "category": "unclassified",
+      "pdb": "5k33",
+      "reference": "https://www.rcsb.org/structure/5K33",
+      "reason": "The source label is H10-03-06, but the PDB identifies Fcab STAB19. Construct equivalence needs review; retained separately without asserting identity.",
+      "exclude_from_overview": true
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "programmed cell death 1 ligand 1",
+        "CD274"
+      ],
+      "canonical_name": "PD-L1",
+      "category": "endogenous_large",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/4ZQK",
+      "reason": "Endogenous membrane-bound ligand; canonical gene CD274.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "PDCD1LG2"
+      ],
+      "canonical_name": "PD-L2",
+      "category": "endogenous_large",
+      "pdb": "6umt",
+      "reference": "https://www.rcsb.org/structure/6UMT",
+      "reason": "Endogenous ligand identity; the deposited complex is affinity-engineered, so contacts are not asserted to be from wild-type binding.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "Camrelizumab",
+        "camrelizumab scFv"
+      ],
+      "canonical_name": "Camrelizumab",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/7CU5",
+      "reason": "Alias/fragment label consolidated for browsing; original construct names and individual residue observations are retained.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "059c",
+        "mAb059c"
+      ],
+      "canonical_name": "mAb059c",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/6K0Y",
+      "reason": "Alias/fragment label consolidated for browsing; original construct names and individual residue observations are retained. Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "19"
+      ],
+      "canonical_name": "19",
+      "category": "tool",
+      "pdb": "8eq6",
+      "reference": "https://www.rcsb.org/structure/8EQ6",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "D12"
+      ],
+      "canonical_name": "D12",
+      "category": "tool",
+      "pdb": "8as0",
+      "reference": "https://www.rcsb.org/structure/8AS0",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "GY-14"
+      ],
+      "canonical_name": "GY-14",
+      "category": "tool",
+      "pdb": "6j14",
+      "reference": "https://www.rcsb.org/structure/6J14",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "GY-5"
+      ],
+      "canonical_name": "GY-5",
+      "category": "tool",
+      "pdb": "6j15",
+      "reference": "https://www.rcsb.org/structure/6J15",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "h1340.CC"
+      ],
+      "canonical_name": "h1340.CC",
+      "category": "tool",
+      "pdb": "8u31",
+      "reference": "https://www.rcsb.org/structure/8U31",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "h1340.SA.LV"
+      ],
+      "canonical_name": "h1340.SA.LV",
+      "category": "tool",
+      "pdb": "8u32",
+      "reference": "https://www.rcsb.org/structure/8U32",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "MW11-h317"
+      ],
+      "canonical_name": "MW11-h317",
+      "category": "tool",
+      "pdb": "6jjp",
+      "reference": "https://www.rcsb.org/structure/6JJP",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q15116",
+      "names": [
+        "NB01a"
+      ],
+      "canonical_name": "NB01a",
+      "category": "tool",
+      "pdb": "6hig",
+      "reference": "https://www.rcsb.org/structure/6HIG",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P08581",
+      "names": [
+        "hepatocyte growth factor"
+      ],
+      "canonical_name": "HGF",
+      "category": "endogenous_large",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/7MO7",
+      "reason": "Endogenous hepatocyte growth factor.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P08581",
+      "names": [
+        "MET B"
+      ],
+      "canonical_name": "amivantamab",
+      "category": "therapeutic",
+      "pdb": "6wvz",
+      "reference": "https://www.rcsb.org/structure/6WVZ",
+      "reason": "PDB explicitly identifies the anti-MET Fab arm of amivantamab; retains the IEDB source label MET B.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P08581",
+      "names": [
+        "anti-Met",
+        "MM-131"
+      ],
+      "canonical_name": "MM-131",
+      "category": "therapeutic",
+      "pdb": "6i04",
+      "reference": "https://www.rcsb.org/structure/6I04",
+      "reason": "Structural anti-MET arm from the MM-131 anti-MET/EpCAM therapeutic-development program; not a structure of the complete bispecific.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P08581",
+      "names": [
+        "107_A07"
+      ],
+      "canonical_name": "107_A07",
+      "category": "tool",
+      "pdb": "5lsp",
+      "reference": "https://www.rcsb.org/structure/5LSP",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P08887",
+      "names": [
+        "IL6ST"
+      ],
+      "canonical_name": "gp130 (IL6ST)",
+      "category": "receptor_partner",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/1P9M",
+      "reason": "Signaling receptor partner in the IL-6/IL6R/gp130 complex.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P08887",
+      "names": [
+        "CYS"
+      ],
+      "canonical_name": "Cysteine (structure component)",
+      "category": "unclassified",
+      "pdb": "1n26",
+      "reference": "https://www.rcsb.org/structure/1N26",
+      "reason": "Cysteine is a deposited small-molecule component. This record does not establish a functional IL6R ligand; retained in raw evidence, excluded from named binder counts.",
+      "exclude_from_overview": true
+    },
+    {
+      "uniprot_acc": "P08887",
+      "names": [
+        "Switch-Ab"
+      ],
+      "canonical_name": "Switch-Ab",
+      "category": "tool",
+      "pdb": "7dc8",
+      "reference": "https://www.rcsb.org/structure/7DC8",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P08887",
+      "names": [
+        "VHH6"
+      ],
+      "canonical_name": "VHH6",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/5FUC",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9NZQ7",
+      "names": [
+        "anti-PD-L1",
+        "Avelumab scFv",
+        "Avelumab"
+      ],
+      "canonical_name": "Avelumab",
+      "category": "therapeutic",
+      "pdb": "5grj",
+      "reference": "https://www.rcsb.org/structure/5GRJ",
+      "reason": "The PDB explicitly identifies avelumab. Source labels and Fab/scFv construct annotations are retained.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9NZQ7",
+      "names": [
+        "BM5-936559",
+        "BMS-936559"
+      ],
+      "canonical_name": "BMS-936559",
+      "category": "therapeutic",
+      "pdb": "5ggt",
+      "reference": "https://www.rcsb.org/structure/5GGT",
+      "reason": "Correct the BM5 transcription variant using the PDB binder identity; antibody studied for checkpoint blockade.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9NZQ7",
+      "names": [
+        "KN035",
+        "KN035 Nanobody"
+      ],
+      "canonical_name": "KN035",
+      "category": "therapeutic",
+      "pdb": "5jds",
+      "reference": "https://www.rcsb.org/structure/5JDS",
+      "reason": "Consolidate the KN035 single-domain antibody names; therapeutic-development binder. No automatic equivalence to a full fusion product is implied.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9NZQ7",
+      "names": [
+        "CD80"
+      ],
+      "canonical_name": "Davoceticept (ALPN-202)",
+      "category": "therapeutic",
+      "pdb": "7tps",
+      "reference": "https://www.rcsb.org/structure/7TPS",
+      "reason": "The structure contains an engineered CD80 variant from ALPN-202/davoceticept, not an observed wild-type CD80 interface.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9NZQ7",
+      "names": [
+        "PDCD1"
+      ],
+      "canonical_name": "PD-1",
+      "category": "receptor_partner",
+      "pdb": "4zqk",
+      "reference": "https://www.rcsb.org/structure/4ZQK",
+      "reason": "Endogenous PD-1 receptor interaction partner.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9NZQ7",
+      "names": [
+        "CCD:6GX"
+      ],
+      "canonical_name": "BMS-202",
+      "category": "tool",
+      "pdb": "5j89",
+      "reference": "https://pdb101.rcsb.org/motm/204",
+      "reason": "Small-molecule checkpoint inhibitor used as a structural research compound; not an endogenous metabolite.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "Q9NZQ7",
+      "names": [
+        "VHH6"
+      ],
+      "canonical_name": "VHH6",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/8AOK",
+      "reason": "Research antibody construct characterized in the cited structural study; no identity to a named clinical drug is asserted.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P35968",
+      "names": [
+        "1121B",
+        "Ramucirumab"
+      ],
+      "canonical_name": "Ramucirumab",
+      "category": "therapeutic",
+      "pdb": "",
+      "reference": "https://www.cancer.gov/publications/dictionaries/cancer-drug/def/ramucirumab",
+      "reason": "IMC-1121B is a documented synonym of ramucirumab; source measurements and structure variants remain separate.",
+      "exclude_from_overview": false
+    },
+    {
+      "uniprot_acc": "P35968",
+      "names": [
+        "6.64"
+      ],
+      "canonical_name": "6.64",
+      "category": "tool",
+      "pdb": "",
+      "reference": "https://www.rcsb.org/structure/3S35",
+      "reason": "Research neutralizing antibody used to compare VEGFR2 epitopes; distinct from 1121B/ramucirumab.",
+      "exclude_from_overview": false
+    }
+  ]
+}

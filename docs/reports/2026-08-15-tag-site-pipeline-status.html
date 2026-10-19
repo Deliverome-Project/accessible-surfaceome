@@ -1,0 +1,223 @@
+<title>Tag-Site Pipelines — Status, Prompts &amp; Returns</title>
+<style>
+:root{--bg:#f7f7f5;--panel:#fff;--ink:#1f2320;--muted:#5f6b64;--line:#e3e3dd;--det:#3d6b60;--lit:#8878c8;
+--run:#2f7d4f;--runbg:#e8f4ec;--na:#9a6a1a;--nabg:#fbf3e2;--todo:#3a63b0;--todobg:#e9effb;--none:#8a8a86;--nonebg:#eee;--chip:#eef0ee;}
+@media (prefers-color-scheme:dark){:root{--bg:#16181a;--panel:#1e2124;--ink:#e8eae7;--muted:#a2aaa4;--line:#2f3438;--det:#7fc3b3;--lit:#b3a6ee;
+--run:#6fd39a;--runbg:#18271e;--na:#e0b467;--nabg:#2a2314;--todo:#9db8f0;--todobg:#1a2233;--none:#8a8a86;--nonebg:#24282b;--chip:#262a2d;}}
+:root[data-theme=dark]{--bg:#16181a;--panel:#1e2124;--ink:#e8eae7;--muted:#a2aaa4;--line:#2f3438;--det:#7fc3b3;--lit:#b3a6ee;
+--run:#6fd39a;--runbg:#18271e;--na:#e0b467;--nabg:#2a2314;--todo:#9db8f0;--todobg:#1a2233;--none:#8a8a86;--nonebg:#24282b;--chip:#262a2d;}
+*{box-sizing:border-box}body{background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;margin:0}
+.wrap{max-width:1060px;margin:0 auto;padding:32px 22px 80px}h1{font-size:24px;margin:0 0 4px}h2{font-size:18px;margin:36px 0 10px}h3{font-size:14.5px;margin:18px 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 6px}.lede{color:var(--muted);max-width:76ch}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}code{background:var(--chip);padding:1px 5px;border-radius:4px;font-size:.9em}
+.small{font-size:12.5px;color:var(--muted)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:10px 0 0;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:620px}th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{background:var(--chip);font-weight:600;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}.gene{font-weight:650}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:1.5px 8px;border-radius:20px;white-space:nowrap}
+.run{background:var(--runbg);color:var(--run)}.na{background:var(--nabg);color:var(--na)}.todo{background:var(--todobg);color:var(--todo)}.none{background:var(--nonebg);color:var(--none)}
+pre{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--lit);border-radius:8px;padding:13px 15px;overflow-x:auto;font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+pre.det{border-left-color:var(--det)}
+.note{background:var(--nabg);border:1px solid var(--line);border-left:3px solid var(--na);border-radius:8px;padding:11px 15px;margin:12px 0 0;font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}.stat .n{font-size:22px;font-weight:650}.stat .l{color:var(--muted);font-size:12px}
+</style>
+<div class="wrap">
+<h1>Tag-Site Pipelines — Status, Prompts &amp; Returns</h1>
+<p class="sub">accessible-surfaceome · branch <code>claude/tagged-sites</code> → PR #132 · 2026-08-15</p>
+<p class="lede">What each pipeline has actually been <b>run</b> on, the exact search terms and prompts in the code today,
+and the real returns. "RUN" = the pipeline was executed and produced output; everything else is labelled honestly
+(not-yet-run, or out-of-scope with the reason).</p>
+
+<div class="note"><b>Honesty scope.</b> Deterministic has been run on <b>5</b> internal controls (real AFDB models +
+committed DeepTMHMM topology + UniProt features). The <b>hybrid</b> literature runner has had <b>1</b> live end-to-end
+run (ITGB1); TFRC's 2 literature sites in <code>TFRC.json</code> came from the earlier web-search-only runner. Lit-search
+<i>discovery recall</i> was separately measured across 16 controls (that is retrieval, not a full agent run).</p></div>
+
+<div class="cards">
+<div class="stat"><div class="n" style="color:var(--det)">5</div><div class="l">controls run through deterministic</div></div>
+<div class="stat"><div class="n" style="color:var(--lit)">1</div><div class="l">live hybrid literature run (ITGB1)</div></div>
+<div class="stat"><div class="n">30</div><div class="l">controls in scope (23 + 10 new − dups)</div></div>
+</div>
+
+<h2>Status inventory</h2>
+<div class="scroll"><table><thead><tr><th>Protein</th><th>UniProt</th><th>Control</th>
+<th>Deterministic</th><th>Literature (hybrid)</th></tr></thead><tbody>
+<tr><td class="gene">ITGB1</td><td class="mono small">P05556</td><td class="small">G101 internal</td><td><span class="pill run">RUN</span></td><td><span class="pill run">RUN (hybrid, live)</span></td></tr>
+<tr><td class="gene">ITGB5</td><td class="mono small">P18084</td><td class="small">A102 internal</td><td><span class="pill run">RUN</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">TFRC</td><td class="mono small">P02786</td><td class="small">I290 internal / F760 C-term</td><td><span class="pill run">RUN</span></td><td><span class="pill run">RUN (old web-only)</span></td></tr>
+<tr><td class="gene">AXL</td><td class="mono small">P30530</td><td class="small">P184 internal</td><td><span class="pill run">RUN</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">TMEM123</td><td class="mono small">Q8N131</td><td class="small">A33 internal</td><td><span class="pill run">RUN</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">TRPC5</td><td class="mono small">Q9UL62</td><td class="small">Y460 S3-S4 loop</td><td><span class="pill na">N/A — multipass, AF unreliable (lit-only)</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">KCNH2</td><td class="mono small">Q12809</td><td class="small">T436 S1-S2 loop</td><td><span class="pill na">N/A — not in surfaceome set (lit-only)</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">SLC6A4</td><td class="mono small">P31645</td><td class="small">N211 EL2</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">SLC6A3</td><td class="mono small">Q01959</td><td class="small">A192 EL2</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">EDNRB</td><td class="mono small">P24530</td><td class="small">G57 ECD</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">SLC26A1</td><td class="mono small">Q9H2B4</td><td class="small">P155 loop</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">SLC9A6</td><td class="mono small">Q92581</td><td class="small">M53 loop</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">SELE</td><td class="mono small">P16581</td><td class="small">A21 terminal</td><td><span class="pill na">N/A — terminal design not built</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">ADRB2</td><td class="mono small">P07550</td><td class="small">N-term</td><td><span class="pill na">N/A — terminal design not built</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">CALCR</td><td class="mono small">P30988</td><td class="small">P24 terminal</td><td><span class="pill na">N/A — terminal design not built</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">GIPR</td><td class="mono small">P48546</td><td class="small">Q21 terminal</td><td><span class="pill na">N/A — terminal design not built</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">GLP1R</td><td class="mono small">P43220</td><td class="small">P23 terminal</td><td><span class="pill na">N/A — terminal design not built</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">CD46</td><td class="mono small">P15529</td><td class="small">A34 terminal</td><td><span class="pill na">N/A — terminal design not built</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">NPY1R</td><td class="mono small">P25929</td><td class="small">M1 terminal</td><td><span class="pill na">N/A — terminal design not built</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">ADORA1</td><td class="mono small">P30542</td><td class="small">N-term</td><td><span class="pill na">N/A — terminal design not built</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">SLC5A6</td><td class="mono small">Q9Y289</td><td class="small">484-516 (EL3, NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">AQP1</td><td class="mono small">P29972</td><td class="small">T120 (NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">SLC19A1</td><td class="mono small">P41440</td><td class="small">P297 (NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">PMP22</td><td class="mono small">Q01453</td><td class="small">H125 (NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">VANGL1</td><td class="mono small">Q8TAA9</td><td class="small">139 / 213 (NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">SLC4A1</td><td class="mono small">P02730</td><td class="small">557 (NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">KCNQ1</td><td class="mono small">P51787</td><td class="small">E146 (NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">ASIC1</td><td class="mono small">P78348</td><td class="small">F147 / D298 (NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">CFTR</td><td class="mono small">P13569</td><td class="small">N901 (NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+<tr><td class="gene">ANO1</td><td class="mono small">Q5XXA6</td><td class="small">H396 (NEW)</td><td><span class="pill todo">not yet run</span></td><td><span class="pill none">—</span></td></tr>
+</tbody></table></div>
+<p class="small">N/A reasons: <b>terminal design not built</b> — the deterministic pipeline emits internal loop + disordered
+sites; it rejects bad terminals (SP gate) but does not yet <i>design</i> N-/C-terminal tags, so the terminal GPCR controls
+are out of its current scope. <b>lit-only</b> — TRPC5/hERG are multipass channels outside the expressed-surfaceome set where
+AlphaFold is unreliable at the extracellular loops.</p>
+
+<h2>Exact returns — deterministic (5 controls run)</h2>
+<div class="scroll"><table><thead><tr><th>Protein</th><th>UniProt</th><th>Control</th><th>Result (±3)</th>
+<th>Path</th><th>pLDDT@ctrl</th><th>Note</th></tr></thead><tbody>
+<tr><td class="gene">AXL</td><td class="mono small">P30530</td><td>P184</td><td><b>EXACT (184)</b></td><td>disorder</td><td class="mono">33.2</td><td class="small">candidate 181-187</td></tr>
+<tr><td class="gene">ITGB5</td><td class="mono small">P18084</td><td>A102</td><td><b>near (103, 105)</b></td><td>disorder</td><td class="mono">43.0</td><td class="small">candidate 99-105</td></tr>
+<tr><td class="gene">TMEM123</td><td class="mono small">Q8N131</td><td>A33</td><td><b>MISS (rep) / candidate 30-36</b></td><td>disorder</td><td class="mono">51.6</td><td class="small">gates pass; NMS surfaced 27 &amp; 39 (±6), 33 dropped between them</td></tr>
+<tr><td class="gene">ITGB1</td><td class="mono small">P05556</td><td>G101</td><td><b>near (103)</b></td><td>disorder</td><td class="mono">56.4</td><td class="small">candidate 101, 103</td></tr>
+<tr><td class="gene">TFRC</td><td class="mono small">P02786</td><td>I290</td><td><b>near (291)</b></td><td>surface_loop</td><td class="mono">95.9</td><td class="small">committed TFRC.json; V291 in loop K90-Y123</td></tr>
+</tbody></table></div>
+<p class="small">Candidate recall (gates identify the site, pre-NMS) = 5/5; representative recall (emitted, post-NMS) = 4/5
+(TMEM123 A33 falls in an NMS gap). Each site also carries <code>residue_label</code> (e.g. <code>V291</code>) and
+<code>residue_range</code> (the tolerant feature span, e.g. <code>K90-Y123</code>).</p>
+
+<h2>Exact returns — literature</h2>
+<h3>ITGB1 <span class="mono small">P05556</span> — <span class="small">hybrid runner (LIVE this session)</span></h3><div class="scroll"><table><thead><tr><th>site</th><th>tag</th><th>validation</th><th>tier</th><th>pmid</th><th>position</th><th>evidence</th></tr></thead><tbody><tr><td class="mono">#1 internal G101</td><td>fluorescent_protein_fusion</td><td><span class="pill run">surface_and_function</span></td><td>paper</td><td class="mono small">PMID 28924207</td><td>validated</td><td class="small">GFP/pHluorin/HaloTag/SNAP inserted between Gly101 and Tyr102</td></tr>
+<tr><td class="mono">#2 terminal_n A20</td><td>short_epitope_tag</td><td><span class="pill todo">not_measured</span></td><td>paper</td><td class="mono small">PMID 28924207</td><td>inferred</td><td class="small">N-terminus evaluated as candidate; not the validated site</td></tr></tbody></table></div><h3>TFRC <span class="mono small">P02786</span> — <span class="small">OLD web_search-only runner (pre-hybrid; committed in TFRC.json)</span></h3><div class="scroll"><table><thead><tr><th>site</th><th>tag</th><th>validation</th><th>tier</th><th>pmid</th><th>position</th><th>evidence</th></tr></thead><tbody><tr><td class="mono">internal I290</td><td>ALFA</td><td><span class="pill none">(not scored)</span></td><td>paper</td><td class="mono small">—</td><td>published tag insertion at this exact site</td><td class="small">EndoNB ALFA knock-in after I290</td></tr>
+<tr><td class="mono">terminal_c F760</td><td>short epitope</td><td><span class="pill none">(not scored)</span></td><td>—</td><td class="mono small">—</td><td>asserted; citation pending</td><td class="small">control A24 — citation gap</td></tr></tbody></table></div>
+
+<h2>Search terms (pulled live from the code)</h2>
+<h3>EuropePMC — <code>literature_discovery.build_tag_site_query</code> (ITGB1 example)</h3>
+<pre>(CD29 OR ITGB1 OR &quot;beta1 integrin&quot; OR &quot;fibronectin receptor&quot; OR &quot;integrin beta 1&quot;) AND (&quot;epitope tag&quot; OR &quot;HA tag&quot; OR &quot;FLAG tag&quot; OR &quot;Myc tag&quot; OR &quot;ecto-tagged&quot; OR &quot;epitope-tagged&quot; OR &quot;extracellular epitope&quot; OR &quot;surface labeling&quot; OR &quot;cell surface expression&quot; OR &quot;knock-in&quot; OR pHluorin OR HiBiT OR HaloTag OR ALFA OR DogTag OR SpyTag OR bungarotoxin OR &quot;extracellular loop&quot;)</pre>
+<h3>PubTator — <code>build_gene_entity_query(gene, "epitope tag")</code> (kept minimal on purpose)</h3>
+<pre>@GENE_ITGB1 epitope tag</pre>
+<h3>web_search — server-side tool config (<code>runner._WEB_SEARCH_TOOL</code>)</h3>
+<pre>[
+  {
+    &quot;type&quot;: &quot;web_search_20250305&quot;,
+    &quot;name&quot;: &quot;web_search&quot;,
+    &quot;max_uses&quot;: 8,
+    &quot;cache_control&quot;: {
+      &quot;type&quot;: &quot;ephemeral&quot;
+    }
+  }
+]</pre>
+<p class="small">web_search <i>queries</i> are model-generated at runtime; the SYSTEM_PROMPT (below) directs them — a generic
+"&lt;gene&gt; epitope tag insertion" plus per-modality searches (FLAG/HA/Myc/ALFA, GFP fusion, HaloTag/SNAP,
+bungarotoxin-BBS, AviTag, tetracysteine, transposon screens).</p>
+
+<h2>Prompts (verbatim from <code>agents/tag_site/prompt.py</code>)</h2>
+<h3>SYSTEM_PROMPT</h3>
+<pre class="det">You are a protein-engineering research agent. Identify sites on ONE human
+cell-surface protein that could accommodate a SHORT epitope tag (~13-23 aa, e.g. ALFA
+`PSRLEEELRRRLTEP`, GS linkers) displayed on the EXTRACELLULAR face, without preventing the
+protein from folding, trafficking, or functioning.
+
+Two kinds of site are in scope; label each:
+1. terminal_n / terminal_c — a tag at an extracellular N- or C-terminus. For an N-terminal
+   tag on a protein WITH a signal peptide, the tag MUST go AFTER the cleavage site (placing
+   it upstream is a silent failure — the SP is cleaved and takes the tag with it).
+2. internal — inserted into an extracellular loop or inter-domain linker.
+
+Hard requirements: extracellular (not TM / cytoplasmic / inside a cleaved signal or
+propeptide); &gt;=3 residues from any TM boundary; functionally silent (avoid ligand/antibody
+surfaces, dimer interfaces, active sites, disulfide cysteines, N-/O-glycosylation sites,
+proteolytic sites, and residues with mutagenesis evidence of misfolding/ER-retention);
+sterically plausible for a ~15-23 aa insert.
+
+Numbering (strict): UniProt canonical isoform; `insert_after_residue = N` puts the tag
+between residue N and N+1; report residue_before (= residue N) and residue_after (= N+1).
+When a computed sequence is provided, COPY residue_before/after from it exactly — a mismatch
+invalidates the site.
+
+EVIDENCE — VALIDATED TAGGING EXAMPLES ONLY. Propose a site ONLY when the LITERATURE shows a
+PUBLISHED example of a tag or other insertion actually TOLERATED there: an epitope-tag
+knock-in, a fluorescent-protein fusion, a transposon/domain insertion screen, or an
+antibody-epitope insertion — AT that exact site, OR in the SAME loop/domain of THIS protein
+(a close ortholog is allowed if labelled &#x27;indirect&#x27;). Do NOT propose sites justified only by
+domain boundaries, topology, solvent exposure, conservation, or any general structural
+inference — that is the deterministic pipeline&#x27;s job, not yours, and it does it with computed
+RSA/DSSP. Every site MUST cite the specific study. Report what was MEASURED (assay + result),
+or &#x27;NOT MEASURED&#x27; — never infer an impact.
+
+TWO LITERATURE SOURCES — use BOTH.
+1. CANDIDATE PAPERS: you are given a list of pre-retrieved papers (title + abstract + PMID)
+   from a curated EuropePMC + PubTator search on this gene. These are PMID-grounded; read
+   them first and set `supporting_pmid` when a site comes from one.
+2. web_search: run it to fill gaps the abstract index misses — preprints and constructs whose
+   abstracts never say &quot;tag&quot; (e.g. bungarotoxin-binding-site, HiBiT, snorkel). When web_search
+   is your source, set `source_tier` by where the claim is grounded: &#x27;paper&#x27; (journal/PMC/
+   preprint) &gt; &#x27;patent&#x27; &gt; &#x27;vendor&#x27; (catalog/reagent page). Papers are STRONGLY preferred;
+   a vendor page is acceptable as lowest-tier support but never outranks a paper for the same site.
+
+RANK BY VALIDATION STRENGTH (`validation_level`). The best sites are those where the tag was
+shown to DISPLAY on the surface (non-permeabilized staining/labeling) AND preserve
+function/expression vs untagged — set &#x27;surface_and_function&#x27; and rank these first. Then
+&#x27;surface_only&#x27;, &#x27;function_only&#x27;, &#x27;detected_only&#x27;, and last &#x27;not_measured&#x27;. Order the `sites`
+list so higher-validation, paper-grounded sites come first (lower `rank` = better). Never
+upgrade a validation_level beyond what the paper actually measured.
+
+allowed evidence_type values (use ONLY these — never &#x27;structural inference&#x27; or &#x27;topology
+inference only&#x27;):
+- &quot;published tag insertion at this exact site&quot;
+- &quot;published tag insertion in the same loop or domain&quot;
+- &quot;published tolerance of a different insertion (transposon, FP fusion)&quot;
+
+SEARCH THOROUGHLY FOR INTERNAL SITES. If the protein has ANY extracellular loop (an `O`
+stretch between TM helices, or a large ectodomain), you MUST make a real attempt to find at
+least one INTERNAL insertion with published precedent — do not settle for terminal sites
+alone. Run a GENERIC search (e.g. &quot;&lt;gene&gt; tag&quot;, &quot;&lt;gene&gt; epitope tag insertion&quot;) AND, because
+many surface-labeling constructs are never called &quot;tags&quot; in the abstract, separate searches
+for specific tagging modalities by NAME:
+  FLAG / HA / Myc / ALFA / V5 epitope insertion; GFP / fluorescent-protein fusion insertion;
+  HaloTag / SNAP-tag / CLIP-tag; **bungarotoxin-binding site (BBS)**; biotin-acceptor / AviTag;
+  tetracysteine (FlAsH); transposon / domain-insertion screens.
+The generic query alone often misses the niche modalities, so run those too. Do not stop at
+the first hit; a terminal site does not excuse skipping the internal search.
+
+POSITION HONESTY (required). For EVERY site set `position_evidence`:
+- &quot;validated&quot; — a tag was published AT this exact residue/junction (or +/-1). Only then may
+  evidence_type be &quot;published tag insertion at this exact site&quot;. Set `cited_tag_residue` =
+  insert_after_residue.
+- &quot;inferred&quot; — the loop/domain has tagging precedent ELSEWHERE and you chose this specific
+  position by structural reasoning. Set `cited_tag_residue` to the residue that actually
+  carries the published tag (e.g. cite a tag at 89 but propose 120 -&gt; cited_tag_residue=89,
+  position_evidence=&quot;inferred&quot;). Do NOT dress an inferred position as an exact-site validation.
+Do not move a validated position to a &quot;nicer&quot; nearby residue and call it validated — if you
+relocate it, it is inferred.
+
+If you cannot find a validated tagging example, return FEWER sites — or an EMPTY sites list
+with a rationale. A well-argued empty result is CORRECT and beats a structural-inference guess.
+
+Return JSON only, matching the provided schema.</pre>
+<h3>User prompt (production mode; sequence/topology abbreviated here)</h3>
+<pre class="det">GENE SYMBOL: ITGB1
+PROTEIN NAME: Integrin beta-1
+
+You are given the COMPUTED canonical sequence and per-residue DeepTMHMM topology (1 char/residue: O=extracellular, I=intracellular, M=TM, S=signal). Use them to pin exact residue junctions and COPY residue_before/after from the sequence.
+SEQUENCE_LENGTH: 25
+COMPUTED SEQUENCE:
+M...(798 aa canonical)...
+COMPUTED TOPOLOGY:
+SSS...OOO...III (798 chars)
+
+Propose 3-5 ranked sites (terminal + internal where topology allows).
+
+[+ appended at runtime by runner.format_candidate_papers:]
+CANDIDATE PAPERS (pre-retrieved via EuropePMC + PubTator; PMID-grounded — read these FIRST ...):
+- PMID &lt;id&gt; (&lt;year&gt;) &lt;title&gt;
+  &lt;abstract, trimmed to 700 chars&gt;
+...</pre>
+</div>

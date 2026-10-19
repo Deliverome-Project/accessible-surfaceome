@@ -1,0 +1,142 @@
+{
+  "has_data": true,
+  "gene_symbol": "SLC11A1",
+  "uniprot_acc": "P49279",
+  "sites": [
+    {
+      "site_id": "SLC11A1-disorder-420",
+      "gene_symbol": "SLC11A1",
+      "uniprot_acc": "P49279",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 420,
+      "residue_before": "D",
+      "residue_after": "L",
+      "residue_label": "D420",
+      "residue_range": "R419-S425",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 65.4,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    },
+    {
+      "site_id": "SLC11A1-snorkel-c",
+      "gene_symbol": "SLC11A1",
+      "uniprot_acc": "P49279",
+      "provenance": "deterministic_computed",
+      "det_path": "snorkel",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 550,
+      "residue_before": "G",
+      "residue_after": null,
+      "residue_label": "G550",
+      "residue_range": null,
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (C-terminal snorkel \u2014 no accessible terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "low",
+      "rationale": "C-terminus not extracellular (topology 'I' at residue L) and no accessible N-terminus \u2014 C-terminal snorkel presents the tag on the surface via a TM-snorkeling linker (fallback: no natively accessible terminus)",
+      "sources": [],
+      "plddt": 29.3,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "SLC11A1-disorder-304::iso::P49279-2",
+      "isoform_id": "P49279-2",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 304,
+      "canonical_residue": 422,
+      "left_pct": 70.37037037037037
+    },
+    {
+      "site_id": "SLC11A1-surface_loop-116::iso::P49279-2",
+      "isoform_id": "P49279-2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 116,
+      "canonical_residue": 234,
+      "left_pct": 26.851851851851855
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "SLC11A1-disorder-417::iso::G7PLF4",
+      "isoform_id": "G7PLF4",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 417,
+      "canonical_residue": 420,
+      "left_pct": 76.23400365630712
+    },
+    {
+      "site_id": "SLC11A1-disorder-417::iso::P41251",
+      "isoform_id": "P41251",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 417,
+      "canonical_residue": 420,
+      "left_pct": 76.09489051094891
+    },
+    {
+      "site_id": "SLC11A1-disorder-491::iso::G7PLF4",
+      "isoform_id": "G7PLF4",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 491,
+      "canonical_residue": 494,
+      "left_pct": 89.76234003656307
+    },
+    {
+      "site_id": "SLC11A1-surface_loop-232::iso::G7PLF4",
+      "isoform_id": "G7PLF4",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 232,
+      "canonical_residue": 235,
+      "left_pct": 42.413162705667276
+    },
+    {
+      "site_id": "SLC11A1-surface_loop-232::iso::P41251",
+      "isoform_id": "P41251",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 232,
+      "canonical_residue": 235,
+      "left_pct": 42.33576642335766
+    }
+  ]
+}

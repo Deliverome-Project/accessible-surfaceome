@@ -109,6 +109,21 @@
   --danger: var(--maroon-dark);
   --info: var(--lavender-mid);
 
+  --tag-site-literature: var(--lavender-bright);   /* literature_retrieved overlay */
+  --tag-site-deterministic: var(--teal-mid);       /* deterministic_computed overlay */
+  /* Fine-grained tag-site CATEGORY tokens (structure-viewer "Tag sites" mode).
+     Mirror CATEGORY_HEX in viewer/lib/tag-sites-types.ts (WebGL uses the hex). */
+  --tag-site-surface-loop: #3f7fd0;                /* internal ordered exposed loop (blue) */
+  --tag-site-disorder: #2f9e44;                    /* internal disordered loop (green, distinct from the blue surface loop) */
+  --tag-site-terminal-n: var(--amber-bright);      /* extracellular N-terminus */
+  --tag-site-terminal-c: var(--amber-mid);         /* extracellular C-terminus */
+  --tag-site-snorkel: var(--maroon-mid);           /* C-terminal snorkel (fallback) */
+  --tag-site-screen-validated: #e5342e;             /* Tedman N-terminal HA control (red — distinct attention color) */
+  /* Per-isoform pin colors referenced by IsoformsCard/TopologyBar (were undefined). */
+  --tag-site-isoform-shared: var(--teal-mid);       /* transfers from canonical */
+  --tag-site-isoform-unique: var(--lavender-bright);/* isoform-specific */
+  --tag-site-isoform-control: #e5342e;              /* Tedman control pin (red) — matches screen-validated */
+
   /* ============================================================
    * Typography
    * ============================================================ */

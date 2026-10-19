@@ -1,0 +1,12 @@
+{
+  "generated_at": "2026-09-16T21:37:58.317025+00:00",
+  "template_sha256": "8c93c9e2cffb10e32eb62c7834bdddd470bd46725152e3d0c9d90e01a7e5e1dd",
+  "generator_sha256": "9955ae0fff54faafd38cf3d90fb48faa831e39bcce499b97ab42316f1f4ea9ad",
+  "input_sha256": {
+    "observations.tsv": "2d55570096d4a30ad9dcc9b4790ffe604d145104d89d96196d71c5a2cada286d",
+    "gene_coverage.tsv": "586de5f15c26d73eaa7bbb7a9adf96efe82ce1cbc7db84bca2b11fd6cc0c56ba",
+    "coverage_summary.tsv": "7f3517fe0a653e69b1740cf78d1a6a714f33b9075644e71fbc47c93e478ed863",
+    "literature_examples.tsv": "7011e81d102977803b5c5a62703255b1812801c58810f7188f712103656e8fd2"
+  },
+  "output_sha256": "247dbb6a84476230d761484a2cbfea38b183c3b7aaf3d6a9d7218597407b9e04"
+}

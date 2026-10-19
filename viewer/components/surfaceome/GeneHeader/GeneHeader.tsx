@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { ReactNode } from "react";
 import type { CatalogRow, DeepDiveFilters } from "../../../lib/surfaceome";
 import {
@@ -15,7 +16,13 @@ import type {
   TriageSignal,
 } from "../../../lib/surfaceome-types";
 import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
+import {
+  libraryMembersByAccession,
+  libraryStructureVariants,
+} from "../../../lib/structure-viewer-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
+import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
+import { renderableTagSites } from "../../../lib/tag-sites-overlay";
 import { prettyEnum } from "../../../lib/enums";
 import { tooltips } from "../../../lib/tooltips";
 import { triageVsDeepDive } from "../../../lib/triage-comparison";
@@ -24,7 +31,11 @@ import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceS
 import { linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
-import { StructureViewer } from "../StructureViewerCard/StructureViewer";
+import {
+  StructureViewer,
+  type ActiveTopology,
+} from "../StructureViewerCard/StructureViewer";
+import { TopologyBar } from "../IsoformsCard/TopologyBar";
 import styles from "./GeneHeader.module.css";
 
 /** Convert an isoform UniProt id like "P00533-2" into a reader-friendly
@@ -33,6 +44,22 @@ import styles from "./GeneHeader.module.css";
 function _isoformLabel(isoformId: string): string {
   const m = /-(\d+)$/.exec(isoformId);
   return m ? `Isoform ${m[1]}` : isoformId;
+}
+
+/**
+ * UniProt isoform number out of an accession, for ordering. Infinity when there is no
+ * suffix to parse, so an unparseable id sorts last rather than silently first.
+ *
+ * Needed because the suffix must be compared as a NUMBER. The API returns
+ * `isoform_topologies` ordered by `uniprot_acc_full ASC`, which is a text sort, so
+ * `P15941-10` sorts before `P15941-2`. For a gene with ten or more isoforms the 3D tab
+ * cap below therefore kept 10, 11, 12 rather than 2, 3, 4 — the opposite of the "major
+ * isoforms first" it claims. MUC1 is the case that surfaced it: its tabs showed isoforms
+ * 10-12 and not Isoform 8, which is the proteoform the library actually orders.
+ */
+export function isoformNumber(isoformId: string): number {
+  const m = /-(\d+)$/.exec(isoformId);
+  return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
 }
 
 /** Best-effort DeepTMHMM type inference from a per-residue topology
@@ -86,6 +113,12 @@ interface GeneHeaderProps {
    *  intracellular and the caption is adjusted to describe the
    *  membrane-anchoring rather than a transmembrane orientation. */
   structureData?: StructureViewerData | null;
+  /** Tag-insertion-site records for this gene, client-fetched from the static
+   *  ``/tag-sites/{SYMBOL}.json`` asset. When present (and ``has_data``), the
+   *  rendered sites are drawn as provenance-colored spheres on the 3D viewer
+   *  ("Tag sites" mode) and pins on the linear topology bar. ``null`` when no
+   *  asset exists for the gene — overlay is simply absent. */
+  taggedSites?: TaggedSitesFile | null;
   /** Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer entry, when
    *  this gene is in the manifest. Forwarded as the ``schwekeHomomer``
    *  prop on <StructureViewer>, where it surfaces as a "Homo-oligomer"
@@ -110,6 +143,22 @@ interface GeneHeaderProps {
    *  model × variant × point-in-time snapshot — and can lag behind a
    *  later re-triage that flipped the verdict. */
   triageHeadline?: TriageHeadline | null;
+  /** Whether this gene is a member of the Deliverome FG surface-protein
+   *  library. When true, an "In library" chip renders in the tier callout
+   *  row. Sourced from the fetched `/data/fg-library.json` overlay (see
+   *  `app/gene/page.tsx`); defaults to false. */
+  inFgLibrary?: boolean;
+  /** Whether this gene is an oversized truncation candidate — it clears every
+   *  library gate except the ~5 kb ORF cap. Renders an "Oversized" chip and
+   *  makes the "In library" chip show, but the gene is NOT in the counted core
+   *  library. Sourced from the `oversized` block of `/data/fg-library.json`. */
+  oversized?: boolean;
+  /** Full-length ORF size (kb) for an oversized gene, for the chip tooltip. */
+  oversizedOrfKb?: number | null;
+  /** Tedman GPCR canonical HA-immunostaining surface expression (PME), or null
+   *  when Tedman didn't measure this gene (non-GPCR). Drives the "Low surface"
+   *  chip on library genes whose PME ≤ 1000 (exogenous-SP candidates). */
+  tedmanPme?: number | null;
 }
 
 /** Re-export of the loader's TriageHeadlinePayload — see
@@ -266,9 +315,14 @@ export function GeneHeader({
   rec,
   geneName,
   structureData,
+  taggedSites,
   schwekeHomomer,
   catalogRow,
   triageHeadline,
+  inFgLibrary = false,
+  oversized = false,
+  oversizedOrfKb = null,
+  tedmanPme = null,
 }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
@@ -299,6 +353,43 @@ export function GeneHeader({
   // sub-facet, right in the header.
   const { tier, facet } = deepDiveTier(rec.filters as unknown as DeepDiveFilters);
   const struct = rec.deterministic_features.structure;
+  // Rendered tag-insertion sites (drops validated_literature, resolves each to
+  // a residue + left-percent along the canonical topology). Shared by the 3D
+  // spheres and the linear-bar pins so both overlays agree exactly. Empty when
+  // no asset / no data / no structure to place them on.
+  // Residue selection shared by the 3D viewer's "Highlight residue" box
+  // and the topology strip under it: a strip click is sent to the viewer
+  // as a request, and the viewer reports back what it highlighted so the
+  // strip can draw the pink marker.
+  const [residueRequest, setResidueRequest] = useState<
+    { resi: number; nonce: number } | null
+  >(null);
+  const [highlightedResidue, setHighlightedResidue] = useState<number | null>(null);
+  // The viewer's active tab, so the strip under it draws that tab's sequence
+  // rather than always the canonical one. Null until the viewer reports in.
+  const [activeTopology, setActiveTopology] = useState<ActiveTopology | null>(null);
+  const tagSiteRows =
+    taggedSites?.has_data && structureData
+      ? renderableTagSites(taggedSites.sites, structureData.topology.length)
+      : [];
+  // Tag sites are canonical-keyed, so they only belong on a canonical-numbered
+  // tab, and only on the residues that tab's structure contains.
+  const covered = activeTopology?.coveredRange ?? null;
+  const stripTagSites =
+    activeTopology?.canonicalNumbering === false
+      ? []
+      : covered
+        ? tagSiteRows.filter((r) => r.residue >= covered.start && r.residue <= covered.end)
+        : tagSiteRows;
+  // Canonical-frame string for a partial structure: residues outside the
+  // covered range become TopologyBar's "-" gap, drawn as blank space that
+  // keeps its width, so the covered stretch stays at its canonical position.
+  const stripTopology = activeTopology?.topology ?? structureData?.topology ?? "";
+  const stripCoverageFrame = covered
+    ? Array.from(stripTopology, (ch, i) =>
+        i + 1 >= covered.start && i + 1 <= covered.end ? ch : "-",
+      ).join("")
+    : null;
   // The fetcher signals what kind of pLDDT the number is via the
   // ``source`` string (see :func:`tools.afdb_plddt.fetch_afdb_plddt`).
   //   * "placeholder" — fetcher hasn't run, the 0.0 isn't a measurement.
@@ -344,23 +435,19 @@ export function GeneHeader({
 
   return (
     <header className={styles.header}>
+      <h1 className={`h-gene ${styles.symbol}`}>
+        {g.hgnc_symbol}
+        {geneName?.name ? (
+          <span className={styles.geneFullName}>{geneName.name}</span>
+        ) : null}
+        {geneName?.synonyms && geneName.synonyms.length > 0 ? (
+          <span className={styles.synonyms}>
+            Synonyms: {geneName.synonyms.slice(0, 3).join(", ")}
+          </span>
+        ) : null}
+      </h1>
       <div className={styles.headerGrid}>
         <div className={styles.headerText}>
-          {/* Gene symbol + the descriptive name inline (small italics)
-              on the same baseline, with previous synonyms on a small
-              line below. */}
-          <h1 className={`h-gene ${styles.symbol}`}>
-            {g.hgnc_symbol}
-            {geneName?.name ? (
-              <span className={styles.geneFullName}>{geneName.name}</span>
-            ) : null}
-            {geneName?.synonyms && geneName.synonyms.length > 0 ? (
-              <span className={styles.synonyms}>
-                Synonyms: {geneName.synonyms.slice(0, 3).join(", ")}
-              </span>
-            ) : null}
-          </h1>
-
           {/* IDs row — small, immediately under the descriptive gene
               name. Was previously placed below the exec lede + headline
               risks; promoted here per user feedback so the external
@@ -431,6 +518,63 @@ export function GeneHeader({
             </InfoTip>
             {facet ? (
               <span className={styles.tierFacetChip}>{FACET_LABEL[facet]}</span>
+            ) : null}
+            {/* FG surface-protein library membership — a positive marker that
+                this gene is in the Deliverome library. Same chip style as the
+                sub-facet chip; gated on the fetched membership overlay. */}
+            {inFgLibrary || oversized ? (
+              <span className={styles.tierFacetChip}>In library</span>
+            ) : null}
+            {oversized ? (
+              <span className={styles.oversizedChip}>
+                Oversized
+                <InfoTip label="About the oversized flag">
+                  <p>
+                    Clears every FG-library gate{" "}
+                    <strong>except the ~5&nbsp;kb ORF cap</strong>
+                    {oversizedOrfKb
+                      ? ` (full-length ORF ≈ ${oversizedOrfKb} kb)`
+                      : ""}
+                    &nbsp;— too large to package as a full-length lentiviral
+                    ORF, so it is a <strong>truncation candidate</strong> rather
+                    than a drop-in library member.
+                  </p>
+                  <p>
+                    Shown as in-library for discoverability, but deliberately
+                    kept out of the counted core library while truncation
+                    strategies are worked out.
+                  </p>
+                </InfoTip>
+              </span>
+            ) : null}
+            {(inFgLibrary || oversized) &&
+            tedmanPme != null &&
+            tedmanPme <= 1000 ? (
+              <span className={styles.lowSurfaceChip}>
+                Low surface · Tedman {Math.round(tedmanPme)}
+                <InfoTip label="About the low Tedman surface flag">
+                  <p>
+                    <strong>Low plasma-membrane expression</strong> in Tedman
+                    et&nbsp;al. deep receptor scanning — HA-immunostaining
+                    intensity {Math.round(tedmanPme)} (≤&nbsp;1000), measured
+                    without olfactory RTP chaperones. A library gene at this
+                    level is a candidate for boosting surface display with an{" "}
+                    <strong>exogenous signal peptide</strong>.
+                  </p>
+                  <p>
+                    GPCR-only signal (Tedman measured GPCRs). Source: Tedman
+                    et&nbsp;al., Nat Commun 2026,{" "}
+                    <a
+                      href="https://doi.org/10.1038/s41467-026-76564-7"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      doi:10.1038/s41467-026-76564-7
+                    </a>
+                    .
+                  </p>
+                </InfoTip>
+              </span>
             ) : null}
             {lowLitSurface ? (
               <span className={styles.lowLitChip}>
@@ -679,6 +823,12 @@ export function GeneHeader({
             <StructureViewer
               data={structureData}
               geneSymbol={g.hgnc_symbol}
+              residueRequest={residueRequest}
+              onHighlightChange={setHighlightedResidue}
+              onActiveTopologyChange={setActiveTopology}
+              // Marks every tab whose sequence a library member orders, and
+              // says under the strip whether the open tab is one of them.
+              libraryMembers={libraryMembersByAccession(rec)}
               // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
               // model when this gene is in the manifest. Renders as a
               // "Homo-oligomer" tab right after Canonical and before
@@ -766,6 +916,26 @@ export function GeneHeader({
                   };
                 },
               )}
+              // Tag-insertion-site overlay spheres (own "Tag sites" mode),
+              // colored by sourcing provenance. Derived once via
+              // renderableTagSites so the 3D spheres and the linear-bar pins
+              // below stay in lockstep.
+              tagSites={tagSiteRows.map((r) => ({
+                siteId: r.siteId,
+                residue: r.residue,
+                provenance: r.provenance,
+                category: r.category,
+                tagType: r.tagType,
+                spanStart: r.spanStart,
+                spanEnd: r.spanEnd,
+              }))}
+              // Per-isoform deterministic pins for the 3D overlay when an
+              // isoform variant tab is active (placed at canonical_residue,
+              // since isoforms render on the canonical fold).
+              isoformPins={taggedSites?.isoform_pins ?? []}
+              // Per-ortholog pins — rendered on the ortholog's OWN structure at
+              // its own residue when a mouse/cyno ortholog tab is active.
+              orthologPins={taggedSites?.ortholog_pins ?? []}
               // Variant tabs above the 3D canvas: alt isoforms
               // (sourced from `rec.deterministic_features.isoform_topologies`)
               // and 1:1 orthologs (mouse + cynomolgus). Each variant
@@ -788,11 +958,54 @@ export function GeneHeader({
               // ortholog isoforms aren't structurally interesting here),
               // and only when it actually carries a topology string.
               variants={[
-                // Cap the 3D tab strip at the first 3 isoforms.
-                // isoform_topologies is in UniProt isoform-number order
-                // (Isoform 2, 3, 4, …) — major isoforms first — so the
-                // slice keeps the MAJOR ones rather than picking by
-                // topology divergence. A gene with many isoforms would
+                // LIBRARY MEMBERS COME FIRST, before the isoform and ortholog tabs.
+                // These are the proteins we are actually ordering, so they are the ones a
+                // reader opening this card is deciding about; an isoform we are not building
+                // is context for them rather than the other way round. The canonical tab is
+                // rendered separately ahead of this list and is unchanged.
+                // A member's ORF is its designed CDS translated, and for a substantial
+                // minority that is not the gene's canonical sequence -- which is what the
+                // canonical tab and the isoform tabs below are about. The label names the
+                // proteoform (Canonical / Isoform N / Cyno / Mouse / Designed ORF) and the
+                // L1/L2 badge says it is a construct, rather than the label carrying
+                // "Ordered" and the identity going unsaid.
+                // Each tab carries the member's own v1 topology and the structure
+                // chosen for it (ours from R2, or AFDB's where its model is genuinely the
+                // ordered protein), so the overlay and the coordinates describe one
+                // protein. Members with no chosen structure, or no topology for their
+                // exact sequence, get no tab rather than a canonical stand-in.
+                // Pass the accessions already on screen so a member whose chosen
+                // structure IS one of those models does not get a second, identical tab.
+                // SLC6A8 is that case: its library construct is AFDB's AF-P48029-F1 and
+                // P48029 is the gene's canonical accession. The card marks the existing
+                // tab instead (libraryMembersByAccession), which also reads better --
+                // "Canonical is the library construct" rather than two tabs that are the
+                // same coordinates.
+                ...libraryStructureVariants(rec, [
+                  rec.gene.uniprot_acc,
+                  ...rec.deterministic_features.isoform_topologies.map(
+                    (iso) => iso.uniprot_acc,
+                  ),
+                  ...rec.deterministic_features.isoform_topologies.map(
+                    (iso) => iso.isoform_id,
+                  ),
+                  ...(
+                    ["mouse", "cynomolgus"] as const
+                  ).flatMap((sp) =>
+                    rec.deterministic_features.orthologs[sp].map(
+                      (o) => o.ortholog_uniprot_acc,
+                    ),
+                  ),
+                ]),
+                // Cap the 3D tab strip at the 3 LOWEST-NUMBERED isoforms —
+                // the major ones — sorting the suffix as a number rather
+                // than relying on the order the API returns. That order is
+                // `uniprot_acc_full ASC`, a TEXT sort, so `-10` precedes
+                // `-2` and a gene with ten or more isoforms had the cap
+                // keep 10, 11, 12 instead (MUC1 showed isoforms 10-12 and
+                // not Isoform 8, the proteoform the library orders).
+                // Lowest-numbered first picks the MAJOR ones rather than
+                // picking by topology divergence. A gene with many isoforms would
                 // otherwise overflow the tab strip (and add dead 404 tabs
                 // for isoforms AFDB doesn't model). The §Isoforms table
                 // below still lists EVERY isoform; this cap is 3D-only.
@@ -805,6 +1018,11 @@ export function GeneHeader({
                 // as in IsoformsCard; same fix.
                 ...rec.deterministic_features.isoform_topologies
                   .filter((iso) => iso.isoform_id !== rec.gene.uniprot_acc)
+                  .slice()
+                  .sort(
+                    (a, b) =>
+                      isoformNumber(a.isoform_id) - isoformNumber(b.isoform_id),
+                  )
                   .slice(0, 3)
                   .map((iso) => ({
                     source: "afdb" as const,
@@ -851,6 +1069,32 @@ export function GeneHeader({
                     }),
                 ),
               ]}
+            />
+            {/* Topology strip under the viewer, for the sequence on the
+                active tab (canonical until the viewer reports otherwise).
+                Carries a pin per rendered tag site (colored to match the 3D
+                "Tag sites" spheres) on tabs numbered on the canonical
+                sequence — tag sites are canonical-keyed, so they'd land on
+                the wrong residues of an isoform or ortholog. Doubles as the
+                residue picker: a click highlights that residue (or the tag
+                site under the click) in the 3D view, and the viewer's
+                highlighted residue shows here as a pink line. */}
+            <TopologyBar
+              topology={stripTopology}
+              canonicalFrame={stripCoverageFrame}
+              ariaLabel={`${g.hgnc_symbol} ${(activeTopology?.label ?? "Canonical").toLowerCase()} topology${covered ? ` (structure covers residues ${covered.start}–${covered.end})` : ""}${stripTagSites.length > 0 ? " with tag-insertion sites" : ""}; click to highlight a residue in the 3D view`}
+              pins={stripTagSites.map((r) => ({
+                siteId: r.siteId,
+                leftPct: r.leftPct,
+                provenance: r.provenance,
+                category: r.category,
+                tagType: r.tagType,
+                residue: r.residue,
+              }))}
+              onResidueClick={(resi) =>
+                setResidueRequest((prev) => ({ resi, nonce: (prev?.nonce ?? 0) + 1 }))
+              }
+              markerResidue={highlightedResidue}
             />
             {/* Legend moved INSIDE <StructureViewer> so it can
                 switch between the M/O/I/S/B topology key and the

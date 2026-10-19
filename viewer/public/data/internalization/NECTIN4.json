@@ -1,0 +1,686 @@
+{
+  "schema_version": "0.2.1",
+  "gene_symbol": "NECTIN4",
+  "hgnc_id": "HGNC:19688",
+  "uniprot_acc": "Q96NY8",
+  "model_priors": [
+    {
+      "model": "claude-sonnet-4-6",
+      "scope": "intrinsic_propensity",
+      "overall_grade": "moderate",
+      "overall_confidence": "moderate",
+      "model_reasoning": "NECTIN4 (also known as PVRL4) is a type I transmembrane protein and member of the nectin family of cell adhesion molecules. It is an established ADC target (enfortumab vedotin) and is known to undergo ligand-independent constitutive internalization as well as enhanced uptake upon antibody engagement. The cytoplasmic tail (~140 aa) is substantial and contains several candidate endocytic signals. Scanning the cytoplasmic region (approximately residues 370–510 after the TM helix): the sequence contains 'YHRRKAQQMTQKYEEELTLTRENSIRRLHSHHTDPRSQPEESVGLRAEGHPDSLKDNSSCSVMSEEPEGRSYSTLTTVREIETQTELLSPGSGRAEEEEDQDEGIKQAMNHFVQENGTLRAKPTGNGIYINGRGHLV'. Notable features include: (1) a tyrosine-based motif context near the membrane-proximal region (YRRKAQ... — Y370 area); (2) a YXXΦ-like motif: 'YING' near the C-terminus (Y504, I505, N506, G507 — weakly hydrophobic at +3); (3) dileucine-like context is not strongly canonical; (4) the tail is rich in acidic residues and contains multiple tyrosines. Nectins as a family are known to undergo constitutive endocytosis and recycling, and NECTIN4 specifically has documented basal internalization that supports its utility as an ADC target. However, the internalization rate is not as rapid as transferrin receptor — a substantial surface pool is maintained at steady state, consistent with 'moderate' rather than 'high'. The single isoform provided has a full cytoplasmic tail supporting this moderate constitutive uptake.",
+      "per_isoform": [
+        {
+          "isoform_id": "Q96NY8-1",
+          "is_canonical": true,
+          "length_aa": 510,
+          "topology_summary": "Signal peptide (1–31); extracellular domain (~318 aa); single TM helix; cytoplasmic tail (~140 aa, C-terminus intracellular)",
+          "endocytic_motifs_noted": "Cytoplasmic tail (~aa 370–510): membrane-proximal tyrosine (Y~371, YHRR context); C-terminal YXXΦ-like candidate (YING, Y504); multiple acidic residues (EEEDQDE cluster); no canonical NPXY or strong [DE]XXXL[LI] dileucine identified. Tail is 140 aa — substantial for motif-independent adaptor recruitment.",
+          "grade": "moderate",
+          "confidence": "moderate",
+          "rationale": "NECTIN4 is a nectin-family adhesion molecule with a ~140 aa cytoplasmic tail. Nectins constitutively cycle between the plasma membrane and endosomes. NECTIN4 specifically is documented to undergo basal internalization sufficient to support ADC payload delivery in clinical use, but it is not a rapidly recycling receptor like transferrin receptor — a meaningful surface pool persists at steady state. The cytoplasmic tail contains candidate tyrosine-based signals and a dense acidic region that could support clathrin-mediated uptake, consistent with moderate constitutive internalization. Grade: moderate, confidence: moderate."
+        }
+      ]
+    }
+  ],
+  "literature": {
+    "grades_by_mode": {
+      "basal": {
+        "grade": "unknown",
+        "confidence": "low",
+        "rationale": "No evidence in the ledger directly measures constitutive, ligand-free internalization of NECTIN4.",
+        "cited_source_ids": []
+      },
+      "native_ligand": {
+        "grade": "unknown",
+        "confidence": "low",
+        "rationale": "No evidence in the ledger addresses internalization driven by NECTIN4's endogenous ligand (e.g., nectin family members).",
+        "cited_source_ids": []
+      },
+      "therapeutic": {
+        "grade": "moderate",
+        "confidence": "moderate",
+        "rationale": "Multiple lines of evidence confirm that NECTIN4-targeting ADCs (enfortumab vedotin, Cys2-N4MU01-PMMAE) and radiolabeled bicyclic peptides are internalized via NECTIN4 in multiple tumor cell lines and corneal epithelial cells. The primary mechanism is clathrin-mediated endocytosis (AP2M1-dependent). However, internalization is quantitatively modest (3.5% for radiolabeled probe) and is subject to suppression by sialylation and AKR1C1-mediated impairment, and paradoxically reduced in high-NECTIN4-expressing resistant subpopulations. These modulatory factors and the relatively low quantified internalization rate support a 'moderate' rather than 'high' grade.",
+        "cited_source_ids": [
+          "int_evi_01",
+          "int_evi_02",
+          "int_evi_03",
+          "int_evi_04",
+          "int_evi_05",
+          "int_evi_06",
+          "int_evi_07",
+          "int_evi_08",
+          "int_evi_09"
+        ]
+      }
+    },
+    "overall_grade": "moderate",
+    "overall_confidence": "moderate",
+    "rationale": "All available evidence pertains to therapeutic-mode internalization (ADCs and radiolabeled peptides targeting NECTIN4). Internalization is confirmed across multiple cell lines and tumor types via clathrin-mediated endocytosis, but is quantitatively modest (3.5% internalization measured for a radiolabeled probe) and subject to multiple suppressive mechanisms (sialylation, AKR1C1/AP2M1 pathway disruption, high antigen density paradox in resistant cells). Basal and native-ligand modes are not addressed in the ledger.",
+    "cross_condition_note": "In sensitive tumor cells, NECTIN4-ADC internalization proceeds via clathrin-mediated endocytosis and is sufficient for cytotoxic payload delivery; however, in resistant subpopulations with paradoxically high NECTIN4 expression, internalization is defective and extracellular ADC release is enhanced, indicating that antigen density alone does not predict internalization efficiency. Sialylation status further modulates internalization across bladder cancer cell contexts.",
+    "species_scope": "unspecified",
+    "species_inferred": false,
+    "observations": [
+      {
+        "assay_type": "adc_internalization",
+        "assay_type_other_label": null,
+        "cell_line": "MDA-MB-468, E0771_nectin4, 4T1_nectin4",
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "Cys2-N4MU01-PMMAE (PODS-based Nectin-4-targeting ADC)",
+        "mechanism": "receptor_mediated_unspecified",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "ADC internalization confirmed in Nectin-4+ TNBC cells; slightly reduced binding affinity vs. naked antibody did not impair internalization; IC50 <57 nM; no cytotoxicity in Nectin-4-negative 4T1 cells"
+        },
+        "controls_note": "Nectin-4-negative 4T1 cells used as negative control; naked antibody as comparator",
+        "condition_note": "PODS-based ADC with MMAE payload; TNBC cell lines",
+        "cited_source_ids": [
+          "int_evi_01"
+        ]
+      },
+      {
+        "assay_type": "adc_internalization",
+        "assay_type_other_label": null,
+        "cell_line": "Resistant urothelial carcinoma subpopulation (unspecified)",
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "Enfortumab vedotin (NECTIN4-ADC)",
+        "mechanism": "unknown",
+        "magnitude": "low",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Increased NECTIN4 expression in resistant subpopulation associated with reduced ADC internalization and enhanced extracellular ADC release"
+        },
+        "controls_note": "Compared to sensitive cell populations with lower NECTIN4 expression",
+        "condition_note": "ADC-resistant tumor cell subpopulation; paradoxical high antigen expression impairs internalization",
+        "cited_source_ids": [
+          "int_evi_02",
+          "int_evi_03"
+        ]
+      },
+      {
+        "assay_type": "adc_internalization",
+        "assay_type_other_label": null,
+        "cell_line": "Urothelial carcinoma resistant cell systems (unspecified)",
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "Enfortumab vedotin (NECTIN4-ADC)",
+        "mechanism": "clathrin",
+        "magnitude": "low",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "AKR1C1 binds NECTIN4 and impairs AP2M1-dependent clathrin-mediated internalization; pharmacologic AKR1C1 inhibition restores ADC uptake"
+        },
+        "controls_note": "Pharmacologic inhibition of AKR1C1 used to restore internalization; AKR1C1-WWP2 axis promotes extracellular vesicle-mediated ADC export",
+        "condition_note": "Mechanistic study; clathrin/AP2M1-dependent pathway identified as primary internalization route for NECTIN4-ADC",
+        "cited_source_ids": [
+          "int_evi_04"
+        ]
+      },
+      {
+        "assay_type": "endocytosis_inhibitor",
+        "assay_type_other_label": null,
+        "cell_line": "Bladder cancer cells (unspecified)",
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "Enfortumab vedotin (EV, NECTIN4-ADC)",
+        "mechanism": "receptor_mediated_unspecified",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Pharmacologic inhibition of sialylation increases EV endocytosis; sialylation suppresses internalization and promotes Nectin-4 degradation"
+        },
+        "controls_note": "Sialylation inhibitor used to modulate internalization; in vitro and in vivo models",
+        "condition_note": "α-2,6-sialylation negatively regulates Nectin-4 expression and EV endocytosis in bladder cancer",
+        "cited_source_ids": [
+          "int_evi_05",
+          "int_evi_06"
+        ]
+      },
+      {
+        "assay_type": "adc_internalization",
+        "assay_type_other_label": null,
+        "cell_line": "Corneal epithelial cells",
+        "cell_context": "cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "PADCEV (enfortumab vedotin)",
+        "mechanism": "macropinocytosis",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Nectin-4 plays crucial role in PADCEV cellular uptake; non-specific pinocytosis also involved"
+        },
+        "controls_note": null,
+        "condition_note": "Corneal epithelial cell context; both receptor-mediated and non-specific pinocytosis contribute to uptake",
+        "cited_source_ids": [
+          "int_evi_07"
+        ]
+      },
+      {
+        "assay_type": "radioligand_immunopet",
+        "assay_type_other_label": null,
+        "cell_line": "H1975, ABC-1, HEK293_nectin4",
+        "cell_context": "cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "68Ga-labeled bicyclic peptide probes (Ga-3, Ga-5); 177Lu-Lu-6",
+        "mechanism": "receptor_mediated_unspecified",
+        "magnitude": "low",
+        "quant": {
+          "rate_metric": "percent_internalized",
+          "rate_value": 3.5,
+          "rate_unit": "%",
+          "time_point": null,
+          "quant_summary": "[177Lu]-Lu-6 showed 3.5% internalization in Nectin-4-expressing cells; 68Ga probes showed 39-fold and 22-fold uptake reduction upon blocking with N188 inhibitor peptide"
+        },
+        "controls_note": "Blocking studies with Nectin-4-specific inhibitor peptide N188 confirmed target specificity; 39-fold and 22-fold reductions for Ga-3 and Ga-5 respectively",
+        "condition_note": "Radiolabeled bicyclic peptide probes for PET/SPECT imaging and targeted radionuclide therapy; xenograft models also evaluated",
+        "cited_source_ids": [
+          "int_evi_08",
+          "int_evi_09"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "evidence_id": "int_evi_01",
+        "claim": "The PODS-based Nectin-4-targeting ADC (Cys2-N4MU01-PMMAE) undergoes internalization in Nectin-4-positive TNBC cells, with ADC internalization unaffected despite slightly reduced binding affinity compared to the naked antibody.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "MDA-MB-468, E0771_nectin-4, 4T1_nectin-4",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "triple-negative breast cancer",
+            "cell_line_name": "MDA-MB-468",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "triple-negative breast cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:42055153",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42055153/",
+              "title": "Efficacy of a site-specific anti-Nectin-4 antibody-drug conjugate against Nectin-4-positive triple-negative breast cancer models",
+              "retrieved_at": "2026-08-13T20:24:56.138776Z",
+              "content_sha256": "3191a0162cfb0e31146a6485160084b9b122c51a170d971e1507713f83b61149",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:24:56.138776Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "The binding affinity of Cys<sup>2</sup>-N4MU01-PMMAE on Nectin-4<sup>+</sup> TNBC cell was slightly lower than that of the naked antibody, but this did not affect ADC internalization. The in vitro 50% inhibition concentration (IC<sub>50</sub>) of Cys<sup>2</sup>-N4MU01-PMMAE on MDA-MB-468, E0771<sub>nectin-4</sub>, and 4T1<sub>nectin-4</sub> were <57 nM, but inferior to that of EV. Both ADCs had no dose-dependent cytotoxicity on Nectin-4-negative 4T1 cells.",
+            "quote_sha256": "54c9281b6dce5ce9c32338201115504a26b0f61174349be700fcb2f7a7c40914",
+            "char_offset": 1248,
+            "normalized_source_sha256": "9fdb442d6bebf0f8c193b59373e2ce0b74ac77e8ec41211fce32abb6b04486bd"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_02",
+        "claim": "Increased NECTIN4 expression in a resistant tumor cell subpopulation is associated with reduced NECTIN4-ADC internalization and enhanced extracellular ADC release, indicating that high antigen expression paradoxically impairs NECTIN4 endocytosis.",
+        "claim_type": "contradictory",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "secondary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": null,
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "urothelial carcinoma",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "ADC-resistant tumor",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:42208541",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42208541/",
+              "title": "When more target antigen expression is less",
+              "retrieved_at": "2026-08-13T20:24:56.138940Z",
+              "content_sha256": "cf4eca6320ccf4bec2c775d06a507d4f0924a8e12fa5bce96897e4f672eb339b",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:24:56.138940Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Resistance to antibody drug conjugates (ADCs) may be due to low target antigen expression resulting in reduced intracellular payload concentration. In this issue of Cancer Cell, Wang et al. show that increased target antigen NECTIN4 expression is associated with reduced NECTIN4-ADC internalization and enhanced extracellular ADC release in a resistant tumor cell subpopulation.",
+            "quote_sha256": "cf4eca6320ccf4bec2c775d06a507d4f0924a8e12fa5bce96897e4f672eb339b",
+            "char_offset": 0,
+            "normalized_source_sha256": "6e2a986687150311f2ffc9ee4a5aef8796707408f0fb4a5e8c098ab976f82e0a"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_03",
+        "claim": "A resistant tumor-cell population with increased NECTIN4 expression shows defective ADC uptake (internalization), identified through integration of spatial transcriptomics, single-cell RNA sequencing, and resistant cell systems.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": null,
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "urothelial carcinoma",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "NECTIN4-ADC resistant",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:42167230",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42167230/",
+              "title": "Endocytic evasion confers resistance to antibody-drug conjugates therapy in cancer",
+              "retrieved_at": "2026-08-13T20:24:56.138921Z",
+              "content_sha256": "27f57e4d64673129427f1317989c9d5cf3757959fbe167fb1fb93cc6126fac5e",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:24:56.138921Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Enfortumab vedotin (NECTIN4-ADC), a NECTIN4-targeting antibody-drug conjugate, has shown substantial efficacy in urothelial carcinoma, yet primary and acquired resistance remain major barriers to durable benefit. By integrating paired spatial transcriptomic profiling of tumors collected before and after NECTIN4-ADC plus anti-PD1 therapy with humanized mouse models, single-cell RNA sequencing, and resistant cell systems, we mapped tumor-state remodeling during ADC resistance and identified a resistant tumor-cell population with increased NECTIN4 expression but defective ADC uptake.",
+            "quote_sha256": "40abf769e4f72e7782c28125514c32a47a89195bb917d06e712b90beb9e07148",
+            "char_offset": 0,
+            "normalized_source_sha256": "badc7d335ba115f31e968f6c138e590583100a54fb5a20a7c69ae9ffa99c0fc7"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_04",
+        "claim": "AKR1C1 binds NECTIN4 and impairs AP2M1-dependent clathrin-mediated internalization of NECTIN4-ADC; pharmacologic inhibition of AKR1C1 restores ADC uptake, directly characterizing the clathrin-mediated endocytosis route for NECTIN4.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": null,
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "urothelial carcinoma",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "NECTIN4-ADC resistant",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:42167230",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42167230/",
+              "title": "Endocytic evasion confers resistance to antibody-drug conjugates therapy in cancer",
+              "retrieved_at": "2026-08-13T20:24:56.138921Z",
+              "content_sha256": "27f57e4d64673129427f1317989c9d5cf3757959fbe167fb1fb93cc6126fac5e",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:24:56.138921Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Mechanistically, AKR1C1 binds NECTIN4 and impairs the AP2M1-dependent clathrin-mediated internalization of NECTIN4-ADC, while the AKR1C1-WWP2 axis promotes extracellular vesicle-mediated ADC export and clearance, thereby reducing intracellular payload accumulation. Pharmacologic inhibition of AKR1C1 restores ADC uptake, increases payload delivery, and enhances therapeutic sensitivity in preclinical models.",
+            "quote_sha256": "215ae6d34fca705802f07fd93a3c2ae5d079b555ac5c07709f3d275e52408470",
+            "char_offset": 588,
+            "normalized_source_sha256": "badc7d335ba115f31e968f6c138e590583100a54fb5a20a7c69ae9ffa99c0fc7"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_05",
+        "claim": "Pharmacologic inhibition of sialylation increases endocytosis of enfortumab vedotin (Nectin-4-targeting ADC) by bladder cancer cells, demonstrating that sialylation suppresses NECTIN4-ADC internalization.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "bladder cancer cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "bladder cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "bladder cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:41066596",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41066596/",
+              "title": "Targeting Sialylation Enhances the Therapeutic Efficacy of the Nectin-4-Targeted Antibody-Drug Conjugate Enfortumab Vedotin in Bladder Cancer",
+              "retrieved_at": "2026-08-13T20:24:56.132811Z",
+              "content_sha256": "18d44ad2f92e78344cc3f7e94cb8979f98797eba98a9f5c1eabfc989bd1bf6c1",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:24:56.132811Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "In this study, we showed that Nectin-4 expression is negatively correlated with sialylation and complex type N-glycans levels and positively correlated with high-mannose type N-glycans levels in bladder cancer. Pharmacologic inhibition of sialylation sensitized bladder cancer to EV monotherapy and its combination with immunotherapy both in vitro and in vivo. Mechanistically, α-2,6-sialylation mediated the downregulation of Nectin-4. Furthermore, the removal of sialylation increased the endocytosis of EV by bladder cancer cells and enhanced EV-mediated immunogenic cell death.",
+            "quote_sha256": "fe00f168634f4e2898c33cdfc5e7ce7c179ff8eba6c5936b4dad004d9ca37b1c",
+            "char_offset": 577,
+            "normalized_source_sha256": "64b8fcc2126a200be0064740d655c688548f1e9f65f0fba592907b8d49b4e7ed"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_06",
+        "claim": "Sialylation suppresses enfortumab vedotin (Nectin-4-ADC) endocytosis and promotes degradation of Nectin-4, and targeting sialylation improves ADC therapeutic efficacy in bladder cancer.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "bladder cancer cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "bladder cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "bladder cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:41066596",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41066596/",
+              "title": "Targeting Sialylation Enhances the Therapeutic Efficacy of the Nectin-4-Targeted Antibody-Drug Conjugate Enfortumab Vedotin in Bladder Cancer",
+              "retrieved_at": "2026-08-13T20:24:56.132811Z",
+              "content_sha256": "18d44ad2f92e78344cc3f7e94cb8979f98797eba98a9f5c1eabfc989bd1bf6c1",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:24:56.132811Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Collectively, these findings suggest that sialylation is a promising therapeutic target to improve EV sensitivity and provide a rational basis for clinical application of sialylation inhibitors in bladder cancer.<h4>Significance</h4>Suppressed enfortumab vedotin endocytosis and elevated degradation of its target Nectin-4 is mediated by sialylation, which can be targeted to improve the therapeutic efficacy of the antibody-drug conjugate in bladder cancer.",
+            "quote_sha256": "be7fc2bf3cc615005b0bb068b581e18ff29e3c1d4a6e839f3994117fda401f73",
+            "char_offset": 1163,
+            "normalized_source_sha256": "64b8fcc2126a200be0064740d655c688548f1e9f65f0fba592907b8d49b4e7ed"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_07",
+        "claim": "Nectin-4 plays a crucial role in the cellular uptake of PADCEV (enfortumab vedotin) in corneal epithelial cells, with non-specific pinocytosis also involved.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "HCE-T (human primary corneal epithelial cells)",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "corneal epithelial cells",
+            "cell_line_name": "HCE-T",
+            "cellosaurus_id": null,
+            "tissue": "cornea",
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12154390",
+              "pmc_id": "PMC12154390",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/40507807/",
+              "title": "Mechanistic Insights into Anti-Nectin4-VcMMAE-Induced Ocular Toxicity: From Cellular Uptake Pathways to Molecular Modification",
+              "retrieved_at": "2026-08-13T20:24:56.138619Z",
+              "content_sha256": "1471ce422179675aea7804192ea3916ec87e44b3f75de868d5f36de31d3a86a6",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:24:56.138619Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "The results confirmed that nectin-4 plays a crucial role in the cellular uptake of PADCEV, and non-specific pinocytosis is also involved.",
+            "quote_sha256": "253bf60f98ee1a4d7b34a057e7415cd9602d727fd23fa3f05af573440fbc2761",
+            "char_offset": 561,
+            "normalized_source_sha256": "f020a70385a709a934e084816d52aec7264e416bbea4250533948c8c46967ddb"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_08",
+        "claim": "Radiolabeled bicyclic peptide probes were evaluated for cellular uptake and internalization in Nectin-4-expressing cell lines (H1975, ABC-1, HEK293_nectin4), directly measuring NECTIN4-mediated internalization.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "H1975, ABC-1, HEK293_nectin4",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "non-small cell lung cancer / HEK293 overexpressing Nectin-4",
+            "cell_line_name": "H1975",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "non-small cell lung cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13261599",
+              "pmc_id": "PMC13261599",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42294171/",
+              "title": "Preclinical Theranostic Study of &lt;sup&gt;68&lt;/sup&gt;Ga/&lt;sup&gt;177&lt;/sup&gt;Lu/&lt;sup&gt;225&lt;/sup&gt;Ac-Labeled Bicyclic Peptides Targeting Nectin‑4 in Lung Cancer",
+              "retrieved_at": "2026-08-13T20:24:56.138848Z",
+              "content_sha256": "b9ecf068a954e49f095d664ec94cbf577d826d0d8d59304c6241a2a42ff36f7b",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:24:56.138848Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "We designed and synthesized <sup>68</sup>Ga-labeled probes ([<sup>68</sup>Ga]-Ga-<b>3</b> and [<sup>68</sup>Ga]-Ga-<b>5</b>) for PET imaging and <sup>177</sup>Lu-labeled agents ([<sup>177</sup>Lu]-Lu-<b>6</b>) for targeted radionuclide therapy. Radiochemical yields and purity were optimized, and the agents were evaluated for cellular uptake, internalization, and biodistribution in Nectin-4-expressing cell lines (H1975, ABC-1, HEK293<sub>nectin4</sub>) and xenograft models. Target specificity was confirmed through blocking studies with the Nectin-4 specific inhibitor peptide N188.",
+            "quote_sha256": "62fd0d91dca23cc68afeb2ca75c34d9b792ece3d092762cbf8ab04d56ac51106",
+            "char_offset": 386,
+            "normalized_source_sha256": "8332ffb6e35d2da067bf7e7676ddf309413fc6dd6f02599785c9fbc4ed20b6a4"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_09",
+        "claim": "[177Lu]-Lu-6 showed 3.5% internalization in Nectin-4-expressing cells, with superior tumor retention compared to reference compounds, quantitatively characterizing NECTIN4-mediated internalization of a radiolabeled probe.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "H1975, ABC-1, HEK293_nectin4",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "non-small cell lung cancer / HEK293 overexpressing Nectin-4",
+            "cell_line_name": "H1975",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "non-small cell lung cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13261599",
+              "pmc_id": "PMC13261599",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42294171/",
+              "title": "Preclinical Theranostic Study of &lt;sup&gt;68&lt;/sup&gt;Ga/&lt;sup&gt;177&lt;/sup&gt;Lu/&lt;sup&gt;225&lt;/sup&gt;Ac-Labeled Bicyclic Peptides Targeting Nectin‑4 in Lung Cancer",
+              "retrieved_at": "2026-08-13T20:24:56.138848Z",
+              "content_sha256": "b9ecf068a954e49f095d664ec94cbf577d826d0d8d59304c6241a2a42ff36f7b",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:24:56.138848Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Blocking studies resulted in significant reductions in uptake, with 39-fold and 22-fold decreases for [<sup>68</sup>Ga]-Ga-<b>3</b> and [<sup>68</sup>Ga]-Ga-<b>5</b>, respectively, confirming Nectin-4 specificity. [<sup>177</sup>Lu]-Lu-<b>6</b> showed superior tumor retention (13% uptake) and internalization (3.5%) compared to [<sup>177</sup>Lu]-Lu-FAP-2286/N188, with sustained tumor growth suppression in xenograft models. PET/SPECT imaging revealed high tumor-to-background ratios and favorable pharmacokinetics, highlighting the potential of these agents for clinical application.",
+            "quote_sha256": "d741fafb9c5049b21ecd7b5a7948beaaefcb1591f1d361c4e08eced28d497e23",
+            "char_offset": 1231,
+            "normalized_source_sha256": "8332ffb6e35d2da067bf7e7676ddf309413fc6dd6f02599785c9fbc4ed20b6a4"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      }
+    ],
+    "n_observations": 6,
+    "n_papers_discovered": 109,
+    "n_papers_fetched": 2
+  },
+  "generated_at": "2026-08-13T20:26:21.243114Z",
+  "runner_version": "internalization-literature/0.1.0"
+}

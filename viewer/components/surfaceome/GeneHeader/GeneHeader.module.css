@@ -4,9 +4,14 @@
  */
 
 .header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(380px, 42%);
+  /* The structure slot spans both rows, and a spanning item's extra height
+     is spread across every row it covers. With two `auto` rows that pushed
+     the symbol's row taller than the symbol, opening a gap under the
+     protein name. A `1fr` second row soaks up the slack instead. */
+  grid-template-rows: auto 1fr;
+  gap: 4px var(--space-6);
   /* No bottom border / padding: the sticky AnchorNav strip directly
      below owns the separating hairline (its own border-top). A
      border-bottom here floated a SECOND rule ~12px above the strip —
@@ -17,16 +22,12 @@
 }
 
 .headerGrid {
-  display: grid;
-  /* 30% larger structure slot per user request — was 280px, now
-     ~365px. Text column shrinks correspondingly but stays the
-     dominant area on the page. */
-  grid-template-columns: 1fr 365px;
-  gap: var(--space-6);
-  align-items: start;
+  display: contents;
 }
 
 .headerText {
+  grid-column: 1;
+  grid-row: 2;
   display: flex;
   flex-direction: column;
   /* `--space-4` (1rem) was too airy between the IDs row, the
@@ -40,10 +41,14 @@
 }
 
 .structureSlot {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: start;
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  width: 365px;
+  width: 100%;
+  min-width: 0;
 }
 
 .structureCaption {
@@ -72,18 +77,29 @@
    The rules are deleted so the GeneHeader stylesheet stays in sync
    with what's actually in the JSX.) */
 
-@media (max-width: 760px) {
-  .headerGrid {
-    grid-template-columns: 1fr;
+@media (max-width: 1000px) {
+  .header {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .headerText {
+    grid-row: 3;
   }
 
   .structureSlot {
-    width: 100%;
-    max-width: 320px;
+    grid-column: 1;
+    grid-row: 2;
+    width: 94%;
+    justify-self: center;
+    max-width: none;
   }
 }
 
 .symbol {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
   font-size: clamp(2.4rem, 5.5vw, 3.8rem);
 }
 
@@ -580,6 +596,22 @@
   white-space: nowrap;
 }
 
+/* Low Tedman surface expression (GPCR library genes) — amber caution flag:
+ * a candidate for an exogenous signal peptide to boost surface display. */
+.lowSurfaceChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: var(--fw-medium, 600);
+  color: color-mix(in srgb, var(--amber-dark, #a86400) 82%, var(--fg, #1f1718));
+  background: color-mix(in srgb, var(--amber-dark, #a86400) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--amber-dark, #a86400) 46%, transparent);
+  white-space: nowrap;
+}
+
 /* Deep-dive tier callout — solid pill in the five-tier palette (canonical
  * green → not-surface neutral), with a subtle outlined sub-facet chip. */
 .tierCallout {
@@ -615,5 +647,21 @@
   color: color-mix(in srgb, #c07830 78%, var(--fg, #1f1718));
   background: color-mix(in srgb, #c07830 12%, transparent);
   border: 1px solid color-mix(in srgb, #c07830 38%, transparent);
+  white-space: nowrap;
+}
+
+/* Oversized truncation-candidate flag — distinct (lavender) from the orange
+   "In library" chip; carries an InfoTip explaining the ~5 kb ORF cap. */
+.oversizedChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: var(--fw-medium, 600);
+  color: color-mix(in srgb, #8878c8 82%, var(--fg, #1f1718));
+  background: color-mix(in srgb, #8878c8 12%, transparent);
+  border: 1px solid color-mix(in srgb, #8878c8 40%, transparent);
   white-space: nowrap;
 }

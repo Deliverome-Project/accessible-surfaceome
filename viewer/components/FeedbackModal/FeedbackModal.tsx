@@ -15,6 +15,43 @@ const API_BASE =
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 const SITE_VERSION = process.env.NEXT_PUBLIC_GIT_SHA ?? "unknown";
 
+// Opt-in "remember my name + e-mail on this device" convenience. These keys are
+// written to localStorage ONLY when the visitor checks the box — first-party,
+// never sent anywhere until they submit, and cleared the moment they uncheck.
+const LS_NAME = "surfaceome:feedback:name";
+const LS_EMAIL = "surfaceome:feedback:email";
+
+// Best-effort localStorage — private mode / blocked storage throws on access, so
+// every read and write is guarded and degrades to "don't remember".
+function readRemembered(): { name: string; email: string } | null {
+  try {
+    const name = localStorage.getItem(LS_NAME);
+    const email = localStorage.getItem(LS_EMAIL);
+    if (name || email) return { name: name ?? "", email: email ?? "" };
+  } catch {
+    /* storage unavailable */
+  }
+  return null;
+}
+
+function writeRemembered(name: string, email: string): void {
+  try {
+    localStorage.setItem(LS_NAME, name);
+    localStorage.setItem(LS_EMAIL, email);
+  } catch {
+    /* storage unavailable — remembering is best-effort */
+  }
+}
+
+function clearRemembered(): void {
+  try {
+    localStorage.removeItem(LS_NAME);
+    localStorage.removeItem(LS_EMAIL);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 // Augment window for the Turnstile global the loader-script defines.
 declare global {
   interface Window {
@@ -64,6 +101,8 @@ export function FeedbackModal() {
   const [subject, setSubject] = useState("");
   const [comment, setComment] = useState("");
   const [publicRequested, setPublicRequested] = useState(false);
+  // Opt-in: remember name + e-mail in this browser for next time (default off).
+  const [remember, setRemember] = useState(false);
 
   // Turnstile token (filled by the widget's callback)
   const turnstileTokenRef = useRef<string>("");
@@ -84,6 +123,13 @@ export function FeedbackModal() {
       );
       setPhase("form");
       setErrorMsg("");
+      // Prefill from a prior opt-in "remember" (if the visitor chose it before).
+      const saved = readRemembered();
+      if (saved) {
+        setName(saved.name);
+        setEmail(saved.email);
+        setRemember(true);
+      }
       setOpen(true);
     };
     window.addEventListener("surfaceome:open-feedback", handler);
@@ -133,6 +179,7 @@ export function FeedbackModal() {
       setSubject("");
       setComment("");
       setPublicRequested(false);
+      setRemember(false);
       turnstileTokenRef.current = "";
       if (widgetIdRef.current && window.turnstile) {
         try { window.turnstile.remove(widgetIdRef.current); } catch {}
@@ -199,6 +246,11 @@ export function FeedbackModal() {
         }
         return;
       }
+      // Honor the opt-in: persist on success if checked, else make sure nothing
+      // lingers. Only reached after a successful submit, so we never store an
+      // address the visitor didn't actually send.
+      if (remember) writeRemembered(name.trim(), email.trim());
+      else clearRemembered();
       setPhase("success");
     } catch (err) {
       setErrorMsg("We couldn't reach the server. Please try again in a moment.");
@@ -271,6 +323,24 @@ export function FeedbackModal() {
               />
             </div>
 
+            <label className={styles.checkbox}>
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => {
+                  const on = e.target.checked;
+                  setRemember(on);
+                  // Uncheck clears immediately, so leaving without submitting
+                  // still wipes any previously-remembered values.
+                  if (!on) clearRemembered();
+                }}
+              />
+              <span>
+                Remember my name and e-mail in this browser to prefill this form
+                next time.
+              </span>
+            </label>
+
             <div className={styles.field}>
               <label htmlFor="feedback-subject">Subject <span aria-hidden>*</span></label>
               <input
@@ -342,8 +412,10 @@ export function FeedbackModal() {
 
             <p className={styles.privacy}>
               We collect your name and e-mail so we can reply to your
-              feedback. We do not share your information with third parties.
-              Email{" "}
+              feedback. We do not share your information with third parties. If
+              you check &ldquo;remember&rdquo; above, your name and e-mail are
+              saved only in this browser (never sent anywhere until you submit)
+              to prefill this form next time; unchecking it clears them. Email{" "}
               <a href="mailto:surfaceome-viewer@deliverome.org">
                 surfaceome-viewer@deliverome.org
               </a>{" "}

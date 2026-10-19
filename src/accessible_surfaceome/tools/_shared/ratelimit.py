@@ -178,5 +178,10 @@ def default_limiter() -> RateLimiter:
             "api.unpaywall.org": 600,  # polite; daily-cap service, no hard qps published
             "api.datacite.org": 1000,  # public REST API — keep to ~1 qps to be courteous
             "api.labs.crossref.org": 1000,  # Retraction Watch feed host (Crossref Labs)
+            # bioRxiv preprint hydration (paper_from_preprint_doi details API) +
+            # its PDF host — public, no published qps, and www.biorxiv.org 429s
+            # under fan-out. ~1 qps courtesy, matching DataCite/Crossref.
+            "api.biorxiv.org": 1000,
+            "www.biorxiv.org": 1000,
         }
     )

@@ -593,6 +593,40 @@ export interface RepresentativeStructure {
   source: string;
 }
 
+/** One Bindome binding site — a patch recovered from where BindCraft's
+ *  designs actually land on the target, since Bindome publishes no
+ *  target-side site list of its own (its `InterfaceResidues` column is
+ *  the binder chain, and every design ran `no_hotspot`). Built by
+ *  scripts/build/build_bindome_sites.py, served from `bindome_site_public`. */
+export interface BindomeSite {
+  site_id: number;
+  anchor_residue: number;
+  /** Same key name SurfaceBindSite uses, from the same DeepTMHMM string,
+   *  so one compartment filter spans both sources. */
+  anchor_topology: string | null;
+  n_residues: number;
+  /** Designs contacting the most-contacted residue of this site. */
+  n_designs_supporting: number;
+  /** Designs parsed for this protein, i.e. the denominator. */
+  n_designs_total: number;
+  mean_design_fraction: number | null;
+  residues: number[];
+}
+
+/** Bindome per-protein block. Absent entirely when the protein has no
+ *  Bindome sites — the Worker only attaches it when D1 returns rows, so
+ *  consumers must treat it as optional rather than checking `has_data`. */
+export interface BindomeFeatures {
+  has_data: boolean;
+  n_sites: number;
+  n_sites_extracellular: number;
+  sites: BindomeSite[];
+  release: string | null;
+  source: string;
+  attribution: string;
+  citation: string;
+}
+
 export interface SurfaceBindFeatures {
   has_data: boolean;
   n_sites: number;
@@ -668,13 +702,84 @@ export interface DeterministicFeatures {
    *  back-compat with pre-sentinel snapshots. */
   paralogs_checked?: boolean;
   isoform_topologies_checked?: boolean;
+  /** The topology of the protein each LIBRARY MEMBER actually encodes, as opposed to
+   *  `canonical_topology`, which is the gene's canonical UniProt sequence. Those are
+   *  frequently different proteins: a member's ORF is its designed CDS, an
+   *  Ensembl-transcript product. Always DeepTMHMM **v1** -- the alphabet the viewer
+   *  colours by. Present only for genes with at least one library member whose exact
+   *  ordered sequence has a v1 run; absent is "no run", never "use the canonical".
+   *  Worker `row_schema` 11+. */
+  library_designed_topology?: LibraryDesignedTopology[];
+  /** Which structure each library member should render, and how to renumber it.
+   *  Worker `row_schema` 11+. */
+  library_designed_structure?: LibraryDesignedStructure[];
   structure: StructureFeatures;
   surface_bind: SurfaceBindFeatures;
+  /** Optional: the Worker attaches this only when `bindome_site_public`
+   *  returns rows, so most genes legitimately have no key here. */
+  bindome?: BindomeFeatures;
   /** Schweke 2024 AF2 homo-oligomer prediction. Always present, with
    *  `is_homo_oligomer=false` as the explicit "not in the positive set"
    *  signal. Strong AF2-derived structural prior on the synthesizer's
    *  `epitope_masking.mechanism = "homo-oligomerization"` call. */
   homo_oligomerization: HomoOligomerizationFeatures;
+}
+
+/** One library member's own topology. Mirrors `library_topology_public` joined through
+ *  to `topology_public`; see the Worker's `library_designed_topology` block. */
+export interface LibraryDesignedTopology {
+  candidate_id: string;
+  /** Library tranche, `l1` / `l2`. NOT a DeepTMHMM tool version. */
+  library: string;
+  candidate_set: string | null;
+  species: string | null;
+  /** Always `deeptmhmm_v1`: the topology of record. */
+  tool: string;
+  cohort: string;
+  topology_version: string;
+  /** Which `topology_public` row this came from, so the match is auditable. */
+  topology_acc: string;
+  /** sha256 of the ordered protein — the key the match was made on, not the accession. */
+  sequence_sha256: string;
+  ordered_length_aa: number | null;
+  per_residue_topology: string;
+  tm_helix_count: number;
+  beta_strand_count: number | null;
+  n_terminal_orientation: "extracellular" | "cytoplasmic";
+  c_terminal_orientation: "extracellular" | "cytoplasmic";
+  signal_peptide_length: number;
+  ecd_length_residues: number;
+  icd_length_residues: number;
+  predicted_surface_membrane: boolean | null;
+  predicted_secreted: boolean | null;
+  tool_version: string;
+}
+
+/** One candidate structure for a library member. `is_chosen` is the one to render;
+ *  alternates travel with the `note` saying why they lost. */
+export interface LibraryDesignedStructure {
+  candidate_id: string;
+  candidate_set: string | null;
+  species: string | null;
+  /** `colabfold` = we folded the ordered sequence; `alphafold_db` = AFDB's model is the
+   *  ordered protein, or contains it contiguously. */
+  source: string;
+  /** Object key under the public `surfaceome-structures` bucket; null for AFDB. */
+  r2_key: string | null;
+  /** AFDB URL; null for ours. */
+  model_url: string | null;
+  proteoform_match: string;
+  /** construct residue i == model residue i + residue_offset. Must be applied when
+   *  rendering: offsets run to 134 and ignoring one draws a plausible frame shift. */
+  residue_offset: number;
+  ordered_length_aa: number | null;
+  model_length_aa: number | null;
+  /** Inclusive model residues the construct covers — the span to clip the render to. */
+  display_first_model_residue: number | null;
+  display_last_model_residue: number | null;
+  is_chosen: boolean;
+  mean_plddt: number | null;
+  note: string | null;
 }
 
 // ============================================================
@@ -1528,15 +1633,24 @@ export type BenchmarkSource =
   | "cspa"
   | "hpa";
 
+/** One (gene, model, variant) cell of the SurfaceBench matrix. The cell is
+ *  the MAJORITY over the run's replicates (refused replicates excluded) —
+ *  the same per-cell numbers the paper and mainbench_canonical_v2.tsv use.
+ *  `verdict` / `reason` / `confidence` / `correct` describe the majority;
+ *  `reasoning` and the per-call telemetry (latency, cost, tokens) come from
+ *  the representative replicate named by `replicate`. A cell whose every
+ *  replicate refused has `verdict: null`, `correct: null`, `n_reps: 0`. */
 export interface BenchmarkVariantResult {
   verdict: string | null;
   reason: string | null;
   confidence: string | null;
   key_uncertainty: string | null;
-  /** Per-call free-text reasoning the agent emitted alongside the
-   *  verdict. Shown in the row-expand reveal so readers can audit
-   *  any specific (gene, model, variant) call's logic. */
+  /** Free-text reasoning from the representative replicate (one that made
+   *  the majority call). Shown in the drawer so readers can audit the
+   *  call's logic. */
   reasoning: string | null;
+  /** Soft-credit match of the majority verdict against truth (yes ≡
+   *  contextual); null when no replicate returned a verdict. */
   correct: number | null;
   latency_s: number | null;
   n_web_searches: number | null;
@@ -1547,6 +1661,22 @@ export interface BenchmarkVariantResult {
   completion_tokens?: number | null;
   cache_creation_tokens?: number | null;
   cache_read_tokens?: number | null;
+  /** Representative replicate number (source of reasoning + telemetry). */
+  replicate?: number | null;
+  /** Replicates that returned a verdict (the majority's denominator). */
+  n_reps?: number;
+  /** Share of n_reps on the winning side, e.g. 0.667 for a 2–1 split. */
+  majority_agreement?: number | null;
+  /** Telemetry summed over every replicate of the cell. */
+  totals?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    cache_creation_tokens: number;
+    cache_read_tokens: number;
+    n_web_searches: number;
+    cost_usd: number;
+    latency_s: number;
+  };
 }
 
 export interface BenchmarkRow {
@@ -1574,6 +1704,9 @@ export interface BenchmarkMatrix {
   /** Optional hint for consumers that want to highlight one variant
    *  visually (e.g. emboss the column header). */
   headline_variant: string;
+  /** "majority_of_replicates": every cell aggregates the run's replicates. */
+  cell_aggregation?: string;
+  run_id?: string;
   n_genes: number;
   rows: BenchmarkRow[];
 }

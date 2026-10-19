@@ -36,6 +36,8 @@ function prettyEvidenceLabel(evidenceId: string): string {
   if (newForm) return newForm[1];
   const legacyForm = /^a[12]_evi_(\d+)$/.exec(evidenceId);
   if (legacyForm) return legacyForm[1];
+  const internForm = /^int_evi_(\d+)$/.exec(evidenceId);
+  if (internForm) return String(parseInt(internForm[1], 10));
   return evidenceId;
 }
 
@@ -195,7 +197,7 @@ export function SourceList({ sources }: { sources: readonly SourceEntry[] }) {
   );
 }
 
-function EvidenceCard({
+export function EvidenceCard({
   ev,
   papers,
   onClose,
@@ -236,6 +238,7 @@ function EvidenceCard({
     const sid = s.source_id ?? "";
     const pmidFromSid = sid.startsWith("PMID:") ? sid.slice(5) : null;
     const pmcFromSid = sid.startsWith("PMC:") ? sid.slice(4) : null;
+    const doi = s.doi ?? (sid.startsWith("DOI:") ? sid.slice(4) : null);
     const pmcId = s.pmc_id ?? pmcFromSid;
     const pmid = s.pmid ?? pmidFromSid;
     // Citation metadata is keyed on the VERBATIM ``source_id`` — the same
@@ -257,11 +260,11 @@ function EvidenceCard({
         label: `PMID ${pmid}`,
         meta,
       });
-    } else if (s.doi && !seenKeys.has(`doi:${s.doi}`)) {
-      seenKeys.add(`doi:${s.doi}`);
+    } else if (doi && !seenKeys.has(`doi:${doi}`)) {
+      seenKeys.add(`doi:${doi}`);
       sources.push({
-        href: `https://doi.org/${s.doi}`,
-        label: `doi:${s.doi}`,
+        href: `https://doi.org/${doi}`,
+        label: `doi:${doi}`,
         meta,
       });
     } else if (s.url && !seenKeys.has(`url:${s.url}`)) {

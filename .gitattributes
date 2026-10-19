@@ -155,6 +155,8 @@ data/external/adcdb/adcdb_antigens.tsv -filter -diff -merge text
 # intracellular function phrases (chemokine ligands, RNA polymerase
 # components, SNAREs, etc.) — all ADCdb-internal text, no external DBs.
 data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text
+data/external/bindome/bindome_sites.tsv -filter -diff -merge text
+data/external/masif/masif_sites.tsv -filter -diff -merge text
 
 # Per-figure consolidated TSVs for the two positive-control / deterministic-
 # features figures, built by `scripts/build_figure_tsvs.py` — each is bundled
@@ -191,6 +193,13 @@ data/processed/intracellular_rescue_v1/deep_dive_cohort.tsv -filter -merge text
 data/processed/intracellular_rescue_v1/RUN_DEEP_DIVE.md -filter -merge text
 data/processed/intracellular_rescue_v1/citation_audit.tsv -filter -merge text
 
+# Draft binder coverage audit: small, reader-accessible tables and provenance.
+data/analysis/binder_coverage/* -filter -diff -merge
+data/analysis/binder_coverage/*.tsv text
+data/analysis/binding_site_audit/* -filter -diff -merge
+data/analysis/binding_site_audit/*.tsv text
+data/analysis/deep_dive_binding_sites/* -filter -diff -merge
+data/analysis/deep_dive_binding_sites/*.tsv text
 # onedb_trim_rescue_v1 — same rationale as intracellular_rescue_v1 above:
 # data/processed/** is blanket-LFS, so without these the README commits as a
 # 3-line pointer and renders as one on GitHub.
@@ -204,3 +213,13 @@ data/processed/onedb_trim_rescue_v1/deterministic_gaps.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/gene_list_optcut_zerodb.tsv -filter -merge text
 data/processed/extracellular_site_comparison/masif_site_predictions.tsv -filter -diff -merge text
 data/processed/extracellular_site_comparison/bindome_surface_bind_concordance.tsv -filter -diff -merge text
+
+# disulfide_clearance_calibration — data/analysis/** is blanket-LFS, so without
+# these the REPORT.md that other sessions are reading to pick a clearance floor
+# commits as a 3-line pointer and renders as one on GitHub. The .pdf/.png are
+# already covered by the data/analysis/**/*.{pdf,png} rules above.
+# No -diff on any of them: these exist to be READ in review, and with -diff git
+# reports them as "Bin 0 -> N bytes" and hides the prose and the numbers.
+data/analysis/disulfide_clearance_calibration/*.md   -filter -merge text
+data/analysis/disulfide_clearance_calibration/*.tsv  -filter -merge text
+data/analysis/disulfide_clearance_calibration/*.json -filter -merge text

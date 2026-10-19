@@ -129,7 +129,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/benchmark/export.tsv",
         sizeKey: "/v1/benchmark/export.tsv",
         summary:
-          "Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) for the canonical bench_version. Adds the 5-DB vote vector and truth_verdict / truth_signal / truth_reason to the triage export shape.",
+          "Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) cell for the canonical bench_version. The verdict is the cell's majority over its 3 replicates, as in the paper, with n_reps, majority_agreement, is_match and replicate-summed *_total telemetry. Adds the 5-DB vote vector and truth_verdict / truth_signal / truth_reason to the triage export shape.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv | head -3",
       },
@@ -148,7 +148,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         anchor: "benchmark-matrix",
         sizeKey: "/v1/benchmark/matrix",
         summary:
-          "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. `models` lists the eight benchmarked Claude models (Haiku 4.5 / 5.5, Sonnet 4.6 / 5 / 5.5, Opus 4.8 / 5 / 5.5) and `variants` the prompt variants (naive, ncbi, ncbi_effort_low — the ncbi prompt at low reasoning effort — web_ncbi, pubmed_ncbi); not every model ran every variant, and a missing (model, variant) is null. A cell whose replicates were all declined by the model's safety classifier has `verdict: null` and `error: \"refusal\"`. Drives the SurfaceBench page's side-drawer.",
+          "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. `models` lists the eight benchmarked Claude models (Haiku 4.5 / 5.5, Sonnet 4.6 / 5 / 5.5, Opus 4.8 / 5 / 5.5) and `variants` the prompt variants (naive, ncbi, ncbi_effort_low — the ncbi prompt at low reasoning effort — web_ncbi, pubmed_ncbi); not every model ran every variant, and a missing (model, variant) is null. Each cell is the majority over its 3 replicates (refused replicates excluded) — the same per-cell numbers as the paper — with `n_reps`, `majority_agreement` and replicate-summed `totals`; `reasoning` and per-call telemetry come from the representative `replicate`. A cell whose replicates were all declined by the model's safety classifier has `verdict: null` and `error: \"refusal\"`. Drives the SurfaceBench page's side-drawer.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .variants, .headline_variant'",
       },
@@ -164,7 +164,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/catalog",
         sizeKey: "/v1/catalog",
         summary:
-          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus a per-model triage matrix (Haiku / Sonnet / Opus × verdict + short reason code; Sonnet applies a pubmed_ncbi rescue when its ncbi call is a false-negative), a deep_dive flag, and — for deep-dived rows — an optional `ddf` projection with the catalog-filterable subset of Filters (surface_accessibility, confidence, evidence_grade, n_papers_selected_band, surface_call_reason, ...). One row per protein-coding gene (~19k). Free-text reasoning per run is on GET /v1/triage/{SYMBOL}; the full deep-dive SurfaceomeRecord is on GET /v1/genes/{SYMBOL}. Top-level `n_papers_selected_cutoffs` reports the cohort percentile thresholds (p10, p90) used to compute `ddf.n_papers_selected_band` on each row. Server-side `json_extract` slims the deep-dive read (~4 KB/row on the wire out of ~120 KB per record).",
+          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus a per-model triage matrix (Haiku / Sonnet / Opus × verdict + short reason code; Sonnet applies a pubmed_ncbi rescue when its ncbi call is a false-negative), a deep_dive flag, an optional `intern` internalization grade (the sequence-prior SeqGrade — see the Internalization section; full record on GET /v1/internalization/{SYMBOL}), and — for deep-dived rows — an optional `ddf` projection with the catalog-filterable subset of Filters (surface_accessibility, confidence, evidence_grade, n_papers_selected_band, surface_call_reason, ...). One row per protein-coding gene (~19k). Free-text reasoning per run is on GET /v1/triage/{SYMBOL}; the full deep-dive SurfaceomeRecord is on GET /v1/genes/{SYMBOL}. Top-level `n_papers_selected_cutoffs` reports the cohort percentile thresholds (p10, p90) used to compute `ddf.n_papers_selected_band` on each row. Server-side `json_extract` slims the deep-dive read (~4 KB/row on the wire out of ~120 KB per record).",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage, .n_papers_selected_cutoffs'",
       },
@@ -261,6 +261,22 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
     ],
   },
   {
+    label: "Internalization",
+    blurb:
+      "A standalone pass (separate from the deep dive): how readily a protein is taken from the cell surface into the cell, graded blind by a frontier model from amino-acid sequence + extracellular/cytoplasmic topology alone. The one-word grade per gene rides on each /v1/catalog row as `intern`; this endpoint returns the full record.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/internalization/{SYMBOL}",
+        anchor: "internalization",
+        summary:
+          "Full InternalizationRecord for one gene from the opus-5 sequence-prior sweep: the model-prior track's overall 5-point SeqGrade (very_high / high / moderate / low / very_low / unknown) with per-isoform grade, DeepTMHMM E/C topology, endocytic sorting motifs, and the model's reasoning — scoped to intrinsic / basal endocytic propensity (not antibody- or ADC-induced uptake). Returns null for a gene not in the internalization cohort.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/internalization/LRP1 | jq '.model_priors[0].overall_grade, .model_priors[0].per_isoform[0].grade'",
+      },
+    ],
+  },
+  {
     label: "History",
     blurb:
       "Record history + numbered data releases. Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change — numbering starts at 1 for a gene's first archived version; there's no revision 0. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI. Release 1.0.0, the 2026-08-15 Zenodo deposit, predates this system and is Zenodo-only: it has no per-gene member records here (see the DOI in its /v1/releases/1.0.0 response instead).",
@@ -305,6 +321,15 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/releases/1.0.0/genes/ERBB2 | jq '.error, .zenodo_version_doi'",
       },
+    ],
+  },
+  {
+    label: "Contact sites",
+    blurb: "Versioned mapped ligand and antibody contacts from public D1. Coverage is an audit snapshot, not an exhaustive ligand census. Coordinates use canonical UniProt numbering.",
+    endpoints: [
+      { method: "GET", path: "/v1/contact-sites/releases/current", summary: "Current release, source provenance, coverage and excluded identifiers.", curl: "curl -s https://api.deliverome.org/surfaceome/v1/contact-sites/releases/current" },
+      { method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}", summary: "Ligand identities, category metadata and one observed footprint per named ligand. scope=extracellular by default; scope=all includes other compartments. Audited empty results differ from not_audited.", curl: "curl -s 'https://api.deliverome.org/surfaceome/v1/contact-sites/releases/RELEASE_ID/proteins/P00533'" },
+      { method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}/ligands/{ligandId}/evidence", summary: "Up to 100 original observations per page; pass next_cursor as cursor. Keep the same release and scope on every request. Omit ligands/{ligandId}/ to retrieve all observations, including unnamed partners.", curl: "curl -s 'https://api.deliverome.org/surfaceome/v1/contact-sites/releases/RELEASE_ID/proteins/P00533/evidence?scope=all'" },
     ],
   },
   {

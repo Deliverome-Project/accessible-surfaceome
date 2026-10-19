@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { SectionTabs } from "../../SectionTabs/SectionTabs";
 import { FeedbackModal } from "../../FeedbackModal/FeedbackModal";
 import { Reveal } from "../../Reveal/Reveal";
 import { Shell } from "../../Shell/Shell";
 import { AccessibilityRisksCard } from "../AccessibilityRisksCard/AccessibilityRisksCard";
+import { InternalizationCard } from "../InternalizationCard/InternalizationCard";
+import { TaggedSitesCard } from "../TaggedSitesCard/TaggedSitesCard";
 import { BenchmarkRow } from "../BenchmarkRow/BenchmarkRow";
 import { BiologicalContextCard } from "../BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../CommunityNotesCard/CommunityNotesCard";
@@ -24,10 +27,14 @@ import { RevisionStrip } from "../RevisionStrip/RevisionStrip";
 // ParalogsCard — three section tabs collapsed to one ("Isoforms ·
 // orthologs · paralogs").
 import { IsoformsCard } from "../IsoformsCard/IsoformsCard";
-import { SurfaceBindCard } from "../SurfaceBindCard/SurfaceBindCard";
+import { BindingSitesCard } from "../BindingSitesCard/BindingSitesCard";
 import { SurfaceEvidenceCard } from "../SurfaceEvidenceCard/SurfaceEvidenceCard";
 import { TriageRow } from "../TriageRow/TriageRow";
 import type { CatalogRow, GeneEntry } from "../../../lib/surfaceome";
+import {
+  fgLibrarySymbolSet,
+  type FgLibraryData,
+} from "../../../lib/fg-library";
 import type {
   BenchmarkRow as BenchmarkRowPayload,
   PaperMetadataMap,
@@ -38,6 +45,7 @@ import type {
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
 import type { TriageHeadlinePayload } from "../../../lib/triage-headline";
+import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import type { Revisions } from "../../../lib/revisions";
 import styles from "./GeneDetail.module.css";
 
@@ -61,6 +69,10 @@ interface GeneDetailProps {
    *  from the record (`structureViewerDataFromRecord`). Null when the
    *  record carries no accession. */
   structureData: StructureViewerData | null;
+  /** Tag-insertion-site records for this gene, client-fetched from the static
+   *  `/tag-sites/{SYMBOL}.json` asset by the shell. Null when no asset exists;
+   *  forwarded to `<GeneHeader>` for the 3D + linear-bar overlay. */
+  taggedSites: TaggedSitesFile | null;
   /** Schweke et al. 2024 AF2 homo-oligomer entry, derived from the record's
    *  `deterministic_features.homo_oligomerization`. Null when the protein
    *  isn't a Schweke positive. */
@@ -77,14 +89,30 @@ interface GeneDetailProps {
    *  on a fetch miss — GeneHeader / TriageRow then fall back to
    *  `rec.triage_signal`. */
   triageHeadline: TriageHeadlinePayload | null;
+  /** Deep-dive genes, used to order the FG-library prev/next nav. Empty until
+   *  the page shell fetches the index (library members only). */
+  deepDiveGenes: readonly GeneEntry[];
+  /** Lazy loader for the toolbar's GeneJump typeahead universe. Deferred so
+   *  the ~1.7 MB gene index stays off the gene page's initial load. */
+  loadGenes: () => Promise<readonly GeneEntry[]>;
+  /** Parsed FG-library membership overlay (fetched client-side), or null on a
+   *  miss. Drives the prev/next library navigation and is forwarded to
+   *  <IsoformsCard> for the per-variant in-library pills. */
+  fgLibrary: FgLibraryData | null;
+  /** Whether this gene is in the FG library — forwarded to <GeneHeader> for
+   *  the "In library" badge. */
+  inFgLibrary: boolean;
+  /** Whether this gene is an oversized truncation candidate — forwarded to
+   *  <GeneHeader> for the "Oversized" chip. */
+  oversized: boolean;
+  /** Full-length ORF size (kb) for an oversized gene, for the chip tooltip. */
+  oversizedOrfKb: number | null;
+  /** Tedman GPCR canonical surface expression (PME); null for non-GPCRs.
+   *  Forwarded to <GeneHeader> for the "Low surface" chip. */
+  tedmanPme: number | null;
   /** Latest archived revision (record history); null until fetched or on a
    *  miss — the strip is then omitted. */
-  revisions: Revisions | null;
-  /** Lazy loader for the toolbar's GeneJump typeahead universe. Deferred so
-   *  the ~1.7 MB gene index is fetched only when the reader opens the jump
-   *  box, not on the gene page's initial load. */
-  loadGenes: () => Promise<readonly GeneEntry[]>;
-}
+  revisions: Revisions | null;}
 
 /**
  * GeneDetail — the per-gene deep-dive page composition, extracted from the
@@ -99,13 +127,75 @@ export function GeneDetail({
   papers,
   geneName,
   structureData,
+  taggedSites,
   schwekeHomomer,
   catalogRow,
   benchmarkRow,
   triageHeadline,
-  revisions,
+  deepDiveGenes,
   loadGenes,
+  fgLibrary,
+  inFgLibrary,
+  oversized,
+  oversizedOrfKb,
+  tedmanPme,
+  revisions,
 }: GeneDetailProps) {
+  const router = useRouter();
+
+  // Prev/next navigation across the FG library, alphabetically. The FG-only
+  // ordered list is the deep-dive genes (each has a `/[symbol]` page) that are
+  // ALSO library members, sorted by symbol so "adjacent" means alphabetically
+  // adjacent. Only meaningful when the current gene is itself in the library;
+  // otherwise it has no position in the list and the controls are hidden.
+  const { prevGene, nextGene } = useMemo(() => {
+    const fgSet = fgLibrarySymbolSet(fgLibrary);
+    if (fgSet.size === 0 || !fgSet.has(rec.gene.hgnc_symbol)) {
+      return { prevGene: null, nextGene: null };
+    }
+    const ordered = deepDiveGenes
+      .filter((g) => fgSet.has(g.symbol))
+      .map((g) => g.symbol)
+      .sort((a, b) => a.localeCompare(b));
+    const idx = ordered.indexOf(rec.gene.hgnc_symbol);
+    if (idx === -1) return { prevGene: null, nextGene: null };
+    return {
+      prevGene: idx > 0 ? ordered[idx - 1] : null,
+      nextGene: idx < ordered.length - 1 ? ordered[idx + 1] : null,
+    };
+  }, [fgLibrary, deepDiveGenes, rec.gene.hgnc_symbol]);
+
+  // Arrow-key shortcuts for the prev/next library nav. Mirrors the ESC-to-close
+  // keydown effect in CatalogTable — a window-level listener, guarded so it
+  // never hijacks arrow keys while the reader is typing in the GeneJump input
+  // (or any other input/textarea/contenteditable/select).
+  useEffect(() => {
+    if (!prevGene && !nextGene) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = document.activeElement as HTMLElement | null;
+      const tag = el?.tagName;
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        el?.isContentEditable
+      ) {
+        return;
+      }
+      if (e.key === "ArrowLeft" && prevGene) {
+        e.preventDefault();
+        router.push(`/${prevGene}`);
+      } else if (e.key === "ArrowRight" && nextGene) {
+        e.preventDefault();
+        router.push(`/${nextGene}`);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [prevGene, nextGene, router]);
+
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
   // The 3D structure viewer + AFDB pLDDT / disordered-fraction stats
@@ -161,19 +251,44 @@ export function GeneDetail({
       label: FEATURE_TAB_LABEL.risks,
       render: (n) => <AccessibilityRisksCard rec={rec} n={n} />,
     },
-    // SURFACE-Bind section only when the protein has at least one
-    // scored patch. Two empty cases are filtered out so the AnchorNav
-    // strip never offers a tab that opens a sites-less section:
-    //   * not in SURFACE-Bind's table (`has_data=false`), and
-    //   * scored but no patch cleared the MaSIF threshold
-    //     (`n_sites=0`, e.g. CLDN18).
-    ...(rec.deterministic_features.surface_bind.has_data &&
-    rec.deterministic_features.surface_bind.n_sites > 0
+    {
+      kind: "internalization",
+      label: "Internalization",
+      render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
+    },
+    // Tag sites — its OWN tab (distinct from Internalization). Shown only
+    // when the gene has at least one RENDERED tag site (literature_retrieved,
+    // deterministic_computed, or screen_validated); validated_literature is
+    // validation-only and never rendered, matching `renderableTagSites`.
+    ...(taggedSites?.has_data &&
+    taggedSites.sites.some(
+      (s) =>
+        s.provenance === "literature_retrieved" ||
+        s.provenance === "deterministic_computed" ||
+        s.provenance === "screen_validated",
+    )
       ? [
           {
-            kind: "surface-bind",
-            label: "SURFACE-Bind",
-            render: (n: number) => <SurfaceBindCard rec={rec} n={n} />,
+            kind: "tag-sites",
+            label: "Tag sites",
+            render: (n: number) => <TaggedSitesCard taggedSites={taggedSites} n={n} />,
+          },
+        ]
+      : []),
+    // Binding-sites section when ANY source has a site. Gating on
+    // SURFACE-Bind alone would hide the card for a protein Bindome
+    // designed against but SURFACE-Bind never scored — which is 403
+    // proteins, and exactly the case the second source exists to cover.
+    // Still filtered when every source is empty, so the AnchorNav strip
+    // never offers a tab that opens a sites-less section.
+    ...((rec.deterministic_features.surface_bind.has_data &&
+      rec.deterministic_features.surface_bind.n_sites > 0) ||
+    (rec.deterministic_features.bindome?.n_sites ?? 0) > 0
+      ? [
+          {
+            kind: "binding-sites",
+            label: "Binding sites",
+            render: (n: number) => <BindingSitesCard rec={rec} n={n} />,
           },
         ]
       : []),
@@ -184,7 +299,7 @@ export function GeneDetail({
     {
       kind: "isoforms",
       label: "Isoforms & homologs",
-      render: (n) => <IsoformsCard rec={rec} n={n} />,
+      render: (n) => <IsoformsCard rec={rec} n={n} fgLibrary={fgLibrary} taggedSites={taggedSites} />,
     },
     {
       kind: "ledger",
@@ -231,6 +346,54 @@ export function GeneDetail({
           {/* Jump to another gene's deep dive without going back to the
               catalog table. Suggestions are the deep-dive set only. */}
           <GeneJump loadGenes={loadGenes} current={rec.gene.hgnc_symbol} />
+          {/* Prev/next across the FG library (alphabetical). Only rendered when
+              this gene is itself in the library — otherwise it has no position
+              in the ordered list. Arrow keys drive the same navigation (see the
+              keydown effect above). Ends clamp: the arrow is a disabled span at
+              the first/last library gene. */}
+          {prevGene || nextGene ? (
+            <span
+              className={styles.libNav}
+              role="group"
+              aria-label="Previous / next FG library gene"
+            >
+              {prevGene ? (
+                <Link
+                  href={`/${prevGene}`}
+                  className={styles.libNavLink}
+                  title={`Previous library gene: ${prevGene}`}
+                  aria-label={`Previous library gene: ${prevGene}`}
+                >
+                  ←
+                </Link>
+              ) : (
+                <span
+                  className={`${styles.libNavLink} ${styles.libNavDisabled}`}
+                  aria-disabled="true"
+                >
+                  ←
+                </span>
+              )}
+              <span className={`label-mono ${styles.libNavLabel}`}>Library</span>
+              {nextGene ? (
+                <Link
+                  href={`/${nextGene}`}
+                  className={styles.libNavLink}
+                  title={`Next library gene: ${nextGene}`}
+                  aria-label={`Next library gene: ${nextGene}`}
+                >
+                  →
+                </Link>
+              ) : (
+                <span
+                  className={`${styles.libNavLink} ${styles.libNavDisabled}`}
+                  aria-disabled="true"
+                >
+                  →
+                </span>
+              )}
+            </span>
+          ) : null}
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
@@ -260,9 +423,14 @@ export function GeneDetail({
             rec={rec}
             geneName={geneName}
             structureData={structureData}
+            taggedSites={taggedSites}
             schwekeHomomer={schwekeHomomer}
             catalogRow={catalogRow}
             triageHeadline={triageHeadline}
+            inFgLibrary={inFgLibrary}
+            oversized={oversized}
+            oversizedOrfKb={oversizedOrfKb}
+            tedmanPme={tedmanPme}
           />
         </Reveal>
 

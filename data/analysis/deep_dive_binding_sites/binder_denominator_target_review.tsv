@@ -1,0 +1,8 @@
+component	hgnc_id	hgnc_symbol	target_qualifier	reference
+APP Abeta 1-40/42	HGNC:620	APP	processed peptide	https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:620
+APP Abeta N3pGlu	HGNC:620	APP	modified processed peptide	https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:620
+EGFRvIII	HGNC:3236	EGFR	variant-specific target	https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:3236
+F7a/F7A/FVIIa/FVIIA	HGNC:3544	F7	activated factor	https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:3544
+F9a	HGNC:3551	F9	activated factor	https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:3551
+Misfolded TTR	HGNC:12405	TTR	conformation-specific target	https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:12405
+pro-MSTN/GDF8/GDF-8/pro-GDF8	HGNC:4223	MSTN	precursor-specific target	https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/HGNC:4223

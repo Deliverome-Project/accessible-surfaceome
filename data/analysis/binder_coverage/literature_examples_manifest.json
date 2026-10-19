@@ -1,0 +1,6 @@
+{
+  "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11785957/",
+  "source_xml_sha256": "c8660cb2e09a3832d2564180a04c0f9be84692e2410888b754effd32cc3facb8",
+  "output_sha256": "7011e81d102977803b5c5a62703255b1812801c58810f7188f712103656e8fd2",
+  "curation": "Two deliberately selected positive examples from one paper; not included in automated coverage numerator. No independent residue mapping or interface calculation."
+}

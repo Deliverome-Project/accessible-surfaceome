@@ -1,0 +1,19 @@
+{
+  "candidate_rows": 5680,
+  "candidate_unique_hgnc": 5574,
+  "missing_canonical_ids": [],
+  "gtopdb": {
+    "single_protein_interactions": 14582,
+    "unmapped_or_outside_cohort": 5062,
+    "interactions_with_thera_sequence_match": 322,
+    "nonhuman_or_unspecified_species": 4977,
+    "complex_interactions": 313
+  },
+  "biogrid": {
+    "proteins_downloaded": 608,
+    "matched_interactions": 584,
+    "nonhuman_interactions": 285,
+    "outside_cohort": 309
+  },
+  "observation_count": 32829
+}

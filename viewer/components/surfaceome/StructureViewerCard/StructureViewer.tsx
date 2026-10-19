@@ -1,19 +1,36 @@
 "use client";
+import { loadContactGene } from "../../../lib/contact-api";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { CITATIONS, pubmedUrl } from "../../../lib/citations";
+import {
+  fetchExperimentalPdb,
+  isCleanStructure,
+  pickBestStructure,
+  pickPdbChain,
+  projectExperimentalChain,
+  type PDBeBestStructure,
+  type ProjSegment,
+} from "../../../lib/experimental-structure";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   MEMBRANE_COLOR,
+  RESIDUE_HIGHLIGHT_COLOR,
   TOPOLOGY_COLORS,
   alphafoldPdbUrl,
   alphafoldPredictionApiUrl,
 } from "../../../lib/structure-viewer-types";
 import type {
   AlphafoldPredictionEntry,
+  LibraryMembership,
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
+import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
+import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
+import { LIGAND_CATEGORIES, contactResidueLayers, filterContacts, browsingContacts } from "../../../lib/contact-sites";
+import type { ContactGene, ContactAtom } from "../../../lib/contact-sites";
+import { ContactSites } from "./ContactSites";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -37,6 +54,24 @@ export interface SurfaceBindAnchor {
   compartment: AnchorCompartment;
 }
 
+/** A tag-insertion-site overlay sphere. Draws a colored sphere + label at the
+ *  α-carbon of ``residue``, colored by ``category`` via ``CATEGORY_HEX``.
+ *  Rendered only in the dedicated ``tags`` view mode (its own layer, separate
+ *  from the SURFACE-Bind ``sites`` anchors). */
+export interface TagSiteSphere {
+  siteId: string;
+  residue: number;
+  provenance: "literature_retrieved" | "deterministic_computed" | "screen_validated";
+  /** Fine-grained overlay category (lane / terminus / snorkel / literature) —
+   *  the color axis for ``tags`` mode via ``CATEGORY_HEX``. */
+  category: TagSiteCategory;
+  /** Inclusive residue span to tint on the cartoon (from residue_range); the
+   *  ball marks the anchor residue, the span shows the whole exposed loop. */
+  spanStart?: number | null;
+  spanEnd?: number | null;
+  tagType: string;
+}
+
 /** A variant the user can switch to via the tab strip above the
  *  canvas. AFDB (isoforms, orthologs), an experimental PDB resolved
  *  at runtime via PDBe + RCSB, or a Schweke et al. 2024 homo-oligomer
@@ -44,7 +79,8 @@ export interface SurfaceBindAnchor {
 export type StructureVariant =
   | StructureVariantAfdb
   | StructureVariantExperimental
-  | StructureVariantSchwekeHomomer;
+  | StructureVariantSchwekeHomomer
+  | StructureVariantLibrary;
 
 interface StructureVariantBase {
   /** Stable key for the React tab list. */
@@ -61,9 +97,12 @@ interface StructureVariantBase {
 
 export interface StructureVariantAfdb extends StructureVariantBase {
   source: "afdb";
-  /** UniProt accession to fetch from AFDB. Stripped of any isoform
-   *  suffix because AFDB models the canonical-acc structure for the
-   *  isoform fold too. */
+  /** UniProt accession to fetch from AFDB. For an isoform tab this is
+   *  the isoform's own suffixed accession (GeneHeader passes
+   *  ``isoform_topologies[].uniprot_acc``, e.g. "P08195-2"), so the tab
+   *  loads AFDB's model of that isoform (AF-P08195-2-F1), not the
+   *  canonical. AFDB models isoforms separately; an older version of this
+   *  comment said the suffix was stripped, which is not what happens. */
   uniprot_acc: string;
   /** Full UniProt acc including isoform suffix (e.g. "P00533-2"). */
   uniprot_acc_full?: string;
@@ -127,7 +166,7 @@ export interface StructureVariantExperimental extends StructureVariantBase {
    *  residue numbers. 3Dmol selects on author resSeq, so they can't be
    *  used as a projection offset directly; the render pipeline derives
    *  the real UniProt→author offset by overlap against the fetched PDB
-   *  (see `_bestLinearOffset`). Retained for the clean/dirty span check
+   *  (see `bestLinearOffset`). Retained for the clean/dirty span check
    *  and as one offset candidate. */
   pdb_start: number;
   pdb_end: number;
@@ -141,6 +180,34 @@ export interface StructureVariantExperimental extends StructureVariantBase {
   experimental_method: string;
   resolution: number | null;
   coverage: number;
+}
+
+export interface StructureVariantLibrary extends StructureVariantBase {
+  source: "library";
+  /** Coordinates for the protein the library member actually encodes: our ColabFold
+   *  model in the public R2 bucket, or AFDB's where its model IS the ordered protein. */
+  pdb_url: string;
+  candidate_id: string;
+  /** Library tranche, ``l1`` / ``l2``. NOT a DeepTMHMM tool version. */
+  tranche: string | null;
+  candidate_set: string | null;
+  /** ``colabfold`` (ours) | ``alphafold_db``. Display + caption. */
+  model_source: string | null;
+  /** identical | contained | ours_by_construction | … */
+  proteoform_match: string | null;
+  /** construct residue i == model residue i + residue_offset.
+   *
+   *  Load-bearing, not metadata. For a ``contained`` member the ordered protein is a
+   *  subsequence of the model and offsets run to 134, so a render that ignores this
+   *  paints the topology onto the wrong residues while looking entirely plausible. It
+   *  becomes the single {@link ProjSegment} the existing projection machinery consumes —
+   *  the same path experimental PDBs use for their author-numbering offset. */
+  residue_offset: number;
+  /** Inclusive model-residue span the construct covers. Residues outside it are hidden,
+   *  so a longer model cannot read as protein the construct contains. */
+  display_range: [number, number] | null;
+  /** Why this model is not the member's own proteoform, when it is an alternate. */
+  note: string | null;
 }
 
 /** Per-variant AFDB metadata fetched at runtime from
@@ -161,92 +228,14 @@ interface AfdbVariantMeta {
   fractionPlddtVeryLow: number;
 }
 
-/** PDBe `best_structures` API response shape (one entry — the
- *  endpoint returns an object keyed by UniProt acc with an array of
- *  these). We only use a subset of fields; documented for grep-ability. */
-interface PDBeBestStructure {
-  pdb_id: string;
-  chain_id: string;
-  unp_start: number;
-  unp_end: number;
-  start: number;
-  end: number;
-  experimental_method: string;
-  resolution: number | null;
-  coverage: number;
-  tax_id?: number;
-}
-
-/** A contiguous UniProt→PDB-author projection segment. A topology
- *  (UniProt-coord) residue ``u`` in ``[unpLo, unpHi]`` maps to PDB
- *  author resSeq ``u + offset``. Clean structures have a single
- *  segment; fusion constructs have several, each with its own offset. */
-interface ProjSegment {
-  unpLo: number;
-  unpHi: number;
-  offset: number;
-}
-
-/** Author resSeq values present (ATOM + HETATM) on a chain in the
- *  fetched PDB file — i.e. the residues 3Dmol can actually select.
- *  Used to score candidate projection offsets: the correct offset lands
- *  the most UniProt-mapped residues on real atoms. We can't trust
- *  `best_structures.start` (a SEQRES index) or even PDBe author numbers
- *  (which can diverge from the legacy `.pdb` file RCSB serves, e.g.
- *  EGFR 7syd), so the file itself is the only ground truth. */
-function _observedResSeq(pdbText: string, chainId: string): Set<number> {
-  const out = new Set<number>();
-  for (const line of pdbText.split(/\r?\n/)) {
-    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
-    if (line.length < 26) continue;
-    if (line.slice(21, 22) !== chainId) continue;
-    const resi = Number.parseInt(line.slice(22, 26).trim(), 10);
-    if (Number.isInteger(resi)) out.add(resi);
+/** Inverse of the projection: UniProt residue ``u`` → PDB author resSeq,
+ *  or ``null`` when ``u`` falls outside every mapped segment (i.e. the
+ *  construct doesn't cover it). */
+function _unpToAuthorResi(u: number, segments: ProjSegment[]): number | null {
+  for (const s of segments) {
+    if (u >= s.unpLo && u <= s.unpHi) return u + s.offset;
   }
-  return out;
-}
-
-/** Count residues of UniProt window ``[unpLo, unpHi]`` that, shifted by
- *  ``offset``, land on an observed author resSeq. */
-function _overlapCount(
-  unpLo: number,
-  unpHi: number,
-  offset: number,
-  observed: Set<number>,
-): number {
-  let n = 0;
-  for (let u = unpLo; u <= unpHi; u += 1) {
-    if (observed.has(u + offset)) n += 1;
-  }
-  return n;
-}
-
-/** Pick the UniProt→author offset that lands the most of
- *  ``[unpLo, unpHi]`` on real atoms. ``candidates`` are principled
- *  guesses: ``0`` (file numbered by UniProt residue — the modern norm,
- *  true for GPR75 9xqc), the SEQRES-based legacy offset, and (for
- *  fusions) the SIFTS author offset. Ties keep ``fallback`` so a
- *  structure that already rendered with the legacy offset can never
- *  regress — a different offset is only adopted when it strictly covers
- *  more residues, which means it genuinely aligns better to the file. */
-function _bestLinearOffset(
-  unpLo: number,
-  unpHi: number,
-  candidates: number[],
-  observed: Set<number>,
-  fallback: number,
-): number {
-  let best = fallback;
-  let bestScore = _overlapCount(unpLo, unpHi, fallback, observed);
-  for (const c of candidates) {
-    if (c === fallback) continue;
-    const score = _overlapCount(unpLo, unpHi, c, observed);
-    if (score > bestScore) {
-      best = c;
-      bestScore = score;
-    }
-  }
-  return best;
+  return null;
 }
 
 /** Build the PDB-author-resSeq → topology(UniProt)-index lookup the
@@ -266,91 +255,6 @@ function _makeResiToTopo(
   };
 }
 
-/** Raw SIFTS detailed-mapping segment for one chain. ``authorLo`` /
- *  ``authorHi`` are nullable — PDBe omits author numbers for some
- *  entries (GPR75 9xqc returns ``None``/``None``); the offset is then
- *  derived from whichever boundary is present, or from the seqres span. */
-interface SiftsRawSegment {
-  unpLo: number;
-  unpHi: number;
-  seqresLo: number;
-  authorLo: number | null;
-  authorHi: number | null;
-}
-
-/** Fetch SIFTS per-segment UniProt↔PDB mappings (``/api/mappings/{pdb}``)
- *  for the chosen chain. Only used on the ``approx`` (fusion) path, where
- *  `best_structures` collapses the discontinuous mapping into one
- *  non-linear span. Returns ``[]`` on any failure so the caller can fall
- *  back to the single-offset projection. */
-async function _fetchSiftsSegments(
-  pdbId: string,
-  uniprotAcc: string,
-  chainId: string,
-): Promise<SiftsRawSegment[]> {
-  try {
-    const r = await fetch(
-      `https://www.ebi.ac.uk/pdbe/api/mappings/${pdbId.toLowerCase()}`,
-      { cache: "force-cache" },
-    );
-    if (!r.ok) return [];
-    const j = (await r.json()) as Record<
-      string,
-      { UniProt?: Record<string, { mappings?: Array<Record<string, unknown>> }> }
-    >;
-    const unpBlock = j[pdbId.toLowerCase()]?.UniProt ?? {};
-    const block = unpBlock[uniprotAcc] ?? Object.values(unpBlock)[0];
-    const mappings = block?.mappings ?? [];
-    const segs: SiftsRawSegment[] = [];
-    for (const m of mappings) {
-      if (m.chain_id !== chainId && m.struct_asym_id !== chainId) continue;
-      const unpLo = m.unp_start as number;
-      const unpHi = m.unp_end as number;
-      if (typeof unpLo !== "number" || typeof unpHi !== "number") continue;
-      const start = m.start as Record<string, number | null> | undefined;
-      const end = m.end as Record<string, number | null> | undefined;
-      segs.push({
-        unpLo,
-        unpHi,
-        seqresLo: (start?.residue_number as number) ?? unpLo,
-        authorLo: (start?.author_residue_number as number | null) ?? null,
-        authorHi: (end?.author_residue_number as number | null) ?? null,
-      });
-    }
-    return segs;
-  } catch {
-    return [];
-  }
-}
-
-/** Convert raw SIFTS segments into projection segments (approach C). For
- *  each segment, derive the UniProt→author offset from whichever author
- *  boundary PDBe provides (both give the same offset for a linear
- *  segment; if one is null use the other), then keep whichever of
- *  {author offset, seqres offset} lands more of the segment on real
- *  atoms. Self-correcting: validating against the file means a wrong
- *  author number simply loses to the seqres candidate. */
-function _projSegmentsForDirty(
-  raw: SiftsRawSegment[],
-  observed: Set<number>,
-): ProjSegment[] {
-  const out: ProjSegment[] = [];
-  for (const s of raw) {
-    const seqresOffset = s.seqresLo - s.unpLo;
-    const candidates: number[] = [];
-    let authorOffset: number | null = null;
-    if (s.authorLo != null) authorOffset = s.authorLo - s.unpLo;
-    else if (s.authorHi != null) authorOffset = s.authorHi - s.unpHi;
-    if (authorOffset != null) candidates.push(authorOffset);
-    candidates.push(seqresOffset);
-    const offset = _bestLinearOffset(
-      s.unpLo, s.unpHi, candidates, observed, authorOffset ?? seqresOffset,
-    );
-    out.push({ unpLo: s.unpLo, unpHi: s.unpHi, offset });
-  }
-  return out;
-}
-
 /** Subset of the SurfaceomeRecord canonical AFDB struct block.
  *  We only need the fields displayed in the per-variant caption;
  *  declaring just these keeps the prop interface narrow. */
@@ -362,9 +266,34 @@ export interface CanonicalStructStats {
   source: string;
 }
 
+/** The active tab's topology, as reported to the strip under the viewer. */
+export interface ActiveTopology {
+  topology: string;
+  label: string;
+  canonicalNumbering: boolean;
+  /** The canonical residue range the active structure actually contains,
+   *  when that is narrower than the whole sequence: an experimental chain
+   *  (PDBe's mapped UniProt range) or a trimmed homo-oligomer model (the
+   *  residues parsed from its PDB). Null when the whole sequence is drawn. */
+  coveredRange: { start: number; end: number } | null;
+}
+
 interface StructureViewerProps {
   data: StructureViewerData;
   geneSymbol: string;
+  /** Ask the viewer to highlight a residue from outside (the topology strip
+   *  under the viewer). ``nonce`` changes on every request so clicking the
+   *  same residue twice re-frames it. */
+  residueRequest?: { resi: number; nonce: number } | null;
+  /** Reports the highlighted residue (or null when cleared) so the strip
+   *  can mark it. */
+  onHighlightChange?: (resi: number | null) => void;
+  /** Reports the active tab's topology so the strip under the viewer draws
+   *  the sequence actually on screen. ``canonicalNumbering`` is true for the
+   *  tabs that number residues on the canonical sequence (canonical,
+   *  experimental, homo-oligomer) and false for isoform / ortholog tabs,
+   *  which use their own sequence's numbering. */
+  onActiveTopologyChange?: (active: ActiveTopology) => void;
   /** Canonical AFDB stats from
    *  ``rec.deterministic_features.structure``. Drives the caption
    *  on the Canonical variant tab; non-canonical AFDB variants
@@ -385,6 +314,21 @@ interface StructureViewerProps {
    *  the patch anchor; nearby contact residues would need binder-PDB
    *  parsing to recover (separate task). */
   surfaceBindAnchors?: SurfaceBindAnchor[];
+  /** Tag-insertion-site overlay. Each entry draws a provenance-colored sphere
+   *  at the α-carbon of ``residue`` in the dedicated ``tags`` view mode. Pass
+   *  the array derived from ``renderableTagSites(...)``. Empty array = no
+   *  overlay (and no "Tag sites" toggle button). */
+  tagSites?: TagSiteSphere[];
+  /** Per-isoform deterministic pins. When an isoform variant tab is active,
+   *  its pins render on the (canonical-fold) structure at each pin's
+   *  canonical_residue, colored shared-vs-unique. */
+  isoformPins?: IsoformTagPin[];
+  /** Per-ortholog deterministic pins (mouse / cyno). When an ortholog variant
+   *  tab is active, its pins render on the ORTHOLOG's OWN structure at each pin's
+   *  ``isoform_residue`` (the ortholog's own residue axis — orthologs render
+   *  their own AFDB model, not the canonical fold), colored shared-vs-unique.
+   *  Shares the IsoformTagPin shape; ``isoform_id`` holds the ortholog acc. */
+  orthologPins?: IsoformTagPin[];
   /** Optional alternate variants (alt isoforms, mouse / cyno
    *  orthologs). When non-empty, a tab strip renders above the
    *  canvas; clicking a tab swaps the rendered structure to that
@@ -398,6 +342,90 @@ interface StructureViewerProps {
    *  flow: the canonical fold first, then how two copies of it
    *  assemble, then alternate-isoform / cross-species comparisons. */
   schwekeHomomer?: StructureVariantSchwekeHomomer | null;
+  /** Library members by the accession whose sequence they order
+   *  ({@link libraryMembersByAccession}). A tab showing one of these
+   *  accessions is marked as in the library; an empty map means the gene
+   *  has no library construct and nothing is marked. */
+  libraryMembers?: Map<string, LibraryMembership[]>;
+}
+
+/** Library membership a tab shows, or ``[]``. Canonical and AFDB tabs are
+ *  matched on their full accession (an isoform suffix is a different
+ *  sequence). A library tab is its own member. Experimental and homomer
+ *  tabs are never marked: neither model is a library sequence. */
+function _tabLibraryMembers(
+  v: StructureVariant | null,
+  canonicalAcc: string,
+  members: Map<string, LibraryMembership[]>,
+): LibraryMembership[] {
+  if (v === null) return members.get(canonicalAcc.toUpperCase()) ?? [];
+  if (v.source === "afdb") {
+    const acc = v.uniprot_acc_full ?? v.uniprot_acc;
+    return members.get(acc.toUpperCase()) ?? [];
+  }
+  if (v.source === "library") {
+    return [{ candidate_id: v.candidate_id, library: v.tranche, candidate_set: v.candidate_set }];
+  }
+  return [];
+}
+
+/** ``L1`` / ``L1·L2`` for a tab's members, tranches de-duplicated. */
+function _libraryTag(ms: LibraryMembership[]): string {
+  const tranches = Array.from(
+    new Set(ms.map((m) => (m.library ?? "").toUpperCase()).filter(Boolean)),
+  ).sort();
+  return tranches.length ? tranches.join("·") : "Library";
+}
+
+/** Tooltip suffix saying whether a tab is a library construct. Empty for
+ *  genes with no library construct, so their tooltips are unchanged. */
+function _libraryTitle(ms: LibraryMembership[], geneHasLibrary: boolean): string {
+  if (!geneHasLibrary) return "";
+  if (ms.length === 0) return " Not in the library.";
+  return ` In the library as ${ms.map((m) => m.candidate_id).join(", ")}.`;
+}
+
+/** The marker drawn on a library tab's label. */
+function LibraryTabMark({ members }: { members: LibraryMembership[] }) {
+  if (members.length === 0) return null;
+  return (
+    <span className={styles.variantTabLib} aria-label={`In library ${_libraryTag(members)}`}>
+      {_libraryTag(members)}
+    </span>
+  );
+}
+
+/** The line under the tab strip: is the open tab a library construct, and
+ *  if not, which tabs are. Names every member, so one with no tab on this
+ *  card is still accounted for. */
+function _libraryNote(
+  active: LibraryMembership[],
+  tabs: { label: string; members: LibraryMembership[] }[],
+  allMembers: Map<string, LibraryMembership[]>,
+): string {
+  const describe = (m: LibraryMembership) =>
+    `${m.candidate_id} (${(m.library ?? "").toUpperCase() || "library"}${
+      m.candidate_set ? `, ${m.candidate_set.replace(/_/g, " ")}` : ""
+    })`;
+  if (active.length > 0) {
+    return `In the library: this tab is the protein ${active.map(describe).join(" and ")} encodes.`;
+  }
+  const marked = tabs.filter((t) => t.members.length > 0).map((t) => t.label);
+  const onTabs = new Set(tabs.flatMap((t) => t.members.map((m) => m.candidate_id)));
+  // Members with no tab on this card: a UniProt sequence the card shows no
+  // tab for (it lists a few isoforms, not all), or a construct with no
+  // structure. Named with the accession so the reader can still find them.
+  const unseen = Array.from(allMembers.entries()).flatMap(([acc, ms]) =>
+    ms
+      .filter((m) => !onTabs.has(m.candidate_id))
+      .map((m) => (acc === m.candidate_id.toUpperCase() ? m.candidate_id : `${m.candidate_id} (${acc})`)),
+  );
+  const parts: string[] = [];
+  if (marked.length) parts.push(`library constructs are on ${marked.join(", ")}`);
+  if (unseen.length) {
+    parts.push(`also in the library, with no tab here: ${unseen.join(", ")}`);
+  }
+  return `Not in the library${parts.length ? `: ${parts.join("; ")}` : ""}.`;
 }
 
 /** Renderer mode toggle. ``topology`` is the default — full topology
@@ -405,7 +433,7 @@ interface StructureViewerProps {
  *  beefs up the spheres so a reader scanning specifically for
  *  SURFACE-Bind sites can see them at a glance against the membrane
  *  + EC/IC labels. */
-type ViewMode = "topology" | "sites";
+type ViewMode = "topology" | "sites" | "tags" | "contacts";
 
 /** Single sphere radius across both modes. Previously sites mode
  *  doubled the radius for emphasis, but the user wanted consistent
@@ -413,6 +441,14 @@ type ViewMode = "topology" | "sites";
  *  switching modes. 3.2 Å is the compromise — big enough to read
  *  against the cartoon, small enough not to occlude neighbors. */
 const SPHERE_RADIUS = 3.2;
+
+/** Isoform-pin colors — a distinct shared-vs-unique axis (separate from the
+ *  canonical CATEGORY_HEX). Unique = isoform-specific site (highlight). */
+const ISOFORM_PIN_HEX: Record<"shared" | "unique" | "control", string> = {
+  shared: "#3d6b60", // teal — also predicted on the canonical
+  unique: "#ee7733", // orange — isoform-specific
+  control: "#e5342e", // red — Tedman N-terminal HA control, matches --tag-site-screen-validated
+};
 
 /** Collapse a per-residue topology string into per-state [start, end]
  *  ranges (1-indexed, inclusive). Used for variants (isoforms /
@@ -461,77 +497,6 @@ const COMPARTMENT_LEGEND_LABEL: Record<AnchorCompartment, string> = {
   signal: "Signal peptide",
   unknown: "Unknown",
 };
-
-/**
- * Pick the effective chain ID to use for an experimental PDB. PDBe's
- * `best_structures` endpoint returns a chain ID that should match the
- * deposited PDB's auth_asym_id, but in practice the two disagree
- * occasionally:
- *
- *   - Case mismatch (PDBe "A" vs PDB "a") — uncommon but happens for
- *     a few recently-deposited entries.
- *   - PDBe gives the label_asym_id while the RCSB PDB file uses
- *     auth_asym_id — different conventions for the same chain.
- *   - GPR75 (UniProt O95800) was the trigger case: the PDBe metadata's
- *     chain didn't appear in the served PDB file, so every chain-
- *     restricted `setStyle` call below silently no-op'd and the model
- *     rendered in 3Dmol's default gray with no topology coloring.
- *
- * Strategy: extract the set of chains actually present in the PDB
- * (one entry per ATOM/HETATM `column 22` letter), then:
- *
- *   1. Exact match → use as-is.
- *   2. Case-insensitive match → use the PDB's actual casing.
- *   3. Otherwise → use the chain with the most atoms (the canonical
- *      protein chain in the overwhelming majority of cases). This is
- *      defensive and not strictly correct for hetero-complexes where
- *      the canonical chain isn't the biggest, but it beats the silent
- *      no-op the previous code path produced.
- *
- * Returns `null` when the PDB has no ATOM/HETATM lines at all
- * (corrupt download); the caller should treat that as a render-skip
- * failure.
- */
-function _pickPdbChain(
-  pdbText: string,
-  preferredChainId: string,
-): string | null {
-  const counts = new Map<string, number>();
-  for (const line of pdbText.split(/\r?\n/)) {
-    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
-    if (line.length < 22) continue;
-    const c = line.slice(21, 22);
-    if (!c.trim()) continue;
-    counts.set(c, (counts.get(c) ?? 0) + 1);
-  }
-  if (counts.size === 0) return null;
-  if (counts.has(preferredChainId)) return preferredChainId;
-  // Case-insensitive fallback — PDBe occasionally lowercases what
-  // the PDB file capitalizes (or vice versa).
-  const target = preferredChainId.toLowerCase();
-  for (const c of counts.keys()) {
-    if (c.toLowerCase() === target) return c;
-  }
-  // Last resort: heaviest chain. Logged as a console.warn so the
-  // mismatch surfaces in dev tools — readers shouldn't see anything
-  // unusual since the topology coloring still works.
-  let best: string | null = null;
-  let bestCount = -1;
-  for (const [c, n] of counts) {
-    if (n > bestCount) {
-      best = c;
-      bestCount = n;
-    }
-  }
-  if (typeof console !== "undefined" && best) {
-    console.warn(
-      `[StructureViewer] PDBe chain "${preferredChainId}" not found in ` +
-        `PDB file (chains present: ${[...counts.keys()].join(", ")}); ` +
-        `falling back to heaviest chain "${best}".`,
-    );
-  }
-  return best;
-}
 
 /** Parse the TITLE block out of a PDB file. PDB TITLE records have a
  *  fixed-width header (cols 1-6 = "TITLE ", col 9-10 = continuation
@@ -595,10 +560,11 @@ function _renderCaption(args: {
   canonicalUniprot: string;
   afdbMetaByAcc: Record<string, AfdbVariantMeta | "loading" | "error">;
   pdbTitles: Record<string, string>;
+  chainOnlyAtomCounts: Record<string, number>;
 }) {
   const {
     activeVariant, canonicalStruct, proteinName, canonicalUniprot,
-    afdbMetaByAcc, pdbTitles,
+    afdbMetaByAcc, pdbTitles, chainOnlyAtomCounts,
   } = args;
 
   // ---- Schweke homo-oligomer branch ----
@@ -717,12 +683,62 @@ function _renderCaption(args: {
             {tooltips.experimental_best_structure}
           </InfoTip>
         </p>
+        {v.pdb_id in chainOnlyAtomCounts ? (
+          <p className={styles.captionCaveat}>
+            This entry is too large to load whole (
+            {chainOnlyAtomCounts[v.pdb_id].toLocaleString()} atoms), so only
+            chain {v.chain_id} is shown; the rest of the assembly is on RCSB.
+          </p>
+        ) : null}
         {v.mappingMode === "approx" ? (
           <p className={styles.captionCaveat}>
             This chain maps to {proteinName ?? canonicalUniprot} in multiple
             discontinuous segments (a fusion or engineered construct), so the
             topology coloring is projected piecewise and is approximate near
             segment boundaries.
+          </p>
+        ) : null}
+      </div>
+    );
+  }
+
+  // ---- Library-construct branch ----
+  // Its own branch: falling through to the AFDB one below waited forever on
+  // AFDB metadata keyed by an accession a library tab doesn't carry, and
+  // linked to ``AF-undefined-F1``.
+  if (activeVariant?.source === "library") {
+    const v = activeVariant;
+    const ours = v.model_source === "colabfold";
+    const afEntry = /\/(AF-[A-Z0-9-]+?-F\d+)-model_v\d+\.pdb$/i.exec(v.pdb_url)?.[1];
+    const span =
+      v.proteoform_match === "contained" && v.display_range
+        ? `The ordered protein is residues ${v.display_range[0]}–${v.display_range[1]} of this model; only that span is drawn.`
+        : null;
+    return (
+      <div className={styles.caption} aria-label="Structure caption">
+        <p className={styles.captionStats}>
+          <span className={styles.captionStat}>
+            {ours ? "Our ColabFold model" : "AlphaFold DB model"}
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <span className={styles.captionStat}>
+            Library <strong>{v.candidate_id}</strong>
+            {v.tranche ? ` (${v.tranche.toUpperCase()})` : ""}
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <a
+            href={afEntry ? `https://alphafold.ebi.ac.uk/entry/${afEntry}` : v.pdb_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.captionLink}
+          >
+            {afEntry ? `AFDB ${afEntry} ↗` : "Model file ↗"}
+          </a>
+        </p>
+        {span ? <p className={styles.captionCaveat}>{span}</p> : null}
+        {v.note && !span ? (
+          <p className={styles.captionCaveat}>
+            {v.note.charAt(0).toUpperCase() + v.note.slice(1)}.
           </p>
         ) : null}
       </div>
@@ -951,9 +967,11 @@ type LoadStatus = "loading" | "ready" | "error" | "nomodel" | "unavailable";
 
 interface ViewerInstance {
   clear: () => void;
+  setStyle: (selection: object, style: object) => void;
   resize: () => void;
   render: () => void;
   zoomTo: (sel?: object) => void;
+  center?: (sel: object) => void;
   /** 3Dmol camera-pose snapshot: a number array encoding
    *  position + rotation + zoom. Used to seed `setView` on reset so
    *  the ↺ button returns to the initial pose, not just the initial
@@ -964,7 +982,23 @@ interface ViewerInstance {
   addStyle?: (sel: object, style: object) => void;
   addLabel?: (text: string, options: object) => unknown;
   removeAllLabels?: () => void;
+  addSphere?: (spec: object) => unknown;
+  removeShape?: (shape: unknown) => void;
+  removeLabel?: (label: unknown) => void;
+  selectedAtoms?: (sel: object) => Array<{
+    x?: number; y?: number; z?: number; resi?: number; resn?: string; chain?: string;
+  }>;
 }
+
+/** Frame a residue's ~20 Å neighborhood, then re-center exactly on the
+ *  residue (the neighborhood's bounding box is lopsided at a surface
+ *  residue). */
+function _frameResidue(viewer: ViewerInstance, sel: object): void {
+  viewer.zoomTo({ within: { distance: 20, sel } });
+  viewer.center?.(sel);
+}
+
+
 
 /** Slab transparency. 0.34 is heavy enough to read as a clear
  *  membrane band from across the room without obscuring the helices
@@ -1050,8 +1084,15 @@ export function StructureViewer({
   canonicalStruct,
   proteinName,
   surfaceBindAnchors = [],
+  tagSites = [],
+  isoformPins = [],
+  orthologPins = [],
   variants = [],
   schwekeHomomer = null,
+  libraryMembers = new Map(),
+  residueRequest = null,
+  onHighlightChange,
+  onActiveTopologyChange,
 }: StructureViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
@@ -1075,6 +1116,62 @@ export function StructureViewer({
   // sequences once alternative splicing or species differences
   // shift positions.
   const [variantIdx, setVariantIdx] = useState<number>(0);
+  const [contactGene, setContactGene] = useState<ContactGene | null>(null);
+  const [contactStatus, setContactStatus] = useState("loading");
+  const [contactRetry, setContactRetry] = useState(0);
+  const [contactIndex, setContactIndex] = useState(0);
+  const [contactSource, setContactSource] = useState("");
+  const [contactAtoms, setContactAtoms] = useState<ContactAtom[]>([]);
+  const [contactQuery, setContactQuery] = useState("");
+  const [contactsEcOnly, setContactsEcOnly] = useState(true);
+  useEffect(() => {
+    setContactGene(null);
+    setContactIndex(0);
+    setContactSource("");
+    setContactQuery("");
+    setContactStatus("loading");
+    setResidueInput("");
+    setHighlightResi(null);
+  }, [data.uniprot_acc]);
+  useEffect(() => {
+    if (viewMode !== "contacts") return;
+    const controller = new AbortController();
+    setContactStatus("loading");
+    loadContactGene(data.uniprot_acc, controller.signal)
+      .then(gene => {
+        if (controller.signal.aborted) return;
+        setContactGene(gene);
+        setContactStatus(gene.audit_status === "not_audited" ? "unaudited" : "ready");
+      })
+      .catch(() => { if (!controller.signal.aborted) setContactStatus("error"); });
+    return () => controller.abort();
+  }, [data.uniprot_acc, viewMode, contactRetry]);
+  const contactGroups = useMemo(() => contactStatus === "ready" ? browsingContacts(filterContacts(
+    contactGene?.sites ?? [], contactSource, contactsEcOnly, contactQuery), true, contactQuery) : [],
+    [contactStatus, contactGene, contactSource, contactsEcOnly, contactQuery]);
+  const visibleContacts = contactGroups;
+  const selectedContact = contactQuery.trim() && contactGroups.length === 1 ? contactGroups[0] : null;
+  const contactLegend = useMemo(() => {
+    const ligands = browsingContacts(filterContacts(contactGene?.sites ?? [], "", contactsEcOnly, ""), true, "");
+    return Object.entries(LIGAND_CATEGORIES).map(([key, category]) => ({
+      ...category, key, count: ligands.filter(site => (site.category ?? "unclassified") === key).length,
+    }));
+  }, [contactGene, contactsEcOnly]);
+  // Update only styles when scrubbing: preserve camera and avoid reloading the model.
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (viewMode !== "contacts" || variantIdx !== 0 || status !== "ready" || !viewer) return;
+    viewer.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 0.55 } });
+    for (const {color, positions} of contactResidueLayers(visibleContacts)) {
+      viewer.setStyle({ resi: positions }, {
+        cartoon: { color }, stick: { color, radius: 0.3 },
+        sphere: { color, scale: 1.05, opacity: 0.95 },
+      });
+    }
+    viewer.render();
+  }, [viewMode, variantIdx, status, visibleContacts]);
+
+
   // Per-AFDB-accession availability (canonical + isoform/ortholog
   // variants), probed on mount. `false` ⟹ AFDB has no model for that
   // protein (e.g. megalin/LRP2, beyond AFDB's per-entry size limit) — its
@@ -1090,6 +1187,22 @@ export function StructureViewer({
   // Stale-render guard counter (see renderViewer): bumped each invocation
   // so a superseded async render can't clobber the current one's status.
   const renderSeqRef = useRef(0);
+  // Type-a-residue highlight. Overlay is drawn as 3Dmol shapes + a label
+  // (not styles) so it can be removed without restyling the cartoon or
+  // reloading the model, and so it survives the contacts-mode restyle.
+  const [residueInput, setResidueInput] = useState("");
+  const [highlightResi, setHighlightResi] = useState<number | null>(null);
+  const [residueNote, setResidueNote] = useState("");
+  const [highlightNonce, setHighlightNonce] = useState(0);
+  /** 3Dmol selection of the highlighted residue, so a container resize
+   *  (which re-frames the whole protein) can re-frame it instead. */
+  const highlightSelRef = useRef<object | null>(null);
+  const highlightObjsRef = useRef<{ shapes: unknown[]; labels: unknown[] }>({
+    shapes: [], labels: [],
+  });
+  /** UniProt→author mapping for the active experimental structure;
+   *  ``null`` on AFDB / Schweke tabs, whose numbering is used as-is. */
+  const residueMapRef = useRef<{ segments: ProjSegment[]; chain: string } | null>(null);
   // PDBe `best_structures` lookup — fires on mount per gene. When a
   // top experimental candidate is available, an extra "Experimental"
   // variant is appended to the tabs at render time. Three states:
@@ -1103,6 +1216,11 @@ export function StructureViewer({
   // experimental PDB. Keyed on pdb_id so switching between two
   // experimental structures correctly updates the caption.
   const [pdbTitles, setPdbTitles] = useState<Record<string, string>>({});
+  // Experimental entries too large to load whole, rendered as the mapped
+  // chain alone: pdb_id → deposited atom count, for the caption note.
+  const [chainOnlyAtomCounts, setChainOnlyAtomCounts] = useState<
+    Record<string, number>
+  >({});
   // AFDB metadata (pLDDT, disordered fraction, latestVersion) per
   // UniProt acc — populated lazily when the user clicks a
   // non-canonical AFDB variant. Canonical uses `canonicalStruct`
@@ -1132,11 +1250,6 @@ export function StructureViewer({
   // while in sites mode, the canvas would just show a gray cartoon
   // with no spheres. Revert to topology mode automatically so the
   // variant view is informative.
-  useEffect(() => {
-    if (variantIdx !== 0 && viewMode === "sites") {
-      setViewMode("topology");
-    }
-  }, [variantIdx, viewMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1152,47 +1265,7 @@ export function StructureViewer({
         }
         const j = (await r.json()) as Record<string, PDBeBestStructure[]>;
         const candidates = j[data.uniprot_acc] ?? [];
-        if (candidates.length === 0) {
-          if (!cancelled) setPdbeCandidate(null);
-          return;
-        }
-        // PDBe already ranks by coverage → resolution. Prefer the human
-        // (same-species) rows when any exist; otherwise rank over
-        // everything (some rows lack tax_id).
-        const human = candidates.filter((c) => c.tax_id === 9606);
-        const ranked = human.length > 0 ? human : candidates;
-        const top = ranked[0];
-        // "clean" = the chain maps to UniProt as a single contiguous
-        // segment (SEQRES span == UniProt span), so the topology
-        // projects through one linear offset. A "dirty" top is usually
-        // a fusion construct (e.g. GPR75 9xqn packs BRIL + the receptor
-        // into one chain across 7 discontinuous segments), which
-        // mis-colors under a single offset.
-        const isClean = (c: PDBeBestStructure) =>
-          c.end - c.start === c.unp_end - c.unp_start;
-        let chosen = top;
-        if (!isClean(top)) {
-          // Skip down to a comparable clean structure when one exists:
-          // similar coverage (within tolerance — don't trade away much
-          // of the resolved sequence) and not much worse resolution
-          // (better resolution is never penalized). GPR75 is the
-          // trigger: top 9xqn is a dirty fusion (cov 0.685, 3.91 Å);
-          // 9xqc is clean (cov 0.663, 3.0 Å) — a 0.02 coverage cost for
-          // a clean, higher-resolution map. When no comparable clean
-          // structure exists we keep the dirty top and project it
-          // piecewise (approach C) with a caption caveat.
-          const COVERAGE_TOL = 0.1;
-          const RES_TOL = 2.0;
-          const cleanAlt = ranked.find(
-            (c) =>
-              isClean(c) &&
-              c.coverage >= top.coverage - COVERAGE_TOL &&
-              (c.resolution == null ||
-                top.resolution == null ||
-                c.resolution <= top.resolution + RES_TOL),
-          );
-          if (cleanAlt) chosen = cleanAlt;
-        }
+        const chosen = pickBestStructure(candidates);
         if (!cancelled) setPdbeCandidate(chosen);
       } catch {
         if (!cancelled) setPdbeCandidate(null);
@@ -1297,11 +1370,7 @@ export function StructureViewer({
         // projection. The selection cascade already prefers a clean
         // structure when one is comparable, so ``approx`` only sticks
         // when the gene's *only* structure is a fusion construct.
-        mappingMode:
-          pdbeCandidate.end - pdbeCandidate.start ===
-          pdbeCandidate.unp_end - pdbeCandidate.unp_start
-            ? "clean"
-            : "approx",
+        mappingMode: isCleanStructure(pdbeCandidate) ? "clean" : "approx",
         experimental_method: pdbeCandidate.experimental_method,
         resolution: pdbeCandidate.resolution,
         coverage: pdbeCandidate.coverage,
@@ -1322,6 +1391,61 @@ export function StructureViewer({
     : effectiveVariants[variantIdx - 1] ?? null;
   const isExperimentalActive = activeVariant?.source === "experimental";
   const isSchwekeActive = activeVariant?.source === "schweke-homomer";
+  // Library membership per tab (index 0 = Canonical), so the strip can mark
+  // library vs non-library and the note under it can say which is which.
+  const tabLibraryMembers: LibraryMembership[][] = [
+    _tabLibraryMembers(null, data.uniprot_acc, libraryMembers),
+    ...effectiveVariants.map((v) =>
+      _tabLibraryMembers(v, data.uniprot_acc, libraryMembers),
+    ),
+  ];
+  const geneHasLibrary =
+    libraryMembers.size > 0 || tabLibraryMembers.some((ms) => ms.length > 0);
+  const isLibraryActive = activeVariant?.source === "library";
+  // Isoform variant active: its deterministic tag pins, placed on the
+  // (canonical-fold) structure at each pin's canonical_residue. Pins in an
+  // isoform-only inserted region (no canonical_residue) can't map to the
+  // canonical geometry and are omitted. Rendered shared-vs-unique so the reader
+  // sees which sites are isoform-specific.
+  const activeIsoformId =
+    activeVariant?.source === "afdb"
+      ? ((activeVariant as StructureVariantAfdb).uniprot_acc_full ?? null)
+      : null;
+  const activeIsoformPins = activeIsoformId
+    ? isoformPins.filter(
+        (pin) => pin.isoform_id === activeIsoformId && pin.canonical_residue != null,
+      )
+    : [];
+  // Ortholog variant active: identified by the variant id prefix GeneHeader
+  // assigns (``ortholog-{species}-{acc}``; isoforms are ``iso-{isoform_id}``) —
+  // robust because an isoform's ``uniprot_acc`` is the isoform-suffixed acc
+  // (e.g. P00533-2), NOT the base canonical, so an acc comparison would misclass
+  // isoforms as orthologs. Ortholog pins render on the ORTHOLOG's OWN structure at
+  // each pin's ``isoform_residue`` (the ortholog's own residue axis) — NOT the
+  // canonical_residue that isoform pins use.
+  const isOrthologActive = activeVariant?.id?.startsWith("ortholog-") ?? false;
+  const activeOrthologPins =
+    isOrthologActive && activeIsoformId
+      ? orthologPins.filter(
+          (pin) => pin.isoform_id === activeIsoformId && pin.isoform_residue != null,
+        )
+      : [];
+  // Revert to topology when switching to a non-canonical tab in sites mode (the
+  // canonical-keyed SURFACE-Bind anchors don't translate). Tags mode is KEPT for
+  // an isoform tab (pins on the canonical fold) OR an ortholog tab (pins on the
+  // ortholog's own fold) that has its own pins.
+  useEffect(() => {
+    if (variantIdx === 0) return;
+    if (viewMode === "sites" || viewMode === "contacts") {
+      setViewMode("topology");
+    } else if (
+      viewMode === "tags" &&
+      activeIsoformPins.length === 0 &&
+      activeOrthologPins.length === 0
+    ) {
+      setViewMode("topology");
+    }
+  }, [variantIdx, viewMode, activeIsoformPins.length, activeOrthologPins.length]);
   // The uniprot_acc / topology / type used by the render pipeline.
   // For experimental view, ``activeUniprot`` is unused (we fetch
   // RCSB by pdb_id instead) — keep canonical for the aria-label.
@@ -1330,6 +1454,41 @@ export function StructureViewer({
       ? activeVariant.uniprot_acc
       : data.uniprot_acc;
   const activeTopology = activeVariant?.topology ?? data.topology;
+  // Active tab → strip. Isoform / ortholog tabs carry their own sequence's
+  // topology and numbering; every other tab is on the canonical sequence.
+  // Read through a ref so a parent re-render with a fresh closure doesn't
+  // re-fire it.
+  const onActiveTopologyChangeRef = useRef(onActiveTopologyChange);
+  onActiveTopologyChangeRef.current = onActiveTopologyChange;
+  const activeLabel = activeVariant?.label ?? "Canonical";
+  const activeOnOwnSequence =
+    activeVariant?.source === "afdb" &&
+    (activeVariant.id.startsWith("iso-") || activeVariant.id.startsWith("ortholog-"));
+  // An experimental chain or a trimmed homo-oligomer model covers only part
+  // of the canonical sequence; the strip blanks the rest.
+  const coveredStart =
+    activeVariant?.source === "experimental"
+      ? activeVariant.unp_start
+      : isSchwekeActive && activeRenderedResidueRange?.variantId === activeVariant?.id
+        ? activeRenderedResidueRange.min
+        : null;
+  const coveredEnd =
+    activeVariant?.source === "experimental"
+      ? activeVariant.unp_end
+      : isSchwekeActive && activeRenderedResidueRange?.variantId === activeVariant?.id
+        ? activeRenderedResidueRange.max
+        : null;
+  useEffect(() => {
+    onActiveTopologyChangeRef.current?.({
+      topology: activeTopology,
+      label: activeLabel,
+      canonicalNumbering: !activeOnOwnSequence,
+      coveredRange:
+        coveredStart != null && coveredEnd != null
+          ? { start: coveredStart, end: coveredEnd }
+          : null,
+    });
+  }, [activeTopology, activeLabel, activeOnOwnSequence, coveredStart, coveredEnd]);
   const activeDeepTMHMMType =
     activeVariant?.deeptmhmm_type ?? data.deeptmhmm_type;
 
@@ -1344,17 +1503,13 @@ export function StructureViewer({
   // pin the legend to that window so it doesn't advertise a "Signal
   // peptide" swatch for a model that doesn't actually contain any S
   // residues. The window comes from ``activeRenderedResidueRange``,
-  // which the schweke render branch populates after parsing the PDB.
+  // which the schweke render branch populates after parsing the PDB. An
+  // experimental chain is windowed the same way, by PDBe's mapped UniProt
+  // range — the same window the strip under the viewer draws.
   const legendPresentStates = (() => {
-    if (
-      isSchwekeActive &&
-      activeRenderedResidueRange &&
-      activeRenderedResidueRange.variantId === activeVariant?.id &&
-      activeTopology
-    ) {
-      const { min, max } = activeRenderedResidueRange;
-      const lo = Math.max(0, min - 1);
-      const hi = Math.min(activeTopology.length, max);
+    if (coveredStart != null && coveredEnd != null && activeTopology) {
+      const lo = Math.max(0, coveredStart - 1);
+      const hi = Math.min(activeTopology.length, coveredEnd);
       return _presentTopologyStates(activeTopology.slice(lo, hi));
     }
     return _presentTopologyStates(activeTopology);
@@ -1365,9 +1520,89 @@ export function StructureViewer({
   // the chain is restricted + residues may be missing from the
   // crystal, so anchor spheres would mis-render.
   const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
+  const hasTagSites =
+    (tagSites.length > 0 && isCanonicalActive) ||
+    activeIsoformPins.length > 0 ||
+    activeOrthologPins.length > 0;
+
+  // Keyboard shortcuts (same guarded-window-listener pattern as GeneDetail's
+  // prev/next-gene nav): 1-9 pick a structure tile (1 = Canonical, then each
+  // variant tile left-to-right), a/s/d pick the viewer mode (a = topology,
+  // s = tag sites, d = SURFACE-Bind, f = contacts). Guarded against typing in inputs and
+  // against modifier chords so it never hijacks a browser/OS shortcut. A mode
+  // key is a no-op when that mode isn't available for the current gene/tab.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el?.isContentEditable) {
+        return;
+      }
+      const k = e.key.toLowerCase();
+      if (k >= "1" && k <= "9") {
+        const idx = Number(k) - 1; // 1 -> Canonical (0); 2 -> first variant tile (1); …
+        if (idx <= effectiveVariants.length) {
+          userPickedRef.current = true;
+          setVariantIdx(idx);
+          e.preventDefault();
+        }
+      } else if (k === "a") {
+        setViewMode("topology");
+        e.preventDefault();
+      } else if (k === "s" && hasTagSites) {
+        setViewMode("tags");
+        e.preventDefault();
+      } else if (k === "f" && isCanonicalActive) {
+        setViewMode("contacts");
+        e.preventDefault();
+      } else if (k === "d" && hasAnchors) {
+        setViewMode("sites");
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [effectiveVariants.length, hasTagSites, hasAnchors, isCanonicalActive]);
 
   // Canonical-AFDB availability — drives graying its tab.
   const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
+
+  // Open on the library construct. The library's L1 member is the reference
+  // construct, so the card opens on the tab that shows it (MUC1: Ordered, not
+  // the 1,255-aa canonical whose length is mostly low-confidence strand);
+  // failing an L1 tab, on any library tab. Nothing moves when Canonical
+  // already is that construct (SLC6A8), and a manual pick opts out. Runs
+  // ahead of the canonical-unavailable fallback below, which still applies
+  // when no library tab exists. Skips an AFDB tab known to have no model.
+  useEffect(() => {
+    if (userPickedRef.current) return;
+    const usable = (i: number) => {
+      if (i === 0) return afdbAvail[data.uniprot_acc] !== false;
+      const v = effectiveVariants[i - 1];
+      return !(
+        v?.source === "afdb" &&
+        afdbAvail[(v as StructureVariantAfdb).uniprot_acc] === false
+      );
+    };
+    const hasL1 = (ms: LibraryMembership[]) =>
+      ms.some((m) => (m.library ?? "").toLowerCase() === "l1");
+    // Among L1 tabs prefer the library tab itself: it is the construct's own
+    // model and caption, where an isoform tab is AFDB's model of the same
+    // sequence (MUC1 would otherwise open on Isoform 8 once it has a tab).
+    const isLibraryTab = (i: number) => effectiveVariants[i - 1]?.source === "library";
+    const firstTab = (ok: (ms: LibraryMembership[], i: number) => boolean) =>
+      tabLibraryMembers.findIndex((ms, i) => ok(ms, i) && usable(i));
+    let target = firstTab((ms, i) => hasL1(ms) && isLibraryTab(i));
+    if (target < 0) target = firstTab((ms) => hasL1(ms));
+    if (target < 0) target = firstTab((ms) => ms.length > 0);
+    if (target <= 0) return; // no library tab, or Canonical is the construct
+    userPickedRef.current = true;
+    setVariantIdx(target);
+    // tabLibraryMembers is derived each render from props that don't change
+    // for a gene; its length tracks effectiveVariants.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [afdbAvail, effectiveVariants, data.uniprot_acc]);
 
   // When AFDB has no model for the CANONICAL sequence (only an alternative
   // isoform is modelled — LRP1-class — or nothing at all), gray the
@@ -1531,13 +1766,41 @@ export function StructureViewer({
       //     restricted) PDB residue numbering.
       //   - AFDB (default)  → fetch by UniProt acc through AFDB DB.
       let rawPdb: string;
+      // PDBe chain id → the chain id the fetched file actually uses.
+      // Identity except when an mmCIF-only entry's multi-character
+      // chain ids had to be remapped to fit the PDB column.
+      let expChainId = "";
       const schwekeVariant = isSchwekeActive
         ? (activeVariant as StructureVariantSchwekeHomomer)
         : null;
       const expVariant = isExperimentalActive
         ? (activeVariant as StructureVariantExperimental)
         : null;
-      if (schwekeVariant) {
+      const libVariant = isLibraryActive
+        ? (activeVariant as StructureVariantLibrary)
+        : null;
+      if (libVariant) {
+        // Same cache dance as the Schweke branch: R2 sends its 404 with no
+        // Cache-Control and ``force-cache`` replays any stored response however old,
+        // so a browser that loaded the page before a model was ingested would keep
+        // the 404 forever. Retry once past the cache before calling it missing.
+        let resp = await fetch(libVariant.pdb_url, { cache: "force-cache" });
+        if (!resp.ok) {
+          resp = await fetch(libVariant.pdb_url, { cache: "reload" });
+        }
+        if (!resp.ok) {
+          if (renderSeq !== renderSeqRef.current) return;
+          setStatus("unavailable");
+          setErrorMsg(
+            `The model for library member ${libVariant.candidate_id} ` +
+              `(${libVariant.pdb_url.split("/").pop()}) could not be loaded. ` +
+              "The member's topology and design are unaffected; only the 3D view " +
+              "is unavailable.",
+          );
+          return;
+        }
+        rawPdb = await resp.text();
+      } else if (schwekeVariant) {
         let resp = await fetch(schwekeVariant.pdb_url, {
           cache: "force-cache",
         });
@@ -1572,16 +1835,19 @@ export function StructureViewer({
         }
         rawPdb = await resp.text();
       } else if (expVariant) {
-        // RCSB returns the PDB file directly. Aggressive caching is
-        // fine — PDB entries are immutable per release.
-        const rcsbUrl = `https://files.rcsb.org/download/${expVariant.pdb_id}.pdb`;
-        const resp = await fetch(rcsbUrl, { cache: "force-cache" });
-        if (!resp.ok) {
-          throw new Error(
-            `RCSB returned ${resp.status} for ${expVariant.pdb_id}`,
+        const exp = await fetchExperimentalPdb(
+          expVariant.pdb_id,
+          expVariant.chain_id,
+        );
+        rawPdb = exp.rawPdb;
+        expChainId = exp.chainId;
+        if (exp.chainOnlyAtomCount != null) {
+          const id = expVariant.pdb_id;
+          const n = exp.chainOnlyAtomCount;
+          setChainOnlyAtomCounts((prev) =>
+            id in prev ? prev : { ...prev, [id]: n },
           );
         }
-        rawPdb = await resp.text();
         // Parse the TITLE record once per PDB and cache so re-renders
         // (mode toggle, etc.) don't re-parse.
         if (!(expVariant.pdb_id in pdbTitles)) {
@@ -1692,12 +1958,12 @@ export function StructureViewer({
 
       // Resolve the chain id we'll actually use downstream — PDBe's
       // metadata occasionally disagrees with the deposited PDB
-      // (case mismatch, label vs auth asym id). _pickPdbChain falls
+      // (case mismatch, label vs auth asym id). pickPdbChain falls
       // back to a case-insensitive match, then to the heaviest chain,
       // so the orientation + topology coloring don't silently no-op
       // for entries with mismatched chain ids (GPR75 was the trigger).
       const effectiveChainId = expVariant
-        ? _pickPdbChain(rawPdb, expVariant.chain_id) ?? expVariant.chain_id
+        ? pickPdbChain(rawPdb, expChainId) ?? expChainId
         : null;
 
       // Build the UniProt→PDB-author projection for an experimental
@@ -1708,39 +1974,41 @@ export function StructureViewer({
       // PDBe author space). So we validate candidate offsets against the
       // residues ACTUALLY present in the fetched file and keep the best.
       let projSegments: ProjSegment[] = [];
-      if (expVariant) {
-        const chain = effectiveChainId ?? expVariant.chain_id;
-        const observed = _observedResSeq(rawPdb, chain);
-        const seqresOffset = expVariant.pdb_start - expVariant.unp_start;
-        if (expVariant.mappingMode === "approx") {
-          // Approach C — discontinuous fusion mapping. Fetch SIFTS
-          // per-segment author numbers and project piecewise, each
-          // segment's offset file-validated. Falls through to the
-          // single-offset path below if SIFTS is unavailable.
-          const raw = await _fetchSiftsSegments(
-            expVariant.pdb_id, data.uniprot_acc, expVariant.chain_id,
-          );
-          if (raw.length > 0) projSegments = _projSegmentsForDirty(raw, observed);
-        }
-        if (projSegments.length === 0) {
-          // Clean single contiguous segment (or dirty w/o usable SIFTS).
-          // Candidate offsets: 0 (file numbered by UniProt residue — the
-          // modern norm, true for GPR75 9xqc where author == UniProt) vs
-          // the legacy SEQRES offset. Ties keep the legacy offset so
-          // anything that already rendered can't regress (EGFR 7syd: both
-          // are 0, 614 residues). 9xqc: offset 0 covers 266 residues vs
-          // the legacy -34's 234, so the bug (off-by-34) is corrected.
-          const offset = _bestLinearOffset(
-            expVariant.unp_start, expVariant.unp_end,
-            [0, seqresOffset], observed, seqresOffset,
-          );
-          projSegments = [{
-            unpLo: expVariant.unp_start,
-            unpHi: expVariant.unp_end,
-            offset,
-          }];
-        }
+      if (libVariant) {
+        // One linear segment is the whole story here, unlike an experimental chain:
+        // the model IS the ordered protein (ours) or contains it contiguously (AFDB's,
+        // verified residue-exact offline), so there are no gaps to map piecewise.
+        projSegments = [
+          {
+            unpLo: 1,
+            unpHi: libVariant.topology.length,
+            offset: libVariant.residue_offset,
+          },
+        ];
+      } else if (expVariant) {
+        projSegments = await projectExperimentalChain(
+          {
+            pdbId: expVariant.pdb_id,
+            uniprotAcc: data.uniprot_acc,
+            chainId: expVariant.chain_id,
+            unpStart: expVariant.unp_start,
+            unpEnd: expVariant.unp_end,
+            pdbStart: expVariant.pdb_start,
+            approx: expVariant.mappingMode === "approx",
+          },
+          rawPdb,
+          effectiveChainId ?? expChainId,
+        );
       }
+
+      // A library member needs the same residue map as an experimental chain: its
+      // topology is numbered on the ordered sequence, the file on the model's own
+      // numbering, and the two differ by residue_offset.
+      residueMapRef.current = libVariant
+        ? { segments: projSegments, chain: "" }
+        : expVariant
+          ? { segments: projSegments, chain: effectiveChainId ?? expVariant.chain_id }
+          : null;
 
       // Orient both AFDB models and experimental PDBs the same way
       // when possible: rotate so the membrane plane is horizontal and
@@ -1762,12 +2030,19 @@ export function StructureViewer({
       const { pdbText, membrane } =
         schwekeSkipOrient
           ? { pdbText: rawPdb, membrane: null }
-          : expVariant
-            ? orientPdbForTopology(rawPdb, activeTopology, {
-                chainId: effectiveChainId ?? expVariant.chain_id,
+          : libVariant
+            ? // The topology is numbered on the ordered sequence; the file on the
+              // model's numbering. Without the map the membrane plane is fitted from
+              // the wrong residues and the whole model is oriented wrongly.
+              orientPdbForTopology(rawPdb, activeTopology, {
                 resiToTopo: _makeResiToTopo(projSegments),
               })
-            : orientPdbForTopology(rawPdb, activeTopology);
+            : expVariant
+              ? orientPdbForTopology(rawPdb, activeTopology, {
+                  chainId: effectiveChainId ?? expChainId,
+                  resiToTopo: _makeResiToTopo(projSegments),
+                })
+              : orientPdbForTopology(rawPdb, activeTopology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -1884,7 +2159,7 @@ export function StructureViewer({
             });
           });
         });
-      } else if (viewMode === "sites") {
+      } else if (viewMode === "sites" || viewMode === "tags" || viewMode === "contacts") {
         const baseSel = expVariant && effectiveChainId
           ? { chain: effectiveChainId }
           : {};
@@ -1899,9 +2174,20 @@ export function StructureViewer({
         // stay in default gray. Uses `effectiveChainId` (resolved
         // against the actual PDB) rather than the raw PDBe metadata
         // so mismatches don't silently drop the cartoon entirely.
-        const baseSel = expVariant && effectiveChainId
-          ? { chain: effectiveChainId }
-          : {};
+        // TRUNCATE to the construct. For a `contained` member the model is longer than
+        // the ordered protein -- by up to 134 residues -- and drawing the whole thing
+        // shows protein the construct does not contain as though it did. Clearing every
+        // style first and then painting only the covered span is what makes the
+        // difference visible, instead of something a reader has to know to look for.
+        // 3Dmol's typed selection takes explicit ranges only, so scoping the base
+        // selection to the span is both the clip and the paint.
+        const libSpan = libVariant?.display_range ?? null;
+        if (libSpan) viewer.setStyle({}, {});
+        const baseSel = libSpan
+          ? ({ resi: `${libSpan[0]}-${libSpan[1]}` } as const)
+          : expVariant && effectiveChainId
+            ? { chain: effectiveChainId }
+            : {};
         // Base color for residues without an explicit topology range. A
         // GLOB protein whose topology came back empty (e.g. IZUMO4 —
         // outside the topology-sweep cohort, so NO ranges to overlay at
@@ -1932,7 +2218,12 @@ export function StructureViewer({
               ? TOPOLOGY_COLORS.M
               : TOPOLOGY_COLORS[state];
           (ranges[state] ?? []).forEach(([start, end]) => {
-            if (expVariant) {
+            // A library member needs the same projection as an experimental chain, and
+            // for the same reason: its topology is numbered on the ordered sequence
+            // while the file uses the model's numbering. Falling through to the raw
+            // branch below would paint every colour `residue_offset` residues off --
+            // up to 134 -- and the result still looks like a topology diagram.
+            if (expVariant || libVariant) {
               // Project each topology range through every projection
               // segment: clip the UniProt range to the segment's window,
               // then shift by the segment's author offset. Clean
@@ -2025,6 +2316,152 @@ export function StructureViewer({
         }
       }
 
+      // Tag-insertion-site overlay — its OWN layer, drawn only in the
+      // dedicated ``tags`` view mode (independent of the SURFACE-Bind
+      // ``sites`` anchors above). Category-colored spheres at the α-carbon
+      // of each rendered tag site, using the WebGL-safe CATEGORY_HEX map
+      // (disorder / surface_loop / ecto N- / ecto C-term / snorkel / literature).
+      const shouldRenderTagSites =
+        viewMode === "tags" && hasTagSites && !schwekeVariant && isCanonicalActive;
+      // Dual-ball for a residue carrying BOTH a deterministic site and a
+      // literature site (e.g. TFRC F760: deterministic terminal_c + its
+      // literature validation). Two spheres on the same Cα can't be layered via
+      // addStyle (the later one replaces the former), so the deterministic ball
+      // stays at its true residue — keeping its category color (amber terminal_c,
+      // never overwritten by the lavender literature ball) — and the LITERATURE
+      // ball is nudged one residue toward the interior so both read with a slight
+      // overlap instead of one hiding the other.
+      const litResidues = new Set<number>();
+      const detResidues = new Set<number>();
+      for (const t of tagSites) {
+        (t.category === "literature" ? litResidues : detResidues).add(t.residue);
+      }
+      for (let i = 0; shouldRenderTagSites && i < tagSites.length; i += 1) {
+        const { residue, category, tagType, spanStart, spanEnd } = tagSites[i];
+        const color = CATEGORY_HEX[category];
+        // Tint the whole exposed-loop span on the cartoon (the ball below marks
+        // the anchor residue; the span shows the full loop that tolerates the
+        // insertion, e.g. H27-K159). AFDB models are UniProt-numbered (offset 0),
+        // so the span residues select directly.
+        if (spanStart != null && spanEnd != null && spanEnd >= spanStart) {
+          const spanSel = {
+            resi: Array.from({ length: spanEnd - spanStart + 1 }, (_, k) => spanStart + k),
+          };
+          if (typeof viewerExt.addStyle === "function") {
+            viewerExt.addStyle(spanSel, { cartoon: { color } });
+          } else {
+            viewer.setStyle(spanSel, { cartoon: { color } });
+          }
+        }
+        // Nudge a literature ball that sits on top of a deterministic ball.
+        const isLit = category === "literature";
+        const drawResidue =
+          isLit && detResidues.has(residue)
+            ? residue > 1
+              ? residue - 1
+              : residue + 1
+            : residue;
+        const sel = { resi: drawResidue, atom: "CA" };
+        if (typeof viewerExt.addStyle === "function") {
+          viewerExt.addStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        } else {
+          viewer.setStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        }
+        if (typeof viewerExt.addLabel === "function") {
+          viewerExt.addLabel(`${tagType}`, {
+            position: { resi: drawResidue, atom: "CA" },
+            backgroundColor: color,
+            backgroundOpacity: 0.94,
+            fontColor: "white",
+            fontSize: 12,
+            borderThickness: 0,
+            inFront: true,
+            screenOffset: { x: 16, y: 16 },
+          });
+        }
+      }
+
+      // Isoform-variant tag pins — rendered when an isoform tab is active in tags
+      // mode. Placed on the canonical fold at each pin's canonical_residue (the
+      // isoform renders on canonical geometry), colored shared (also predicted on
+      // canonical) vs unique (isoform-specific) so the reader sees what differs.
+      const shouldRenderIsoformPins =
+        viewMode === "tags" &&
+        !schwekeVariant &&
+        !isCanonicalActive &&
+        activeIsoformPins.length > 0;
+      for (let i = 0; shouldRenderIsoformPins && i < activeIsoformPins.length; i += 1) {
+        const pin = activeIsoformPins[i];
+        const residue = pin.canonical_residue;
+        if (residue == null) continue;
+        const color = ISOFORM_PIN_HEX[pin.classification];
+        const sel = { resi: residue, atom: "CA" };
+        if (typeof viewerExt.addStyle === "function") {
+          viewerExt.addStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        } else {
+          viewer.setStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        }
+        if (typeof viewerExt.addLabel === "function") {
+          viewerExt.addLabel(`${pin.tag_type ?? "tag"} · ${pin.classification}`, {
+            position: { resi: residue, atom: "CA" },
+            backgroundColor: color,
+            backgroundOpacity: 0.94,
+            fontColor: "white",
+            fontSize: 12,
+            borderThickness: 0,
+            inFront: true,
+            screenOffset: { x: 16, y: 16 },
+          });
+        }
+      }
+
+      // Ortholog-variant tag pins — rendered when an ortholog tab (mouse/cyno) is
+      // active in tags mode. Unlike isoform pins, orthologs render their OWN AFDB
+      // model, so each pin is placed at its OWN residue (``isoform_residue``, the
+      // ortholog's residue axis), colored shared (also predicted on the human
+      // canonical) vs unique (ortholog-specific).
+      const shouldRenderOrthologPins =
+        viewMode === "tags" &&
+        !schwekeVariant &&
+        isOrthologActive &&
+        activeOrthologPins.length > 0;
+      for (let i = 0; shouldRenderOrthologPins && i < activeOrthologPins.length; i += 1) {
+        const pin = activeOrthologPins[i];
+        const residue = pin.isoform_residue;
+        if (residue == null) continue;
+        const color = ISOFORM_PIN_HEX[pin.classification];
+        const sel = { resi: residue, atom: "CA" };
+        if (typeof viewerExt.addStyle === "function") {
+          viewerExt.addStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        } else {
+          viewer.setStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        }
+        if (typeof viewerExt.addLabel === "function") {
+          viewerExt.addLabel(`${pin.tag_type ?? "tag"} · ${pin.classification}`, {
+            position: { resi: residue, atom: "CA" },
+            backgroundColor: color,
+            backgroundOpacity: 0.94,
+            fontColor: "white",
+            fontSize: 12,
+            borderThickness: 0,
+            inFront: true,
+            screenOffset: { x: 16, y: 16 },
+          });
+        }
+      }
+
       // Frame on atoms BEFORE adding the membrane slab. `zoomTo({})`
       // restricts the fit to selected atoms (empty selection = all
       // atoms), so the slab — which is wider than the protein in XZ —
@@ -2079,6 +2516,9 @@ export function StructureViewer({
         viewer.render();
       }
       viewerRef.current = viewer as ViewerInstance;
+      setContactAtoms(isCanonicalActive ? viewer.selectedAtoms({ atom: "CA" }).flatMap(atom =>
+        typeof atom.x === "number" && typeof atom.y === "number" && typeof atom.z === "number" && typeof atom.resi === "number"
+          ? [{ x: atom.x, y: atom.y, z: atom.z, resi: atom.resi }] : []) : []);
 
       // Capture the post-initial-render camera pose so the reset
       // button can restore both rotation AND zoom (not just zoom).
@@ -2144,6 +2584,12 @@ export function StructureViewer({
             } catch {
               // ignore (see initial-capture comment above)
             }
+            // The observer's first fire lands right after every render;
+            // keep a typed-residue highlight framed instead of losing it.
+            if (highlightSelRef.current && viewerRef.current === viewer) {
+              _frameResidue(viewer as ViewerInstance, highlightSelRef.current);
+              viewer.render();
+            }
           } catch {
             // 3Dmol throws on race against teardown; ignore.
           }
@@ -2176,6 +2622,8 @@ export function StructureViewer({
   }, [
     data,
     JSON.stringify(surfaceBindAnchors),
+    JSON.stringify(tagSites),
+    hasTagSites,
     viewMode,
     variantIdx,
     canonAfdbUnavail,
@@ -2198,6 +2646,116 @@ export function StructureViewer({
       viewerRef.current = null;
     };
   }, [renderViewer]);
+
+  // Draw (or clear) the typed-residue highlight on the live viewer.
+  // Re-runs whenever a render completes, so the highlight follows the
+  // reader across variant tabs and view modes.
+  const highlightOwnerRef = useRef<ViewerInstance | null>(null);
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    const objs = highlightObjsRef.current;
+    // Shapes from a previous viewer instance died with its clear().
+    if (viewer && highlightOwnerRef.current === viewer) {
+      try {
+        for (const sh of objs.shapes) viewer.removeShape?.(sh);
+        for (const lb of objs.labels) viewer.removeLabel?.(lb);
+        if (objs.shapes.length || objs.labels.length) viewer.render();
+      } catch {
+        // 3Dmol can throw against teardown; the next render settles.
+      }
+    }
+    highlightObjsRef.current = { shapes: [], labels: [] };
+    highlightOwnerRef.current = null;
+    highlightSelRef.current = null;
+    if (status !== "ready" || !viewer || highlightResi == null) {
+      setResidueNote("");
+      return;
+    }
+    const map = residueMapRef.current;
+    const resi = map ? _unpToAuthorResi(highlightResi, map.segments) : highlightResi;
+    if (resi == null) {
+      setResidueNote(`Residue ${highlightResi} isn't covered by this structure.`);
+      return;
+    }
+    // A library model is one chain and its map carries no chain id; selecting
+    // on chain "" would match no atom at all (the models are chain A).
+    const sel = map?.chain ? { resi, chain: map.chain } : { resi };
+    const atoms = (viewer.selectedAtoms?.({ ...sel, atom: "CA" }) ?? []).filter(
+      (a) => typeof a.x === "number" && typeof a.y === "number" && typeof a.z === "number",
+    );
+    if (atoms.length === 0) {
+      setResidueNote(`Residue ${highlightResi} isn't modelled in this structure.`);
+      return;
+    }
+    const first = atoms[0];
+    const resn = first.resn ? `${first.resn.charAt(0)}${first.resn.slice(1).toLowerCase()}` : "";
+    const shapes: unknown[] = [];
+    const labels: unknown[] = [];
+    try {
+      // One ball on the residue's α-carbon (one per chain on a
+      // homo-oligomer), matching the tag-site / SURFACE-Bind spheres.
+      for (const a of atoms) {
+        shapes.push(viewer.addSphere?.({
+          center: { x: a.x, y: a.y, z: a.z },
+          radius: 3.2,
+          color: RESIDUE_HIGHLIGHT_COLOR,
+          opacity: 1,
+        }));
+      }
+      const label = viewer.addLabel?.(`${resn}${highlightResi}`, {
+        position: { x: first.x, y: first.y, z: first.z },
+        backgroundColor: "#2a2a2a",
+        backgroundOpacity: 0.92,
+        fontColor: "white",
+        fontSize: 13,
+        borderThickness: 1.5,
+        borderColor: RESIDUE_HIGHLIGHT_COLOR,
+        inFront: true,
+        screenOffset: { x: 18, y: -18 },
+      });
+      if (label) labels.push(label);
+      // The ↺ button still restores the full-protein pose.
+      _frameResidue(viewer, sel);
+      viewer.render();
+    } catch {
+      // ignore — teardown race
+    }
+    highlightObjsRef.current = { shapes: shapes.filter(Boolean), labels };
+    highlightSelRef.current = sel;
+    highlightOwnerRef.current = viewer;
+    // A library map has no chain: its file is a model, not a PDB entry.
+    const authorNote =
+      map && resi !== highlightResi
+        ? map.chain
+          ? ` (PDB author no. ${resi})`
+          : ` (model residue ${resi})`
+        : "";
+    const chainNote = atoms.length > 1 ? ` on ${atoms.length} chains` : "";
+    setResidueNote(`${resn}${highlightResi}${authorNote} highlighted${chainNote}.`);
+  }, [highlightResi, highlightNonce, status]);
+
+  // Strip click → highlight that residue.
+  useEffect(() => {
+    if (!residueRequest) return;
+    setResidueInput(String(residueRequest.resi));
+    setHighlightResi(residueRequest.resi);
+    setHighlightNonce((k) => k + 1);
+  }, [residueRequest]);
+  // Highlight → strip marker. The callback is read through a ref so a
+  // parent re-render with a fresh closure doesn't re-fire it.
+  const onHighlightChangeRef = useRef(onHighlightChange);
+  onHighlightChangeRef.current = onHighlightChange;
+  useEffect(() => {
+    onHighlightChangeRef.current?.(highlightResi);
+  }, [highlightResi]);
+
+  const submitResidue = (raw: string) => {
+    const m = raw.match(/\d+/);
+    const n = m ? Number(m[0]) : NaN;
+    setHighlightResi(Number.isFinite(n) && n > 0 ? n : null);
+    // Re-submitting the same number re-frames it (after a manual rotate).
+    setHighlightNonce((k) => k + 1);
+  };
 
   return (
     <div className={styles.viewerShell}>
@@ -2226,14 +2784,17 @@ export function StructureViewer({
               userPickedRef.current = true;
               setVariantIdx(0);
             }}
-            title={
+            title={`${
               canonAfdbUnavail
                 ? `AlphaFold DB has no model for the canonical sequence of ${geneSymbol} (${data.uniprot_acc}) — showing an experimental structure where one exists.`
                 : `AlphaFold model for the canonical ${geneSymbol} (UniProt ${data.uniprot_acc}).`
-            }
+            }${_libraryTitle(tabLibraryMembers[0], geneHasLibrary)}`}
             aria-selected={isCanonicalActive}
           >
-            <span className={styles.variantTabLabel}>Canonical</span>
+            <span className={styles.variantTabLabel}>
+              Canonical [1]
+              <LibraryTabMark members={tabLibraryMembers[0]} />
+            </span>
             <span className={styles.variantTabSub}>{data.uniprot_acc}</span>
           </button>
           {effectiveVariants.map((v, i) => {
@@ -2252,7 +2813,7 @@ export function StructureViewer({
                   userPickedRef.current = true;
                   setVariantIdx(i + 1);
                 }}
-                title={
+                title={`${
                   vUnavail
                     ? `AlphaFold DB has no model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
                     : v.source === "schweke-homomer"
@@ -2260,10 +2821,14 @@ export function StructureViewer({
                       : v.source === "experimental"
                         ? `Experimental structure ${(v as StructureVariantExperimental).pdb_id.toUpperCase()} (chain ${(v as StructureVariantExperimental).chain_id}) from the PDB.`
                         : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
-                }
+                }${_libraryTitle(tabLibraryMembers[i + 1], geneHasLibrary)}`}
                 aria-selected={isActive}
               >
-                <span className={styles.variantTabLabel}>{v.label}</span>
+                <span className={styles.variantTabLabel}>
+                  {v.label.replace(/ ortholog$/i, "")}
+                  {i + 2 <= 9 ? ` [${i + 2}]` : ""}
+                  <LibraryTabMark members={tabLibraryMembers[i + 1]} />
+                </span>
                 {v.sublabel ? (
                   <span className={styles.variantTabSub}>{v.sublabel}</span>
                 ) : null}
@@ -2272,6 +2837,22 @@ export function StructureViewer({
           })}
         </div>
       )}
+      {geneHasLibrary ? (
+        <p className={styles.libraryNote} data-in-library={tabLibraryMembers[variantIdx]?.length > 0}>
+          {_libraryNote(
+            tabLibraryMembers[variantIdx] ?? [],
+            [
+              { label: "Canonical", members: tabLibraryMembers[0] },
+              ...effectiveVariants.map((v, i) => ({
+                label: v.label.replace(/ ortholog$/i, ""),
+                members: tabLibraryMembers[i + 1],
+              })),
+            ],
+            libraryMembers,
+          )}
+        </p>
+      ) : null}
+      <div className={styles.contactCanvasFrame}>
       <div
         ref={containerRef}
         className={styles.viewerCanvas}
@@ -2358,13 +2939,26 @@ export function StructureViewer({
           ↺
         </button>
       </div>
+      {viewMode === "contacts" && isCanonicalActive && status === "ready" && contactStatus === "ready" && <div className={styles.contactCanvasLegend} aria-label={selectedContact ? "Selected ligand" : "Ligand categories and counts"}>
+        {selectedContact ? <section className={styles.contactSelectedLegend}>
+          <strong>{selectedContact.partner_label ?? selectedContact.partner} <InfoTip label={`About ${selectedContact.partner_label ?? selectedContact.partner}`} align="start">
+            {selectedContact.positions.length} contact residues · {selectedContact.evidence_count ?? selectedContact.supportingSites.length} evidence records.<br />
+            Sources: {(selectedContact.evidence_sources ?? Array.from(new Set(selectedContact.supportingSites.map(site => site.source)))).join(", ")}.<br />
+            {selectedContact.category_reason || selectedContact.confidence}
+            {selectedContact.identity_note && <><br />{selectedContact.identity_note}</>}
+            {selectedContact.reference && <> <a href={selectedContact.reference} target="_blank" rel="noreferrer">Evidence ↗</a></>}
+          </InfoTip></strong>
+          <span><i style={{background: LIGAND_CATEGORIES[selectedContact.category ?? "unclassified"].color}} /> {LIGAND_CATEGORIES[selectedContact.category ?? "unclassified"].label}</span>
+        </section> : contactLegend.map(category => <div key={category.key}><i style={{background: category.color}} /><span>{category.label}</span><b>{category.count}</b></div>)}
+      </div>}
+      </div>
       {/* Controls row — mode toggle + SURFACE-Bind external link.
           Reset is the inlaid ↺ symbol inside the canvas (above), no
           longer in this row. Only rendered when the gene has
           SURFACE-Bind anchors; the link-out is suppressed too so we
           don't promise the reader a SURFACE-Bind entry that has
           nothing to show. */}
-      {hasAnchors ? (
+      {hasAnchors || hasTagSites || isCanonicalActive ? (
         <div className={styles.controls}>
           <div
             className={styles.modeToggle}
@@ -2376,19 +2970,42 @@ export function StructureViewer({
               className={styles.modeButton}
               data-active={viewMode === "topology"}
               onClick={() => setViewMode("topology")}
-              title="Color the cartoon by DeepTMHMM topology (extracellular / TM / intracellular). All sites render in one purple color; the number label distinguishes them."
+              title="Color the cartoon by DeepTMHMM topology (extracellular / TM / intracellular). All sites render in one purple color; the number label distinguishes them. Shortcut: a"
             >
-              Topology
+              Topology [a]
             </button>
-            <button
-              type="button"
-              className={styles.modeButton}
-              data-active={viewMode === "sites"}
-              onClick={() => setViewMode("sites")}
-              title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: purple = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), red = signal peptide, gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
-            >
-              SURFACE-Bind sites
-            </button>
+            {hasTagSites ? (
+              <button
+                type="button"
+                className={styles.modeButton}
+                data-active={viewMode === "tags"}
+                onClick={() => setViewMode("tags")}
+                title="Overlay tag-insertion-site spheres on a washed-out cartoon, colored by category: amber = extracellular terminus, green = disordered loop, blue = ordered surface loop, lavender = literature-retrieved. Shortcut: s"
+              >
+                Tag sites [s]
+              </button>
+            ) : null}
+            {hasAnchors ? (
+              <button
+                type="button"
+                className={styles.modeButton}
+                data-active={viewMode === "sites"}
+                onClick={() => setViewMode("sites")}
+                title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: purple = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), red = signal peptide, gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay. Shortcut: d"
+              >
+                SURFACE-Bind [d]
+              </button>
+            ) : null}
+            {isCanonicalActive ? <button type="button" className={styles.modeButton}
+              data-active={viewMode === "contacts"} aria-pressed={viewMode === "contacts"}
+              aria-keyshortcuts="f" title="Show ligand contact sites on the canonical structure. Shortcut: f"
+              onClick={() => setViewMode("contacts")}>Contact sites [f]</button> : null}
+            <InfoTip label="Viewer keyboard shortcuts">
+              <strong>a</strong> topology, <strong>s</strong> tag sites,{" "}
+              <strong>d</strong> SURFACE-Bind, <strong>f</strong> contact sites. <strong>1</strong>–<strong>9</strong>{" "}
+              switch the structure (Canonical = 1, then each variant tile left to
+              right: isoforms, mouse / cyno orthologs, experimental).
+            </InfoTip>
           </div>
           {/* The previous ↗ deep-link to SURFACE-Bind was removed —
               the §SURFACE-Bind card below already carries the
@@ -2396,6 +3013,58 @@ export function StructureViewer({
               duplicate it next to the mode toggle. */}
         </div>
       ) : null}
+      <form
+        className={styles.residueSearch}
+        onSubmit={(e) => { e.preventDefault(); submitResidue(residueInput); }}
+      >
+        <label htmlFor={`residue-${geneSymbol}`} className={styles.residueLabel}>
+          Highlight residue
+        </label>
+        <input
+          id={`residue-${geneSymbol}`}
+          className={styles.residueInput}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="e.g. 245"
+          value={residueInput}
+          onChange={(e) => setResidueInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") { setResidueInput(""); setHighlightResi(null); }
+          }}
+        />
+        <button type="submit" className={styles.residueButton}>Show</button>
+        {highlightResi != null ? (
+          <button
+            type="button"
+            className={styles.residueButton}
+            onClick={() => { setResidueInput(""); setHighlightResi(null); }}
+          >
+            Clear
+          </button>
+        ) : null}
+        <InfoTip label="Residue numbering">
+          Type a residue number and press Enter, or click the topology strip
+          below, to mark it with a pink ball on the active structure and a
+          pink line on the strip. Canonical and experimental tabs use
+          canonical UniProt numbering (mapped onto the PDB&apos;s own author
+          numbering for experimental structures). Isoform and ortholog tabs
+          use that sequence&apos;s own numbering. Homo-oligomers highlight the
+          residue on every chain. Esc clears.
+        </InfoTip>
+        {residueNote ? (
+          <span className={styles.residueNote} role="status">{residueNote}</span>
+        ) : null}
+      </form>
+      {viewMode === "contacts" && isCanonicalActive ? <ContactSites
+        onFocus={() => { const viewer = viewerRef.current; if (viewer && visibleContacts[0]) { viewer.zoomTo({ resi: [...new Set(visibleContacts.flatMap(site => site.positions))] }); viewer.render(); } }}
+        onReset={() => { const viewer = viewerRef.current; if (viewer) { viewer.zoomTo({}); viewer.render(); } }}
+        query={contactQuery} onQuery={value => { setContactQuery(value); setContactIndex(0); }}
+        gene={contactGene} sites={contactGene?.sites ?? []} selected={contactIndex}
+        source={contactSource}
+        ecOnly={contactsEcOnly}
+        status={contactStatus} onRetry={() => setContactRetry(n => n + 1)}
+      /> : null}
       {/* Per-variant caption — sits directly below the canvas (above
           the legend) and shows the structure's title + pLDDT /
           resolution + a link out to AFDB or RCSB for the ACTIVE
@@ -2410,6 +3079,7 @@ export function StructureViewer({
         canonicalUniprot: data.uniprot_acc,
         afdbMetaByAcc,
         pdbTitles,
+        chainOnlyAtomCounts,
       })}
 
       {/* Legend — switches with viewMode. Topology mode shows the
@@ -2452,7 +3122,57 @@ export function StructureViewer({
             </a>
           </p>
         </>
-      ) : (
+      ) : viewMode === "tags" &&
+        !isCanonicalActive &&
+        (activeIsoformPins.length > 0 || activeOrthologPins.length > 0) ? (
+        <ul
+          className={styles.sitesLegend}
+          aria-label="Variant tag-site legend (shared vs variant-specific)"
+        >
+          {Array.from(
+            new Set(
+              (activeOrthologPins.length > 0 ? activeOrthologPins : activeIsoformPins).map(
+                (pin) => pin.classification,
+              ),
+            ),
+          ).map((cls) => (
+            <li key={cls} className={styles.sitesLegendItem}>
+              <span
+                className={styles.sitesLegendSwatch}
+                style={{ background: ISOFORM_PIN_HEX[cls] }}
+                aria-hidden="true"
+              />
+              <span className={styles.sitesLegendLabel}>
+                {cls === "unique"
+                  ? isOrthologActive
+                    ? "Ortholog-specific"
+                    : "Isoform-specific"
+                  : "Shared with human canonical"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : viewMode === "tags" && hasTagSites ? (
+        <ul
+          className={styles.sitesLegend}
+          aria-label="Tag-site category legend"
+        >
+          {Array.from(new Set(tagSites.map((t) => t.category))).map(
+            (category) => (
+              <li key={category} className={styles.sitesLegendItem}>
+                <span
+                  className={styles.sitesLegendSwatch}
+                  style={{ background: CATEGORY_HEX[category] }}
+                  aria-hidden="true"
+                />
+                <span className={styles.sitesLegendLabel}>
+                  {CATEGORY_LABEL[category]}
+                </span>
+              </li>
+            ),
+          )}
+        </ul>
+      ) : viewMode === "contacts" ? null : (
         <TopologyLegend
           presentStates={legendPresentStates}
           globular={activeDeepTMHMMType === "GLOB"}
