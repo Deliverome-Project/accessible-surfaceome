@@ -93,7 +93,7 @@ def main() -> None:
         topo = {i + 1: c for i, c in enumerate(topo_s)}
         pdb = af_pdb(acc)
         try:
-            hazard = F.hazard_residues(F.fetch_uniprot_features(acc))
+            hazard = F.hazard_residues_with_model(F.fetch_uniprot_features(acc), pdb)
             hz = f"{len(hazard)} hazard residues"
         except Exception as ex:  # noqa: BLE001 — diagnostic script
             hazard = set()

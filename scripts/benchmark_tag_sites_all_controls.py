@@ -62,7 +62,7 @@ def main():
             results.append((r["id"], gene, acc, ctrl, "no_af_model", type(ex).__name__))
             continue
         try:
-            hazard = F.hazard_residues(F.fetch_uniprot_features(acc))
+            hazard = F.hazard_residues_with_model(F.fetch_uniprot_features(acc), pdb)
         except Exception:  # noqa: BLE001
             hazard = set()
         sig = compute_signals(pdb, topology=topo, sequence=seq, ortholog_seqs=[], hazard_res=hazard)

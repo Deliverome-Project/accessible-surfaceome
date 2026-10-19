@@ -15,7 +15,7 @@ from __future__ import annotations
 from typing import Any
 
 from .model import residue_range, tagged_site
-from .surface_loop import FEATURE_DIST_MIN, _extracellular
+from .surface_loop import FEATURE_DIST_MIN, LOOP_SS, _extracellular
 
 PLDDT_DISORDER_MAX = 70.0  # fallback proxy when no predictor track is available
 MIN_RUN = 4                # contiguous residues (short loops aren't disorder)
@@ -109,10 +109,27 @@ def disorder_candidates(
     rsa = signals.get("rsa") or {}
     feat = signals["feature_dist"]
     picks: list[dict[str, Any]] = []
+    ss = signals.get("ss") or {}
     for run in _flexible_runs(signals, topo):
         for res in run:
             if feat.get(res, 0.0) < FEATURE_DIST_MIN:
                 continue  # the insertion point itself must clear functional atoms
+            # Ask the MODEL whether this is a regular element, as the
+            # surface-loop gate does. This lane had no structural gate at all:
+            # it selected on a disorder consensus that weights netsurfp-3.0 at
+            # 2.0 — a SEQUENCE predictor that never sees the structure, and one
+            # whose errors run toward calling coil where the model is
+            # structured, which is exactly the direction that drops a long
+            # cassette into a helix. Low pLDDT usually does mean unstructured,
+            # which is why this survived; it fails where pLDDT is low AND the
+            # model still forms an element.
+            #
+            # An ABSENT call is unknown, not structured — treating a missing
+            # DSSP as a helix would empty the lane for any protein whose model
+            # failed to parse, and that looks identical to "no sites here".
+            called = ss.get(res)
+            if called is not None and called not in LOOP_SS:
+                continue
             picks.append(_site(res, run, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc))
     disorder = signals.get("disorder") or {}
     picks.sort(
