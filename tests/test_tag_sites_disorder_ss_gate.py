@@ -124,3 +124,36 @@ def test_a_missing_ss_call_does_not_silently_drop_a_residue() -> None:
     helix would quietly empty the lane for any protein whose model failed to
     parse — a failure that looks identical to 'this protein has no sites'."""
     assert picks({}) == set(RUN)
+
+
+# --------------------------------------------------------------------------
+# the junction, not the anchor
+# --------------------------------------------------------------------------
+
+
+def test_the_junction_ranks_in_three_tiers_not_two() -> None:
+    """An insert goes BETWEEN N and N+1, so the anchor alone merges two classes
+    the published corpus separates. Scored at the junction, of 185 published
+    internal sites: 116 sit in coil, 22 at an element BOUNDARY (one flank
+    structured), and 47 MID-element (both flanks structured) — 18 of those 47
+    function-validated, every one H|H: ABCB1 x4, ATP1A1 x2, ATP1A3, ABCC1,
+    ABCC2, ABCG2, ADCYAP1R1, ERVW-1, GABRA1, KCNE3, KCNQ1, OTOP1, SCNN1A,
+    TMEM225.
+
+    Mid-element is therefore demonstrably survivable for a small tag, which is
+    why none of this vetoes. But a boundary is a strictly better bet than an
+    interior, and the anchor test could not say which was which: residue 23 is
+    coil with 24 helical (a boundary) and residue 25 is helix with 26 helical
+    (an interior), and both read 'structured' when only the anchor is asked.
+    """
+    # Helix 20-24, coil 25-31. The junction AFTER 24 is a BOUNDARY (24 is H,
+    # 25 is C); the junctions after 20-23 are interiors (H|H). The anchor test
+    # cannot tell those apart — 22 and 24 are both H — so it ties them and
+    # breaks the tie arbitrarily. That is what this pins.
+    ss = {r: ("H" if 20 <= r <= 24 else "C") for r in range(1, 41)}
+    order = ranked(ss)
+    assert set(order) == set(RUN), "still nothing dropped"
+    pos = {res: i for i, res in enumerate(order)}
+    assert pos[25] < pos[24], "a coil junction ranks above a boundary"
+    assert pos[24] < pos[22], "a BOUNDARY ranks above an INTERIOR"
+    assert pos[24] < pos[21], "a BOUNDARY ranks above an INTERIOR"

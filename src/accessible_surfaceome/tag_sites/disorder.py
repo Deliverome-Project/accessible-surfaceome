@@ -132,11 +132,26 @@ def disorder_candidates(
             # An ABSENT call is unknown, not structured.
             picks.append(_site(res, run, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc))
     disorder = signals.get("disorder") or {}
+    def _junction_tier(res: int) -> int:
+        """0 = coil both sides, 1 = element boundary, 2 = element interior.
+
+        The insert goes BETWEEN ``res`` and ``res + 1``, so the junction is the
+        unit, not the anchor. Scoring the anchor alone merges two classes the
+        published corpus separates: of 185 published internal sites, 116 sit in
+        coil, 22 at a boundary and 47 mid-element. A boundary is a better bet
+        than an interior, and the anchor test ties them.
+        """
+        flanks = (ss.get(res), ss.get(res + 1))
+        # An absent call is unknown, not structured.
+        structured = sum(1 for c in flanks if c is not None and c not in LOOP_SS)
+        return structured
+
     picks.sort(
         key=lambda p: (
-            # Structured anchors last: ranked down, never excluded.
-            ss.get(p["insert_after_residue"]) is not None
-            and ss.get(p["insert_after_residue"]) not in LOOP_SS,
+            # Ranked down, never excluded — 18 function-validated published
+            # sites are mid-helix (H|H), so an interior is survivable for a
+            # small tag and a veto here would reject all of them.
+            _junction_tier(p["insert_after_residue"]),
             # most flexible first. Both experimental sets say the working site is the most
             # flexible one available, not the most exposed: Tedman's junctions sit at the
             # 88th-93rd within-protein disorder percentile and our curated internal
