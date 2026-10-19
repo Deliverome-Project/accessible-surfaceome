@@ -1051,6 +1051,15 @@ that each broke something:
 `literature_enriched_v1` rather than inheriting `literature_v1`: the series the
 sweep hands down is the series the child WRITES.
 
+- **The per-gene endpoint serves ALL of a gene's searches.** `handleTagSites` reads every
+  `tag_site_gene_public` row and chooses in the Worker (total order: `searched_at`, then
+  `run_series`, then `candidate_id`) rather than with `ORDER BY` + `.first()`. The six
+  existing top-level fields describe the most recent search; `literature_other_positions` is
+  the UNION across searches, deduped; and `searches[]` names each pass by series and member.
+  `.first()` without an `ORDER BY` was safe only while every gene had one row — from the
+  first enrichment row it would make a gene answer differently per request, cached per POP,
+  which reads as a bug rather than a cache. Deployed as Worker version `224e2f0c`.
+
 ### A schema field rendered into the output contract costs a cohort re-run
 
 `SYSTEM_PROMPT` ends in `format_output_contract()`, generated from the schema,
