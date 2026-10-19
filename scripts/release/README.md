@@ -435,9 +435,16 @@ clean split:
 | Record | DOI | Contents |
 |---|---|---|
 | Data record, concept `zenodo.20805383` (one version per release; 1.0.0 = `zenodo.20805384`) | Zenodo-minted, one version DOI per release | triage + benchmark TSVs + deep-dive tarball + replicates + README |
-| **New manuscript record** | bioRxiv DOI (external) | `manuscript.pdf` + `manuscript.xml` (JATS) + optionally `manuscript.txt` |
+| **Manuscript record** [`23476946`](https://zenodo.org/records/23476946) | bioRxiv DOI `10.64898/2026.10.18.759859` (external) | `manuscript.pdf` + `manuscript.xml` (JATS) + optionally `manuscript.txt` |
 
 ### The procedure (post-bioRxiv-acceptance)
+
+**Done for v1 (2026-10-19):** record [23476946](https://zenodo.org/records/23476946),
+registered under `10.64898/2026.10.18.759859`, holding the PDF exactly as submitted to bioRxiv plus
+the JATS XML (built with `--doi 10.64898/2026.10.18.759859 --pub-date 2026-10-19`) and its figures.
+It links to the data and code records, and both link back to the preprint.
+**Do not create a second manuscript record** for a revised preprint — use
+"New version" on this one (see "Versioning the manuscript record" below).
 
 1. **Post the preprint to bioRxiv.** You get a DOI like
    `10.1101/2026.06.27.123456`.

@@ -646,8 +646,17 @@ export default async function ApiPage() {
             <code className={styles.code}>User-Agent</code>.
           </p>
           <p>
-            <span className="label-mono">Cite &amp; licence ·</span> Data
-            served by this API is{" "}
+            <span className="label-mono">Cite &amp; licence ·</span> Cite
+            the preprint, 
+            <a
+              className={styles.extLink}
+              href="https://doi.org/10.64898/2026.10.18.759859"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              doi:10.64898/2026.10.18.759859
+            </a>
+            . Data served by this API is{" "}
             <a
               className={styles.extLink}
               href="https://creativecommons.org/publicdomain/zero/1.0/"

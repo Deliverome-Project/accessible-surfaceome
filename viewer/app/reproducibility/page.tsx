@@ -5,8 +5,8 @@ import styles from "./page.module.css";
 export const metadata: Metadata = {
   title: "Data and code availability — Surfaceome",
   description:
-    "Code, data, and figure-reproduction handles for the accessible " +
-    "surfaceome project. Code under MIT (concept DOI " +
+    "Paper, code, data, and figure-reproduction handles for the accessible " +
+    "surfaceome project. Preprint doi:10.64898/2026.10.18.759859. Code under MIT (concept DOI " +
     "10.5281/zenodo.22116981); the Zenodo data deposit (concept DOI " +
     "10.5281/zenodo.20805383) under CC0 1.0; per-figure reproduction " +
     "gists archived to Software Heritage.",
@@ -22,7 +22,8 @@ export const metadata: Metadata = {
  * per-figure reproduction gist archived to Software Heritage
  * (swh:1:rev:<sha>, recorded in swhid_map.json). The deposit-contents
  * list mirrors data release 1.3.0. The manuscript is NOT part of the
- * data deposit — it gets its own Zenodo record under the bioRxiv DOI.
+ * data deposit — it has its own Zenodo record (23476946) registered
+ * under the bioRxiv DOI (10.64898/2026.10.18.759859).
  */
 export default function ReproducibilityPage() {
   return (
@@ -41,6 +42,43 @@ export default function ReproducibilityPage() {
             SWHID.
           </p>
         </header>
+
+        <section className={styles.section}>
+          <h2 className={`h-data-section ${styles.sectionHead}`}>
+            Paper
+          </h2>
+          <p className={styles.body}>
+            The preprint describing the pipeline, benchmark, and catalog.
+            An author-deposited copy — the PDF plus JATS XML and figure
+            files — is archived on Zenodo under the same DOI.
+          </p>
+          <dl className={styles.handleCard}>
+            <dt className={styles.handleLabel}>Preprint (bioRxiv)</dt>
+            <dd className={styles.handleValue}>
+              <a
+                href="https://doi.org/10.64898/2026.10.18.759859"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.extLink}
+              >
+                10.64898/2026.10.18.759859
+              </a>
+            </dd>
+            <dt className={styles.handleLabel}>Author copy (Zenodo)</dt>
+            <dd className={styles.handleValue}>
+              <a
+                href="https://zenodo.org/records/23476946"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.extLink}
+              >
+                zenodo.org/records/23476946
+              </a>
+            </dd>
+            <dt className={styles.handleLabel}>License</dt>
+            <dd className={styles.handleValue}>CC BY 4.0</dd>
+          </dl>
+        </section>
 
         <section className={styles.section}>
           <h2 className={`h-data-section ${styles.sectionHead}`}>
