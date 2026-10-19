@@ -527,15 +527,38 @@ def main() -> int:
     return 0
 
 
-def floor_table(sub: pd.DataFrame) -> pd.DataFrame:
-    """Retrospective rejections per convention per candidate floor."""
+def spatial_mask(sub: pd.DataFrame, conv: str) -> pd.Series:
+    """Rows whose winning cysteine *for this convention* is not adjacent.
+
+    The exclusion has to be applied per convention, because which cysteine wins
+    flips with the ruler. ACKR3 P35 is the worked case: CA-CA and heavy-heavy
+    pick C34 at separation 1, where the numbers are the virtual and real
+    backbone bonds, while CA-SG and heavy-SG pick C287 **252 residues away**,
+    which is a genuine long-range constraint. Masking every convention on one
+    convention's separation drops that constraint and reads the site as an
+    adjacency artifact — which is exactly how a retired site nearly got
+    un-retired.
+    """
+    return sub[f"{conv}_seq_sep"] > ADJACENT_SEP
+
+
+def floor_table(
+    sub: pd.DataFrame, *, spatial_only: bool = False
+) -> pd.DataFrame:
+    """Retrospective rejections per convention per candidate floor.
+
+    With ``spatial_only`` each convention is restricted to the rows whose own
+    winning cysteine is non-adjacent, so the row counts differ per column.
+    """
     rows = []
-    n = len(sub)
     for floor in FLOORS:
-        row: dict[str, object] = {"floor_a": floor, "n_sites": n}
+        row: dict[str, object] = {"floor_a": floor}
         for conv in CONVENTIONS:
             col = f"{conv}_a"
-            rejected = int((sub[col] < floor).sum()) if n else 0
+            scoped = sub[spatial_mask(sub, conv)] if spatial_only else sub
+            n = len(scoped)
+            rejected = int((scoped[col] < floor).sum()) if n else 0
+            row[f"{conv}_n_sites"] = n
             row[f"{conv}_rejected_n"] = rejected
             row[f"{conv}_rejected_frac"] = round(rejected / n, 4) if n else None
         rows.append(row)
@@ -708,11 +731,19 @@ def write_report(
     )
 
     w("## The tightest sites are sequence-adjacent, where distance is not clearance\n")
-    adjacent = measured[measured["heavy_seq_sep"] <= ADJACENT_SEP]
-    spatial = measured[measured["heavy_seq_sep"] > ADJACENT_SEP]
+    # "Adjacent" is per convention. A site can be adjacent on one ruler and
+    # 252 residues away on another, so there is no single adjacent/spatial
+    # partition of the cohort — only one per convention.
+    any_adjacent = measured[
+        pd.concat(
+            [~spatial_mask(measured, c) for c in CONVENTIONS], axis=1
+        ).any(axis=1)
+    ]
+    adjacent = measured[~spatial_mask(measured, "heavy")]
     w(
-        f"**{len(adjacent)} of {len(measured)} measured sites sit within "
-        f"{ADJACENT_SEP} residues of their nearest bonded cysteine in sequence.** "
+        f"**{len(any_adjacent)} of {len(measured)} measured sites are "
+        f"sequence-adjacent to their winning cysteine on at least one "
+        f"convention** (within {ADJACENT_SEP} residues). "
         "At a separation of 1 the numbers are geometric constants, not "
         "measurements: heavy-heavy lands at 1.33-1.35 A, which is the peptide "
         "C-N bond, and CA-CA at 3.81-3.86 A, which is the Ca-Ca virtual bond. "
@@ -758,18 +789,23 @@ def write_report(
         )
     w(
         "Everything below is therefore reported **twice**: over all measured "
-        f"sites, and over the {len(spatial)} sites whose junction is more than "
-        f"{ADJACENT_SEP} residues from the cysteine, where the distance really "
-        "is a spatial clearance. Read the second table when you want to know "
-        "where a floor bites geometrically, and the first when you want to know "
-        "what it would reject in practice.\n"
+        "sites, and over the non-adjacent sites where the distance really is a "
+        "spatial clearance. **The second scope is computed per convention**, "
+        "because a site can be adjacent on one ruler and far on another, so the "
+        "row count differs per column. Read the spatial scope when you want to "
+        "know where a floor bites geometrically, and the full one when you want "
+        "to know what it would reject in practice.\n"
     )
-    w("| convention | min, all sites | min, spatial only (sep > 2) |")
-    w("|---|---:|---:|")
+    w("| convention | min, all sites | n spatial | min, spatial only | its binding Cys |")
+    w("|---|---:|---:|---:|---|")
     for conv in CONVENTIONS:
+        sp = measured[spatial_mask(measured, conv)]
+        r = sp.loc[sp[f"{conv}_a"].idxmin()]
         w(
             f"| {CONVENTION_LABEL[conv]} | {measured[f'{conv}_a'].min():.2f} A | "
-            f"{spatial[f'{conv}_a'].min():.2f} A |"
+            f"{len(sp)} | {sp[f'{conv}_a'].min():.2f} A | "
+            f"{r['gene_symbol']} {r['residue_label']} -> C{int(r[f'{conv}_cys'])} "
+            f"(sep {int(r[f'{conv}_seq_sep'])}) |"
         )
     w("")
 
@@ -777,10 +813,11 @@ def write_report(
     w(f"All {len(measured)} measured sites.\n")
     w(_floor_md(floor_table(measured)))
     w(
-        f"\nSpatial subset only — the {len(spatial)} sites more than "
-        f"{ADJACENT_SEP} residues from their cysteine:\n"
+        "\nSpatial scope — each convention restricted to the sites whose own "
+        f"winning cysteine is more than {ADJACENT_SEP} residues away. The n "
+        "differs per column by design:\n"
     )
-    w(_floor_md(floor_table(spatial)))
+    w(_floor_md(floor_table(measured, spatial_only=True), show_n=True))
 
     w("\n## Stratified by validation tier\n")
     w(
@@ -1038,11 +1075,15 @@ def write_report(
     print("\n".join(lines))
 
 
-def _floor_md(tab: pd.DataFrame) -> str:
+def _floor_md(tab: pd.DataFrame, *, show_n: bool = False) -> str:
+    header = []
+    for c in CONVENTIONS:
+        label = f"{CONVENTION_LABEL[c]} rejected"
+        if show_n and len(tab):
+            label += f" (n={int(tab.iloc[0][f'{c}_n_sites'])})"
+        header.append(label)
     out = [
-        "| floor | "
-        + " | ".join(f"{CONVENTION_LABEL[c]} rejected" for c in CONVENTIONS)
-        + " |",
+        "| floor | " + " | ".join(header) + " |",
         "|---|" + "---:|" * len(CONVENTIONS),
     ]
     for _, r in tab.iterrows():
