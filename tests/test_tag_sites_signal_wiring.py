@@ -28,15 +28,29 @@ from accessible_surfaceome.tag_sites import run as R
 #: it costs to leave them unwired. Removing an entry requires threading it.
 KNOWN_UNWIRED: dict[str, str] = {
     "disorder_tracks": (
-        "The disorder lane falls back to the pLDDT proxy. Measured against "
-        "Tedman's 112 screen-validated junctions, the published-predictor "
-        "consensus puts the top extracellular site a median 3 aa from the "
-        "junction and the pLDDT<70 run 40 aa away (disorder.py:36). "
-        "12,584 deterministic disorder-lane sites across 2,111 genes in "
-        "tag_site_public were placed by the proxy, while disorder_public holds "
-        "97,351 rows across 24,029 accessions, already built and unused. "
-        "Wiring it moves over half the internal catalogue, so it is a "
-        "deliberate re-derive and not a patch."
+        "MEASURED, and leaving it unwired is the right call — this entry records "
+        "a deliberate decision, not a debt. The disorder lane falls back to a "
+        "contiguous extracellular run of plddt < 70. Scoping it over 2,470 genes "
+        "(97.6% of published disorder sites) against the 25-site internal corpus: "
+        "all three arms place at a median 2 aa from the validated junction and a "
+        "paired sign test on nearest-site distance gives p = 0.508, so there is "
+        "no placement accuracy to recover on internal sites. What wiring it would "
+        "do is mislabel its own output: DISORDER_PCT_MIN = 60 is a within-protein "
+        "rank with no absolute floor, so it admits the top 40% of every protein "
+        "whether or not the protein has any disorder, and 33% of the predictor "
+        "arm's post-NMS sites carry their own pLDDT >= 70 while shipping "
+        "disorder.py's fixed rationale 'within a low-pLDDT disordered "
+        "extracellular run' — false for them, and inside surface_loop's territory "
+        "(PLDDT_MIN = 70), where derive_deterministic_sites gives disorder "
+        "priority on a collision and relabels them. The pLDDT-run fallback does "
+        "that 0 times out of 15,561. Post-NMS totals would go 15,561 -> 23,281 "
+        "(+50%) with a median Jaccard of 0.000 against what is published, i.e. "
+        "for over half of genes it shares zero residues with the current output. "
+        "The one real win is ordering, not coverage: distance to the TOP-RANKED "
+        "site improves from a median 79 aa to 11 aa (p = 0.006, n = 15), which is "
+        "worth capturing as a tie-break INSIDE the existing plddt < 70 run rather "
+        "than as the run's threshold. Numbers: docs/"
+        "handoff-2026-10-18-disorder-tracks-scoping.md."
     ),
 }
 

@@ -4,8 +4,61 @@
 
 The task was: **scope what wiring `disorder_tracks` would cost — before/after
 candidate counts cohort-wide, and how placements shift against validated
-junctions.** That measurement is **NOT done.** What follows is the ground work,
-and one error of mine to correct rather than inherit.
+junctions.**
+
+**It is now done, and the answer is: do not wire it.** The measurement was run by
+the `claude/disorder-tracks-scoping-0ee4b1` session over 2,470 genes (97.6% of
+published disorder sites) plus the 25-site internal corpus. Headlines, with the
+sections below kept as the ground work they were written as:
+
+- **No placement accuracy to recover.** All three arms place at a **median 2 aa**
+  from the validated junction on the internal corpus; paired sign test A vs B
+  **p = 0.508**. My 40 aa framing (§2) was measured on N-terminal junctions and
+  has **no analogue** on internal sites.
+- **Wiring it would mislabel a third of its own output.** `DISORDER_PCT_MIN = 60`
+  is a within-protein rank with no absolute floor, so it admits the top 40% of
+  every protein regardless of whether the protein has disorder. **33.4% of arm
+  B's post-NMS sites (7,772 / 23,281) carry their own pLDDT ≥ 70** while shipping
+  `disorder.py`'s fixed rationale "within a low-pLDDT disordered extracellular
+  run" — false for them, and inside `surface_loop`'s territory. Arm A: **0 of
+  15,561**. A provenance defect, not a count change.
+- **Counts** (pool → post-NMS): A 149,356 → 15,561; B 228,187 → 23,281 (+50%);
+  C 201,697 → 21,724 (+40%). NMS does not absorb it — the cap binds on only
+  207→433 genes. Median Jaccard of B and C against published is **0.000**: for
+  over half of genes, wiring shares zero residues with what ships.
+- **B ≈ C**, so C's two extra predictors do not earn their D1 dependency
+  (median Jaccard 0.188, totals 7% apart) — but neither is ≈ A.
+- **The one real win is ordering.** Top-ranked site median **79 aa → 11 aa**,
+  sign test **p = 0.006** (n = 15). Worth capturing as a tie-break *inside* the
+  existing `plddt < 70` run, not as its threshold. Not implemented.
+- **Caveat they stated rather than buried:** their cohort arm-A reconstruction
+  totals 15,561 where production published 12,283 on the same genes (1.27×,
+  exact per-gene match 31.8%), because D1 signals cannot model the hazard veto
+  (`hazard_res=∅` leaves every `feature_dist` infinite) or `_drop_near_terminus`
+  (needs CA coords). Both are arm-identical, so between-arm ratios hold; the
+  absolute arm-A count is not production's. The corpus arm has no such caveat.
+
+**Two corrections to my ground work below, both verified here:**
+
+1. **`disorder_public` IS committed** — `cloudflare/migrations/disorder_public.sql`
+   (`c159c7729`). It is absent from `d1_public_schema.sql` only, which is a
+   documentation gap, not a missing schema. §1 said otherwise.
+2. **The `ss3` substitution caveat in §4 is smaller than I wrote.** Production's
+   `per_residue_ss` is pydssp 3-state H/E/C ([signals.py:127](../src/accessible_surfaceome/tag_sites/signals.py#L127)),
+   the same alphabet as D1's `ss3`, so `LOOP_SS = {"C","T","S","G"}` reduces to
+   `{C}` on both sides and T/S/G never appear in production either. Like-for-like
+   alphabet; only the calls differ.
+
+**A latent bug they found that is independent of all this and still live:**
+`netsurfp-3.0` is the highest-weighted track in `consensus` (2.0) and scores only
+the **first 400 residues**. 1,591 of 2,470 cohort genes (**64%**) are longer,
+median 698 aa. So its "within-protein percentile" is really a within-first-400
+percentile, and the consensus weighting **steps discontinuously at residue 400**
+(`consensus` only adds a predictor where `res <= len(values)`). That is a defect
+in `disorder_tracks.py` whether or not the module is ever wired in.
+
+Their full numbers: `disorder-tracks-scoping-RESULTS.md` in the side-session
+notes folder.
 
 ---
 

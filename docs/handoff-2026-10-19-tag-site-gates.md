@@ -117,27 +117,55 @@ This caught me on my own fix. The GPI propeptide refusal was implemented in
 `terminal.py`, tested eight ways and committed — and `run_gene` had no
 `propeptide` parameter, so it fired on no published gene. Fixed in `cfbcaee42`.
 
-**It is still open, and much larger, for `disorder_tracks`.** Nothing passes it
-anywhere — not `run_gene`, not any driver. So the disorder lane runs on the
-pLDDT proxy that `disorder.py:36` itself measures at a median **40 aa** from
-Tedman's 112 screen-validated junctions, where the published-predictor consensus
-sits at **3 aa**:
+**`disorder_tracks` is the other instance, and it has since been measured:
+leaving it unwired is correct.** Nothing passes it anywhere — not `run_gene`,
+not any driver — so the disorder lane runs on a contiguous extracellular run of
+`plddt < 70` across 12,584 sites and 2,111 genes, 52% of the internal
+deterministic catalogue.
 
-| | |
-|---|---|
-| disorder-lane sites placed by the proxy | **12,584 across 2,111 genes** |
-| share of the internal deterministic catalogue | **52%** |
-| `disorder_public` rows already loaded | 97,351 across 24,029 accessions |
+**I first wrote here that this costs a median 40 aa of placement accuracy
+against 3 aa for the predictors. That was measured on the wrong population and
+is withdrawn.** All 946 rows of `tedman_gpcr_controls.tsv` are `site_kind:
+terminal_n` — signal-peptide-proximal placements, not internal disorder-lane
+sites. On the 25-site internal corpus, with real AFDB models and real UniProt
+hazard vetoes, **all three arms place at a median 2 aa** and a paired sign test
+on nearest-site distance gives **p = 0.508**. There is no placement accuracy to
+recover on internal sites.
 
-The better signal was measured, built, and loaded into D1, and the wire was
-never connected. Wiring it moves over half the catalogue, so it is a deliberate
-cohort re-derive, not a patch — which is why it is recorded rather than done.
+What wiring it would do is mislabel its own output. `DISORDER_PCT_MIN = 60` is a
+within-protein rank with **no absolute floor**, so it admits the top 40% of every
+protein whether or not that protein has any disorder:
 
-`tests/test_tag_sites_signal_wiring.py` pins this. `KNOWN_UNWIRED` is the
-deliberate-edit surface: a new optional signal is either threaded or recorded
-with its measured cost, and neither opening nor closing a gap happens without
-that file changing. The guard was checked against both defect shapes rather
-than assumed.
+| arm | post-NMS sites | sites with own pLDDT ≥ 70 | median Jaccard vs published |
+|---|---|---|---|
+| A — `plddt < 70` run (current) | 15,561 | **0 (0.0%)** | — |
+| B — rank-transformed pLDDT | 23,281 (+50%) | **7,772 (33.4%)** | **0.000** |
+| C — full 3-predictor consensus | 21,724 (+40%) | 38% | **0.000** |
+
+Each of those ≥ 70 sites ships `disorder.py`'s fixed rationale "within a
+low-pLDDT disordered extracellular run", which is false for them, inside
+`surface_loop`'s territory (`PLDDT_MIN = 70`), where
+`derive_deterministic_sites` gives disorder priority on a collision and
+relabels them. A median Jaccard of 0.000 against the published set means that
+for over half of genes this shares **zero** residues with what ships.
+
+The one genuine win is **ordering, not coverage**: distance to the *top-ranked*
+site improves from a median 79 aa to 11 aa (sign test **p = 0.006**, n = 15).
+That is worth capturing as a tie-break *inside* the existing `plddt < 70` run
+rather than as the run's threshold — one line in the sort key, no pool
+expansion, no false rationales, no D1 dependency. Not implemented.
+
+B ≈ C closely enough that C's two extra predictors do not earn their D1
+dependency (median Jaccard 0.188, post-NMS totals 7% apart), but neither is ≈ A.
+
+Full numbers and the reconstruction caveat:
+[`handoff-2026-10-18-disorder-tracks-scoping.md`](handoff-2026-10-18-disorder-tracks-scoping.md).
+
+`tests/test_tag_sites_signal_wiring.py` pins this, and `KNOWN_UNWIRED` now
+records the measurement rather than a suspicion: a new optional signal is either
+threaded or recorded with its measured cost, and neither opening nor closing a
+gap happens without that file changing. The guard was checked against both
+defect shapes rather than assumed.
 
 ---
 
