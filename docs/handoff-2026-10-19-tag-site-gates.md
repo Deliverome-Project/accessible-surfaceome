@@ -103,9 +103,36 @@ separation 1, and relayed that to two sessions. Fixed in `244732793`.
 ## 4. Open, blocked on nothing
 
 1. **PR the adjacency split** (`244732793`). Branch is 1 ahead / 5 behind `dev`.
-2. **The 10 Å floor is too strict** and the calibration says by how much. The
-   spatial-only published minimum is **CA-CA 5.29 Å**. Lowering it, or ranking
-   on it, is a decision with cohort-wide effect.
+2. **The 10 Å floor is too strict and the calibration is now in-repo.** PR #412
+   merged to `dev` on 2026-10-19 and **the session that produced it has ended**,
+   so `tag_sites/features.py` — where the floor actually lives — is unowned. Note
+   #412 added `audit/_disulfide_clearance.py` and `scripts/audit/calibrate_disulfide_clearance.py`
+   and **never touched the gate**: the floor was measured, not changed. It is
+   still 10.0.
+
+   The sweep is per-tier in
+   `data/analysis/disulfide_clearance_calibration/floor_sweep_*.tsv`. For
+   function-validated published sites, CA-CA — the convention `features.py`
+   consumes:
+
+   | floor | rejected of 49 | |
+   |---|---|---|
+   | 10 Å (current) | 11 | 22.4% |
+   | 8 Å | 10 | 20.4% |
+   | 6 Å | 8 | 16.3% |
+   | **5 Å** | **1** | **2.0%** |
+
+   The cliff is between 5 and 6 Å, so a floor at 5 costs one published site
+   against the current eleven. Read `REPORT.md` first: there is **no negative
+   set** (every site in it worked, so it bounds the floor from above and can
+   never confirm one from below) and `tag_length_aa` is NULL throughout, so
+   nothing in it licenses a floor for the 51-aa cassette.
+
+   **One open question from that report is now answered.** It asks whether the
+   veto also runs on terminal candidates, since a free chain end is not a
+   threaded loop. It does not: `FEATURE_DIST_MIN` appears only in
+   `surface_loop.py` and `disorder.py`, never in `terminal.py`. So the floor is
+   applied to exactly the internal population it was fitted on.
 3. **`surface_loop_candidates` still hard-gates `ss in LOOP_SS`** — rejects the
    same 20 function-validated published sites as the helix veto I removed from
    the disorder lane. Pre-existing. Relaxing it *adds* candidates cohort-wide,
@@ -158,10 +185,13 @@ choice is "20 ranked candidates carrying their own numbers" versus "2
 survivors". **The cap is doing the useful work; the thresholds are doing the
 damage.**
 
-The natural yardstick is the 185-site published corpus the other session owns:
-a ranking that puts its 130 measurable sites in the top N is doing its job, and
-that is a number a veto cannot produce. Ask them before duplicating it — their
-`scripts/audit/calibrate_disulfide_clearance.py` already reads it.
+The natural yardstick is the 185-site published corpus, and it is now in-repo
+rather than owned by a live session: `scripts/audit/calibrate_disulfide_clearance.py`
+reads it and the per-tier floor sweeps are committed under
+`data/analysis/disulfide_clearance_calibration/`. A ranking that puts its 130
+measurable sites in the top N is doing its job, and that is a number a veto
+cannot produce. **Do not go looking for the session that built it — it has
+ended.** Use the script.
 
 Do it with before/after candidate counts cohort-wide. It changes what we
 publish for 2,413 genes.
@@ -178,8 +208,8 @@ caught real errors of mine by measuring what I asserted:
   shipping: Q187→F146, after-162→after-161, S271→F263, and ACKR3 recorded as
   282-only and unbuilt. Running a `MIN_LOOP_LEN` recompute whose definition I
   agreed to align to.
-- **"Protein tag location predictors"** — owns the scoring model and the
-  clearance calibration. Its `ss3` feature is netsurfp-3.0, a *sequence*
+- **"Protein tag location predictors"** — owned the scoring model and the
+  clearance calibration; **merged #412 and has since ended.** Its `ss3` feature is netsurfp-3.0, a *sequence*
   predictor that never sees the model; it disagrees with DSSP on 18% of
   extracellular residues, biased toward calling coil where the model is
   structured, which is the dangerous direction.
