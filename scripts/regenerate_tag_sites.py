@@ -95,9 +95,12 @@ def af_pdb(acc: str) -> str:
     return str(path)
 
 
-def _hazard(acc: str) -> set[int]:
+def _hazard(acc: str, pdb_path: str | None = None) -> set[int]:
     try:
-        return F.hazard_residues(F.fetch_uniprot_features(acc))
+        # Model bonds included: a disulfide UniProt does not annotate is
+        # invisible to the clearance veto otherwise, and that is how ACKR3
+        # P35 published at a reported 12.1 A while sitting 3.8 A from C287.
+        return F.hazard_residues_with_model(F.fetch_uniprot_features(acc), pdb_path)
     except Exception as ex:  # noqa: BLE001 — best-effort veto
         log.warning("  UniProt features unavailable for %s (%s) -> empty veto", acc, type(ex).__name__)
         return set()
@@ -212,7 +215,7 @@ def regenerate_gene(
     except Exception as ex:  # noqa: BLE001
         log.warning("skip %s (%s): AFDB canonical model unavailable (%s)", symbol, acc, ex)
         return None
-    hazard = _hazard(acc)
+    hazard = _hazard(acc, pdb)
 
     # Orthologs are fetched BEFORE the canonical gate run, not after: the surface_loop
     # ranking is (-own RSA, conservation, -gap_freq), and with no ortholog sequences both
