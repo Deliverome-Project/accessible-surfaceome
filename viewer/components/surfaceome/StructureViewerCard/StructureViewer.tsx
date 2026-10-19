@@ -14,6 +14,7 @@ import {
   type ProjSegment,
 } from "../../../lib/experimental-structure";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
+import type { RenderedProvenance } from "../../../lib/tag-sites-overlay";
 import {
   MEMBRANE_COLOR,
   RESIDUE_HIGHLIGHT_COLOR,
@@ -61,7 +62,7 @@ export interface SurfaceBindAnchor {
 export interface TagSiteSphere {
   siteId: string;
   residue: number;
-  provenance: "literature_retrieved" | "deterministic_computed" | "screen_validated";
+  provenance: RenderedProvenance;
   /** Fine-grained overlay category (lane / terminus / snorkel / literature) —
    *  the color axis for ``tags`` mode via ``CATEGORY_HEX``. */
   category: TagSiteCategory;
