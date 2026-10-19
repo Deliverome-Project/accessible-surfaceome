@@ -490,6 +490,48 @@ def attach_source_pmids(
     return result
 
 
+#: Quote prefix kept per clip in the run artifact. Enough to recognise a clip;
+#: not the draft's `context_excerpt`, which runs to 1500 chars and would make
+#: one well-studied gene's pool (2,175 clips) megabytes on its own.
+_POOL_QUOTE_CHARS = 180
+
+
+def _pool_index(
+    pool: dict[str, Any],
+    *,
+    boosted: dict[str, set[int]],
+    selected: set[str],
+) -> list[dict[str, Any]]:
+    """A bounded, per-clip record of the pool the selector was offered.
+
+    The artifact exists so that "why was this clip not proposed" costs a read
+    rather than a fresh run, and it could not answer that: `pool` was empty in
+    all 26 artifacts of a live sweep while `n_clips` recorded 60-214. Size was
+    persisted; contents were not.
+
+    Each entry carries the clip id, its source and section, whether the
+    residue-boost lifted it above the menu cap, whether the selector took it,
+    and a quote prefix. The boost flag is the load-bearing one: it separates
+    "the model saw this clip and passed on it" from "the cap meant the model
+    never saw it", which is the whole menu-starvation question.
+    """
+    out: list[dict[str, Any]] = []
+    for clip_id, draft in pool.items():
+        quote = str(getattr(draft, "quote", "") or "")
+        out.append(
+            {
+                "clip_id": clip_id,
+                "source_id": getattr(draft, "source_id", None),
+                "section": getattr(draft, "section", None),
+                "quote_chars": len(quote),
+                "quote_head": quote[:_POOL_QUOTE_CHARS],
+                "boosted_residues": sorted(boosted.get(clip_id, ()) or ()),
+                "selected": clip_id in selected,
+            }
+        )
+    return out
+
+
 def run_tag_site_agent(
     *,
     gene_symbol: str,
@@ -638,6 +680,9 @@ def run_tag_site_agent(
     save_discovery_cache(gene_symbol, papers_by_id, cache_dir=DISCOVERY_CACHE_DIR)
     _progress["n_papers"] = len(papers_by_id)
     if not papers_by_id:
+        # Distinct reasons, because "empty" without a reason is what made 10 of
+        # 26 live runs unexplainable from their own record.
+        _progress["outcome"] = "no_papers_discovered"
         return _empty()
 
     # 2. Abstract triage -> 3. body pool + real source store (shared).
@@ -769,6 +814,21 @@ def run_tag_site_agent(
         usage_sink=usage_sink,
         max_batches=select_max_batches,
     )
+    # Persist the pool the selector was OFFERED, with its decision per clip.
+    # Written here rather than earlier because `selected` is only known now, and
+    # written before the evidence filter so it survives every exit below — the
+    # artifact's whole purpose is answering "why was this clip not proposed"
+    # without paying for another run.
+    _progress["pool"] = _pool_index(
+        pool,
+        boosted=boosted,
+        selected={
+            s.clip_id
+            for s in getattr(selection, "selections", []) or []
+            if getattr(s, "clip_id", None)
+        },
+    )
+
     evidence = [
         e
         for e in promote(
@@ -779,6 +839,7 @@ def run_tag_site_agent(
     if not evidence:
         # No span-verified tag-insertion clip -> the correct answer is ZERO sites
         # (never a structural-inference guess); skip the synthesis call entirely.
+        _progress["outcome"] = "no_span_verified_evidence"
         return _empty()
 
     # 6. Synthesis: the geometry/validation/snorkel rules read the span-verified ledger.
@@ -810,6 +871,7 @@ def run_tag_site_agent(
         meta_sink=synth_meta,
     )
     if result is None:
+        _progress["outcome"] = "synthesis_returned_nothing"
         return _empty()
     assert isinstance(result, TagSiteResult)  # expect_array=False -> single instance
     # Anything the model put here is its own editorial judgement, not a gate
