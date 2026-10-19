@@ -1,3 +1,1069 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:90cbcc43b96888cb7b514f18b80f7f0ac1979033141d0e4e704dbf21ff0b7a4b
-size 76202
+gene_symbol	uniprot_acc	site_id	provenance	insert_after_residue	uniprot_propeptide	uniprot_gpi_omega	cleaved_span	refused	in_netgpi	netgpi_omega	netgpi_likelihood
+ABCA1	O95477	ABCA1-snorkel-c	deterministic_computed	2261				0	0		
+ABCA12	Q86UK0	ABCA12-snorkel-c	deterministic_computed	2595				0	0		
+ABCA13	Q86UQ4	ABCA13-snorkel-c	deterministic_computed	5058				0	0		
+ABCA2	Q9BZC7	ABCA2-snorkel-c	deterministic_computed	2435				0	0		
+ABCA3	Q99758	ABCA3-snorkel-c	deterministic_computed	1704				0	0		
+ABCA4	P78363	ABCA4-snorkel-c	deterministic_computed	2273				0	0		
+ABCA5	Q8WWZ7	ABCA5-snorkel-c	deterministic_computed	1642				0	0		
+ABCA6	Q8N139	ABCA6-snorkel-c	deterministic_computed	1617				0	0		
+ABCA7	Q8IZY2	ABCA7-snorkel-c	deterministic_computed	2146				0	0		
+ABCA8	O94911	ABCA8-snorkel-c	deterministic_computed	1621				0	0		
+ABCA9	Q8IUA7	ABCA9-snorkel-c	deterministic_computed	1624				0	0		
+ABCB1	P08183	ABCB1-snorkel-c	deterministic_computed	1280				0	0		
+ABCB11	O95342	ABCB11-snorkel-c	deterministic_computed	1321				0	0		
+ABCB4	P21439	ABCB4-snorkel-c	deterministic_computed	1286				0	0		
+ABCB5	Q2M3G0	ABCB5-snorkel-c	deterministic_computed	1257				0	0		
+ABCB9	Q9NP78	ABCB9-snorkel-c	deterministic_computed	766				0	0		
+ABCC11	Q96J66	ABCC11-snorkel-c	deterministic_computed	1382				0	0		
+ABCC12	Q96J65	ABCC12-snorkel-c	deterministic_computed	1359				0	0		
+ABCC4	O15439	ABCC4-snorkel-c	deterministic_computed	1325				0	0		
+ABCC5	O15440	ABCC5-snorkel-c	deterministic_computed	1437				0	0		
+ABCG2	Q9UNQ0	ABCG2-snorkel-c	deterministic_computed	655				0	0		
+ABCG4	Q9H172	ABCG4-snorkel-c	deterministic_computed	646				0	0		
+ABCG5	Q9H222	ABCG5-snorkel-c	deterministic_computed	651				0	0		
+ACHE	P22303	ACHE-terminal-c	deterministic_computed	614		588	589-614	1	1	589	0.402
+ADCY1	Q08828	ADCY1-snorkel-c	deterministic_computed	1119				0	0		
+ADCY2	Q08462	ADCY2-snorkel-c	deterministic_computed	1091				0	0		
+ADCY3	O60266	ADCY3-snorkel-c	deterministic_computed	1144				0	0		
+ADCY5	O95622	ADCY5-snorkel-c	deterministic_computed	1261				0	0		
+ADCY6	O43306	ADCY6-snorkel-c	deterministic_computed	1168				0	0		
+ADCY7	P51828	ADCY7-snorkel-c	deterministic_computed	1080				0	0		
+ADCY8	P40145	ADCY8-snorkel-c	deterministic_computed	1251				0	0		
+ADCY9	O60503	ADCY9-snorkel-c	deterministic_computed	1353				0	0		
+ADGRG7	Q96K78	ADGRG7-snorkel-c	deterministic_computed	797				0	0		
+ADIPOR1	Q96A54	ADIPOR1-terminal_c-375-lit	literature_retrieved	375				0	0		
+ADIPOR2	Q86V24	ADIPOR2-terminal-c	deterministic_computed	386				0	0		
+ADIPOR2	Q86V24	ADIPOR2-terminal_c-386-lit	literature_retrieved	386				0	0		
+ADTRP	Q96IZ2	ADTRP-snorkel-c	deterministic_computed	230				0	0		
+AGRN	O00468	AGRN-terminal-c	deterministic_computed	2068				0	0		
+ALPG	P10696	ALPG-terminal-c	deterministic_computed	532	504-532	503	504-532	1	1	503	0.768
+ALPI	P09923	ALPI-terminal-c	deterministic_computed	528	504-528	503	504-528	1	1	503	0.774
+ALPL	P05186	ALPL-terminal-c	deterministic_computed	524	502-524	501	502-524	1	1	501	0.512
+ALPP	P05187	ALPP-terminal-c	deterministic_computed	535	507-535	506	507-535	1	1	506	0.774
+ANKH	Q9HCJ1	ANKH-snorkel-c	deterministic_computed	492				0	0		
+ANO1	Q5XXA6	ANO1-snorkel-c	deterministic_computed	986				0	0		
+ANO2	Q9NQ90	ANO2-snorkel-c	deterministic_computed	998				0	0		
+ANO3	Q9BYT9	ANO3-snorkel-c	deterministic_computed	981				0	0		
+ANO5	Q75V66	ANO5-snorkel-c	deterministic_computed	913				0	0		
+ANO6	Q4KMQ2	ANO6-snorkel-c	deterministic_computed	910				0	0		
+ANO7	Q6IWH7	ANO7-snorkel-c	deterministic_computed	933				0	0		
+ANO9	A1A5B4	ANO9-snorkel-c	deterministic_computed	782				0	0		
+ANPEP	P15144	ANPEP-terminal-c	deterministic_computed	967				0	0		
+ANPEP	P15144	ANPEP-terminal_c-967-lit	literature_retrieved	967				0	0		
+AOC3	Q16853	AOC3-terminal-c	deterministic_computed	763				0	0		
+APCDD1	Q8J025	APCDD1-terminal-c	deterministic_computed	514				0	0		
+AQP1	P29972	AQP1-snorkel-c	deterministic_computed	269				0	0		
+AQP10	Q96PS8	AQP10-snorkel-c	deterministic_computed	301				0	0		
+AQP12B	A6NM10	AQP12B-snorkel-c	deterministic_computed	295				0	0		
+AQP2	P41181	AQP2-snorkel-c	deterministic_computed	271				0	0		
+AQP3	Q92482	AQP3-snorkel-c	deterministic_computed	292				0	0		
+AQP4	P55087	AQP4-snorkel-c	deterministic_computed	323				0	0		
+AQP5	P55064	AQP5-snorkel-c	deterministic_computed	265				0	0		
+AQP7	O14520	AQP7-snorkel-c	deterministic_computed	342				0	0		
+AQP8	O94778	AQP8-snorkel-c	deterministic_computed	261				0	0		
+AQP9	O43315	AQP9-snorkel-c	deterministic_computed	295				0	0		
+ART3	Q13508	ART3-terminal-c	deterministic_computed	389	363-389	362	363-389	1	1	277	0.487
+ART4	Q93070	ART4-terminal-c	deterministic_computed	314	286-314	285	286-314	1	1		
+ASGR1	P07306	ASGR1-terminal-c	deterministic_computed	291				0	0		
+ASGR2	P07307	ASGR2-terminal-c	deterministic_computed	311				0	0		
+ASGR2	P07307	ASGR2-terminal_c-311-lit	literature_retrieved	311				0	0		
+ASIC1	P78348	ASIC1-snorkel-c	deterministic_computed	528				0	0		
+ASIC2	Q16515	ASIC2-snorkel-c	deterministic_computed	512				0	0		
+ASIC3	Q9UHC3	ASIC3-snorkel-c	deterministic_computed	531				0	0		
+ASIC4	Q96FT7	ASIC4-snorkel-c	deterministic_computed	539				0	0		
+ASIC5	Q9NY37	ASIC5-snorkel-c	deterministic_computed	505				0	0		
+ASTN1	O14525	ASTN1-terminal-c	deterministic_computed	1302				0	0		
+ASTN1	O14525	ASTN1-terminal_c-1302-lit	literature_retrieved	1302				0	0		
+ASTN2	O75129	ASTN2-terminal-c	deterministic_computed	1339				0	0		
+ATG9A	Q7Z3C6	ATG9A-snorkel-c	deterministic_computed	839				0	0		
+ATP10D	Q9P241	ATP10D-snorkel-c	deterministic_computed	1426				0	0		
+ATP11A	P98196	ATP11A-snorkel-c	deterministic_computed	1134				0	0		
+ATP11C	Q8NB49	ATP11C-snorkel-c	deterministic_computed	1132				0	0		
+ATP12A	P54707	ATP12A-snorkel-c	deterministic_computed	1039				0	0		
+ATP13A1	Q9HD20	ATP13A1-snorkel-c	deterministic_computed	1204				0	0		
+ATP13A2	Q9NQ11	ATP13A2-snorkel-c	deterministic_computed	1180				0	0		
+ATP13A3	Q9H7F0	ATP13A3-snorkel-c	deterministic_computed	1226				0	0		
+ATP13A5	Q4VNC0	ATP13A5-snorkel-c	deterministic_computed	1218				0	0		
+ATP1A1	P05023	ATP1A1-snorkel-c	deterministic_computed	1023				0	0		
+ATP1A2	P50993	ATP1A2-snorkel-c	deterministic_computed	1020				0	0		
+ATP1A3	P13637	ATP1A3-snorkel-c	deterministic_computed	1013				0	0		
+ATP1A4	Q13733	ATP1A4-snorkel-c	deterministic_computed	1029				0	0		
+ATP1B1	P05026	ATP1B1-terminal-c	deterministic_computed	303				0	0		
+ATP1B2	P14415	ATP1B2-terminal-c	deterministic_computed	290				0	0		
+ATP1B3	P54709	ATP1B3-terminal-c	deterministic_computed	279				0	0		
+ATP1B4	Q9UN42	ATP1B4-terminal-c	deterministic_computed	357				0	0		
+ATP2B2	Q01814	ATP2B2-snorkel-c	deterministic_computed	1243				0	0		
+ATP2B3	Q16720	ATP2B3-snorkel-c	deterministic_computed	1220				0	0		
+ATP2B4	P23634	ATP2B4-snorkel-c	deterministic_computed	1241				0	0		
+ATP4B	P51164	ATP4B-terminal-c	deterministic_computed	291				0	0		
+ATP6V0A2	Q9Y487	ATP6V0A2-snorkel-c	deterministic_computed	856				0	0		
+ATRN	O75882	ATRN-snorkel-c	deterministic_computed	1429				0	0		
+BEST1	O76090	BEST1-snorkel-c	deterministic_computed	585				0	0		
+BEST2	Q8NFU1	BEST2-snorkel-c	deterministic_computed	509				0	0		
+BEST3	Q8N1M1	BEST3-snorkel-c	deterministic_computed	668				0	0		
+BEST4	Q8NFU0	BEST4-snorkel-c	deterministic_computed	473				0	0		
+BRICD5	Q6PL45	BRICD5-terminal_c-260-lit	literature_retrieved	260				0	0		
+BST1	Q10588	BST1-terminal-c	deterministic_computed	318	294-318	293	294-318	1	1	266	0.270
+BST2	Q10589	BST2-terminal-c	deterministic_computed	180	162-180	161	162-180	1	1	161	0.404
+C14orf132	Q9NPU4	C14orf132-terminal-c	deterministic_computed	83				0	0		
+C14orf180	Q8N912	C14orf180-terminal_c-160-lit	literature_retrieved	160				0	0		
+C3orf52	Q5BVD1	C3orf52-terminal_c-217-lit	literature_retrieved	217				0	0		
+CA4	P22748	CA4-terminal-c	deterministic_computed	312	285-312	284	285-312	1	1	284	0.629
+CA4	P22748	CA4-terminal_c-312-lit	literature_retrieved	312	285-312	284	285-312	1	1	284	0.629
+CACNA1C	Q13936	CACNA1C-snorkel-c	deterministic_computed	2221				0	0		
+CACNA1G	O43497	CACNA1G-snorkel-c	deterministic_computed	2377				0	0		
+CACNA1I	Q9P0X4	CACNA1I-snorkel-c	deterministic_computed	2223				0	0		
+CACNA2D2	Q9NY47	CACNA2D2-terminal-c	deterministic_computed	1150				0	0		
+CACNG1	Q06432	CACNG1-snorkel-c	deterministic_computed	222				0	0		
+CACNG2	Q9Y698	CACNG2-snorkel-c	deterministic_computed	323				0	0		
+CACNG3	O60359	CACNG3-snorkel-c	deterministic_computed	315				0	0		
+CACNG4	Q9UBN1	CACNG4-snorkel-c	deterministic_computed	327				0	0		
+CACNG5	Q9UF02	CACNG5-snorkel-c	deterministic_computed	275				0	0		
+CACNG6	Q9BXT2	CACNG6-snorkel-c	deterministic_computed	260				0	0		
+CACNG7	P62955	CACNG7-snorkel-c	deterministic_computed	275				0	0		
+CACNG8	Q8WXS5	CACNG8-snorkel-c	deterministic_computed	425				0	0		
+CALHM1	Q8IU99	CALHM1-snorkel-c	deterministic_computed	346				0	0		
+CALHM2	Q9HA72	CALHM2-snorkel-c	deterministic_computed	323				0	0		
+CALHM3	Q86XJ0	CALHM3-snorkel-c	deterministic_computed	344				0	0		
+CALHM4	Q5JW98	CALHM4-snorkel-c	deterministic_computed	314				0	0		
+CALHM5	Q8N5C1	CALHM5-snorkel-c	deterministic_computed	309				0	0		
+CALY	Q9NYX4	CALY-terminal-c	deterministic_computed	217				0	0		
+CAPNS1	P04632	CAPNS1-snorkel-c	deterministic_computed	268				0	0		
+CASD1	Q96PB1	CASD1-terminal-c	deterministic_computed	797				0	0		
+CATSPERQ	Q2WGJ8	CATSPERQ-snorkel-c	deterministic_computed	235				0	0		
+CD109	Q6YHK3	CD109-terminal-c	deterministic_computed	1445	1421-1445	1420	1421-1445	1	1	1421	0.297
+CD14	P08571	CD14-terminal-c	deterministic_computed	375	346-375	345	346-375	1	1		
+CD151	P48509	CD151-snorkel-c	deterministic_computed	253				0	0		
+CD160	O95971	CD160-terminal-c	deterministic_computed	181	160-181	159	160-181	1	1	159	0.755
+CD177	Q8N6Q3	CD177-terminal-c	deterministic_computed	437	409-437	408	409-437	1	1	408	0.470
+CD207	Q9UJ71	CD207-terminal_c-328-lit	literature_retrieved	328				0	0		
+CD24	P25063	CD24-terminal-c	deterministic_computed	80	60-80	59	60-80	1	1	107	0.362
+CD36	P16671	CD36-snorkel-c	deterministic_computed	472				0	0		
+CD37	P11049	CD37-snorkel-c	deterministic_computed	281				0	0		
+CD38	P28907	CD38-terminal-c	deterministic_computed	300				0	0		
+CD38	P28907	CD38-terminal_c-300-lit	literature_retrieved	300				0	0		
+CD40LG	P29965	CD40LG-terminal-c	deterministic_computed	261				0	0		
+CD52	P31358	CD52-terminal-c	deterministic_computed	61	37-61	36	37-61	1	1	36	0.501
+CD53	P19397	CD53-snorkel-c	deterministic_computed	219				0	0		
+CD55	P08174	CD55-terminal-c	deterministic_computed	381	354-381	353	354-381	1	1	290	0.607
+CD59	P13987	CD59-terminal-c	deterministic_computed	128	103-128	102	103-128	1	1	102	0.643
+CD59	P13987	CD59-terminal_c-128-lit	literature_retrieved	128	103-128	102	103-128	1	1	102	0.643
+CD63	P08962	CD63-snorkel-c	deterministic_computed	238				0	0		
+CD69	Q07108	CD69-terminal-c	deterministic_computed	199				0	0		
+CD70	P32970	CD70-terminal-c	deterministic_computed	193				0	0		
+CD74	P04233	CD74-terminal-c	deterministic_computed	296				0	0		
+CD74	P04233	CD74-terminal_c-296-lit	literature_retrieved	296				0	0		
+CD81	P60033	CD81-snorkel-c	deterministic_computed	236				0	0		
+CD82	P27701	CD82-snorkel-c	deterministic_computed	267				0	0		
+CD9	P21926	CD9-snorkel-c	deterministic_computed	228				0	0		
+CDC50A	Q9NV96	CDC50A-snorkel-c	deterministic_computed	361				0	0		
+CDH13	P55290	CDH13-terminal-c	deterministic_computed	713	694-713	693	694-713	1	1	651	0.572
+CFC1	P0CG37	CFC1-terminal-c	deterministic_computed	223	159-223	158	159-223	1	1		
+CFTR	P13569	CFTR-snorkel-c	deterministic_computed	1480				0	0		
+CHPT1	Q8WUD6	CHPT1-snorkel-c	deterministic_computed	406				0	0		
+CHRNA1	P02708	CHRNA1-terminal-c	deterministic_computed	457				0	0		
+CHRNA10	Q9GZZ6	CHRNA10-terminal-c	deterministic_computed	450				0	0		
+CHRNA2	Q15822	CHRNA2-terminal-c	deterministic_computed	529				0	0		
+CHRNA3	P32297	CHRNA3-terminal-c	deterministic_computed	505				0	0		
+CHRNA4	P43681	CHRNA4-terminal-c	deterministic_computed	627				0	0		
+CHRNA4	P43681	CHRNA4-terminal_c-627-lit	literature_retrieved	627				0	0		
+CHRNA5	P30532	CHRNA5-terminal-c	deterministic_computed	468				0	0		
+CHRNA6	Q15825	CHRNA6-terminal-c	deterministic_computed	494				0	0		
+CHRNA7	P36544	CHRNA7-terminal-c	deterministic_computed	502				0	0		
+CHRNA9	Q9UGM1	CHRNA9-terminal-c	deterministic_computed	479				0	0		
+CHRNA9	Q9UGM1	CHRNA9-terminal_c-479-lit	literature_retrieved	479				0	0		
+CHRNB1	P11230	CHRNB1-terminal-c	deterministic_computed	501				0	0		
+CHRNB2	P17787	CHRNB2-terminal-c	deterministic_computed	502				0	0		
+CHRNB3	Q05901	CHRNB3-terminal-c	deterministic_computed	458				0	0		
+CHRNB4	P30926	CHRNB4-terminal-c	deterministic_computed	498				0	0		
+CHRND	Q07001	CHRND-terminal-c	deterministic_computed	517				0	0		
+CHRNE	Q04844	CHRNE-terminal-c	deterministic_computed	493				0	0		
+CHRNG	P07510	CHRNG-terminal-c	deterministic_computed	517				0	0		
+CLCA4	Q14CN2	CLCA4-terminal-c	deterministic_computed	919				0	1	876	0.664
+CLCN1	P35523	CLCN1-snorkel-c	deterministic_computed	988				0	0		
+CLCNKB	P51801	CLCNKB-snorkel-c	deterministic_computed	687				0	0		
+CLDN1	O95832	CLDN1-snorkel-c	deterministic_computed	211				0	0		
+CLDN10	P78369	CLDN10-snorkel-c	deterministic_computed	228				0	0		
+CLDN11	O75508	CLDN11-snorkel-c	deterministic_computed	207				0	0		
+CLDN12	P56749	CLDN12-snorkel-c	deterministic_computed	244				0	0		
+CLDN14	O95500	CLDN14-snorkel-c	deterministic_computed	239				0	0		
+CLDN15	P56746	CLDN15-snorkel-c	deterministic_computed	228				0	0		
+CLDN16	Q9Y5I7	CLDN16-snorkel-c	deterministic_computed	235				0	0		
+CLDN17	P56750	CLDN17-snorkel-c	deterministic_computed	224				0	0		
+CLDN18	P56856	CLDN18-snorkel-c	deterministic_computed	261				0	0		
+CLDN19	Q8N6F1	CLDN19-snorkel-c	deterministic_computed	224				0	0		
+CLDN2	P57739	CLDN2-snorkel-c	deterministic_computed	230				0	0		
+CLDN20	P56880	CLDN20-snorkel-c	deterministic_computed	219				0	0		
+CLDN22	Q8N7P3	CLDN22-snorkel-c	deterministic_computed	220				0	0		
+CLDN23	Q96B33	CLDN23-snorkel-c	deterministic_computed	292				0	0		
+CLDN24	A6NM45	CLDN24-snorkel-c	deterministic_computed	220				0	0		
+CLDN25	C9JDP6	CLDN25-snorkel-c	deterministic_computed	229				0	0		
+CLDN3	O15551	CLDN3-snorkel-c	deterministic_computed	220				0	0		
+CLDN4	O14493	CLDN4-snorkel-c	deterministic_computed	209				0	0		
+CLDN5	O00501	CLDN5-snorkel-c	deterministic_computed	218				0	0		
+CLDN6	P56747	CLDN6-snorkel-c	deterministic_computed	220				0	0		
+CLDN7	O95471	CLDN7-snorkel-c	deterministic_computed	211				0	0		
+CLDN8	P56748	CLDN8-snorkel-c	deterministic_computed	225				0	0		
+CLDN9	O95484	CLDN9-snorkel-c	deterministic_computed	217				0	0		
+CLDND1	Q9NY35	CLDND1-snorkel-c	deterministic_computed	253				0	0		
+CLEC12A	Q5QGZ9	CLEC12A-terminal-c	deterministic_computed	265				0	0		
+CLEC12A	Q5QGZ9	CLEC12A-terminal_c-265-lit	literature_retrieved	265				0	0		
+CLEC12B	Q2HXU8	CLEC12B-terminal-c	deterministic_computed	276				0	0		
+CLEC17A	Q6ZS10	CLEC17A-terminal-c	deterministic_computed	378				0	0		
+CLEC1A	Q8NC01	CLEC1A-terminal-c	deterministic_computed	280				0	0		
+CLEC1B	Q9P126	CLEC1B-terminal-c	deterministic_computed	229				0	0		
+CLEC1B	Q9P126	CLEC1B-terminal_c-229-lit	literature_retrieved	229				0	0		
+CLEC2D	Q9UHP7	CLEC2D-terminal-c	deterministic_computed	191				0	0		
+CLEC2L	P0C7M8	CLEC2L-terminal_c-214-lit	literature_retrieved	214				0	0		
+CLEC4A	Q9UMR7	CLEC4A-terminal_c-237-lit	literature_retrieved	237				0	0		
+CLEC4E	Q9ULY5	CLEC4E-terminal_c-219-lit	literature_retrieved	219				0	0		
+CLEC4G	Q6UXB4	CLEC4G-terminal-c	deterministic_computed	293				0	0		
+CLEC4M	Q9H2X3	CLEC4M-terminal-c	deterministic_computed	399				0	0		
+CLEC5A	Q9NY25	CLEC5A-terminal-c	deterministic_computed	188				0	0		
+CLEC6A	Q6EIG7	CLEC6A-terminal_c-209-lit	literature_retrieved	209				0	0		
+CLEC7A	Q9BXN2	CLEC7A-terminal-c	deterministic_computed	247				0	0		
+CLEC7A	Q9BXN2	CLEC7A-terminal_c-247-lit	literature_retrieved	247				0	0		
+CLEC9A	Q6UXN8	CLEC9A-terminal-c	deterministic_computed	241				0	0		
+CLEC9A	Q6UXN8	CLEC9A-terminal_c-241-lit	literature_retrieved	241				0	0		
+CLN3	Q13286	CLN3-terminal-c	deterministic_computed	438	436-438		436-438	1	0		
+CLRN1	P58418	CLRN1-snorkel-c	deterministic_computed	232				0	0		
+CNGA1	P29973	CNGA1-snorkel-c	deterministic_computed	686				0	0		
+CNGA2	Q16280	CNGA2-snorkel-c	deterministic_computed	664				0	0		
+CNGA3	Q16281	CNGA3-snorkel-c	deterministic_computed	694				0	0		
+CNTFR	P26992	CNTFR-terminal-c	deterministic_computed	372	343-372	342	343-372	1	1	322	0.476
+CNTN1	Q12860	CNTN1-terminal-c	deterministic_computed	1018	994-1018	993	994-1018	1	1	1003	0.765
+CNTN2	Q02246	CNTN2-terminal-c	deterministic_computed	1040	1013-1040	1012	1013-1040	1	1	1029	0.442
+CNTN2	Q02246	CNTN2-terminal_c-None-lit	literature_retrieved			1012		0	1	1029	0.442
+CNTN3	Q9P232	CNTN3-terminal-c	deterministic_computed	1028	1003-1028	1002	1003-1028	1	1	838	0.331
+CNTN4	Q8IWV2	CNTN4-terminal-c	deterministic_computed	1026	1001-1026	1000	1001-1026	1	1	256	0.578
+CNTN5	O94779	CNTN5-terminal-c	deterministic_computed	1100	1073-1100	1072	1073-1100	1	1	998	0.626
+CNTN6	Q9UQ52	CNTN6-terminal-c	deterministic_computed	1028	1000-1028	999	1000-1028	1	1	6	0.600
+COLEC12	Q5KU26	COLEC12-terminal_c-742-lit	literature_retrieved	742				0	0		
+CORIN	Q9Y5Q5	CORIN-terminal-c	deterministic_computed	1042				0	0		
+CORIN	Q9Y5Q5	CORIN-terminal_c-1042-lit	literature_retrieved	1042				0	0		
+CPM	P14384	CPM-terminal-c	deterministic_computed	443	424-443	423	424-443	1	1	15	0.767
+CRIPTO	P13385	CRIPTO-terminal-c	deterministic_computed	188	151-188	150	151-188	1	1		
+CYBB	P04839	CYBB-snorkel-c	deterministic_computed	570				0	0		
+CYBRD1	Q53TN4	CYBRD1-snorkel-c	deterministic_computed	286				0	0		
+CYTH1	Q15438	CYTH1-snorkel-c	deterministic_computed	398				0	0		
+DAGLA	Q9Y4D2	DAGLA-snorkel-c	deterministic_computed	1042				0	0		
+DAGLB	Q8NCG7	DAGLB-snorkel-c	deterministic_computed	672				0	0		
+DCST1	Q5T197	DCST1-snorkel-c	deterministic_computed	706				0	0		
+DCST2	Q5T1A1	DCST2-snorkel-c	deterministic_computed	773				0	0		
+DCSTAMP	Q9H295	DCSTAMP-snorkel-c	deterministic_computed	470				0	0		
+DISP1	Q96F81	DISP1-snorkel-c	deterministic_computed	1524				0	0		
+DISP2	A7MBM2	DISP2-snorkel-c	deterministic_computed	1401				0	0		
+DISP3	Q9P2K9	DISP3-terminal-c	deterministic_computed	1392				0	0		
+DMXL2	Q8TDJ6	DMXL2-snorkel-c	deterministic_computed	3036				0	0		
+DPEP1	P16444	DPEP1-terminal-c	deterministic_computed	411	386-411	385	386-411	1	1	383	0.437
+DPEP1	P16444	DPEP1-terminal_c-411-lit	literature_retrieved	411	386-411	385	386-411	1	1	383	0.437
+DPP10	Q8N608	DPP10-terminal-c	deterministic_computed	796				0	0		
+DPP4	P27487	DPP4-terminal-c	deterministic_computed	766				0	0		
+DPP6	P42658	DPP6-terminal-c	deterministic_computed	865				0	0		
+DPP6	P42658	DPP6-terminal_c-865-lit	literature_retrieved	865				0	0		
+DYNAP	Q8N1N2	DYNAP-terminal-c	deterministic_computed	184				0	0		
+DYNC2H1	Q8NCM8	DYNC2H1-snorkel-c	deterministic_computed	4307				0	0		
+ECE1	P42892	ECE1-terminal-c	deterministic_computed	770				0	0		
+ECE1	P42892	ECE1-terminal_c-770-lit	literature_retrieved	770				0	0		
+EDA	Q92838	EDA-terminal-c	deterministic_computed	391				0	0		
+EFNA1	P20827	EFNA1-terminal-c	deterministic_computed	205	183-205	182	183-205	1	1	160	0.769
+EFNA2	O43921	EFNA2-terminal-c	deterministic_computed	213	189-213	188	189-213	1	1	189	0.278
+EFNA3	P52797	EFNA3-terminal-c	deterministic_computed	238	215-238	214	215-238	1	1	212	0.621
+EFNA4	P52798	EFNA4-terminal-c	deterministic_computed	201	171-201	170	171-201	1	1	173	0.290
+EFNA5	P52803	EFNA5-terminal-c	deterministic_computed	228	204-228	203	204-228	1	1	176	0.825
+EMP1	P54849	EMP1-snorkel-c	deterministic_computed	157				0	0		
+EMP2	P54851	EMP2-snorkel-c	deterministic_computed	167				0	0		
+EMP3	P54852	EMP3-snorkel-c	deterministic_computed	163				0	0		
+ENO1	P06733	ENO1-snorkel-c	deterministic_computed	434				0	0		
+ENPEP	Q07075	ENPEP-terminal-c	deterministic_computed	957				0	0		
+ENPP1	P22413	ENPP1-terminal-c	deterministic_computed	925				0	0		
+ENPP3	O14638	ENPP3-terminal-c	deterministic_computed	875				0	0		
+ENPP6	Q6UWR7	ENPP6-terminal-c	deterministic_computed	440	420-440	419	420-440	1	1	359	0.545
+ENTPD1	P49961	ENTPD1-snorkel-c	deterministic_computed	510				0	0		
+ENTPD3	O75355	ENTPD3-snorkel-c	deterministic_computed	529				0	0		
+ENTPD8	Q5MY95	ENTPD8-snorkel-c	deterministic_computed	495				0	0		
+ENTREP3	P81408	ENTREP3-snorkel-c	deterministic_computed	668				0	0		
+ERMP1	Q7Z2K6	ERMP1-terminal-c	deterministic_computed	904				0	0		
+ERVV-1	B6SEH8	ERVV-1-terminal-c	deterministic_computed	477				0	0		
+ESYT3	A0FGR9	ESYT3-snorkel-c	deterministic_computed	886				0	0		
+EXTL2	Q9UBQ6	EXTL2-terminal-c	deterministic_computed	330				0	0		
+FAIM2	Q9BWQ8	FAIM2-terminal-c	deterministic_computed	316				0	0		
+FAP	Q12884	FAP-terminal-c	deterministic_computed	760				0	0		
+FASLG	P48023	FASLG-terminal-c	deterministic_computed	281				0	0		
+FKRP	Q9H9S5	FKRP-terminal-c	deterministic_computed	495				0	0		
+FLVCR1	Q9Y5Y0	FLVCR1-snorkel-c	deterministic_computed	555				0	0		
+FLVCR2	Q9UPI3	FLVCR2-snorkel-c	deterministic_computed	526				0	0		
+FMR1NB	Q8N0W7	FMR1NB-snorkel-c	deterministic_computed	255				0	0		
+FOLH1	Q04609	FOLH1-terminal-c	deterministic_computed	750				0	0		
+FOLR1	P15328	FOLR1-terminal-c	deterministic_computed	257	235-257	234	235-257	1	1	234	0.594
+FOLR2	P14207	FOLR2-terminal-c	deterministic_computed	255	231-255	230	231-255	1	1	189	0.787
+FRRS1	Q6ZNA5	FRRS1-terminal-c	deterministic_computed	592				0	0		
+FZD1	Q9UP38	FZD1-snorkel-c	deterministic_computed	647				0	0		
+GABRA1	P14867	GABRA1-terminal-c	deterministic_computed	456				0	0		
+GABRA2	P47869	GABRA2-terminal-c	deterministic_computed	451				0	0		
+GABRA3	P34903	GABRA3-terminal-c	deterministic_computed	492				0	0		
+GABRA4	P48169	GABRA4-terminal-c	deterministic_computed	554				0	0		
+GABRA5	P31644	GABRA5-terminal-c	deterministic_computed	462				0	0		
+GABRA6	Q16445	GABRA6-terminal-c	deterministic_computed	453				0	0		
+GABRB1	P18505	GABRB1-terminal-c	deterministic_computed	474				0	0		
+GABRB2	P47870	GABRB2-terminal-c	deterministic_computed	512				0	0		
+GABRB3	P28472	GABRB3-terminal-c	deterministic_computed	473				0	0		
+GABRD	O14764	GABRD-terminal-c	deterministic_computed	452				0	0		
+GABRE	P78334	GABRE-terminal-c	deterministic_computed	506				0	0		
+GABRG1	Q8N1C3	GABRG1-terminal-c	deterministic_computed	465				0	0		
+GABRG2	P18507	GABRG2-terminal-c	deterministic_computed	475				0	0		
+GABRG3	Q99928	GABRG3-terminal-c	deterministic_computed	467				0	0		
+GABRP	O00591	GABRP-terminal-c	deterministic_computed	440				0	0		
+GABRQ	Q9UN88	GABRQ-terminal-c	deterministic_computed	632				0	0		
+GABRR1	P24046	GABRR1-terminal-c	deterministic_computed	479				0	0		
+GABRR2	P28476	GABRR2-terminal-c	deterministic_computed	465				0	0		
+GALNT1	Q10472	GALNT1-terminal-c	deterministic_computed	559				0	0		
+GAS1	P54826	GAS1-terminal-c	deterministic_computed	345	318-345	317	318-345	1	1	319	0.315
+GDPD2	Q9HCC8	GDPD2-snorkel-c	deterministic_computed	539				0	0		
+GDPD4	Q6W3E5	GDPD4-snorkel-c	deterministic_computed	623				0	0		
+GDPD5	Q8WTR4	GDPD5-snorkel-c	deterministic_computed	605				0	0		
+GFRA1	P56159	GFRA1-terminal-c	deterministic_computed	465	430-465	429	430-465	1	1	430	0.509
+GFRA2	O00451	GFRA2-terminal-c	deterministic_computed	464	445-464	444	445-464	1	1	335	0.501
+GFRA3	O60609	GFRA3-terminal-c	deterministic_computed	400	375-400	374	375-400	1	1	380	0.695
+GFRA4	Q9GZZ7	GFRA4-terminal-c	deterministic_computed	299	279-299	278	279-299	1	1	159	0.411
+GGT1	P19440	GGT1-terminal-c	deterministic_computed	569				0	0		
+GGT7	Q9UJ14	GGT7-terminal-c	deterministic_computed	662				0	0		
+GJA1	P17302	GJA1-snorkel-c	deterministic_computed	382				0	0		
+GJA10	Q969M2	GJA10-snorkel-c	deterministic_computed	543				0	0		
+GJA3	Q9Y6H8	GJA3-snorkel-c	deterministic_computed	435				0	0		
+GJA4	P35212	GJA4-snorkel-c	deterministic_computed	333				0	0		
+GJA5	P36382	GJA5-snorkel-c	deterministic_computed	358				0	0		
+GJA9	P57773	GJA9-snorkel-c	deterministic_computed	515				0	0		
+GJB1	P08034	GJB1-snorkel-c	deterministic_computed	283				0	0		
+GJB2	P29033	GJB2-snorkel-c	deterministic_computed	226				0	0		
+GJB3	O75712	GJB3-snorkel-c	deterministic_computed	270				0	0		
+GJB4	Q9NTQ9	GJB4-snorkel-c	deterministic_computed	266				0	0		
+GJB5	O95377	GJB5-snorkel-c	deterministic_computed	273				0	0		
+GJB6	O95452	GJB6-snorkel-c	deterministic_computed	261				0	0		
+GJB7	Q6PEY0	GJB7-snorkel-c	deterministic_computed	223				0	0		
+GJC2	Q5T442	GJC2-snorkel-c	deterministic_computed	439				0	0		
+GJC3	Q8NFK1	GJC3-snorkel-c	deterministic_computed	279				0	0		
+GJD2	Q9UKL4	GJD2-snorkel-c	deterministic_computed	321				0	0		
+GJD3	Q8N144	GJD3-snorkel-c	deterministic_computed	294				0	0		
+GJD4	Q96KN9	GJD4-snorkel-c	deterministic_computed	370				0	0		
+GJE1	A6NN92	GJE1-snorkel-c	deterministic_computed	205				0	0		
+GLDN	Q6ZMI3	GLDN-terminal-c	deterministic_computed	551				0	0		
+GLRA2	P23416	GLRA2-terminal-c	deterministic_computed	452				0	0		
+GLRA3	O75311	GLRA3-terminal-c	deterministic_computed	464				0	0		
+GLRB	P48167	GLRB-terminal-c	deterministic_computed	497				0	0		
+GML	Q99445	GML-terminal-c	deterministic_computed	158				0	1		
+GP2	P55259	GP2-terminal-c	deterministic_computed	537	513-537	512	513-537	1	1	369	0.416
+GPC1	P35052	GPC1-terminal-c	deterministic_computed	558	531-558	530	531-558	1	1	582	0.716
+GPC2	Q8N158	GPC2-terminal-c	deterministic_computed	579	555-579	554	555-579	1	1	505	0.415
+GPC3	P51654	GPC3-terminal-c	deterministic_computed	580	555-580	554	555-580	1	1	503	0.328
+GPC4	O75487	GPC4-terminal-c	deterministic_computed	556	530-556	529	530-556	1	1	525	0.457
+GPC5	P78333	GPC5-terminal-c	deterministic_computed	572				0	1	27	0.322
+GPC6	Q9Y625	GPC6-terminal-c	deterministic_computed	555	530-555	529	530-555	1	1	529	0.600
+GPIHBP1	Q8IV16	GPIHBP1-terminal-c	deterministic_computed	184	152-184	151	152-184	1	1	140	0.542
+GPM6A	P51674	GPM6A-snorkel-c	deterministic_computed	278				0	0		
+GPM6B	Q13491	GPM6B-snorkel-c	deterministic_computed	265				0	0		
+GRAMD1B	Q3KR37	GRAMD1B-terminal-c	deterministic_computed	738				0	0		
+GSG1	Q2KHT4	GSG1-snorkel-c	deterministic_computed	349				0	0		
+GSG1L	Q6UXU4	GSG1L-snorkel-c	deterministic_computed	331				0	0		
+GSG1L2	A8MUP6	GSG1L2-snorkel-c	deterministic_computed	293				0	0		
+HCN1	O60741	HCN1-snorkel-c	deterministic_computed	890				0	0		
+HCN2	Q9UL51	HCN2-snorkel-c	deterministic_computed	889				0	0		
+HCN3	Q9P1Z3	HCN3-snorkel-c	deterministic_computed	774				0	0		
+HCN4	Q9Y3Q4	HCN4-snorkel-c	deterministic_computed	1203				0	0		
+HHIP	Q96QV1	HHIP-terminal-c	deterministic_computed	700				0	0		
+HJV	Q6ZVN8	HJV-terminal-c	deterministic_computed	426	401-426	400	401-426	1	1	287	0.493
+HS3ST2	Q9Y278	HS3ST2-terminal_c-367-lit	literature_retrieved	367				0	0		
+HTR3A	P46098	HTR3A-terminal-c	deterministic_computed	478				0	0		
+HTR3A	P46098	HTR3A-terminal_c-478-lit	literature_retrieved	478				0	0		
+HTR3B	O95264	HTR3B-terminal-c	deterministic_computed	441				0	0		
+HTR3C	Q8WXA8	HTR3C-terminal-c	deterministic_computed	447				0	0		
+HTR3D	Q70Z44	HTR3D-terminal-c	deterministic_computed	454				0	0		
+HTR3E	A5X5Y0	HTR3E-terminal-c	deterministic_computed	456				0	0		
+HYAL2	Q12891	HYAL2-terminal-c	deterministic_computed	473	449-473	448	449-473	1	1	417	0.391
+IGSF21	Q96ID5	IGSF21-terminal_c-443-lit	literature_retrieved	443				0	1	365	0.482
+IRAG1	Q9Y6F6	IRAG1-terminal-c	deterministic_computed	904				0	0		
+ISLR	O14498	ISLR-terminal_c-428-lit	literature_retrieved	428				0	1	403	0.220
+ITLN1	Q8WWA0	ITLN1-terminal-c	deterministic_computed	313	299-313	298	299-313	1	0		
+ITM2B	Q9Y287	ITM2B-terminal-c	deterministic_computed	266				0	0		
+ITM2B	Q9Y287	ITM2B-terminal_c-266-lit	literature_retrieved	266				0	0		
+ITM2C	Q9NQX7	ITM2C-terminal-c	deterministic_computed	267				0	0		
+ITPRIP	Q8IWB1	ITPRIP-snorkel-c	deterministic_computed	547				0	0		
+KCNA1	Q09470	KCNA1-snorkel-c	deterministic_computed	495				0	0		
+KCNA2	P16389	KCNA2-snorkel-c	deterministic_computed	499				0	0		
+KCNA3	P22001	KCNA3-snorkel-c	deterministic_computed	575				0	0		
+KCNA4	P22459	KCNA4-snorkel-c	deterministic_computed	653				0	0		
+KCNA5	P22460	KCNA5-snorkel-c	deterministic_computed	613				0	0		
+KCNA6	P17658	KCNA6-snorkel-c	deterministic_computed	529				0	0		
+KCNB1	Q14721	KCNB1-snorkel-c	deterministic_computed	858				0	0		
+KCNB2	Q92953	KCNB2-snorkel-c	deterministic_computed	911				0	0		
+KCNC1	P48547	KCNC1-snorkel-c	deterministic_computed	511				0	0		
+KCNC2	Q96PR1	KCNC2-snorkel-c	deterministic_computed	638				0	0		
+KCNC3	Q14003	KCNC3-snorkel-c	deterministic_computed	757				0	0		
+KCNC4	Q03721	KCNC4-snorkel-c	deterministic_computed	635				0	0		
+KCND1	Q9NSA2	KCND1-snorkel-c	deterministic_computed	647				0	0		
+KCND3	Q9UK17	KCND3-snorkel-c	deterministic_computed	655				0	0		
+KCNG4	Q8TDN1	KCNG4-snorkel-c	deterministic_computed	519				0	0		
+KCNH1	O95259	KCNH1-snorkel-c	deterministic_computed	989				0	0		
+KCNH2	Q12809	KCNH2-snorkel-c	deterministic_computed	1159				0	0		
+KCNH3	Q9ULD8	KCNH3-snorkel-c	deterministic_computed	1083				0	0		
+KCNH4	Q9UQ05	KCNH4-snorkel-c	deterministic_computed	1017				0	0		
+KCNH5	Q8NCM2	KCNH5-snorkel-c	deterministic_computed	988				0	0		
+KCNH6	Q9H252	KCNH6-snorkel-c	deterministic_computed	958				0	0		
+KCNH7	Q9NS40	KCNH7-snorkel-c	deterministic_computed	1196				0	0		
+KCNH8	Q96L42	KCNH8-snorkel-c	deterministic_computed	1107				0	0		
+KCNJ1	P48048	KCNJ1-snorkel-c	deterministic_computed	391				0	0		
+KCNJ10	P78508	KCNJ10-snorkel-c	deterministic_computed	379				0	0		
+KCNJ12	Q14500	KCNJ12-snorkel-c	deterministic_computed	433				0	0		
+KCNJ13	O60928	KCNJ13-snorkel-c	deterministic_computed	360				0	0		
+KCNJ14	Q9UNX9	KCNJ14-snorkel-c	deterministic_computed	436				0	0		
+KCNJ15	Q99712	KCNJ15-snorkel-c	deterministic_computed	375				0	0		
+KCNJ2	P63252	KCNJ2-snorkel-c	deterministic_computed	427				0	0		
+KCNJ3	P48549	KCNJ3-snorkel-c	deterministic_computed	501				0	0		
+KCNJ4	P48050	KCNJ4-snorkel-c	deterministic_computed	445				0	0		
+KCNJ5	P48544	KCNJ5-snorkel-c	deterministic_computed	419				0	0		
+KCNJ6	P48051	KCNJ6-snorkel-c	deterministic_computed	423				0	0		
+KCNJ9	Q92806	KCNJ9-snorkel-c	deterministic_computed	393				0	0		
+KCNK10	P57789	KCNK10-snorkel-c	deterministic_computed	538				0	0		
+KCNK13	Q9HB14	KCNK13-snorkel-c	deterministic_computed	408				0	0		
+KCNK17	Q96T54	KCNK17-snorkel-c	deterministic_computed	332				0	0		
+KCNK18	Q7Z418	KCNK18-snorkel-c	deterministic_computed	384				0	0		
+KCNK2	O95069	KCNK2-snorkel-c	deterministic_computed	426				0	0		
+KCNK3	O14649	KCNK3-snorkel-c	deterministic_computed	394				0	0		
+KCNK4	Q9NYG8	KCNK4-snorkel-c	deterministic_computed	393				0	0		
+KCNK5	O95279	KCNK5-snorkel-c	deterministic_computed	499				0	0		
+KCNK9	Q9NPC2	KCNK9-snorkel-c	deterministic_computed	374				0	0		
+KCNMB1	Q16558	KCNMB1-snorkel-c	deterministic_computed	191				0	0		
+KCNMB2	Q9Y691	KCNMB2-snorkel-c	deterministic_computed	235				0	0		
+KCNMB3	Q9NPA1	KCNMB3-snorkel-c	deterministic_computed	279				0	0		
+KCNMB4	Q86W47	KCNMB4-snorkel-c	deterministic_computed	210				0	0		
+KCNQ1	P51787	KCNQ1-snorkel-c	deterministic_computed	676				0	0		
+KCNQ2	O43526	KCNQ2-snorkel-c	deterministic_computed	872				0	0		
+KCNQ4	P56696	KCNQ4-snorkel-c	deterministic_computed	695				0	0		
+KCNQ5	Q9NR82	KCNQ5-snorkel-c	deterministic_computed	932				0	0		
+KCNS1	Q96KK3	KCNS1-snorkel-c	deterministic_computed	526				0	0		
+KCNT1	Q5JUK3	KCNT1-snorkel-c	deterministic_computed	1230				0	0		
+KCNT2	Q6UVM3	KCNT2-snorkel-c	deterministic_computed	1135				0	0		
+KCNV2	Q8TDN2	KCNV2-snorkel-c	deterministic_computed	545				0	0		
+KEL	P23276	KEL-terminal-c	deterministic_computed	732				0	0		
+KLRB1	Q12918	KLRB1-terminal-c	deterministic_computed	225				0	0		
+KLRC1	P26715	KLRC1-terminal-c	deterministic_computed	233				0	0		
+KLRC2	P26717	KLRC2-terminal-c	deterministic_computed	231				0	0		
+KLRC3	Q07444	KLRC3-terminal-c	deterministic_computed	240				0	0		
+KLRF1	Q9NZS2	KLRF1-terminal-c	deterministic_computed	231				0	0		
+KLRF2	D3W0D1	KLRF2-terminal-c	deterministic_computed	207				0	0		
+KLRF2	D3W0D1	KLRF2-terminal_c-207-lit	literature_retrieved	207				0	0		
+KLRG1	Q96E93	KLRG1-terminal-c	deterministic_computed	195				0	0		
+KLRK1	P26718	KLRK1-terminal-c	deterministic_computed	216				0	0		
+LHFPL1	Q86WI0	LHFPL1-snorkel-c	deterministic_computed	220				0	0		
+LHFPL4	Q7Z7J7	LHFPL4-snorkel-c	deterministic_computed	247				0	0		
+LHFPL5	Q8TAF8	LHFPL5-snorkel-c	deterministic_computed	219				0	0		
+LHFPL7	Q6ICI0	LHFPL7-snorkel-c	deterministic_computed	200				0	0		
+LIM2	P55344	LIM2-snorkel-c	deterministic_computed	173				0	0		
+LNPEP	Q9UIQ6	LNPEP-terminal-c	deterministic_computed	1025				0	0		
+LPL	P06858	LPL-terminal-c	deterministic_computed	475				0	0		
+LRRC8A	Q8IWT6	LRRC8A-snorkel-c	deterministic_computed	810				0	0		
+LRRC8B	Q6P9F7	LRRC8B-snorkel-c	deterministic_computed	803				0	0		
+LRRC8C	Q8TDW0	LRRC8C-snorkel-c	deterministic_computed	803				0	0		
+LRRC8D	Q7L1W4	LRRC8D-snorkel-c	deterministic_computed	858				0	0		
+LRRC8E	Q6NSJ5	LRRC8E-snorkel-c	deterministic_computed	796				0	0		
+LSAMP	Q13449	LSAMP-terminal-c	deterministic_computed	338	316-338	315	316-338	1	1	316	0.372
+LSMEM1	Q8N8F7	LSMEM1-terminal-c	deterministic_computed	131				0	0		
+LSMEM2	Q8N112	LSMEM2-terminal_c-164-lit	literature_retrieved	164				0	0		
+LVRN	Q6Q4G3	LVRN-terminal_c-990-lit	literature_retrieved	990				0	0		
+LY6D	Q14210	LY6D-terminal-c	deterministic_computed	128	99-128	98	99-128	1	1	98	0.805
+LY6E	Q16553	LY6E-terminal-c	deterministic_computed	131	102-131	101	102-131	1	1	97	0.469
+LY6G6C	O95867	LY6G6C-terminal-c	deterministic_computed	125	100-125	99	100-125	1	1	98	0.543
+LY6G6D	O95868	LY6G6D-terminal-c	deterministic_computed	133	105-133	104	105-133	1	1	352	0.545
+LY6H	O94772	LY6H-terminal-c	deterministic_computed	140	116-140	115	116-140	1	1	112	0.346
+LY6K	Q17RY6	LY6K-terminal-c	deterministic_computed	165	139-165	138	139-165	1	1	138	0.374
+LYPD1	Q8N2G4	LYPD1-terminal-c	deterministic_computed	141	118-141	117	118-141	1	1	71	0.438
+LYPD2	Q6UXB3	LYPD2-terminal-c	deterministic_computed	125	104-125	103	104-125	1	1	102	0.576
+LYPD2	Q6UXB3	LYPD2-terminal_c-None-lit	literature_retrieved			103		0	1	102	0.576
+LYPD3	O95274	LYPD3-terminal-c	deterministic_computed	346	327-346	326	327-346	1	1	316	0.239
+LYPD4	Q6UWN0	LYPD4-terminal-c	deterministic_computed	246	226-246	225	226-246	1	1		
+LYPD5	Q6UWN5	LYPD5-terminal-c	deterministic_computed	251	226-251	225	226-251	1	1	181	0.456
+LYPD6B	Q8NI32	LYPD6B-terminal-c	deterministic_computed	183	165-183	164	165-183	1	1	164	0.407
+LYPD8	Q6UX82	LYPD8-terminal-c	deterministic_computed	237	216-237	215	216-237	1	1	215	0.526
+LYSMD3	Q7Z3D4	LYSMD3-terminal-c	deterministic_computed	306				0	0		
+MARCO	Q9UEW3	MARCO-terminal_c-520-lit	literature_retrieved	520				0	0		
+MARVELD3	Q96A59	MARVELD3-snorkel-c	deterministic_computed	401				0	0		
+MCEMP1	Q8IX19	MCEMP1-terminal_c-187-lit	literature_retrieved	187				0	0		
+MCOLN1	Q9GZU1	MCOLN1-snorkel-c	deterministic_computed	580				0	0		
+MDGA1	Q8NFP4	MDGA1-terminal-c	deterministic_computed	955	933-955	932	933-955	1	1	938	0.675
+MDGA2	Q7Z553	MDGA2-terminal-c	deterministic_computed	956	932-956	931	932-956	1	1	931	0.466
+MELTF	P08582	MELTF-terminal-c	deterministic_computed	738	710-738	709	710-738	1	1	710	0.442
+MFRP	Q9BY79	MFRP-terminal-c	deterministic_computed	579				0	0		
+MFRP	Q9BY79	MFRP-terminal_c-579-lit	literature_retrieved	579				0	0		
+MFSD11	O43934	MFSD11-snorkel-c	deterministic_computed	449				0	0		
+MFSD12	Q6NUT3	MFSD12-snorkel-c	deterministic_computed	480				0	0		
+MFSD2A	Q8NA29	MFSD2A-terminal-c	deterministic_computed	543				0	0		
+MFSD2A	Q8NA29	MFSD2A-terminal_c-543-lit	literature_retrieved	543				0	0		
+MFSD2B	A6NFX1	MFSD2B-snorkel-c	deterministic_computed	504				0	0		
+MFSD6	Q6ZSS7	MFSD6-snorkel-c	deterministic_computed	791				0	0		
+MFSD6L	Q8IWD5	MFSD6L-snorkel-c	deterministic_computed	586				0	0		
+MFSD8	Q8NHS3	MFSD8-snorkel-c	deterministic_computed	518				0	0		
+MIP	P30301	MIP-snorkel-c	deterministic_computed	263				0	0		
+MME	P08473	MME-terminal-c	deterministic_computed	750				0	0		
+MMEL1	Q495T6	MMEL1-terminal-c	deterministic_computed	779				0	0		
+MMP17	Q9ULZ9	MMP17-terminal-c	deterministic_computed	603	566-603	565	566-603	1	1	481	0.327
+MMP25	Q9NPA2	MMP25-terminal-c	deterministic_computed	562	540-562	539	540-562	1	1	534	0.426
+MOSMO	Q8NHV5	MOSMO-snorkel-c	deterministic_computed	167				0	0		
+MOXD1	Q6UVY6	MOXD1-terminal-c	deterministic_computed	613				0	0		
+MS4A1	P11836	MS4A1-snorkel-c	deterministic_computed	297				0	0		
+MS4A10	Q96PG2	MS4A10-snorkel-c	deterministic_computed	267				0	0		
+MS4A12	Q9NXJ0	MS4A12-snorkel-c	deterministic_computed	267				0	0		
+MS4A15	Q8N5U1	MS4A15-snorkel-c	deterministic_computed	240				0	0		
+MS4A2	Q01362	MS4A2-snorkel-c	deterministic_computed	244				0	0		
+MS4A3	Q96HJ5	MS4A3-snorkel-c	deterministic_computed	214				0	0		
+MS4A4A	Q96JQ5	MS4A4A-snorkel-c	deterministic_computed	239				0	0		
+MS4A5	Q9H3V2	MS4A5-snorkel-c	deterministic_computed	200				0	0		
+MS4A6A	Q9H2W1	MS4A6A-snorkel-c	deterministic_computed	248				0	0		
+MS4A7	Q9GZW8	MS4A7-snorkel-c	deterministic_computed	240				0	0		
+MSLN	Q13421	MSLN-terminal-c	deterministic_computed	630		598	599-630	1	1	549	0.736
+MSR1	P21757	MSR1-terminal-c	deterministic_computed	451				0	0		
+MSR1	P21757	MSR1-terminal_c-451-lit	literature_retrieved	451				0	0		
+MYADM	Q96S97	MYADM-snorkel-c	deterministic_computed	322				0	0		
+MYADML2	A6NDP7	MYADML2-snorkel-c	deterministic_computed	307				0	0		
+MYOF	Q9NZM1	MYOF-terminal-c	deterministic_computed	2061				0	0		
+NAALADL1	Q9UQQ1	NAALADL1-terminal-c	deterministic_computed	740				0	0		
+NALCN	Q8IZF0	NALCN-snorkel-c	deterministic_computed	1738				0	0		
+NEGR1	Q7Z3B1	NEGR1-terminal-c	deterministic_computed	354	325-354	324	325-354	1	1	324	0.529
+NEU1	Q99519	NEU1-terminal-c	deterministic_computed	415				0	0		
+NKAIN1	Q4KMZ8	NKAIN1-snorkel-c	deterministic_computed	207				0	0		
+NKAIN2	Q5VXU1	NKAIN2-snorkel-c	deterministic_computed	208				0	0		
+NKAIN3	Q8N8D7	NKAIN3-snorkel-c	deterministic_computed	197				0	0		
+NOX1	Q9Y5S8	NOX1-snorkel-c	deterministic_computed	564				0	0		
+NOX3	Q9HBY0	NOX3-snorkel-c	deterministic_computed	568				0	0		
+NOX4	Q9NPH5	NOX4-snorkel-c	deterministic_computed	578				0	0		
+NRG2	O14511	NRG2-snorkel-c	deterministic_computed	850				0	0		
+NRN1	Q9NPD7	NRN1-terminal-c	deterministic_computed	142	117-142	116	117-142	1	1	115	0.389
+NRN1L	Q496H8	NRN1L-terminal-c	deterministic_computed	165	140-165	139	140-165	1	1	138	0.303
+NT5E	P21589	NT5E-terminal-c	deterministic_computed	574	550-574	549	550-574	1	1	549	0.386
+NTM	Q9P121	NTM-terminal-c	deterministic_computed	344	322-344	321	322-344	1	1	321	0.586
+NTNG1	Q9Y2I2	NTNG1-terminal-c	deterministic_computed	539	511-539	510	511-539	1	1	511	0.294
+NTNG2	Q96CW9	NTNG2-terminal-c	deterministic_computed	530	508-530	507	508-530	1	1	507	0.580
+OCLN	Q16625	OCLN-snorkel-c	deterministic_computed	522				0	0		
+OCSTAMP	Q9BR26	OCSTAMP-snorkel-c	deterministic_computed	566				0	0		
+OLR1	P78380	OLR1-terminal-c	deterministic_computed	273				0	0		
+OLR1	P78380	OLR1-terminal_c-273-lit	literature_retrieved	273				0	0		
+OMG	P23515	OMG-terminal-c	deterministic_computed	440	418-440	417	418-440	1	1	417	0.343
+OPCML	Q14982	OPCML-terminal-c	deterministic_computed	345	323-345	322	323-345	1	1	322	0.516
+ORAI1	Q96D31	ORAI1-snorkel-c	deterministic_computed	301				0	0		
+OSCAR	Q8IYS5	OSCAR-terminal-c	deterministic_computed	282				0	0		
+OTOA	Q7RTW8	OTOA-terminal-c	deterministic_computed	1153	1131-1153	1130	1131-1153	1	1	1116	0.228
+OTOP1	Q7RTM1	OTOP1-snorkel-c	deterministic_computed	612				0	0		
+OTOP2	Q7RTS6	OTOP2-snorkel-c	deterministic_computed	562				0	0		
+OTOP3	Q7RTS5	OTOP3-snorkel-c	deterministic_computed	596				0	0		
+P2RX1	P51575	P2RX1-snorkel-c	deterministic_computed	399				0	0		
+P2RX2	Q9UBL9	P2RX2-snorkel-c	deterministic_computed	471				0	0		
+P2RX3	P56373	P2RX3-snorkel-c	deterministic_computed	397				0	0		
+P2RX4	Q99571	P2RX4-snorkel-c	deterministic_computed	388				0	0		
+P2RX5	Q93086	P2RX5-snorkel-c	deterministic_computed	444				0	0		
+P2RX6	O15547	P2RX6-snorkel-c	deterministic_computed	441				0	0		
+P2RX7	Q99572	P2RX7-snorkel-c	deterministic_computed	595				0	0		
+PACC1	Q9H813	PACC1-snorkel-c	deterministic_computed	350				0	0		
+PANX1	Q96RD7	PANX1-snorkel-c	deterministic_computed	426				0	0		
+PANX2	Q96RD6	PANX2-snorkel-c	deterministic_computed	677				0	0		
+PANX3	Q96QZ0	PANX3-snorkel-c	deterministic_computed	392				0	0		
+PCNX1	Q96RV3	PCNX1-snorkel-c	deterministic_computed	2341				0	0		
+PCNX2	A6NKB5	PCNX2-snorkel-c	deterministic_computed	2137				0	0		
+PGAP1	Q75T13	PGAP1-snorkel-c	deterministic_computed	922				0	0		
+PHEX	P78562	PHEX-terminal-c	deterministic_computed	749				0	0		
+PI16	Q6UXB8	PI16-terminal-c	deterministic_computed	463				0	0		
+PIEZO1	Q92508	PIEZO1-snorkel-c	deterministic_computed	2521				0	0		
+PIEZO2	Q9H5I5	PIEZO2-snorkel-c	deterministic_computed	2752				0	0		
+PIGO	Q8TEQ8	PIGO-snorkel-c	deterministic_computed	1089				0	0		
+PKD2	Q13563	PKD2-snorkel-c	deterministic_computed	968				0	0		
+PKD2L1	Q9P0L9	PKD2L1-snorkel-c	deterministic_computed	805				0	0		
+PLA2G3	Q9NZ20	PLA2G3-terminal-c	deterministic_computed	509				0	0		
+PLAUR	Q03405	PLAUR-terminal-c	deterministic_computed	335	306-335	305	306-335	1	1	304	0.475
+PLAUR	Q03405	PLAUR-terminal_c-335-lit	literature_retrieved	335	306-335	305	306-335	1	1	304	0.475
+PLD5	Q8N7P1	PLD5-terminal-c	deterministic_computed	536				0	0		
+PLLP	Q9Y342	PLLP-snorkel-c	deterministic_computed	182				0	0		
+PLP1	P60201	PLP1-snorkel-c	deterministic_computed	277				0	0		
+PLPP1	O14494	PLPP1-snorkel-c	deterministic_computed	284				0	0		
+PLPP2	O43688	PLPP2-snorkel-c	deterministic_computed	288				0	0		
+PLPP3	O14495	PLPP3-snorkel-c	deterministic_computed	311				0	0		
+PLVAP	Q9BX97	PLVAP-terminal-c	deterministic_computed	442				0	0		
+PLVAP	Q9BX97	PLVAP-terminal_c-442-lit	literature_retrieved	442				0	0		
+PMP22	Q01453	PMP22-snorkel-c	deterministic_computed	160				0	0		
+PRF1	P14222	PRF1-terminal-c	deterministic_computed	555				0	0		
+PRND	Q9UKY0	PRND-terminal-c	deterministic_computed	176	153-176	152	153-176	1	1	152	0.790
+PRNP	P04156	PRNP-terminal-c	deterministic_computed	253	231-253	230	231-253	1	1	230	0.561
+PRPH2	P23942	PRPH2-snorkel-c	deterministic_computed	346				0	0		
+PRSS21	Q9Y6M0	PRSS21-terminal-c	deterministic_computed	314	289-314	288	289-314	1	1	274	0.708
+PRSS41	Q7RTY9	PRSS41-terminal-c	deterministic_computed	318	300-318	299	300-318	1	1	313	0.515
+PRSS55	Q6UWB4	PRSS55-terminal_c-None-lit	literature_retrieved			325		0	1	325	0.359
+PRSS8	Q16651	PRSS8-terminal-c	deterministic_computed	343	323-343		323-343	1	1	313	0.546
+PSCA	O43653	PSCA-terminal-c	deterministic_computed	114	84-114	83	84-114	1	1	86	0.398
+PSEN1	P49768	PSEN1-terminal-c	deterministic_computed	467				0	0		
+PSEN2	P49810	PSEN2-terminal-c	deterministic_computed	448				0	0		
+PTCH1	Q13635	PTCH1-snorkel-c	deterministic_computed	1447				0	0		
+PTCH2	Q9Y6C5	PTCH2-snorkel-c	deterministic_computed	1203				0	0		
+PTCHD1	Q96NR3	PTCHD1-snorkel-c	deterministic_computed	888				0	0		
+PTCHD3	Q3KNS1	PTCHD3-snorkel-c	deterministic_computed	954				0	0		
+PTCHD4	Q6ZW05	PTCHD4-snorkel-c	deterministic_computed	846				0	0		
+RAB5C	P51148	RAB5C-snorkel-c	deterministic_computed	216				0	0		
+RAET1L	Q5VY80	RAET1L-terminal-c	deterministic_computed	246	219-246	218	219-246	1	1	216	0.505
+RECK	O95980	RECK-terminal-c	deterministic_computed	971	943-971	942	943-971	1	1	942	0.668
+RGMA	Q96B86	RGMA-terminal-c	deterministic_computed	450	425-450	424	425-450	1	1	424	0.514
+RGMB	Q6NW40	RGMB-terminal-c	deterministic_computed	437	414-437	413	414-437	1	1	411	0.233
+RHAG	Q02094	RHAG-snorkel-c	deterministic_computed	409				0	0		
+RHBDF2	Q6PJF5	RHBDF2-terminal-c	deterministic_computed	856				0	0		
+RHBDF2	Q6PJF5	RHBDF2-terminal_c-856-lit	literature_retrieved	856				0	0		
+RHBDL2	Q9NX52	RHBDL2-terminal-c	deterministic_computed	303				0	0		
+RHBG	Q9H310	RHBG-snorkel-c	deterministic_computed	458				0	0		
+RHCG	Q9UBD6	RHCG-snorkel-c	deterministic_computed	479				0	0		
+RNF130	Q86XS8	RNF130-terminal-c	deterministic_computed	419				0	0		
+RNFT1	Q5M7Z0	RNFT1-snorkel-c	deterministic_computed	435				0	0		
+RTN4R	Q9BZR6	RTN4R-terminal-c	deterministic_computed	473	448-473	447	448-473	1	1	447	0.516
+RTN4RL1	Q86UN2	RTN4RL1-terminal-c	deterministic_computed	441	421-441	420	421-441	1	1	420	0.488
+RTN4RL2	Q86UN3	RTN4RL2-terminal-c	deterministic_computed	420	391-420	390	391-420	1	1	395	0.300
+SCAP	Q12770	SCAP-snorkel-c	deterministic_computed	1279				0	0		
+SCARA5	Q6ZMJ2	SCARA5-terminal-c	deterministic_computed	495				0	0		
+SCARA5	Q6ZMJ2	SCARA5-terminal_c-495-lit	literature_retrieved	495				0	0		
+SCARB1	Q8WTV0	SCARB1-snorkel-c	deterministic_computed	552				0	0		
+SCARB2	Q14108	SCARB2-snorkel-c	deterministic_computed	478				0	0		
+SCN11A	Q9UI33	SCN11A-snorkel-c	deterministic_computed	1791				0	0		
+SCN1A	P35498	SCN1A-snorkel-c	deterministic_computed	2009				0	0		
+SCN2A	Q99250	SCN2A-snorkel-c	deterministic_computed	2005				0	0		
+SCN3A	Q9NY46	SCN3A-snorkel-c	deterministic_computed	2000				0	0		
+SCN4A	P35499	SCN4A-snorkel-c	deterministic_computed	1836				0	0		
+SCN5A	Q14524	SCN5A-snorkel-c	deterministic_computed	2016				0	0		
+SCN7A	Q01118	SCN7A-snorkel-c	deterministic_computed	1682				0	0		
+SCN8A	Q9UQD0	SCN8A-snorkel-c	deterministic_computed	1980				0	0		
+SCN9A	Q15858	SCN9A-snorkel-c	deterministic_computed	1988				0	0		
+SCNN1A	P37088	SCNN1A-snorkel-c	deterministic_computed	669				0	0		
+SCNN1B	P51168	SCNN1B-snorkel-c	deterministic_computed	640				0	0		
+SCNN1D	P51172	SCNN1D-snorkel-c	deterministic_computed	802				0	0		
+SCNN1G	P51170	SCNN1G-snorkel-c	deterministic_computed	649				0	0		
+SDK1	Q7Z5N4	SDK1-snorkel-c	deterministic_computed	2213				0	0		
+SEMA7A	O75326	SEMA7A-terminal-c	deterministic_computed	666	649-666	648	649-666	1	1	645	0.279
+SERINC1	Q9NRX5	SERINC1-snorkel-c	deterministic_computed	453				0	0		
+SERINC2	Q96SA4	SERINC2-snorkel-c	deterministic_computed	455				0	0		
+SERINC3	Q13530	SERINC3-snorkel-c	deterministic_computed	473				0	0		
+SERINC4	A6NH21	SERINC4-snorkel-c	deterministic_computed	518				0	0		
+SERINC5	Q86VE9	SERINC5-terminal-c	deterministic_computed	423				0	0		
+SERINC5	Q86VE9	SERINC5-terminal_c-423-lit	literature_retrieved	423				0	0		
+SGCB	Q16585	SGCB-terminal-c	deterministic_computed	318				0	0		
+SGCD	Q92629	SGCD-terminal-c	deterministic_computed	289				0	0		
+SGCZ	Q96LD1	SGCZ-terminal-c	deterministic_computed	299				0	0		
+SGMS2	Q8NHU3	SGMS2-snorkel-c	deterministic_computed	365				0	0		
+SLC11A1	P49279	SLC11A1-snorkel-c	deterministic_computed	550				0	0		
+SLC11A2	P49281	SLC11A2-snorkel-c	deterministic_computed	568				0	0		
+SLC12A1	Q13621	SLC12A1-snorkel-c	deterministic_computed	1099				0	0		
+SLC12A2	P55011	SLC12A2-snorkel-c	deterministic_computed	1212				0	0		
+SLC12A3	P55017	SLC12A3-snorkel-c	deterministic_computed	1021				0	0		
+SLC12A4	Q9UP95	SLC12A4-snorkel-c	deterministic_computed	1085				0	0		
+SLC12A5	Q9H2X9	SLC12A5-snorkel-c	deterministic_computed	1139				0	0		
+SLC12A6	Q9UHW9	SLC12A6-snorkel-c	deterministic_computed	1150				0	0		
+SLC12A7	Q9Y666	SLC12A7-snorkel-c	deterministic_computed	1083				0	0		
+SLC12A8	A0AV02	SLC12A8-snorkel-c	deterministic_computed	714				0	0		
+SLC12A9	Q9BXP2	SLC12A9-snorkel-c	deterministic_computed	914				0	0		
+SLC13A1	Q9BZW2	SLC13A1-terminal-c	deterministic_computed	595				0	0		
+SLC13A2	Q13183	SLC13A2-terminal-c	deterministic_computed	592				0	0		
+SLC13A3	Q8WWT9	SLC13A3-terminal-c	deterministic_computed	602				0	0		
+SLC13A4	Q9UKG4	SLC13A4-terminal-c	deterministic_computed	626				0	0		
+SLC13A5	Q86YT5	SLC13A5-terminal_c-568-lit	literature_retrieved	568				0	0		
+SLC14A1	Q13336	SLC14A1-snorkel-c	deterministic_computed	389				0	0		
+SLC14A2	Q15849	SLC14A2-snorkel-c	deterministic_computed	920				0	0		
+SLC15A1	P46059	SLC15A1-snorkel-c	deterministic_computed	708				0	0		
+SLC15A2	Q16348	SLC15A2-snorkel-c	deterministic_computed	729				0	0		
+SLC15A3	Q8IY34	SLC15A3-snorkel-c	deterministic_computed	581				0	0		
+SLC15A4	Q8N697	SLC15A4-snorkel-c	deterministic_computed	577				0	0		
+SLC16A1	P53985	SLC16A1-snorkel-c	deterministic_computed	500				0	0		
+SLC16A10	Q8TF71	SLC16A10-snorkel-c	deterministic_computed	515				0	0		
+SLC16A12	Q6ZSM3	SLC16A12-snorkel-c	deterministic_computed	516				0	0		
+SLC16A14	Q7RTX9	SLC16A14-snorkel-c	deterministic_computed	510				0	0		
+SLC16A4	O15374	SLC16A4-snorkel-c	deterministic_computed	487				0	0		
+SLC16A5	O15375	SLC16A5-snorkel-c	deterministic_computed	505				0	0		
+SLC16A6	O15403	SLC16A6-snorkel-c	deterministic_computed	523				0	0		
+SLC16A7	O60669	SLC16A7-snorkel-c	deterministic_computed	478				0	0		
+SLC16A8	O95907	SLC16A8-snorkel-c	deterministic_computed	504				0	0		
+SLC16A9	Q7RTY1	SLC16A9-snorkel-c	deterministic_computed	509				0	0		
+SLC17A1	Q14916	SLC17A1-snorkel-c	deterministic_computed	467				0	0		
+SLC17A5	Q9NRA2	SLC17A5-snorkel-c	deterministic_computed	495				0	0		
+SLC17A6	Q9P2U8	SLC17A6-snorkel-c	deterministic_computed	582				0	0		
+SLC17A7	Q9P2U7	SLC17A7-snorkel-c	deterministic_computed	560				0	0		
+SLC17A8	Q8NDX2	SLC17A8-snorkel-c	deterministic_computed	589				0	0		
+SLC17A9	Q9BYT1	SLC17A9-snorkel-c	deterministic_computed	436				0	0		
+SLC18A1	P54219	SLC18A1-snorkel-c	deterministic_computed	525				0	0		
+SLC18A2	Q05940	SLC18A2-snorkel-c	deterministic_computed	514				0	0		
+SLC18A3	Q16572	SLC18A3-snorkel-c	deterministic_computed	532				0	0		
+SLC19A1	P41440	SLC19A1-snorkel-c	deterministic_computed	591				0	0		
+SLC19A2	O60779	SLC19A2-snorkel-c	deterministic_computed	497				0	0		
+SLC19A3	Q9BZV2	SLC19A3-snorkel-c	deterministic_computed	496				0	0		
+SLC1A1	P43005	SLC1A1-snorkel-c	deterministic_computed	524				0	0		
+SLC1A2	P43004	SLC1A2-snorkel-c	deterministic_computed	574				0	0		
+SLC1A3	P43003	SLC1A3-snorkel-c	deterministic_computed	542				0	0		
+SLC1A4	P43007	SLC1A4-snorkel-c	deterministic_computed	532				0	0		
+SLC1A5	Q15758	SLC1A5-snorkel-c	deterministic_computed	541				0	0		
+SLC1A6	P48664	SLC1A6-snorkel-c	deterministic_computed	564				0	0		
+SLC1A7	O00341	SLC1A7-snorkel-c	deterministic_computed	560				0	0		
+SLC20A1	Q8WUM9	SLC20A1-terminal_c-679-lit	literature_retrieved	679				0	0		
+SLC20A2	Q08357	SLC20A2-terminal-c	deterministic_computed	652				0	0		
+SLC20A2	Q08357	SLC20A2-terminal_c-652-lit	literature_retrieved	652				0	0		
+SLC22A1	O15245	SLC22A1-snorkel-c	deterministic_computed	554				0	0		
+SLC22A11	Q9NSA0	SLC22A11-snorkel-c	deterministic_computed	550				0	0		
+SLC22A12	Q96S37	SLC22A12-snorkel-c	deterministic_computed	553				0	0		
+SLC22A13	Q9Y226	SLC22A13-snorkel-c	deterministic_computed	551				0	0		
+SLC22A14	Q9Y267	SLC22A14-snorkel-c	deterministic_computed	594				0	0		
+SLC22A15	Q8IZD6	SLC22A15-snorkel-c	deterministic_computed	547				0	0		
+SLC22A16	Q86VW1	SLC22A16-snorkel-c	deterministic_computed	577				0	0		
+SLC22A17	Q8WUG5	SLC22A17-snorkel-c	deterministic_computed	649				0	0		
+SLC22A2	O15244	SLC22A2-snorkel-c	deterministic_computed	555				0	0		
+SLC22A23	A1A5C7	SLC22A23-snorkel-c	deterministic_computed	686				0	0		
+SLC22A25	Q6T423	SLC22A25-snorkel-c	deterministic_computed	547				0	0		
+SLC22A3	O75751	SLC22A3-snorkel-c	deterministic_computed	556				0	0		
+SLC22A4	Q9H015	SLC22A4-snorkel-c	deterministic_computed	551				0	0		
+SLC22A5	O76082	SLC22A5-snorkel-c	deterministic_computed	557				0	0		
+SLC22A6	Q4U2R8	SLC22A6-snorkel-c	deterministic_computed	563				0	0		
+SLC22A7	Q9Y694	SLC22A7-snorkel-c	deterministic_computed	548				0	0		
+SLC22A8	Q8TCC7	SLC22A8-snorkel-c	deterministic_computed	542				0	0		
+SLC22A9	Q8IVM8	SLC22A9-snorkel-c	deterministic_computed	553				0	0		
+SLC23A1	Q9UHI7	SLC23A1-snorkel-c	deterministic_computed	598				0	0		
+SLC23A2	Q9UGH3	SLC23A2-snorkel-c	deterministic_computed	650				0	0		
+SLC24A2	Q9UI40	SLC24A2-terminal-c	deterministic_computed	661				0	0		
+SLC24A3	Q9HC58	SLC24A3-terminal-c	deterministic_computed	644				0	0		
+SLC24A4	Q8NFF2	SLC24A4-terminal-c	deterministic_computed	622				0	0		
+SLC24A4	Q8NFF2	SLC24A4-terminal_c-622-lit	literature_retrieved	622				0	0		
+SLC24A5	Q71RS6	SLC24A5-terminal-c	deterministic_computed	500				0	0		
+SLC26A1	Q9H2B4	SLC26A1-snorkel-c	deterministic_computed	701				0	0		
+SLC26A2	P50443	SLC26A2-snorkel-c	deterministic_computed	739				0	0		
+SLC26A3	P40879	SLC26A3-snorkel-c	deterministic_computed	764				0	0		
+SLC26A4	O43511	SLC26A4-snorkel-c	deterministic_computed	780				0	0		
+SLC26A5	P58743	SLC26A5-snorkel-c	deterministic_computed	744				0	0		
+SLC26A6	Q9BXS9	SLC26A6-snorkel-c	deterministic_computed	759				0	0		
+SLC26A7	Q8TE54	SLC26A7-snorkel-c	deterministic_computed	656				0	0		
+SLC26A8	Q96RN1	SLC26A8-snorkel-c	deterministic_computed	970				0	0		
+SLC26A9	Q7LBE3	SLC26A9-snorkel-c	deterministic_computed	791				0	0		
+SLC28A1	O00337	SLC28A1-terminal-c	deterministic_computed	649				0	0		
+SLC28A1	O00337	SLC28A1-terminal_c-649-lit	literature_retrieved	649				0	0		
+SLC28A2	O43868	SLC28A2-terminal-c	deterministic_computed	658				0	0		
+SLC28A3	Q9HAS3	SLC28A3-terminal-c	deterministic_computed	691				0	0		
+SLC29A1	Q99808	SLC29A1-terminal-c	deterministic_computed	456				0	0		
+SLC29A1	Q99808	SLC29A1-terminal_c-456-lit	literature_retrieved	456				0	0		
+SLC29A2	Q14542	SLC29A2-terminal-c	deterministic_computed	456				0	0		
+SLC29A3	Q9BZD2	SLC29A3-terminal-c	deterministic_computed	475				0	0		
+SLC29A4	Q7RTT9	SLC29A4-terminal-c	deterministic_computed	530				0	0		
+SLC2A1	P11166	SLC2A1-snorkel-c	deterministic_computed	492				0	0		
+SLC2A10	O95528	SLC2A10-snorkel-c	deterministic_computed	541				0	0		
+SLC2A11	Q9BYW1	SLC2A11-snorkel-c	deterministic_computed	496				0	0		
+SLC2A12	Q8TD20	SLC2A12-snorkel-c	deterministic_computed	617				0	0		
+SLC2A13	Q96QE2	SLC2A13-snorkel-c	deterministic_computed	648				0	0		
+SLC2A14	Q8TDB8	SLC2A14-snorkel-c	deterministic_computed	520				0	0		
+SLC2A2	P11168	SLC2A2-snorkel-c	deterministic_computed	524				0	0		
+SLC2A3	P11169	SLC2A3-snorkel-c	deterministic_computed	496				0	0		
+SLC2A4	P14672	SLC2A4-snorkel-c	deterministic_computed	509				0	0		
+SLC2A5	P22732	SLC2A5-snorkel-c	deterministic_computed	501				0	0		
+SLC2A6	Q9UGQ3	SLC2A6-snorkel-c	deterministic_computed	507				0	0		
+SLC2A7	Q6PXP3	SLC2A7-snorkel-c	deterministic_computed	512				0	0		
+SLC2A8	Q9NY64	SLC2A8-snorkel-c	deterministic_computed	477				0	0		
+SLC2A9	Q9NRM0	SLC2A9-snorkel-c	deterministic_computed	540				0	0		
+SLC30A1	Q9Y6M5	SLC30A1-snorkel-c	deterministic_computed	507				0	0		
+SLC30A10	Q6XR72	SLC30A10-snorkel-c	deterministic_computed	485				0	0		
+SLC32A1	Q9H598	SLC32A1-terminal-c	deterministic_computed	525				0	0		
+SLC33A1	O00400	SLC33A1-snorkel-c	deterministic_computed	549				0	0		
+SLC34A1	Q06495	SLC34A1-snorkel-c	deterministic_computed	639				0	0		
+SLC34A2	O95436	SLC34A2-snorkel-c	deterministic_computed	690				0	0		
+SLC34A3	Q8N130	SLC34A3-snorkel-c	deterministic_computed	599				0	0		
+SLC35A5	Q9BS91	SLC35A5-snorkel-c	deterministic_computed	424				0	0		
+SLC35F2	Q8IXU6	SLC35F2-snorkel-c	deterministic_computed	374				0	0		
+SLC35F4	A4IF30	SLC35F4-snorkel-c	deterministic_computed	521				0	0		
+SLC35G2	Q8TBE7	SLC35G2-snorkel-c	deterministic_computed	412				0	0		
+SLC36A1	Q7Z2H8	SLC36A1-terminal-c	deterministic_computed	476				0	0		
+SLC36A2	Q495M3	SLC36A2-terminal-c	deterministic_computed	483				0	0		
+SLC36A2	Q495M3	SLC36A2-terminal_c-483-lit	literature_retrieved	483				0	0		
+SLC36A3	Q495N2	SLC36A3-terminal-c	deterministic_computed	470				0	0		
+SLC36A4	Q6YBV0	SLC36A4-terminal-c	deterministic_computed	504				0	0		
+SLC37A1	P57057	SLC37A1-snorkel-c	deterministic_computed	533				0	0		
+SLC37A2	Q8TED4	SLC37A2-snorkel-c	deterministic_computed	501				0	0		
+SLC37A3	Q8NCC5	SLC37A3-snorkel-c	deterministic_computed	494				0	0		
+SLC37A4	O43826	SLC37A4-snorkel-c	deterministic_computed	429				0	0		
+SLC38A1	Q9H2H9	SLC38A1-terminal-c	deterministic_computed	487				0	0		
+SLC38A1	Q9H2H9	SLC38A1-terminal_c-487-lit	literature_retrieved	487				0	0		
+SLC38A11	Q08AI6	SLC38A11-terminal-c	deterministic_computed	406				0	0		
+SLC38A12	Q8NE00	SLC38A12-terminal-c	deterministic_computed	496				0	0		
+SLC38A2	Q96QD8	SLC38A2-terminal-c	deterministic_computed	506				0	0		
+SLC38A2	Q96QD8	SLC38A2-terminal_c-506-lit	literature_retrieved	506				0	0		
+SLC38A4	Q969I6	SLC38A4-terminal-c	deterministic_computed	547				0	0		
+SLC38A5	Q8WUX1	SLC38A5-terminal-c	deterministic_computed	472				0	0		
+SLC38A6	Q8IZM9	SLC38A6-terminal_c-456-lit	literature_retrieved	456				0	0		
+SLC38A8	A6NNN8	SLC38A8-terminal-c	deterministic_computed	435				0	0		
+SLC38A9	Q8NBW4	SLC38A9-terminal-c	deterministic_computed	561				0	0		
+SLC39A10	Q9ULF5	SLC39A10-terminal-c	deterministic_computed	831				0	0		
+SLC39A10	Q9ULF5	SLC39A10-terminal_c-831-lit	literature_retrieved	831				0	0		
+SLC39A12	Q504Y0	SLC39A12-terminal-c	deterministic_computed	691				0	0		
+SLC39A14	Q15043	SLC39A14-terminal-c	deterministic_computed	492				0	0		
+SLC39A14	Q15043	SLC39A14-terminal_c-492-lit	literature_retrieved	492				0	0		
+SLC39A2	Q9NP94	SLC39A2-terminal-c	deterministic_computed	309				0	0		
+SLC39A3	Q9BRY0	SLC39A3-terminal_c-314-lit	literature_retrieved	314				0	0		
+SLC39A4	Q6P5W5	SLC39A4-terminal-c	deterministic_computed	647				0	0		
+SLC39A4	Q6P5W5	SLC39A4-terminal_c-647-lit	literature_retrieved	647				0	0		
+SLC39A5	Q6ZMH5	SLC39A5-terminal-c	deterministic_computed	540				0	0		
+SLC39A6	Q13433	SLC39A6-terminal-c	deterministic_computed	755				0	0		
+SLC39A6	Q13433	SLC39A6-terminal_c-755-lit	literature_retrieved	755				0	0		
+SLC39A8	Q9C0K1	SLC39A8-terminal-c	deterministic_computed	460				0	0		
+SLC39A8	Q9C0K1	SLC39A8-terminal_c-460-lit	literature_retrieved	460				0	0		
+SLC39A9	Q9NUM3	SLC39A9-terminal-c	deterministic_computed	307				0	0		
+SLC3A1	Q07837	SLC3A1-terminal-c	deterministic_computed	685				0	0		
+SLC3A2	P08195	SLC3A2-terminal-c	deterministic_computed	529				0	0		
+SLC3A2	P08195	SLC3A2-terminal_c-529-lit	literature_retrieved	529				0	0		
+SLC40A1	Q9NP59	SLC40A1-snorkel-c	deterministic_computed	571				0	0		
+SLC41A1	Q8IVJ1	SLC41A1-terminal-c	deterministic_computed	513				0	0		
+SLC41A2	Q96JW4	SLC41A2-terminal-c	deterministic_computed	573				0	0		
+SLC41A3	Q96GZ6	SLC41A3-terminal-c	deterministic_computed	507				0	0		
+SLC43A1	O75387	SLC43A1-snorkel-c	deterministic_computed	559				0	0		
+SLC43A2	Q8N370	SLC43A2-snorkel-c	deterministic_computed	569				0	0		
+SLC43A3	Q8NBI5	SLC43A3-snorkel-c	deterministic_computed	491				0	0		
+SLC44A1	Q8WWI5	SLC44A1-snorkel-c	deterministic_computed	657				0	0		
+SLC44A2	Q8IWA5	SLC44A2-snorkel-c	deterministic_computed	706				0	0		
+SLC44A3	Q8N4M1	SLC44A3-snorkel-c	deterministic_computed	653				0	0		
+SLC44A4	Q53GD3	SLC44A4-snorkel-c	deterministic_computed	710				0	0		
+SLC44A5	Q8NCS7	SLC44A5-snorkel-c	deterministic_computed	719				0	0		
+SLC45A2	Q9UMX9	SLC45A2-snorkel-c	deterministic_computed	530				0	0		
+SLC45A4	Q5BKX6	SLC45A4-snorkel-c	deterministic_computed	768				0	0		
+SLC46A1	Q96NT5	SLC46A1-snorkel-c	deterministic_computed	459				0	0		
+SLC46A2	Q9BY10	SLC46A2-snorkel-c	deterministic_computed	475				0	0		
+SLC46A3	Q7Z3Q1	SLC46A3-snorkel-c	deterministic_computed	461				0	0		
+SLC47A1	Q96FL8	SLC47A1-terminal-c	deterministic_computed	570				0	0		
+SLC47A1	Q96FL8	SLC47A1-terminal_c-570-lit	literature_retrieved	570				0	0		
+SLC49A3	Q6UXD7	SLC49A3-snorkel-c	deterministic_computed	560				0	0		
+SLC49A4	Q96SL1	SLC49A4-snorkel-c	deterministic_computed	478				0	0		
+SLC4A1	P02730	SLC4A1-snorkel-c	deterministic_computed	911				0	0		
+SLC4A10	Q6U841	SLC4A10-snorkel-c	deterministic_computed	1118				0	0		
+SLC4A11	Q8NBS3	SLC4A11-snorkel-c	deterministic_computed	875				0	0		
+SLC4A4	Q9Y6R1	SLC4A4-snorkel-c	deterministic_computed	1079				0	0		
+SLC4A5	Q9BY07	SLC4A5-snorkel-c	deterministic_computed	1137				0	0		
+SLC4A7	Q9Y6M7	SLC4A7-snorkel-c	deterministic_computed	1214				0	0		
+SLC4A8	Q2Y0W8	SLC4A8-snorkel-c	deterministic_computed	1093				0	0		
+SLC52A1	Q9NWF4	SLC52A1-terminal-c	deterministic_computed	448				0	0		
+SLC52A2	Q9HAB3	SLC52A2-terminal-c	deterministic_computed	445				0	0		
+SLC52A3	Q9NQ40	SLC52A3-terminal-c	deterministic_computed	469				0	0		
+SLC52A3	Q9NQ40	SLC52A3-terminal_c-469-lit	literature_retrieved	469				0	0		
+SLC5A1	P13866	SLC5A1-terminal-c	deterministic_computed	664				0	0		
+SLC5A1	P13866	SLC5A1-terminal_c-664-lit	literature_retrieved	664				0	0		
+SLC5A10	A0PJK1	SLC5A10-terminal-c	deterministic_computed	596				0	0		
+SLC5A11	Q8WWX8	SLC5A11-terminal-c	deterministic_computed	675				0	0		
+SLC5A2	P31639	SLC5A2-terminal-c	deterministic_computed	672				0	0		
+SLC5A3	P53794	SLC5A3-terminal-c	deterministic_computed	718				0	0		
+SLC5A3	P53794	SLC5A3-terminal_c-718-lit	literature_retrieved	718				0	0		
+SLC5A4	Q9NY91	SLC5A4-terminal-c	deterministic_computed	659				0	0		
+SLC5A9	Q2M3M2	SLC5A9-terminal-c	deterministic_computed	681				0	0		
+SLC60A1	Q8N468	SLC60A1-snorkel-c	deterministic_computed	514				0	0		
+SLC60A2	Q5TF39	SLC60A2-snorkel-c	deterministic_computed	518				0	0		
+SLC6A1	P30531	SLC6A1-snorkel-c	deterministic_computed	599				0	0		
+SLC6A11	P48066	SLC6A11-snorkel-c	deterministic_computed	632				0	0		
+SLC6A12	P48065	SLC6A12-snorkel-c	deterministic_computed	614				0	0		
+SLC6A13	Q9NSD5	SLC6A13-snorkel-c	deterministic_computed	602				0	0		
+SLC6A14	Q9UN76	SLC6A14-snorkel-c	deterministic_computed	642				0	0		
+SLC6A15	Q9H2J7	SLC6A15-snorkel-c	deterministic_computed	730				0	0		
+SLC6A16	Q9GZN6	SLC6A16-snorkel-c	deterministic_computed	736				0	0		
+SLC6A17	Q9H1V8	SLC6A17-snorkel-c	deterministic_computed	727				0	0		
+SLC6A18	Q96N87	SLC6A18-snorkel-c	deterministic_computed	628				0	0		
+SLC6A19	Q695T7	SLC6A19-snorkel-c	deterministic_computed	634				0	0		
+SLC6A2	P23975	SLC6A2-snorkel-c	deterministic_computed	617				0	0		
+SLC6A20	Q9NP91	SLC6A20-snorkel-c	deterministic_computed	592				0	0		
+SLC6A3	Q01959	SLC6A3-snorkel-c	deterministic_computed	620				0	0		
+SLC6A4	P31645	SLC6A4-snorkel-c	deterministic_computed	630				0	0		
+SLC6A5	Q9Y345	SLC6A5-snorkel-c	deterministic_computed	797				0	0		
+SLC6A6	P31641	SLC6A6-snorkel-c	deterministic_computed	620				0	0		
+SLC6A7	Q99884	SLC6A7-snorkel-c	deterministic_computed	636				0	0		
+SLC6A8	P48029	SLC6A8-snorkel-c	deterministic_computed	635				0	0		
+SLC6A9	P48067	SLC6A9-snorkel-c	deterministic_computed	706				0	0		
+SLC71A1	Q96MC6	SLC71A1-snorkel-c	deterministic_computed	490				0	0		
+SLC7A1	P30825	SLC7A1-snorkel-c	deterministic_computed	629				0	0		
+SLC7A10	Q9NS82	SLC7A10-snorkel-c	deterministic_computed	523				0	0		
+SLC7A11	Q9UPY5	SLC7A11-snorkel-c	deterministic_computed	501				0	0		
+SLC7A14	Q8TBB6	SLC7A14-snorkel-c	deterministic_computed	771				0	0		
+SLC7A2	P52569	SLC7A2-snorkel-c	deterministic_computed	658				0	0		
+SLC7A3	Q8WY07	SLC7A3-snorkel-c	deterministic_computed	619				0	0		
+SLC7A4	O43246	SLC7A4-snorkel-c	deterministic_computed	635				0	0		
+SLC7A5	Q01650	SLC7A5-snorkel-c	deterministic_computed	507				0	0		
+SLC7A6	Q92536	SLC7A6-snorkel-c	deterministic_computed	515				0	0		
+SLC7A8	Q9UHI5	SLC7A8-snorkel-c	deterministic_computed	535				0	0		
+SLC7A9	P82251	SLC7A9-snorkel-c	deterministic_computed	487				0	0		
+SLC8A1	P32418	SLC8A1-terminal-c	deterministic_computed	973				0	0		
+SLC8A1	P32418	SLC8A1-terminal_c-973-lit	literature_retrieved	973				0	0		
+SLC8A2	Q9UPR5	SLC8A2-terminal-c	deterministic_computed	921				0	0		
+SLC8A3	P57103	SLC8A3-terminal-c	deterministic_computed	927				0	0		
+SLC8B1	Q6J4K2	SLC8B1-terminal-c	deterministic_computed	584				0	0		
+SLC9A1	P19634	SLC9A1-snorkel-c	deterministic_computed	815				0	0		
+SLCO1A2	P46721	SLCO1A2-snorkel-c	deterministic_computed	670				0	0		
+SLCO1B1	Q9Y6L6	SLCO1B1-snorkel-c	deterministic_computed	691				0	0		
+SLCO1B3	Q9NPD5	SLCO1B3-snorkel-c	deterministic_computed	702				0	0		
+SLCO1B3-SLCO1B7	F5H094	SLCO1B3-SLCO1B7-snorkel-c	deterministic_computed	687				0	0		
+SLCO1C1	Q9NYB5	SLCO1C1-snorkel-c	deterministic_computed	712				0	0		
+SLCO2A1	Q92959	SLCO2A1-snorkel-c	deterministic_computed	643				0	0		
+SLCO2B1	O94956	SLCO2B1-snorkel-c	deterministic_computed	709				0	0		
+SLCO3A1	Q9UIG8	SLCO3A1-snorkel-c	deterministic_computed	710				0	0		
+SLCO4A1	Q96BD0	SLCO4A1-snorkel-c	deterministic_computed	722				0	0		
+SLCO4C1	Q6ZQN7	SLCO4C1-snorkel-c	deterministic_computed	724				0	0		
+SLCO5A1	Q9H2Y9	SLCO5A1-snorkel-c	deterministic_computed	848				0	0		
+SLCO6A1	Q86UG4	SLCO6A1-snorkel-c	deterministic_computed	719				0	0		
+SPACA4	Q8TDM5	SPACA4-terminal-c	deterministic_computed	124	98-124	97	98-124	1	1	97	0.429
+SPAM1	P38567	SPAM1-terminal-c	deterministic_computed	509	491-509	490	491-509	1	1	483	0.578
+SPNS2	Q8IVW8	SPNS2-snorkel-c	deterministic_computed	549				0	0		
+SPNS3	Q6ZMD2	SPNS3-snorkel-c	deterministic_computed	512				0	0		
+SPRN	Q5BIV9	SPRN-terminal-c	deterministic_computed	151	127-151	126	127-151	1	1	125	0.616
+SPRN	Q5BIV9	SPRN-terminal_c-None-lit	literature_retrieved			126		0	1	125	0.616
+SSPN	Q14714	SSPN-snorkel-c	deterministic_computed	243				0	0		
+ST3GAL1	Q11201	ST3GAL1-terminal-c	deterministic_computed	340				0	0		
+ST3GAL4	Q11206	ST3GAL4-terminal-c	deterministic_computed	333				0	0		
+STEAP3	Q658P3	STEAP3-snorkel-c	deterministic_computed	488				0	0		
+STEAP4	Q687X5	STEAP4-snorkel-c	deterministic_computed	459				0	0		
+STS	P08842	STS-terminal-c	deterministic_computed	583				0	0		
+STT3B	Q8TCJ2	STT3B-terminal-c	deterministic_computed	826				0	0		
+SV2A	Q7L0J3	SV2A-snorkel-c	deterministic_computed	742				0	0		
+SV2B	Q7L1I2	SV2B-snorkel-c	deterministic_computed	683				0	0		
+SV2C	Q496J9	SV2C-snorkel-c	deterministic_computed	727				0	0		
+SVOPL	Q8N434	SVOPL-snorkel-c	deterministic_computed	492				0	0		
+SYNPR	Q8TBG9	SYNPR-snorkel-c	deterministic_computed	265				0	0		
+SYP	P08247	SYP-snorkel-c	deterministic_computed	313				0	0		
+SYPL1	Q16563	SYPL1-snorkel-c	deterministic_computed	259				0	0		
+TCIRG1	Q13488	TCIRG1-snorkel-c	deterministic_computed	830				0	0		
+TCTN3	Q6NUS6	TCTN3-terminal-c	deterministic_computed	607				0	0		
+TECTA	O75443	TECTA-terminal-c	deterministic_computed	2155	2092-2155	2091	2092-2155	1	0		
+TECTB	Q96PL2	TECTB-terminal-c	deterministic_computed	329	306-329	305	306-329	1	0		
+TENM2	Q9NT68	TENM2-terminal-c	deterministic_computed	2774				0	0		
+TENM3	Q9P273	TENM3-terminal-c	deterministic_computed	2699				0	0		
+TEX101	Q9BY14	TEX101-terminal-c	deterministic_computed	249	223-249	222	223-249	1	1	222	0.711
+TFR2	Q9UP52	TFR2-terminal_c-801-lit	literature_retrieved	801				0	0		
+TFRC	P02786	TFRC-terminal-c	deterministic_computed	760				0	0		
+TFRC	P02786	TFRC-terminal_c-760-lit	literature_retrieved	760				0	0		
+THY1	P04216	THY1-terminal-c	deterministic_computed	161	131-161	130	131-161	1	1	132	0.232
+TM2D1	Q9BX74	TM2D1-terminal-c	deterministic_computed	207				0	0		
+TM2D3	Q9BRN9	TM2D3-terminal-c	deterministic_computed	247				0	0		
+TM4SF1	P30408	TM4SF1-snorkel-c	deterministic_computed	202				0	0		
+TM4SF18	Q96CE8	TM4SF18-snorkel-c	deterministic_computed	201				0	0		
+TM4SF20	Q53R12	TM4SF20-snorkel-c	deterministic_computed	229				0	0		
+TM4SF4	P48230	TM4SF4-snorkel-c	deterministic_computed	202				0	0		
+TM4SF5	O14894	TM4SF5-snorkel-c	deterministic_computed	197				0	0		
+TMC2	Q8TDI7	TMC2-snorkel-c	deterministic_computed	906				0	0		
+TMC7	Q7Z402	TMC7-snorkel-c	deterministic_computed	723				0	0		
+TMEM106A	Q96A25	TMEM106A-terminal-c	deterministic_computed	262				0	0		
+TMEM106A	Q96A25	TMEM106A-terminal_c-262-lit	literature_retrieved	262				0	0		
+TMEM106B	Q9NUM4	TMEM106B-terminal-c	deterministic_computed	274				0	0		
+TMEM114	B3SHH9	TMEM114-snorkel-c	deterministic_computed	223				0	0		
+TMEM116	Q8NCL8	TMEM116-snorkel-c	deterministic_computed	245				0	0		
+TMEM134	Q9H6X4	TMEM134-snorkel-c	deterministic_computed	195				0	0		
+TMEM140	Q9NV12	TMEM140-snorkel-c	deterministic_computed	185				0	0		
+TMEM150A	Q86TG1	TMEM150A-snorkel-c	deterministic_computed	271				0	0		
+TMEM150B	A6NC51	TMEM150B-snorkel-c	deterministic_computed	233				0	0		
+TMEM150C	B9EJG8	TMEM150C-snorkel-c	deterministic_computed	249				0	0		
+TMEM171	Q8WVE6	TMEM171-snorkel-c	deterministic_computed	324				0	0		
+TMEM178A	Q8NBL3	TMEM178A-snorkel-c	deterministic_computed	297				0	0		
+TMEM178B	H3BS89	TMEM178B-snorkel-c	deterministic_computed	294				0	0		
+TMEM179B	Q7Z7N9	TMEM179B-snorkel-c	deterministic_computed	219				0	0		
+TMEM182	Q6ZP80	TMEM182-snorkel-c	deterministic_computed	229				0	0		
+TMEM204	Q9BSN7	TMEM204-snorkel-c	deterministic_computed	226				0	0		
+TMEM217	Q8N7C4	TMEM217-snorkel-c	deterministic_computed	229				0	0		
+TMEM219	Q86XT9	TMEM219-snorkel-c	deterministic_computed	240				0	0		
+TMEM225	Q6GV28	TMEM225-snorkel-c	deterministic_computed	225				0	0		
+TMEM229B	Q8NBD8	TMEM229B-snorkel-c	deterministic_computed	167				0	0		
+TMEM231	Q9H6L2	TMEM231-snorkel-c	deterministic_computed	316				0	0		
+TMEM235	A6NFC5	TMEM235-snorkel-c	deterministic_computed	223				0	0		
+TMEM238	C9JI98	TMEM238-snorkel-c	deterministic_computed	176				0	0		
+TMEM245	Q9H330	TMEM245-snorkel-c	deterministic_computed	879				0	0		
+TMEM255A	Q5JRV8	TMEM255A-snorkel-c	deterministic_computed	349				0	0		
+TMEM255B	Q8WV15	TMEM255B-snorkel-c	deterministic_computed	326				0	0		
+TMEM26	Q6ZUK4	TMEM26-snorkel-c	deterministic_computed	368				0	0		
+TMEM266	Q2M3C6	TMEM266-snorkel-c	deterministic_computed	523				0	0		
+TMEM37	Q8WXS4	TMEM37-snorkel-c	deterministic_computed	190				0	0		
+TMEM86A	Q8N2M4	TMEM86A-snorkel-c	deterministic_computed	240				0	0		
+TMEM86B	Q8N661	TMEM86B-snorkel-c	deterministic_computed	226				0	0		
+TMPRSS11A	Q6ZMR5	TMPRSS11A-terminal_c-418-lit	literature_retrieved	418				0	0		
+TMPRSS11B	Q86T26	TMPRSS11B-terminal-c	deterministic_computed	416				0	0		
+TMPRSS11B	Q86T26	TMPRSS11B-terminal_c-416-lit	literature_retrieved	416				0	0		
+TMPRSS11D	O60235	TMPRSS11D-terminal-c	deterministic_computed	418				0	0		
+TMPRSS11E	Q9UL52	TMPRSS11E-terminal-c	deterministic_computed	423				0	0		
+TMPRSS11E	Q9UL52	TMPRSS11E-terminal_c-423-lit	literature_retrieved	423				0	0		
+TMPRSS11F	Q6ZWK6	TMPRSS11F-terminal_c-438-lit	literature_retrieved	438				0	0		
+TMPRSS13	Q9BYE2	TMPRSS13-terminal-c	deterministic_computed	586				0	0		
+TMPRSS13	Q9BYE2	TMPRSS13-terminal_c-586-lit	literature_retrieved	586				0	0		
+TMPRSS15	P98073	TMPRSS15-terminal-c	deterministic_computed	1019				0	0		
+TMPRSS2	O15393	TMPRSS2-terminal_c-492-lit	literature_retrieved	492				0	0		
+TMPRSS5	Q9H3S3	TMPRSS5-terminal-c	deterministic_computed	457				0	0		
+TMPRSS6	Q8IU80	TMPRSS6-terminal-c	deterministic_computed	811				0	0		
+TMPRSS6	Q8IU80	TMPRSS6-terminal_c-811-lit	literature_retrieved	811				0	0		
+TNF	P01375	TNF-terminal_c-233-lit	literature_retrieved	233				0	0		
+TNFSF11	O14788	TNFSF11-terminal-c	deterministic_computed	317				0	0		
+TNFSF13B	Q9Y275	TNFSF13B-terminal-c	deterministic_computed	285				0	0		
+TNFSF15	O95150	TNFSF15-terminal-c	deterministic_computed	251				0	0		
+TNFSF18	Q9UNG2	TNFSF18-terminal-c	deterministic_computed	177				0	0		
+TNFSF18	Q9UNG2	TNFSF18-terminal_c-177-lit	literature_retrieved	177				0	0		
+TNFSF4	P23510	TNFSF4-terminal-c	deterministic_computed	183				0	0		
+TNFSF8	P32971	TNFSF8-terminal-c	deterministic_computed	234				0	0		
+TNFSF8	P32971	TNFSF8-terminal_c-234-lit	literature_retrieved	234				0	0		
+TPCN1	Q9ULQ1	TPCN1-snorkel-c	deterministic_computed	816				0	0		
+TRABD2A	Q86V40	TRABD2A-terminal-c	deterministic_computed	505	481-505	480	481-505	1	1	480	0.656
+TRABD2B	A6NFA1	TRABD2B-terminal-c	deterministic_computed	517	487-517	486	487-517	1	1	490	0.437
+TREH	O43280	TREH-terminal-c	deterministic_computed	583	557-583	556	557-583	1	1	556	0.776
+TRHDE	Q9UKU6	TRHDE-terminal-c	deterministic_computed	1069				0	0		
+TRPA1	O75762	TRPA1-snorkel-c	deterministic_computed	1119				0	0		
+TRPC1	P48995	TRPC1-snorkel-c	deterministic_computed	793				0	0		
+TRPC3	Q13507	TRPC3-snorkel-c	deterministic_computed	921				0	0		
+TRPC4	Q9UBN4	TRPC4-snorkel-c	deterministic_computed	977				0	0		
+TRPC5	Q9UL62	TRPC5-snorkel-c	deterministic_computed	973				0	0		
+TRPC6	Q9Y210	TRPC6-snorkel-c	deterministic_computed	931				0	0		
+TRPC7	Q9HCX4	TRPC7-snorkel-c	deterministic_computed	862				0	0		
+TRPM2	O94759	TRPM2-snorkel-c	deterministic_computed	1503				0	0		
+TRPM4	Q8TD43	TRPM4-snorkel-c	deterministic_computed	1214				0	0		
+TRPM5	Q9NZQ8	TRPM5-snorkel-c	deterministic_computed	1165				0	0		
+TRPM8	Q7Z2W7	TRPM8-snorkel-c	deterministic_computed	1104				0	0		
+TRPV1	Q8NER1	TRPV1-snorkel-c	deterministic_computed	839				0	0		
+TRPV2	Q9Y5S1	TRPV2-snorkel-c	deterministic_computed	764				0	0		
+TRPV3	Q8NET8	TRPV3-snorkel-c	deterministic_computed	790				0	0		
+TRPV4	Q9HBA0	TRPV4-snorkel-c	deterministic_computed	871				0	0		
+TRPV5	Q9NQA5	TRPV5-snorkel-c	deterministic_computed	729				0	0		
+TRPV6	Q9H1D0	TRPV6-snorkel-c	deterministic_computed	765				0	0		
+TSPAN1	O60635	TSPAN1-snorkel-c	deterministic_computed	241				0	0		
+TSPAN10	Q9H1Z9	TSPAN10-snorkel-c	deterministic_computed	355				0	0		
+TSPAN11	A1L157	TSPAN11-snorkel-c	deterministic_computed	253				0	0		
+TSPAN12	O95859	TSPAN12-snorkel-c	deterministic_computed	305				0	0		
+TSPAN13	O95857	TSPAN13-snorkel-c	deterministic_computed	204				0	0		
+TSPAN14	Q8NG11	TSPAN14-snorkel-c	deterministic_computed	270				0	0		
+TSPAN15	O95858	TSPAN15-snorkel-c	deterministic_computed	294				0	0		
+TSPAN16	Q9UKR8	TSPAN16-snorkel-c	deterministic_computed	245				0	0		
+TSPAN17	Q96FV3	TSPAN17-snorkel-c	deterministic_computed	270				0	0		
+TSPAN18	Q96SJ8	TSPAN18-snorkel-c	deterministic_computed	248				0	0		
+TSPAN2	O60636	TSPAN2-snorkel-c	deterministic_computed	221				0	0		
+TSPAN3	O60637	TSPAN3-snorkel-c	deterministic_computed	253				0	0		
+TSPAN31	Q12999	TSPAN31-snorkel-c	deterministic_computed	210				0	0		
+TSPAN33	Q86UF1	TSPAN33-snorkel-c	deterministic_computed	283				0	0		
+TSPAN4	O14817	TSPAN4-snorkel-c	deterministic_computed	238				0	0		
+TSPAN5	P62079	TSPAN5-snorkel-c	deterministic_computed	268				0	0		
+TSPAN6	O43657	TSPAN6-snorkel-c	deterministic_computed	245				0	0		
+TSPAN7	P41732	TSPAN7-snorkel-c	deterministic_computed	249				0	0		
+TSPAN8	P19075	TSPAN8-snorkel-c	deterministic_computed	237				0	0		
+TSPAN9	O75954	TSPAN9-snorkel-c	deterministic_computed	239				0	0		
+UBAC2	Q8NBM4	UBAC2-snorkel-c	deterministic_computed	344				0	0		
+ULBP1	Q9BZM6	ULBP1-terminal-c	deterministic_computed	244	217-244	216	217-244	1	1	222	0.324
+ULBP2	Q9BZM5	ULBP2-terminal-c	deterministic_computed	246	218-246	217	218-246	1	1	216	0.504
+ULBP3	Q9BZM4	ULBP3-terminal-c	deterministic_computed	244	218-244	217	218-244	1	1	217	0.248
+UMOD	P07911	UMOD-terminal-c	deterministic_computed	640	615-640	614	615-640	1	1	589	0.368
+UNC93A	Q86WB7	UNC93A-snorkel-c	deterministic_computed	457				0	0		
+UNC93B1	Q9H1C4	UNC93B1-snorkel-c	deterministic_computed	597				0	0		
+UPK1A	O00322	UPK1A-snorkel-c	deterministic_computed	258				0	0		
+UPK1B	O75841	UPK1B-snorkel-c	deterministic_computed	260				0	0		
+UPK3B	Q9BT76	UPK3B-terminal-c	deterministic_computed	320				0	0		
+VANGL1	Q8TAA9	VANGL1-snorkel-c	deterministic_computed	524				0	0		
+VANGL2	Q9ULK5	VANGL2-snorkel-c	deterministic_computed	521				0	0		
+VNN1	O95497	VNN1-terminal-c	deterministic_computed	513	492-513	491	492-513	1	1	487	0.343
+VNN2	O95498	VNN2-terminal-c	deterministic_computed	520	494-520	493	494-520	1	1	497	0.289
+VTCN1	Q7Z7D3	VTCN1-terminal-c	deterministic_computed	282				0	0		
+VTCN1	Q7Z7D3	VTCN1-terminal_c-282-lit	literature_retrieved	282				0	0		
+XK	P51811	XK-snorkel-c	deterministic_computed	444				0	0		
+XKR3	Q5GH77	XKR3-snorkel-c	deterministic_computed	459				0	0		
+XKR4	Q5GH76	XKR4-snorkel-c	deterministic_computed	650				0	0		
+XKR8	Q9H6D3	XKR8-snorkel-c	deterministic_computed	395				0	0		
+XKR9	Q5GH70	XKR9-snorkel-c	deterministic_computed	373				0	0		
+XPNPEP2	O43895	XPNPEP2-terminal-c	deterministic_computed	674	650-674	649	650-674	1	1	649	0.443
+XPR1	Q9UBH6	XPR1-snorkel-c	deterministic_computed	696				0	0		
+ZACN	Q401N2	ZACN-terminal-c	deterministic_computed	412				0	0		
+ZDHHC11	Q9H8X9	ZDHHC11-snorkel-c	deterministic_computed	412				0	0		
+ZDHHC11B	P0C7U3	ZDHHC11B-snorkel-c	deterministic_computed	371				0	0		
+ZDHHC5	Q9C0B5	ZDHHC5-snorkel-c	deterministic_computed	715				0	0		
+ZFYVE27	Q5T4F4	ZFYVE27-snorkel-c	deterministic_computed	411				0	0		
+ZNRF4	Q8WWF5	ZNRF4-snorkel-c	deterministic_computed	429				0	0		

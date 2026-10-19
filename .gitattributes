@@ -211,3 +211,17 @@ data/processed/onedb_trim_rescue_v1/README.md -filter -merge text
 data/processed/onedb_trim_rescue_v1/deep_dive_cohort.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/deterministic_gaps.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/gene_list_optcut_zerodb.tsv -filter -merge text
+
+# Tag-site run intermediates + the GPI terminal audit. `data/analysis/**` above
+# puts everything in LFS, which makes a README an LFS pointer on github.com and
+# in the PR diff — prose nobody can read, which defeats the point of writing it.
+# Same split as deep_dive_concordance_v1: prose and the small audit TSV stay
+# plain text, the gzipped per-run records stay in LFS (binary, 74 files, 2.2 MB,
+# not meant to be diffed).
+# No -diff on the prose: with it, git reports "Bin 0 -> N bytes" and the text is
+# invisible in review, which is the same failure one layer along.
+data/analysis/tag_site_enrichment_v1/*.md -filter -merge text
+data/analysis/tag_site_gpi_terminal/*.md -filter -merge text
+# 1,068 rows / 76 KB: -diff so it isn't inlined, but un-LFS'd so a reader
+# fetching the raw URL gets the TSV instead of a pointer stub.
+data/analysis/tag_site_gpi_terminal/*.tsv -filter -diff -merge text
