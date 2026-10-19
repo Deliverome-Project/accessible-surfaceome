@@ -107,9 +107,90 @@ _COLS: tuple[str, ...] = (
 )
 
 
+#: Column name -> declared SQL type, parsed from the CREATE statement so the
+#: two cannot drift. A column added to the DDL is therefore added to a live
+#: table on the next publish.
+def _declared_columns() -> dict[str, str]:
+    create = next(s for s in DDL if "CREATE TABLE" in s.upper())
+    body = create[create.index("(") + 1 : create.rindex(")")]
+    out: dict[str, str] = {}
+    depth = 0
+    field = ""
+    for ch in body:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        if ch == "," and depth == 0:
+            fields, field = field, ""
+            _collect(fields, out)
+            continue
+        field += ch
+    _collect(field, out)
+    return out
+
+
+def _collect(field: str, out: dict[str, str]) -> None:
+    line = field.strip().split("--")[0].strip()
+    if not line:
+        return
+    head = line.split()[0].upper()
+    if head in {"PRIMARY", "UNIQUE", "FOREIGN", "CHECK", "CONSTRAINT"}:
+        return
+    parts = line.split(None, 1)
+    if len(parts) == 2:
+        out[parts[0]] = parts[1].strip()
+
+
 def ensure_table(client: D1Client) -> None:
-    """Idempotently create the table + indexes (one statement per call)."""
-    for stmt in DDL:
+    """Create the table + indexes, then ADDITIVELY backfill missing columns.
+
+    ``CREATE TABLE IF NOT EXISTS`` is a no-op on a table that exists, so a
+    column added to the DDL never reaches a live database. That drift was real:
+    ``candidate_id``, ``library``, ``numbered_against`` and
+    ``loop_run_position`` were in the DDL and in ``_COLS`` while the live table
+    had 33 of the 37 columns the writer sends, so every enrichment publish
+    would have failed on ``no such column``. It was found only because a
+    publish was about to be run for money.
+
+    Additive ONLY: adds what the DDL declares and the table lacks. Never drops,
+    renames or retypes, so a rollback or another writer's column survives, and
+    existing rows take NULL in the new columns — correct, since a pre-enrichment
+    row has no ``candidate_id``.
+    """
+    # Order matters: table, then the column backfill, then indexes. An index
+    # names columns, so creating it before the backfill fails on exactly the
+    # column the backfill is about to add.
+    creates = [s for s in DDL if "CREATE TABLE" in s.upper()]
+    rest = [s for s in DDL if "CREATE TABLE" not in s.upper()]
+    for stmt in creates:
+        client.query(stmt, [])
+    existing = {
+        row["name"]
+        for row in client.query("PRAGMA table_info(tag_site_public);", [])
+    }
+    for name, sql_type in _declared_columns().items():
+        if name in existing:
+            continue
+        upper = sql_type.upper()
+        if "NOT NULL" in upper and "DEFAULT" not in upper:
+            # SQLite refuses ADD COLUMN for NOT NULL without a default on a
+            # populated table, and it is right to: there is no value to give
+            # the existing rows. That needs a real create-copy-verify-rename,
+            # as `tag_site_genes.migrate_gene_key` does. Raise rather than skip,
+            # because skipping leaves the writer sending a column that does not
+            # exist and the publish fails later with a less legible error.
+            raise RuntimeError(
+                f"tag_site_public lacks NOT NULL column {name!r} ({sql_type}); "
+                "ADD COLUMN cannot supply a value for existing rows. This needs "
+                "a create-copy-verify-rename migration, not a backfill."
+            )
+        # One statement per call: D1's HTTP API rejects multi-statement batches.
+        client.query(
+            f"ALTER TABLE tag_site_public ADD COLUMN {name} {sql_type};", []
+        )
+        log.info("tag_site_public: added missing column %s", name)
+    for stmt in rest:
         client.query(stmt, [])
 
 

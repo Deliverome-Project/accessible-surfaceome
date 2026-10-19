@@ -14,7 +14,7 @@ from .disorder import disorder_candidates
 from .disorder_tracks import consensus as disorder_consensus
 from .emit import emit_tag_sites_json
 from .isoform import classify_isoform_sites
-from .features import ca_coords, feature_distances
+from .features import ca_coords, feature_distances, hazard_separations
 from .signals import (
     merge_signals,
     write_signals,
@@ -35,6 +35,7 @@ def compute_signals(
     ortholog_seqs: list[str],
     hazard_res: set[int],
     disorder_tracks: dict[str, list[float]] | None = None,
+    propeptide: tuple[int, int] | None = None,
 ) -> dict[str, Any]:
     """Build the full per-residue signal dict the gates consume, all from
     source: structural signals off the AF model, ortholog-MSA conservation, and
@@ -45,6 +46,11 @@ def compute_signals(
     published predictors, which is worth doing: scored against Tedman's 112 validated
     junctions the predictors land a median 3 aa away and the pLDDT proxy 40 aa."""
     extra: dict[str, Any] = {}
+    if propeptide:
+        # A cleaved C-terminus cannot carry a tag; the terminal lane refuses one
+        # there. Absent means "not annotated", which is not the same as "no
+        # propeptide" — see `features.c_terminal_propeptide`.
+        extra["propeptide"] = propeptide
     if disorder_tracks:
         extra["disorder"] = disorder_consensus(disorder_tracks, len(sequence))
     return merge_signals(
@@ -58,6 +64,11 @@ def compute_signals(
             "topology": topology,
             "sequence": sequence,
             "feature_dist": feature_distances(pdb_path, hazard_res),
+            # Sequence separation to the nearest hazard, reported ALONGSIDE the
+            # spatial distance rather than folded into it. "A functional atom
+            # is close in space" and "a functional residue is adjacent in the
+            # chain" are different claims and only the first is a clash.
+            "hazard_sep": hazard_separations(pdb_path, hazard_res),
             "ca": ca_coords(pdb_path),  # for the terminus-proximity filter (3D)
         },
         ortholog_conservation(sequence, ortholog_seqs),  # conservation + gap_freq
@@ -196,6 +207,7 @@ def run_gene(
     hazard_res: set[int],
     out_dir: str | Path,
     signals_dir: str | Path | None = None,
+    propeptide: tuple[int, int] | None = None,
 ) -> dict[str, Any]:
     """End-to-end for one gene: compute signals → both gates → representative
     selection (so a dense ectodomain doesn't emit hundreds of adjacent sites) →
@@ -204,13 +216,21 @@ def run_gene(
     ``signals_dir`` additionally writes the per-residue arrays the gates consumed.
     Every gate here is a cutoff on those arrays, and recomputing them means refetching
     an AlphaFold model and rerunning DSSP, so persisting them is what makes a later
-    re-threshold a local operation rather than a rerun of the expensive half."""
+    re-threshold a local operation rather than a rerun of the expensive half.
+
+    ``propeptide`` is the span maturation removes from the C-terminus, from
+    ``features.cleaved_c_terminus``. The terminal lane refuses a C-terminal tag
+    inside it, so omitting it does not fail loudly — it silently publishes a tag
+    at a residue the cell cuts off, which is what 115 GPI genes currently carry.
+    The caller supplies it because the caller already holds the UniProt features
+    it is read from."""
     signals = compute_signals(
         pdb_path,
         topology=topology,
         sequence=sequence,
         ortholog_seqs=ortholog_seqs,
         hazard_res=hazard_res,
+        propeptide=propeptide,
     )
     if signals_dir is not None:
         write_signals(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc,

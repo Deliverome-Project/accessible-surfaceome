@@ -91,5 +91,41 @@ const screenValidated = renderableTagSites([
 expect("screen_validated N-terminal site renders", screenValidated.length, 1);
 expect("screen_validated category carried", screenValidated[0]?.category, "screen_validated");
 
+// literature_enriched must render. The enrichment pass publishes BESIDE
+// literature_retrieved rather than over it, and the provenance was added to the
+// TaggedSiteProvenance union without being added to RENDERED or to the four
+// scattered `=== "literature_retrieved"` checks — so the pass stored and served
+// sites that no surface displayed. AQP4 after 141 and FZD1 after 69 are the two
+// positioned sites this unblocks.
+const enriched = renderableTagSites([
+  site({ site_id: "AQP4-enr", gene_symbol: "AQP4", provenance: "literature_enriched",
+         site_kind: "internal", insert_after_residue: 141, extracellular: true }),
+], 323);
+expect("literature_enriched renders", enriched.length, 1);
+expect("literature_enriched residue carried", enriched[0]?.residue, 141);
+expect("literature_enriched colours as literature", enriched[0]?.category, "literature");
+
+// ...and is held to the same surface-accessibility rule as literature_retrieved:
+// an intracellular published tag is not a surface site, except a terminal_n one
+// (placed after signal-peptide cleavage, so its residue may read "signal").
+const enrichedIntra = renderableTagSites([
+  site({ site_id: "intra", provenance: "literature_enriched", site_kind: "internal",
+         insert_after_residue: 50, extracellular: false }),
+], 300);
+expect("intracellular literature_enriched dropped", enrichedIntra.length, 0);
+
+const enrichedNterm = renderableTagSites([
+  site({ site_id: "nterm", provenance: "literature_enriched", site_kind: "terminal_n",
+         insert_after_residue: 22, extracellular: false, topology_state: "S" }),
+], 300);
+expect("terminal_n literature_enriched kept despite !extracellular", enrichedNterm.length, 1);
+
+// validated_literature stays unrendered — widening RENDERED must not widen it.
+const validationOnly = renderableTagSites([
+  site({ site_id: "vl", provenance: "validated_literature", site_kind: "internal",
+         insert_after_residue: 100, extracellular: true }),
+], 300);
+expect("validated_literature still dropped", validationOnly.length, 0);
+
 if (failures > 0) { console.error(`\n${failures} assertion(s) failed`); process.exit(1); }
-console.log("\nall assertions passed (incl. screen_validated)");
+console.log("\nall assertions passed (incl. screen_validated + literature_enriched)");

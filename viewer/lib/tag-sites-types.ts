@@ -18,6 +18,22 @@ export type TaggedSiteProvenance =
   | "screen_validated"
   | "validated_literature"; // validation-only; never rendered
 
+/** Provenances that are a literature read, whichever pass produced them.
+ *
+ *  Use this instead of `=== "literature_retrieved"`. That equality was written
+ *  in five places, `literature_enriched` was later added to the union above,
+ *  and none of the five learned about it — so the enrichment pass stored and
+ *  served sites that no surface rendered. A predicate here is the one place a
+ *  future provenance has to be classified. */
+export const LITERATURE_PROVENANCES = [
+  "literature_retrieved",
+  "literature_enriched",
+] as const satisfies readonly TaggedSiteProvenance[];
+
+export function isLiteratureProvenance(p: TaggedSiteProvenance): boolean {
+  return (LITERATURE_PROVENANCES as readonly string[]).includes(p);
+}
+
 export type DeterministicPath = "disorder" | "surface_loop" | "terminal" | "snorkel";
 export type TaggedSiteKind = "terminal_n" | "terminal_c" | "internal";
 export type Confidence = "high" | "medium" | "low";

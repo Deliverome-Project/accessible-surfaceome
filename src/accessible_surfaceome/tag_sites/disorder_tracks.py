@@ -10,13 +10,34 @@ median **40 aa** from his junction, while the predictors put theirs at **3 aa**:
     alphafold-disorder   median  2 aa   76%
     pLDDT run (lane)     median 40 aa   15%
 
+**This table is an N-TERMINAL result and does not transfer to the internal disorder
+lane.** All 946 rows of ``data/tag_sites/tedman_gpcr_controls.tsv`` are
+``site_kind: terminal_n`` -- signal-peptide-proximal placements, which are
+``sp_interval``/``terminal`` territory. Scored instead on the 25 ``internal`` rows of
+``positive_controls.tsv``, with real AFDB models and real UniProt hazard vetoes, the
+proxy and both predictor variants place *indistinguishably*: median 2 aa to the nearest
+published site in all three, paired sign test p=0.508. What the rank transform does buy
+internally is the **ranking** -- top-ranked site a median 79 aa out on the proxy vs 11 aa
+rank-transformed (p=0.006, n=15) -- not the coverage. See
+``tests/test_tag_sites_signal_wiring.py`` for why the lane is still on the proxy, and
+why simply wiring this module would make the catalogue worse rather than better.
+
 AlphaFold-disorder *is* 1 - pLDDT, so the gap is not the signal but how it is read: a
 contiguous-run threshold versus a within-protein rank. Both are fixed here by scoring on
-rank.
+rank -- note that ``consensus`` still feeds a *run* threshold in the lane
+(``DISORDER_PCT_MIN``), so this replaces which residues the run admits, not the run.
 
 NetSurfP-3.0 is weighted highest because it is the predictor Tedman used, and it scores
 its disorder over the first 400 residues only -- which is where a signal-peptide-proximal
-tag goes, so the window is a match rather than a limitation.
+tag goes, so the window is a match rather than a limitation **for the N-terminal lanes**.
+
+**For an INTERNAL site it is a live defect.** 1,591 of the 2,470 cohort genes (64%) are
+longer than that window, median length 698 aa, so for two thirds of the cohort the
+highest-weighted track is simply absent over most of the protein: ``consensus`` silently
+drops from weight 2+1+1 to 1+1 at residue 400, and NetSurfP-3.0's
+``within_protein_percentile`` is a within-*first-400* percentile that is not on the same
+scale as the other two tracks' whole-protein ones. Any future consumer of ``consensus``
+inherits this, so fix it there rather than at the call site.
 """
 
 from __future__ import annotations
@@ -88,6 +109,16 @@ def consensus(tracks: dict[str, list[float]], length: int) -> dict[int, float]:
     is what keeps NetSurfP-3.0 usable: it stops at 400 residues by design, and dropping it
     for any longer protein would discard the most informative track exactly where the
     signal-peptide-proximal sites are.
+
+    **Known defect, measured, not fixed here.** That graceful degradation is silent and it
+    is not scale-preserving. For a protein longer than 400 residues -- 64% of the cohort,
+    median 698 aa -- the weighted mean steps discontinuously at residue 400 (2+1+1 ->
+    1+1), and NetSurfP-3.0 contributes a within-first-400 percentile while the other two
+    contribute whole-protein ones, so the three are averaged on different scales. The
+    effect is to make residues just inside the window incomparable to residues just
+    outside it. Fixing it means either renormalizing each track over a common support or
+    weighting by coverage; both change every consensus value, so it is deliberate work
+    rather than a patch. See ``tests/test_tag_sites_signal_wiring.py``.
     """
     pct = {p: within_protein_percentile(t) for p, t in tracks.items() if t}
     if not pct:

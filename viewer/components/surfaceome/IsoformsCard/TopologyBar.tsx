@@ -1,7 +1,8 @@
 import { MEMBRANE_COLOR, RESIDUE_HIGHLIGHT_COLOR, TOPOLOGY_COLORS } from "../../../lib/structure-viewer-types";
 import type { MouseEvent } from "react";
-import { CATEGORY_LABEL, CATEGORY_TOKEN } from "../../../lib/tag-sites-types";
+import { CATEGORY_LABEL, CATEGORY_TOKEN, isLiteratureProvenance } from "../../../lib/tag-sites-types";
 import type { TagSiteCategory } from "../../../lib/tag-sites-types";
+import type { RenderedProvenance } from "../../../lib/tag-sites-overlay";
 import styles from "./TopologyBar.module.css";
 
 interface Props {
@@ -44,7 +45,7 @@ interface Props {
 export interface TopologyPin {
   siteId: string;
   leftPct: number; // 0..100
-  provenance: "literature_retrieved" | "deterministic_computed" | "screen_validated";
+  provenance: RenderedProvenance;
   tagType: string;
   /** 1-indexed residue the pin marks; lets a click on the pin select it. */
   residue?: number;
@@ -213,14 +214,14 @@ export function TopologyBar({
               ? `var(--tag-site-isoform-${pin.classification})`
               : pin.category
                 ? `var(${CATEGORY_TOKEN[pin.category]})`
-                : `var(--tag-site-${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`,
+                : `var(--tag-site-${isLiteratureProvenance(pin.provenance) ? "literature" : "deterministic"})`,
           }}
           title={
             (pin.classification
               ? `${pin.tagType} (${pin.classification})${pin.note ? " — " + pin.note : ""}`
               : pin.category
                 ? `${pin.tagType} (${CATEGORY_LABEL[pin.category]})`
-                : `${pin.tagType} (${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`) +
+                : `${pin.tagType} (${isLiteratureProvenance(pin.provenance) ? "literature" : "deterministic"})`) +
             (pin.residue != null ? ` · residue ${pin.residue}` : "")
           }
         />

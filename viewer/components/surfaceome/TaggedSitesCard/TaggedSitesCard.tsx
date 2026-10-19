@@ -13,6 +13,7 @@ import type {
 import {
   CATEGORY_HEX,
   CATEGORY_LABEL,
+  isLiteratureProvenance,
   tagSiteCategory,
 } from "../../../lib/tag-sites-types";
 import styles from "./TaggedSitesCard.module.css";
@@ -606,8 +607,10 @@ export interface TaggedSitesCardProps {
  * protein. Three provenances, matching the structure-viewer overlay legend:
  *   • screen_validated — control tag sites confirmed by a parallel
  *     surface-display screen (e.g. Tedman et al.), with a measured PME;
- *   • literature_retrieved — tags published + validated in the literature
- *     (hybrid lit-search + web_search agent), with linked sources;
+ *   • literature_retrieved / literature_enriched — tags published + validated
+ *     in the literature (hybrid lit-search + web_search agent), with linked
+ *     sources; the enrichment pass publishes BESIDE the first read, not over
+ *     it, and both render in this section;
  *   • deterministic_computed — computed candidate insertion points from the
  *     disorder / surface-loop pipeline (pLDDT + RSA/DSSP, feature-veto).
  * All columns are sortable; tag/compartment/confidence render as chips.
@@ -620,7 +623,7 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   // topology reads "signal").
   const lit = sites.filter(
     (s) =>
-      s.provenance === "literature_retrieved" &&
+      isLiteratureProvenance(s.provenance) &&
       (s.extracellular || s.site_kind === "terminal_n"),
   );
   // One representative row per loop (mirrors the 3D overlay's collapse) so a long

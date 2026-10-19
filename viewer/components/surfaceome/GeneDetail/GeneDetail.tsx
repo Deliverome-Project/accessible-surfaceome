@@ -46,6 +46,7 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import type { TriageHeadlinePayload } from "../../../lib/triage-headline";
 import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
+import { isLiteratureProvenance } from "../../../lib/tag-sites-types";
 import type { Revisions } from "../../../lib/revisions";
 import styles from "./GeneDetail.module.css";
 
@@ -257,13 +258,13 @@ export function GeneDetail({
       render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
     // Tag sites — its OWN tab (distinct from Internalization). Shown only
-    // when the gene has at least one RENDERED tag site (literature_retrieved,
+    // when the gene has at least one RENDERED tag site (any literature pass,
     // deterministic_computed, or screen_validated); validated_literature is
     // validation-only and never rendered, matching `renderableTagSites`.
     ...(taggedSites?.has_data &&
     taggedSites.sites.some(
       (s) =>
-        s.provenance === "literature_retrieved" ||
+        isLiteratureProvenance(s.provenance) ||
         s.provenance === "deterministic_computed" ||
         s.provenance === "screen_validated",
     )

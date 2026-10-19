@@ -209,24 +209,160 @@ def ca_coords(pdb_path: str) -> dict[int, tuple[float, float, float]]:
     return out
 
 
-def feature_distances(pdb_path: str, hazard_res: set[int]) -> dict[int, float]:
-    """Per-residue minimum CA-CA distance (Å) to any hazard residue on the
-    model. Residues with no hazard in the structure get ``inf`` (fully clear)."""
+#: Sequence separation at or below which a CA-CA distance is set by backbone
+#: geometry rather than by the fold. At separation 1 the Ca-Ca virtual bond
+#: fixes it at 3.81-3.86 A whatever the structure does, so a residue beside a
+#: hazard reads ~3.8 A and would be vetoed by peptide geometry alone.
+#:
+#: Calibrated, not chosen: over 185 published internal tag sites, 9 of 130
+#: junctions sit within 2 residues of their cysteine, and the spatial-only
+#: minima (separation > 2) are CA-CA 5.29 / CA-SG 5.04 / heavy-SG 4.13. The
+#: load-bearing row is ADCYAP1R1 D24 — surface_and_function, position
+#: validated, ONE residue from bonded C25 — so adjacency to a bonded cysteine
+#: is a configuration that demonstrably displays and functions.
+ADJACENCY_SEP = 2
+
+
+def _ca_by_residue(pdb_path: str) -> dict[int, Any]:
     from Bio.PDB import PDBParser
 
     struct = PDBParser(QUIET=True).get_structure("m", str(pdb_path))
-    ca: dict[int, Any] = {}
-    for res in struct.get_residues():
-        if "CA" in res:
-            ca[res.id[1]] = res["CA"].coord
-    hazard_coords = [ca[h] for h in hazard_res if h in ca]
+    return {
+        res.id[1]: res["CA"].coord for res in struct.get_residues() if "CA" in res
+    }
+
+
+def feature_distances(pdb_path: str, hazard_res: set[int]) -> dict[int, float]:
+    """Per-residue minimum CA-CA distance (Å) to a SPATIALLY distinct hazard.
+
+    Hazards within ``ADJACENCY_SEP`` residues in sequence are excluded, because
+    their distance is dictated by the backbone rather than by the fold — see
+    that constant. A residue whose only hazards are its sequence neighbours
+    gets ``inf``: it has no spatial hazard, and reporting 3.8 A there is what
+    rejected ACKR3 P35 as a defect (its 3.83 A reading is C34 at separation 1;
+    its nearest spatial bonded cysteine is C287 at 7.63 A).
+
+    Adjacency is not discarded — ``hazard_separations`` reports it, so a gate or
+    a ranking can weigh "sits beside a functional residue" on its own terms
+    instead of smuggling it in as a distance.
+    """
+    ca = _ca_by_residue(pdb_path)
+    present = sorted(h for h in hazard_res if h in ca)
     out: dict[int, float] = {}
+    hazards = set(present)
     for r, coord in ca.items():
-        if not hazard_coords:
+        if r in hazards:
+            # The residue IS the hazard. Kept at 0.0 so the gate still refuses
+            # to insert AT a functional residue — that exclusion is categorical
+            # ("do not tag the glycosylation sequon"), not a threshold on a
+            # continuous signal, so it is the one kind of veto worth having.
+            # Without this the split reports the NEXT hazard's distance and a
+            # sequon reads as clear: TFRC N251 went to 19.4 A.
+            out[r] = 0.0
+            continue
+        spatial = [ca[h] for h in present if abs(h - r) > ADJACENCY_SEP]
+        if not spatial:
             out[r] = float("inf")
             continue
-        out[r] = min(float(((coord - h) ** 2).sum() ** 0.5) for h in hazard_coords)
+        out[r] = min(float(((coord - h) ** 2).sum() ** 0.5) for h in spatial)
     return out
+
+
+def hazard_separations(
+    pdb_path: str, hazard_res: set[int]
+) -> dict[int, int | None]:
+    """Per-residue SEQUENCE separation to the nearest hazard residue.
+
+    ``0`` means the residue IS a hazard; ``None`` means the protein has none.
+    Reported alongside the spatial distance rather than folded into it, because
+    the two are different claims: one says "a functional atom is close in
+    space", the other says "a functional residue is adjacent in the chain", and
+    only the first is a clash.
+    """
+    ca = _ca_by_residue(pdb_path)
+    present = sorted(h for h in hazard_res if h in ca)
+    return {
+        r: (min(abs(h - r) for h in present) if present else None) for r in ca
+    }
+
+
+def c_terminal_propeptide(
+    features: list[dict[str, Any]], length: int
+) -> tuple[int, int] | None:
+    """The Propeptide span covering the C-terminus, from UniProt features.
+
+    A GPI-anchored protein's C-terminal propeptide is cleaved at the omega site
+    and replaced by the anchor. The DeepTMHMM string ends extracellular either
+    way, so without this the terminal lane proposes a tag at a residue the cell
+    removes: 20 of 21 published ``terminal_c`` rows across 19 GPI proteins sat
+    inside one of these spans, each at the full precursor length.
+
+    Only a span covering ``length`` is returned — an N-terminal or internal
+    propeptide says nothing about that end.
+
+    NOTE on coverage, by analogy with disulfides: 29.9% of model-formed bonds
+    carry no UniProt ``DISULFID``, and the same question applies here. "No
+    Propeptide annotated" is not "no propeptide", so this is a lower bound on
+    the affected population and a predicted omega site would widen it.
+    """
+    for feat in features:
+        if feat.get("type") != "Propeptide":
+            continue
+        loc = feat.get("location") or {}
+        start = (loc.get("start") or {}).get("value")
+        end = (loc.get("end") or {}).get("value")
+        if isinstance(start, int) and isinstance(end, int) and start <= length <= end:
+            return (start, end)
+    return None
+
+
+def gpi_omega_site(features: list[dict[str, Any]]) -> int | None:
+    """The GPI-anchor attachment residue from a ``Lipidation`` feature, if
+    annotated. Reported for provenance: it sits one residue before the
+    propeptide start in every case measured, so it corroborates the span rather
+    than replacing it."""
+    for feat in features:
+        if feat.get("type") != "Lipidation":
+            continue
+        if "GPI" not in (feat.get("description") or ""):
+            continue
+        value = ((feat.get("location") or {}).get("start") or {}).get("value")
+        if isinstance(value, int):
+            return value
+    return None
+
+
+def cleaved_c_terminus(
+    features: list[dict[str, Any]], length: int
+) -> tuple[int, int] | None:
+    """The span removed from the C-terminus during maturation, from either
+    annotation UniProt may carry.
+
+    A curated ``Propeptide`` covering the terminus is preferred. Failing that, a
+    GPI ``Lipidation`` establishes the same cleavage: the omega residue carries
+    the anchor and SURVIVES, so the removed span begins one residue after it.
+
+    Both paths matter. Over the 115 deterministic ``terminal_c`` rows whose gene
+    is GPI-anchored by NetGPI, 110 carry the Propeptide and 2 more (ACHE, MSLN)
+    carry only the Lipidation — two genes for no extra request, since the caller
+    already fetched this list for the hazard veto.
+
+    The remaining 3 are annotated in neither, and NetGPI is deliberately NOT
+    wired in to reach them: its omega sites are given in whichever form was
+    submitted, not the canonical frame these records are numbered against, and
+    it is wrong where it disagrees (GPC5 at 27 of 572 residues). Resolving a
+    predicted site into this frame is the sha256-of-sequence problem, not a
+    column read, and 3 genes does not pay for it.
+    """
+    span = c_terminal_propeptide(features, length)
+    if span is not None:
+        return span
+    omega = gpi_omega_site(features)
+    if omega is None or omega >= length:
+        # omega == length is an anchor at the last residue: nothing is removed,
+        # and an empty range must not read as a cleavage.
+        return None
+    return (omega + 1, length)
 
 
 def fetch_uniprot_features(acc: str, http: Any | None = None) -> list[dict[str, Any]]:

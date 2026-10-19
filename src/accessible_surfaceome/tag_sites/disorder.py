@@ -32,10 +32,14 @@ def _flexible_runs(signals: dict[str, Any], topo: dict[int, str]) -> list[list[i
     """Maximal contiguous extracellular runs that the disorder predictors call flexible.
 
     Prefers the consensus of metapredict, NetSurfP-3.0 and AlphaFold-disorder over raw
-    pLDDT. They are not interchangeable in practice: scoring the predictors by
-    within-protein rank puts the top extracellular site a median 3 aa from Tedman's
-    junction, where a contiguous pLDDT<70 run puts it 40 aa away. pLDDT remains the
-    fallback for genes with no published track.
+    pLDDT -- but note that **nothing supplies ``signals["disorder"]``**, so every
+    published site took the pLDDT branch below. That is deliberate, not an oversight:
+    the 3-aa-vs-40-aa comparison that motivated the consensus is scored on Tedman's
+    junctions, all of which are ``terminal_n``. On the 25 curated *internal* controls
+    the two place indistinguishably (median 2 aa either way, p=0.508), and the consensus
+    threshold admits the top 40% of every protein by rank, which would put a third of
+    this lane's sites above pLDDT 70 under a rationale that says the opposite. The
+    measurement and the reasoning are in ``tests/test_tag_sites_signal_wiring.py``.
     """
     disorder = signals.get("disorder") or {}
     if disorder:
