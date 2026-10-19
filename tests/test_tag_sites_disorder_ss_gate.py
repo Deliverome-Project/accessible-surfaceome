@@ -1,4 +1,4 @@
-"""The disorder lane must ask the model whether a residue is in a helix.
+"""The disorder lane must ASK the model about secondary structure — and not veto on it.
 
 `surface_loop_candidates` requires `ss in LOOP_SS` from pydssp on the AlphaFold
 model. `disorder_candidates` asked for neither: it gated on (a) membership in a
@@ -61,19 +61,39 @@ def picks(ss: dict[int, str]) -> set[int]:
     }
 
 
-def test_a_helical_residue_in_a_flexible_run_is_not_a_candidate() -> None:
-    """The defect. Low pLDDT plus a helix is the 12% the lane's premise misses,
-    and a 51-aa cassette into a helix is the failure this gate exists to stop."""
-    ss = {r: ("H" if 24 <= r <= 28 else "C") for r in range(1, 41)}
-    assert picks(ss).isdisjoint({24, 25, 26, 27, 28})
+def ranked(ss: dict[int, str]) -> list[int]:
+    return [
+        s["insert_after_residue"]
+        for s in disorder_candidates(
+            signals(ss), gene_symbol="GENEX", uniprot_acc="P00000"
+        )
+    ]
 
 
-def test_the_coil_residues_of_the_same_run_still_pass() -> None:
-    """The gate must not empty the lane — it is the only path that reaches a
-    long disordered ectodomain, where the surface-loop gate's loop-length floor
-    has nothing to measure."""
+def test_a_helical_anchor_is_ranked_LAST_not_dropped() -> None:
+    """The corpus refuses the veto. Of 185 published internal residue-pinned
+    sites, 31% sit in a DSSP helix or strand, and 30% of the FUNCTION-VALIDATED
+    ones do: ATP1A1 119/318, ABCB1 101/320/736/961, ATP1A3 109, GABRA1 31,
+    ABCC1 4, SCNN1A 168, ADCYAP1R1 24, KCNQ1 146 — every one
+    surface_and_function, every one H. A hard gate rejects twenty working sites,
+    which is the same mistake as vetoing a disulfide closure outright.
+
+    So the signal ranks instead. Those precedents are small tags (HA 9 aa,
+    FLAG 8, c-Myc 10) and license a small epitope in a helix, not a 51-aa
+    cassette — the cargo decides, and the caller is the one that knows it."""
     ss = {r: ("H" if 24 <= r <= 28 else "C") for r in range(1, 41)}
-    assert {20, 21, 22, 23} <= picks(ss)
+    order = ranked(ss)
+    assert set(order) == set(RUN), "nothing may be dropped"
+    assert set(order[-5:]) == {24, 25, 26, 27, 28}, "structured anchors go last"
+
+
+def test_the_coil_residues_of_the_same_run_rank_above_the_helix() -> None:
+    """Which is the whole point of ranking rather than vetoing: a protein with
+    coil available gets coil, and a protein whose only option is structured
+    still gets a site rather than nothing."""
+    ss = {r: ("H" if 24 <= r <= 28 else "C") for r in range(1, 41)}
+    order = ranked(ss)
+    assert {20, 21, 22, 23} <= set(order[:7])
 
 
 def test_a_fully_coil_run_is_untouched() -> None:
@@ -82,11 +102,13 @@ def test_a_fully_coil_run_is_untouched() -> None:
     assert picks({r: "C" for r in range(1, 41)}) == set(RUN)
 
 
-def test_a_strand_is_structure_too() -> None:
-    """DSSP E is not in LOOP_SS. A beta strand inside a flexible run is as bad
-    a host as a helix, and 143-149 on one panel protein was mostly E."""
+def test_a_strand_ranks_down_the_same_way() -> None:
+    """DSSP E is not in LOOP_SS either, and 13 of the 57 structured published
+    sites are strands rather than helices."""
     ss = {r: ("E" if 24 <= r <= 28 else "C") for r in range(1, 41)}
-    assert picks(ss).isdisjoint({24, 25, 26, 27, 28})
+    order = ranked(ss)
+    assert set(order) == set(RUN)
+    assert set(order[-5:]) == {24, 25, 26, 27, 28}
 
 
 def test_the_lane_accepts_every_member_of_LOOP_SS() -> None:

@@ -114,26 +114,29 @@ def disorder_candidates(
         for res in run:
             if feat.get(res, 0.0) < FEATURE_DIST_MIN:
                 continue  # the insertion point itself must clear functional atoms
-            # Ask the MODEL whether this is a regular element, as the
-            # surface-loop gate does. This lane had no structural gate at all:
-            # it selected on a disorder consensus that weights netsurfp-3.0 at
-            # 2.0 — a SEQUENCE predictor that never sees the structure, and one
-            # whose errors run toward calling coil where the model is
-            # structured, which is exactly the direction that drops a long
-            # cassette into a helix. Low pLDDT usually does mean unstructured,
-            # which is why this survived; it fails where pLDDT is low AND the
-            # model still forms an element.
+            # NOT a veto. A structured anchor is RANKED LAST (see the sort
+            # below) rather than dropped, because the published corpus refuses
+            # the veto: of 185 published internal residue-pinned sites, 31% sit
+            # in a DSSP helix or strand on the model, and 30% of the
+            # function-validated ones do — ATP1A1 119/318, ABCB1 101/320/736/961,
+            # ATP1A3 109, GABRA1 31, ABCC1 4, SCNN1A 168, ADCYAP1R1 24,
+            # KCNQ1 146, all surface_and_function, all H. A hard gate rejects
+            # twenty working sites.
             #
-            # An ABSENT call is unknown, not structured — treating a missing
-            # DSSP as a helix would empty the lane for any protein whose model
-            # failed to parse, and that looks identical to "no sites here".
-            called = ss.get(res)
-            if called is not None and called not in LOOP_SS:
-                continue
+            # Those precedents are small tags though — HA 9 aa, FLAG 8, c-Myc
+            # 10 — so they license a small epitope in a helix and say nothing
+            # about a 51-aa cassette. Same shape as the disulfide-span
+            # treatment: the cargo decides, so this ranks and the caller
+            # weighs it rather than the gate deciding for every cassette.
+            #
+            # An ABSENT call is unknown, not structured.
             picks.append(_site(res, run, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc))
     disorder = signals.get("disorder") or {}
     picks.sort(
         key=lambda p: (
+            # Structured anchors last: ranked down, never excluded.
+            ss.get(p["insert_after_residue"]) is not None
+            and ss.get(p["insert_after_residue"]) not in LOOP_SS,
             # most flexible first. Both experimental sets say the working site is the most
             # flexible one available, not the most exposed: Tedman's junctions sit at the
             # 88th-93rd within-protein disorder percentile and our curated internal
