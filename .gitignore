@@ -146,6 +146,10 @@ data/external/surface_bind/
 # can't re-fetch in seconds, so neither belongs in version control.
 data/cache/afdb_prediction/*.cif
 data/cache/afdb_prediction/*.json
+# Disulfide-clearance calibration cache — AlphaFold .pdb models + UniProt
+# entry JSON, re-fetchable from AFDB / UniProt by
+# scripts/audit/calibrate_disulfide_clearance.py. Local cache only.
+data/cache/disulfide_clearance/
 
 # ── paper/ draft artifacts ─────────────────────────────────────────────
 # Manuscript build outputs (PDF, intermediate HTML, JATS XML, extracted

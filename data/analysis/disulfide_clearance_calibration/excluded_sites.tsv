@@ -1,0 +1,2 @@
+gene_symbol	uniprot_acc	site_id	residue_label	insert_after_residue	position_frame	position_evidence	validation_level	tag_type	frame_resolution	exclusion
+KCNH7	Q9NS40	KCNH7-internal-441-lit	R441	441		validated	surface_only	V5 (GKPIPNPLLGLDST)	canonical_as_given	model sequence != UniProt sequence for Q9NS40 (model 732 aa vs UniProt 1196 aa, first difference at residue 298)

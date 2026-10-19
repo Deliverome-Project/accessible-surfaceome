@@ -211,6 +211,19 @@ data/processed/onedb_trim_rescue_v1/README.md -filter -merge text
 data/processed/onedb_trim_rescue_v1/deep_dive_cohort.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/deterministic_gaps.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/gene_list_optcut_zerodb.tsv -filter -merge text
+data/processed/extracellular_site_comparison/masif_site_predictions.tsv -filter -diff -merge text
+data/processed/extracellular_site_comparison/bindome_surface_bind_concordance.tsv -filter -diff -merge text
+
+# disulfide_clearance_calibration — data/analysis/** is blanket-LFS, so without
+# these the REPORT.md that other sessions are reading to pick a clearance floor
+# commits as a 3-line pointer and renders as one on GitHub. The .pdf/.png are
+# already covered by the data/analysis/**/*.{pdf,png} rules above.
+# No -diff on any of them: these exist to be READ in review, and with -diff git
+# reports them as "Bin 0 -> N bytes" and hides the prose and the numbers.
+data/analysis/disulfide_clearance_calibration/*.md   -filter -merge text
+data/analysis/disulfide_clearance_calibration/*.tsv  -filter -merge text
+data/analysis/disulfide_clearance_calibration/*.json -filter -merge text
+
 
 # Tag-site run intermediates + the GPI terminal audit. `data/analysis/**` above
 # puts everything in LFS, which makes a README an LFS pointer on github.com and
