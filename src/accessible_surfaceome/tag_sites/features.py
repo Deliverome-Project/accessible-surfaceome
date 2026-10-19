@@ -286,6 +286,85 @@ def hazard_separations(
     }
 
 
+def c_terminal_propeptide(
+    features: list[dict[str, Any]], length: int
+) -> tuple[int, int] | None:
+    """The Propeptide span covering the C-terminus, from UniProt features.
+
+    A GPI-anchored protein's C-terminal propeptide is cleaved at the omega site
+    and replaced by the anchor. The DeepTMHMM string ends extracellular either
+    way, so without this the terminal lane proposes a tag at a residue the cell
+    removes: 20 of 21 published ``terminal_c`` rows across 19 GPI proteins sat
+    inside one of these spans, each at the full precursor length.
+
+    Only a span covering ``length`` is returned — an N-terminal or internal
+    propeptide says nothing about that end.
+
+    NOTE on coverage, by analogy with disulfides: 29.9% of model-formed bonds
+    carry no UniProt ``DISULFID``, and the same question applies here. "No
+    Propeptide annotated" is not "no propeptide", so this is a lower bound on
+    the affected population and a predicted omega site would widen it.
+    """
+    for feat in features:
+        if feat.get("type") != "Propeptide":
+            continue
+        loc = feat.get("location") or {}
+        start = (loc.get("start") or {}).get("value")
+        end = (loc.get("end") or {}).get("value")
+        if isinstance(start, int) and isinstance(end, int) and start <= length <= end:
+            return (start, end)
+    return None
+
+
+def gpi_omega_site(features: list[dict[str, Any]]) -> int | None:
+    """The GPI-anchor attachment residue from a ``Lipidation`` feature, if
+    annotated. Reported for provenance: it sits one residue before the
+    propeptide start in every case measured, so it corroborates the span rather
+    than replacing it."""
+    for feat in features:
+        if feat.get("type") != "Lipidation":
+            continue
+        if "GPI" not in (feat.get("description") or ""):
+            continue
+        value = ((feat.get("location") or {}).get("start") or {}).get("value")
+        if isinstance(value, int):
+            return value
+    return None
+
+
+def cleaved_c_terminus(
+    features: list[dict[str, Any]], length: int
+) -> tuple[int, int] | None:
+    """The span removed from the C-terminus during maturation, from either
+    annotation UniProt may carry.
+
+    A curated ``Propeptide`` covering the terminus is preferred. Failing that, a
+    GPI ``Lipidation`` establishes the same cleavage: the omega residue carries
+    the anchor and SURVIVES, so the removed span begins one residue after it.
+
+    Both paths matter. Over the 115 deterministic ``terminal_c`` rows whose gene
+    is GPI-anchored by NetGPI, 110 carry the Propeptide and 2 more (ACHE, MSLN)
+    carry only the Lipidation — two genes for no extra request, since the caller
+    already fetched this list for the hazard veto.
+
+    The remaining 3 are annotated in neither, and NetGPI is deliberately NOT
+    wired in to reach them: its omega sites are given in whichever form was
+    submitted, not the canonical frame these records are numbered against, and
+    it is wrong where it disagrees (GPC5 at 27 of 572 residues). Resolving a
+    predicted site into this frame is the sha256-of-sequence problem, not a
+    column read, and 3 genes does not pay for it.
+    """
+    span = c_terminal_propeptide(features, length)
+    if span is not None:
+        return span
+    omega = gpi_omega_site(features)
+    if omega is None or omega >= length:
+        # omega == length is an anchor at the last residue: nothing is removed,
+        # and an empty range must not read as a cleavage.
+        return None
+    return (omega + 1, length)
+
+
 def fetch_uniprot_features(acc: str, http: Any | None = None) -> list[dict[str, Any]]:
     """Fetch the reviewed UniProt entry and return its ``features`` list. Uses
     the repo's default rate-limited cached client when ``http`` is None."""

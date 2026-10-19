@@ -106,6 +106,25 @@ def _hazard(acc: str, pdb_path: str | None = None) -> set[int]:
         return set()
 
 
+def _propeptide(acc: str, length: int) -> tuple[int, int] | None:
+    """The span maturation removes from the C-terminus, or None.
+
+    Same cached UniProt entry `_hazard` reads, so this costs no extra request.
+    Without it the terminal lane proposes a C-terminal tag on a GPI-anchored
+    protein at the full precursor length — inside the propeptide the omega-site
+    cleavage removes — which is what all 115 GPI `terminal_c` rows in
+    `tag_site_public` currently are.
+    """
+    try:
+        return F.cleaved_c_terminus(F.fetch_uniprot_features(acc), length)
+    except Exception as ex:  # noqa: BLE001 — best-effort; absent means "not annotated"
+        log.warning(
+            "  UniProt features unavailable for %s (%s) -> no propeptide refusal",
+            acc, type(ex).__name__,
+        )
+        return None
+
+
 def orthologs_for(symbol: str) -> list[tuple[str, str, str]]:
     """[(ortholog_acc, seq, topology_str), ...] for the CANONICAL mouse + cyno
     one-to-one orthologs of ``symbol``, read from the public API record (the same
@@ -235,6 +254,7 @@ def regenerate_gene(
             symbol, acc, sequence=seq, topology=topo,
             ortholog_seqs=[o_seq for _o_acc, o_seq, _o_topo in orths],
             pdb_path=pdb, hazard_res=hazard, out_dir=tmp, signals_dir=signals_dir,
+            propeptide=_propeptide(acc, len(seq)),
         )
     det_sites = payload["sites"]
 
