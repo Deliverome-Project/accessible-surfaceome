@@ -123,6 +123,47 @@ def test_article_meta_children_are_in_schema_order() -> None:
     assert set(tags) == set(order)
 
 
+def test_article_doi_and_pub_date_land_in_schema_order() -> None:
+    """The .docx has no DOI or date; a post-posting deposit passes both in."""
+    from datetime import date
+
+    from jats_polish import set_article_identity  # ty: ignore[unresolved-import]
+
+    root, _ = _polished()
+    set_article_identity(root, "10.64898/2026.10.18.759859", date(2026, 10, 19))
+    meta = root.find("front/article-meta")
+    tags = [c.tag for c in meta]
+    order = ["article-id", "title-group", "contrib-group", "aff", "author-notes",
+             "pub-date", "abstract", "funding-group", "custom-meta-group"]
+    assert tags == sorted(tags, key=order.index)
+    assert meta.find("article-id").get("pub-id-type") == "doi"
+    assert _t(meta.find("article-id")) == "10.64898/2026.10.18.759859"
+    pd = meta.find("pub-date")
+    assert [_t(pd.find(k)) for k in ("day", "month", "year")] == ["19", "10", "2026"]
+
+
+def test_setting_the_identity_twice_replaces_rather_than_duplicates() -> None:
+    from datetime import date
+
+    from jats_polish import set_article_identity  # ty: ignore[unresolved-import]
+
+    root, _ = _polished()
+    set_article_identity(root, "10.1/old", date(2026, 1, 1))
+    set_article_identity(root, "10.1/new", date(2026, 10, 19))
+    meta = root.find("front/article-meta")
+    assert [_t(a) for a in meta.findall("article-id")] == ["10.1/new"]
+    assert len(meta.findall("pub-date")) == 1
+
+
+def test_without_a_doi_or_date_the_front_matter_is_unchanged() -> None:
+    from jats_polish import set_article_identity  # ty: ignore[unresolved-import]
+
+    root, _ = _polished()
+    before = ET.tostring(root)
+    set_article_identity(root)
+    assert ET.tostring(root) == before
+
+
 def test_back_matter_sections_move_to_their_jats_homes() -> None:
     root, _ = _polished()
     notes = root.find("front/article-meta/author-notes")

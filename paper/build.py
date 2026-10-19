@@ -32,6 +32,7 @@ import argparse
 import os
 import shutil
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -161,7 +162,8 @@ def _stem_for(src: Path) -> str:
     return src.stem.replace(" ", "_")
 
 
-def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
+def build(src: Path, strict_figures: bool = False, *, doi: str | None = None,
+          pub_date: date | None = None) -> dict[str, Path]:
     """Run pandoc → HTML → figure swap → WeasyPrint PDF + pandoc JATS XML.
 
     Between pandoc and WeasyPrint, ``figure_swap.swap_figures`` rewrites
@@ -356,6 +358,8 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
         pandoc=pypandoc.get_pandoc_path(),
         figures_out=xml_path.parent,
         href_prefix="",
+        doi=doi,
+        pub_date=pub_date,
     )
     print(jats_report.summary())
 
@@ -839,6 +843,21 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--doi",
+        default=None,
+        help=(
+            "The article's own DOI (e.g. the bioRxiv DOI once posted), "
+            "written into the JATS front matter as <article-id>."
+        ),
+    )
+    parser.add_argument(
+        "--pub-date",
+        type=date.fromisoformat,
+        default=None,
+        metavar="YYYY-MM-DD",
+        help="Posting date, written into the JATS front matter as <pub-date>.",
+    )
+    parser.add_argument(
         "--biorxiv-url",
         default=None,
         help=(
@@ -910,7 +929,10 @@ def main() -> int:
         return 0
 
     try:
-        outputs = build(args.source.resolve(), strict_figures=args.strict_figures)
+        outputs = build(
+            args.source.resolve(), strict_figures=args.strict_figures,
+            doi=args.doi, pub_date=args.pub_date,
+        )
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 66
