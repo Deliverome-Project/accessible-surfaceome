@@ -1,7 +1,10 @@
 # Comparing extracellular site predictors: SURFACE-Bind, Bindome, MaSIF rerun
 
-Status: **work in progress.** Two sweeps were running when this was written;
-numbers below are from the completed fractions and are labelled as such.
+Status: **sweeps complete (2026-10-18).** This section and the next were
+written mid-sweep and their numbers are from partial runs; they are kept for
+the record of what was believed when. **The authoritative figures are in
+"Final results, 2026-10-18" at the end**, regenerated from the finished
+sweeps. Where the two disagree, the later section wins.
 
 ## Why
 
@@ -45,7 +48,8 @@ of multi-pass. ECD length does *not* predict exclusion above ~100 residues.
 SURFACE-Bind's extracellular sites (62% on proteins it never designed against,
 20% outside every designed domain window).
 
-Concordance on the comparable set (sweep in progress, ~1/3 complete):
+Concordance on the comparable set (sweep in progress, ~1/3 complete —
+superseded, see "Bindome concordance, final" below):
 **median 0.0 A, 67% of anchors within 5 A, 82% within 10 A** of a Bindome
 interface residue. A matched null (exposed non-interface residues in the same
 domain) gives median 14.9 A and 11% within 5 A — Mann-Whitney p = 1.6e-14,
@@ -299,7 +303,7 @@ The sweep persists per-vertex coordinates, scores and residue assignments
 replays any parameters over that cache: measured at 0.03 s for 4 proteins.
 The parameter question should never have cost inference, and now does not.
 
-### State at the time of writing
+### Rebuild inputs
 
 | | |
 |---|---|
@@ -308,6 +312,126 @@ The parameter question should never have cost inference, and now does not.
 | MaSIF sweep v2 | 2,699 members, corrected structures + v1 topology |
 | MaSIF clustering | SURFACE-Bind's published parameters |
 
-Both sweeps were running when this was written; the novelty figure should be
-recomputed with `site_source_overlap.py` once they finish, and the earlier
-65% treated as withdrawn rather than updated.
+## Final results, 2026-10-18
+
+The sweeps have finished. Everything below was **regenerated from the
+completed sweep**, not carried forward from the mid-sweep text this section
+replaces. Reproduce with `l1_inputs_v4.json` (the inputs the sweep actually
+read — verified identical by sha256 to the copy on the `masif-l1` Modal
+volume) and the 2,698 records in `sites_v2/`.
+
+### The sweep
+
+| | |
+|---|---|
+| members in inputs | 2,699 |
+| swept | 2,698 |
+| never completed | 1 — `l1-p2496` (SCARA3, Q6AZY7-2) |
+| records carrying an error | 0 |
+| members with ≥1 site | 2,688 |
+| sites | 8,211 |
+
+By compartment: 3,356 extracellular, 2,171 intracellular, 1,692 membrane,
+990 signal-peptide, 2 unknown.
+
+`data/external/masif/masif_sites.tsv` was rebuilt here, because the committed
+copy held 8,206 sites over 2,687 members — the builder had run before
+`l1-p0905` (IGSF3) finished, so that member's 5 sites were absent from the
+published feed while present in the sweep. Nothing else differed.
+
+### Recovery of SURFACE-Bind's published anchors
+
+Over the 742 L1 members that have published SURFACE-Bind extracellular
+anchors (1,647 anchors):
+
+| | |
+|---|---|
+| anchor falls inside one of our EC sites | 743/1,647 = **45.1%** |
+| matched null (random EC residue) | 15.4% |
+| enrichment | **2.92×**, z = 33.3, p < 1e-10 |
+| proteins recovering ≥1 of their anchors | 511/742 (69%) |
+
+Our EC sites cover a median 13.3% of each protein's ECD, which is what the
+null is drawn against. Note this supersedes the "~45%" quoted earlier in this
+report from a partial sweep and a "42.4%" that circulated in review notes;
+neither denominator matched this one, and both should be ignored in favour of
+the table above.
+
+**45% is close to the ceiling for anyone, not a defect in the re-run.** AFDB
+has retired v2–v5, so the exact structures SURFACE-Bind scored no longer
+exist. Adopting their published clustering parameters exactly changed nothing,
+which is the evidence that the gap is the inputs rather than the method.
+
+### Bindome concordance, final
+
+The Bindome run finished at **1,503 cohort-intersecting targets** and
+**51,453 designs** parsed. Expanding from the original 481-protein slice did
+*not* widen the concordance set much, which is worth stating plainly: the
+comparable set needs *both* a Bindome design and a published SURFACE-Bind
+anchor, and that is **477 proteins / 672 measurable anchors**. The expansion
+mattered for the novelty question — where "not in Bindome" was being read as
+"Bindome found nothing" — not for concordance.
+
+| | observed |
+|---|---|
+| median anchor→interface distance | **0.0 Å** |
+| within 5 Å | **63%** |
+| within 10 Å | **75%** |
+
+**The matched null is not reproducible from the stored records.** The earlier
+text quotes a null of median 14.9 Å / 11% within 5 Å and AUC 0.812, drawn from
+*exposed* non-interface residues *in the same domain window*. The per-protein
+records persist Cα coordinates and interface counts but neither the exposure
+nor the domain-window assignment, so that null cannot be recomputed from what
+was kept. A crude substitute — all non-interface Cα, 20 sampled per protein,
+seed 0 — gives median 9.8 Å, 21% within 5 Å, AUC 0.760. That is a weaker and
+more permissive comparison, so it is reported here as a floor rather than
+substituted for the original figure. Either way the direction is unambiguous;
+the exact enrichment is not re-derivable without re-running with the null
+inputs persisted, which is the fix if the number is ever needed for print.
+
+### Regenerated artifacts
+
+Both committed comparison TSVs were stale and have been rebuilt from the
+finished runs:
+
+| | was | now |
+|---|---|---|
+| `masif_site_predictions.tsv` | 4,434 rows | **8,211** |
+| `bindome_surface_bind_concordance.tsv` | 1,490 rows / 465 proteins | **1,610 / 511** |
+| `data/external/masif/masif_sites.tsv` | 8,206 / 2,687 members | **8,211 / 2,688** |
+
+The concordance TSV had been built from the 481-protein slice — the same
+scoping confound that voided the novelty figure, still sitting in a committed
+artifact. Stable ids resolved for 3,376 of 3,704 rows.
+
+### Coverage and overlap — the novelty figure, recomputed
+
+The earlier 65% stays **withdrawn**. It is not replaced by a single
+corrected percentage, because the confound that voided it is still present in
+any single number: most "novel" sites sit on proteins no other source ever
+examined, which is coverage, not discovery. `site_source_overlap.py`
+therefore reports the two separately, and so does this table.
+
+Proteins (n = 2,698):
+
+| | |
+|---|---|
+| has a MaSIF EC site | 1,684 (62%) |
+| has a SURFACE-Bind EC site | 1,042 (39%) |
+| has a Bindome EC site | 404 (15%) |
+| **MaSIF EC only** | **687 (25%)** |
+
+Sites — of our 3,356 MaSIF extracellular sites:
+
+| | |
+|---|---|
+| shared with SURFACE-Bind | 994 |
+| shared with Bindome | 88 |
+| on a protein with **no** other EC site from either source | 1,111 |
+| on a protein that **does** have other EC sites, but at a different site | 1,163 |
+
+The second-to-last row is the honest form of "nobody looked"; only the last
+row is a site another source examined the protein and did not find. Quoting
+their sum as a novelty rate — 2,274 of 3,356, 68% — is the framing that was
+withdrawn, and it should not be reinstated.
