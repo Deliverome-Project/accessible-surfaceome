@@ -14,7 +14,7 @@ from .disorder import disorder_candidates
 from .disorder_tracks import consensus as disorder_consensus
 from .emit import emit_tag_sites_json
 from .isoform import classify_isoform_sites
-from .features import ca_coords, feature_distances
+from .features import ca_coords, feature_distances, hazard_separations
 from .signals import (
     merge_signals,
     write_signals,
@@ -58,6 +58,11 @@ def compute_signals(
             "topology": topology,
             "sequence": sequence,
             "feature_dist": feature_distances(pdb_path, hazard_res),
+            # Sequence separation to the nearest hazard, reported ALONGSIDE the
+            # spatial distance rather than folded into it. "A functional atom
+            # is close in space" and "a functional residue is adjacent in the
+            # chain" are different claims and only the first is a clash.
+            "hazard_sep": hazard_separations(pdb_path, hazard_res),
             "ca": ca_coords(pdb_path),  # for the terminus-proximity filter (3D)
         },
         ortholog_conservation(sequence, ortholog_seqs),  # conservation + gap_freq

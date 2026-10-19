@@ -209,24 +209,81 @@ def ca_coords(pdb_path: str) -> dict[int, tuple[float, float, float]]:
     return out
 
 
-def feature_distances(pdb_path: str, hazard_res: set[int]) -> dict[int, float]:
-    """Per-residue minimum CA-CA distance (Å) to any hazard residue on the
-    model. Residues with no hazard in the structure get ``inf`` (fully clear)."""
+#: Sequence separation at or below which a CA-CA distance is set by backbone
+#: geometry rather than by the fold. At separation 1 the Ca-Ca virtual bond
+#: fixes it at 3.81-3.86 A whatever the structure does, so a residue beside a
+#: hazard reads ~3.8 A and would be vetoed by peptide geometry alone.
+#:
+#: Calibrated, not chosen: over 185 published internal tag sites, 9 of 130
+#: junctions sit within 2 residues of their cysteine, and the spatial-only
+#: minima (separation > 2) are CA-CA 5.29 / CA-SG 5.04 / heavy-SG 4.13. The
+#: load-bearing row is ADCYAP1R1 D24 — surface_and_function, position
+#: validated, ONE residue from bonded C25 — so adjacency to a bonded cysteine
+#: is a configuration that demonstrably displays and functions.
+ADJACENCY_SEP = 2
+
+
+def _ca_by_residue(pdb_path: str) -> dict[int, Any]:
     from Bio.PDB import PDBParser
 
     struct = PDBParser(QUIET=True).get_structure("m", str(pdb_path))
-    ca: dict[int, Any] = {}
-    for res in struct.get_residues():
-        if "CA" in res:
-            ca[res.id[1]] = res["CA"].coord
-    hazard_coords = [ca[h] for h in hazard_res if h in ca]
+    return {
+        res.id[1]: res["CA"].coord for res in struct.get_residues() if "CA" in res
+    }
+
+
+def feature_distances(pdb_path: str, hazard_res: set[int]) -> dict[int, float]:
+    """Per-residue minimum CA-CA distance (Å) to a SPATIALLY distinct hazard.
+
+    Hazards within ``ADJACENCY_SEP`` residues in sequence are excluded, because
+    their distance is dictated by the backbone rather than by the fold — see
+    that constant. A residue whose only hazards are its sequence neighbours
+    gets ``inf``: it has no spatial hazard, and reporting 3.8 A there is what
+    rejected ACKR3 P35 as a defect (its 3.83 A reading is C34 at separation 1;
+    its nearest spatial bonded cysteine is C287 at 7.63 A).
+
+    Adjacency is not discarded — ``hazard_separations`` reports it, so a gate or
+    a ranking can weigh "sits beside a functional residue" on its own terms
+    instead of smuggling it in as a distance.
+    """
+    ca = _ca_by_residue(pdb_path)
+    present = sorted(h for h in hazard_res if h in ca)
     out: dict[int, float] = {}
+    hazards = set(present)
     for r, coord in ca.items():
-        if not hazard_coords:
+        if r in hazards:
+            # The residue IS the hazard. Kept at 0.0 so the gate still refuses
+            # to insert AT a functional residue — that exclusion is categorical
+            # ("do not tag the glycosylation sequon"), not a threshold on a
+            # continuous signal, so it is the one kind of veto worth having.
+            # Without this the split reports the NEXT hazard's distance and a
+            # sequon reads as clear: TFRC N251 went to 19.4 A.
+            out[r] = 0.0
+            continue
+        spatial = [ca[h] for h in present if abs(h - r) > ADJACENCY_SEP]
+        if not spatial:
             out[r] = float("inf")
             continue
-        out[r] = min(float(((coord - h) ** 2).sum() ** 0.5) for h in hazard_coords)
+        out[r] = min(float(((coord - h) ** 2).sum() ** 0.5) for h in spatial)
     return out
+
+
+def hazard_separations(
+    pdb_path: str, hazard_res: set[int]
+) -> dict[int, int | None]:
+    """Per-residue SEQUENCE separation to the nearest hazard residue.
+
+    ``0`` means the residue IS a hazard; ``None`` means the protein has none.
+    Reported alongside the spatial distance rather than folded into it, because
+    the two are different claims: one says "a functional atom is close in
+    space", the other says "a functional residue is adjacent in the chain", and
+    only the first is a clash.
+    """
+    ca = _ca_by_residue(pdb_path)
+    present = sorted(h for h in hazard_res if h in ca)
+    return {
+        r: (min(abs(h - r) for h in present) if present else None) for r in ca
+    }
 
 
 def fetch_uniprot_features(acc: str, http: Any | None = None) -> list[dict[str, Any]]:
