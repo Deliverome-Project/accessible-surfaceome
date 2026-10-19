@@ -834,8 +834,9 @@ def main() -> int:
         action="store_true",
         help=(
             "Fail the build if any in-text citation has no reference "
-            "entry, or any reference entry is never cited. Default: "
-            "report both on stderr and continue."
+            "entry, any reference entry is never cited, or any Zotero "
+            "citation in the .docx is marked broken. Default: report "
+            "all three on stderr and continue."
         ),
     )
     parser.add_argument(
@@ -886,6 +887,24 @@ def main() -> int:
     else:
         os.environ.pop("PAPER_STRICT_CITATIONS", None)
 
+    # Before pandoc: a broken Zotero citation still matches a reference by
+    # author and year whenever the paper is also cited intact elsewhere, so
+    # citations.lua cannot see it. Read the link targets in the .docx instead.
+    from zotero_links import (  # ty: ignore[unresolved-import]
+        find_broken_zotero_citations,
+        format_broken_report,
+    )
+    citation_alert = ""
+    if args.source.is_file():
+        citation_alert = format_broken_report(
+            find_broken_zotero_citations(args.source)
+        )
+    if citation_alert:
+        print(citation_alert, file=sys.stderr)
+        if args.strict_citations:
+            print("error: broken Zotero citations (see above)", file=sys.stderr)
+            return 1
+
     if args.web is not None:
         try:
             index, figure_alert = build_web(
@@ -907,6 +926,8 @@ def main() -> int:
         # Last, so the list of fresh figures can't scroll past unseen.
         if figure_alert:
             print(figure_alert)
+        if citation_alert:
+            print(citation_alert)
         return 0
 
     try:
@@ -931,6 +952,8 @@ def main() -> int:
     # Last, so the list of fresh figures can't scroll past unseen.
     if outputs.get("figure_alert"):
         print(outputs["figure_alert"])
+    if citation_alert:
+        print(citation_alert)
     return 0
 
 

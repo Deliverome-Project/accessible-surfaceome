@@ -42,7 +42,17 @@ xmllint --noout --dtdvalid JATS-archivearticle1-mathml3.dtd build/jats/<stem>.xm
 Every build checks citations against the reference list in both
 directions and reports the result on stderr: an in-text citation with
 no reference entry, and a reference entry nothing cites. Pass
-`--strict-citations` to make either one fail the build. A paper listed
+`--strict-citations` to make either one fail the build.
+
+Before converting, the build also reads the `.docx` for Zotero
+citations whose link has become `zotero.org/google-docs/?broken=…`
+(`paper/zotero_links.py`). Zotero no longer tracks such a citation, so
+the next Refresh drops its paper from References unless it is cited
+intact elsewhere. That makes it invisible to the reference check above
+until the damage is done. Each one is listed with its surrounding text;
+fix it by re-inserting the citation with Zotero → Add/edit citation and
+refreshing. `--strict-citations` fails the build on these too. Moving
+text through the Google Docs API is one known cause. A paper listed
 in both References and Supplementary References but cited only in the
 supplement is left out of the main list (the build names it when it
 does this).
