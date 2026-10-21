@@ -647,7 +647,7 @@ export default async function ApiPage() {
           </p>
           <p>
             <span className="label-mono">Cite &amp; licence ·</span> Cite
-            the preprint, 
+            the preprint,{" "}
             <a
               className={styles.extLink}
               href="https://doi.org/10.64898/2026.10.18.759859"
