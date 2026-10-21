@@ -167,6 +167,10 @@ export function Shell({ children }: ShellProps) {
               <a href="mailto:surfaceome-viewer@deliverome.org" className={styles.footerLink}>
                 surfaceome-viewer@deliverome.org
               </a>
+              <span aria-hidden="true" className={styles.metaSep}>·</span>
+              <Link href="/privacy" className={styles.footerLink}>
+                Privacy
+              </Link>
             </p>
           </div>
           {/*

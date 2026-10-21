@@ -17,7 +17,7 @@ const SITE = "https://surfaceome.deliverome.org";
 
 // Top-level app/ routes (trailingSlash: true → URLs end with "/").
 // "" is the root catalogue page; the rest mirror app/<route>/page.tsx.
-const STATIC_PATHS = ["", "benchmark", "api", "prompts", "compare", "reproducibility"];
+const STATIC_PATHS = ["", "benchmark", "api", "prompts", "compare", "reproducibility", "privacy"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((p) => ({
