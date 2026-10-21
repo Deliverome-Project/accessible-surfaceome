@@ -28,9 +28,18 @@ import {
   isLowLiteratureSurface,
   LOW_LIT_PAPERS_MAX,
   effectiveEvidenceGrade,
+  deepDiveTier,
+  type DeepDiveTier,
   type PresetKey,
   type InductionSubKey,
 } from "../../lib/catalog-presets";
+import {
+  emptyCatalogUrlState,
+  isEmptyCatalogUrlState,
+  parseCatalogUrl,
+  serializeCatalogUrl,
+  type CatalogUrlVocabulary,
+} from "../../lib/catalog-url-state";
 import { InfoTip } from "../InfoTip/InfoTip";
 import { tooltips } from "../../lib/tooltips";
 import {
@@ -164,6 +173,20 @@ const VERDICT_OPTIONS: { key: VerdictKey; label: string }[] = [
   { key: "contextual", label: "contextual" },
   { key: "no", label: "no" },
 ];
+
+// Deep-dive tiers, strictest first — the five-tier scale of Figure 5 and
+// the gene page's tier callout (same labels as GeneHeader's TIER_META).
+const TIER_OPTIONS: { key: DeepDiveTier; label: string }[] = [
+  { key: "canonical", label: "Canonical" },
+  { key: "likely", label: "Likely" },
+  { key: "low", label: "Low confidence" },
+  { key: "uncertain", label: "Uncertain" },
+  { key: "no", label: "Not surface" },
+];
+
+// "Listed by exactly N of the five source DBs" — complements the AND-only
+// DB chips, which can't express "listed by none" (the zero-DB rescues).
+const N_SOURCES_OPTIONS = [0, 1, 2, 3, 4, 5] as const;
 
 /** The canonical TriageReason enum from
  *  ``src/accessible_surfaceome/tools/_shared/models.py`` (YesReason,
@@ -421,6 +444,11 @@ export function CatalogTable({
   }, [showFilters, presetKeys]);
 
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
+  // OR-semantics: a row passes if its source-DB count is in the set.
+  const [nSourcesFilter, setNSourcesFilter] = useState<Set<number>>(new Set());
+  // OR-semantics over the resolved deep-dive tier; implies deep_dive=true
+  // (rows without a deep-dive payload have no tier to match).
+  const [tierFilter, setTierFilter] = useState<Set<DeepDiveTier>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
     new Set(),
   );
@@ -468,6 +496,22 @@ export function CatalogTable({
 
   function toggleDbFilter(key: DbKey) {
     setDbFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+  function toggleNSourcesFilter(n: number) {
+    setNSourcesFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(n)) next.delete(n);
+      else next.add(n);
+      return next;
+    });
+  }
+  function toggleTierFilter(key: DeepDiveTier) {
+    setTierFilter((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -535,6 +579,8 @@ export function CatalogTable({
   }
   function clearAdvancedFilters() {
     setDbFilter(new Set());
+    setNSourcesFilter(new Set());
+    setTierFilter(new Set());
     setVerdictFilter(new Set());
     setReasonFilter(new Set());
     setDeepDiveFilter(null);
@@ -694,10 +740,12 @@ export function CatalogTable({
   const ddActiveCount =
     ddEnumActiveCount +
     ddBoolActiveCount +
-    (surfaceBindFilter !== null ? 1 : 0);
+    (surfaceBindFilter !== null ? 1 : 0) +
+    (tierFilter.size > 0 ? 1 : 0);
 
   const activeFilterCount =
     dbFilter.size +
+    nSourcesFilter.size +
     verdictFilter.size +
     reasonFilter.size +
     (deepDiveFilter !== null ? 1 : 0) +
@@ -826,6 +874,106 @@ export function CatalogTable({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // ── Filters ⇄ URL (lib/catalog-url-state.ts) ─────────────────────
+  // Read once on mount, so a link like /?nsrc=0&triage=yes opens the
+  // catalog already filtered; then mirror every change back into the
+  // address bar so the current view is always shareable. `urlHydrated`
+  // is state, not a ref, on purpose: it flips in the same render that
+  // applies the parsed filters, so the write-back never runs against the
+  // pre-hydration (empty) filters and strips the incoming query.
+  const [urlHydrated, setUrlHydrated] = useState(false);
+  useEffect(() => {
+    const vocab: CatalogUrlVocabulary = {
+      presets: PRESETS.map((p) => p.key).filter((k) => k !== "all"),
+      triggers: INDUCTION_SUBS.map((s) => s.key),
+      db: DB_KEYS.map((d) => d.key),
+      tiers: TIER_OPTIONS.map((t) => t.key),
+      verdicts: VERDICT_OPTIONS.map((v) => v.key),
+      reasons: [...REASON_GROUPS.flatMap((g) => g.reasons), REASON_OTHER],
+      ddEnum: Object.fromEntries(DD_ENUM_FIELDS.map((f) => [f.key, f.values])),
+      ddBoolKeys: DD_BOOL_FIELDS.map((f) => f.key),
+    };
+    const s = parseCatalogUrl(window.location.search, vocab);
+    if (!isEmptyCatalogUrlState(s)) {
+      setQuery(s.q);
+      setPresetKeys(new Set(s.presets as PresetKey[]));
+      setInductionSubs(new Set(s.triggers as InductionSubKey[]));
+      setLowLitSurfy(s.lowLit);
+      setDbFilter(new Set(s.db as DbKey[]));
+      setNSourcesFilter(new Set(s.nSources));
+      setTierFilter(new Set(s.tiers as DeepDiveTier[]));
+      setVerdictFilter(new Set(s.verdicts as VerdictKey[]));
+      setReasonFilter(new Set(s.reasons));
+      setDeepDiveFilter(s.deepDive);
+      setSurfaceBindFilter(s.surfaceBind);
+      setDdEnumFilters((prev) => {
+        const out = { ...prev };
+        for (const f of DD_ENUM_FIELDS) out[f.key] = new Set(s.ddEnum[f.key] ?? []);
+        return out;
+      });
+      setDdBoolFilters((prev) => {
+        const out = { ...prev };
+        for (const f of DD_BOOL_FIELDS) out[f.key] = s.ddBool[f.key] ?? "any";
+        return out;
+      });
+      // Open the panel on whatever the link set, so the reader sees which
+      // filters produced the view instead of an unexplained short list.
+      const panelFilters =
+        s.db.length + s.nSources.length + s.verdicts.length + s.reasons.length +
+        s.tiers.length + Object.keys(s.ddEnum).length + Object.keys(s.ddBool).length +
+        (s.surfaceBind ? 1 : 0);
+      if (panelFilters > 0) setShowFilters(true);
+      if (s.db.length || s.nSources.length) setDatabasesGroupOpen(true);
+      if (s.verdicts.length || s.reasons.length) setTriageGroupOpen(true);
+      if (s.tiers.length || Object.keys(s.ddEnum).length || Object.keys(s.ddBool).length || s.surfaceBind) {
+        setDeepDiveGroupOpen(true);
+      }
+    }
+    setUrlHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!urlHydrated) return;
+    const s = emptyCatalogUrlState();
+    s.q = query.trim();
+    s.presets = [...presetKeys].filter((k) => k !== "all");
+    s.triggers = presetKeys.has("induced") ? [...inductionSubs] : [];
+    s.lowLit = lowLitSurfy;
+    s.db = [...dbFilter];
+    s.nSources = [...nSourcesFilter];
+    s.tiers = TIER_OPTIONS.map((t) => t.key).filter((k) => tierFilter.has(k));
+    s.verdicts = [...verdictFilter];
+    s.reasons = [...reasonFilter];
+    s.deepDive = deepDiveFilter;
+    s.surfaceBind = surfaceBindFilter;
+    for (const f of DD_ENUM_FIELDS) {
+      if (ddEnumFilters[f.key].size) s.ddEnum[f.key] = [...ddEnumFilters[f.key]];
+    }
+    for (const f of DD_BOOL_FIELDS) {
+      const mode = ddBoolFilters[f.key];
+      if (mode !== "any") s.ddBool[f.key] = mode;
+    }
+    const qs = serializeCatalogUrl(s);
+    const next = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`;
+    const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (next !== current) window.history.replaceState(window.history.state, "", next);
+  }, [
+    urlHydrated,
+    query,
+    presetKeys,
+    inductionSubs,
+    lowLitSurfy,
+    dbFilter,
+    nSourcesFilter,
+    tierFilter,
+    verdictFilter,
+    reasonFilter,
+    deepDiveFilter,
+    surfaceBindFilter,
+    ddEnumFilters,
+    ddBoolFilters,
+  ]);
+
   // The .tableScroll element is the scroll container (overflow-y in
   // CSS), so rows scroll under the sticky header without dragging the
   // whole page around.
@@ -850,6 +998,13 @@ export function CatalogTable({
         for (const dbKey of dbList) {
           if (!r.db[dbKey]) return false;
         }
+      }
+      if (nSourcesFilter.size > 0 && !nSourcesFilter.has(r.n_sources)) {
+        return false;
+      }
+      if (tierFilter.size > 0) {
+        const ddf = r.deep_dive_filters;
+        if (!ddf || !tierFilter.has(deepDiveTier(ddf).tier)) return false;
       }
       if (verdictFilter.size > 0) {
         const v = r.triage_by_model[1]?.verdict;
@@ -956,6 +1111,8 @@ export function CatalogTable({
     rows,
     query,
     dbFilter,
+    nSourcesFilter,
+    tierFilter,
     verdictFilter,
     reasonFilter,
     deepDiveFilter,
@@ -1377,8 +1534,10 @@ export function CatalogTable({
                   {databasesGroupOpen ? "▾" : "▸"}
                 </span>
                 Databases
-                {!databasesGroupOpen && dbFilter.size > 0 ? (
-                  <span className={styles.chipCount}>{dbFilter.size}</span>
+                {!databasesGroupOpen && dbFilter.size + nSourcesFilter.size > 0 ? (
+                  <span className={styles.chipCount}>
+                    {dbFilter.size + nSourcesFilter.size}
+                  </span>
                 ) : null}
               </button>
               <InfoTip label="About the Databases filter group" wide>
@@ -1411,6 +1570,29 @@ export function CatalogTable({
                   </div>
                   <span className={styles.filterHint}>
                     Requires all checked DBs to vote yes
+                  </span>
+                </div>
+                <div className={styles.filterRow}>
+                  <span className={styles.filterLabel}>Listed by</span>
+                  <div className={styles.filterChips}>
+                    {N_SOURCES_OPTIONS.map((n) => {
+                      const on = nSourcesFilter.has(n);
+                      return (
+                        <button
+                          key={`nsrc-filter-${n}`}
+                          type="button"
+                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                          onClick={() => toggleNSourcesFilter(n)}
+                          aria-pressed={on}
+                          title={`Listed as surface by exactly ${n} of the 5 databases`}
+                        >
+                          {n === 0 ? "none" : n === 5 ? "all 5" : `${n} of 5`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className={styles.filterHint}>
+                    Exactly this many of the 5 DBs; checked counts combine with OR
                   </span>
                 </div>
               </div>
@@ -1636,6 +1818,30 @@ export function CatalogTable({
                     serves the `deep_dive_filters` projection is live.
                   </p>
                 ) : null}
+
+                <div className={styles.filterRow}>
+                  <span className={styles.filterLabel}>Tier</span>
+                  <div className={styles.filterChips}>
+                    {TIER_OPTIONS.map((t) => {
+                      const on = tierFilter.has(t.key);
+                      return (
+                        <button
+                          key={`tier-filter-${t.key}`}
+                          type="button"
+                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                          onClick={() => toggleTierFilter(t.key)}
+                          aria-pressed={on}
+                          title={`Deep-dive tier = ${t.label}`}
+                        >
+                          {t.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className={styles.filterHint}>
+                    The five-tier deep-dive scale (paper Figure 5); checked tiers combine with OR
+                  </span>
+                </div>
 
                 {/* ── Surface call subsection (LLM rollups, minus
                  *  risks) — independently collapsible. ──────────── */}

@@ -127,6 +127,19 @@ break a deploy, but a real outage exits non-zero fast. So avoid deploying
 while another job is hammering the same Worker/D1 (e.g. an R2 `.md`
 populate); if the threshold trips, just retry once the Worker is healthy.
 
+### Linking to a filtered catalogue
+
+Every catalogue filter lives in the query string, so a link can open the
+table already filtered and the address bar always holds a shareable link
+to the current view. `/?nsrc=0&triage=yes`, for example, opens the
+proteins no source database lists that the triage agent calls surface.
+The HTML paper's figure captions use this to open the set behind each
+count. The parameter list and its semantics are in
+`lib/catalog-url-state.ts`. Unknown parameters and values are ignored, so
+an old link opens a broader view instead of an error. Renaming a
+parameter or filter value breaks links people have already shared, so
+keep the old name accepted when you do.
+
 ## Layout
 
 - `app/` — Next.js App Router (catalogue `/` + client gene shell `app/gene/`,
