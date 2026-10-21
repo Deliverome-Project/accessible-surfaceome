@@ -202,3 +202,8 @@ data/processed/onedb_trim_rescue_v1/README.md -filter -merge text
 data/processed/onedb_trim_rescue_v1/deep_dive_cohort.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/deterministic_gaps.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/gene_list_optcut_zerodb.tsv -filter -merge text
+
+# GO surface-rule trade-off points (scripts/audit/audit_go_surface_rule_tradeoff.py).
+# Tiny (~1.5 KB) and meant to be READ in review alongside the figure, so plain
+# git with no -diff.
+data/analysis/go_rule_tradeoff/*.tsv -filter -merge text
