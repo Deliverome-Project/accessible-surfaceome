@@ -73,10 +73,16 @@ select = ["E4", "E7", "E9", "F"]
 exclude = ["*.md"]
 
 [tool.uv]
+# uv carries its own root certificates; releases before 0.13.4 trust the eMudhra
+# intermediates compromised on 2026-10-19. uv refuses to run here on an older version.
+required-version = ">=0.13.4"
 # Supply-chain quarantine at the resolver: uv never picks a release under 7 days old,
 # direct or transitive, whoever runs `uv lock` (people, Dependabot, CI). Same policy as
 # the other Deliverome repos; Dependabot cooldown alone misses re-resolved transitive deps.
 exclude-newer = "7 days"
+# Security fixes that cannot wait out the quarantine: these releases drop the root behind
+# the compromised eMudhra intermediates. Remove once they are older than 7 days.
+exclude-newer-package = { certifi = false, pip = false }
 # Supply-chain cooldown pin (see CLAUDE.md "min-release-age" rationale for the
 # viewer; this is the Python-side equivalent applied surgically). pdfplumber
 # pulls pypdfium2 transitively with only a `>=4.18.0` floor, so a fresh resolve
@@ -86,7 +92,9 @@ exclude-newer = "7 days"
 # not as a one-shot `--exclude-newer` — so `uv lock --check` in CI stays
 # reproducible. SAFE TO REMOVE once pypdfium2 5.9.0 has aged past the 7-day
 # cooldown (i.e. after ~2026-06-08) and has been spot-checked.
-constraint-dependencies = ["pypdfium2<5.9.0"]
+# Security floors (eMudhra CA compromise, 2026-10-19), also enforced by the shared
+# dependency guard in Deliverome-Project/.github.
+constraint-dependencies = ["pypdfium2<5.9.0", "certifi>=2026.10.19", "pip>=26.2.2"]
 
 [dependency-groups]
 dev = [
