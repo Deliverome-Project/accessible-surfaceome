@@ -43,7 +43,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
+          python-version: "3.14"
       # Lightweight: the check only needs httpx (h2 is optional; the script
       # falls back to HTTP/1.1 keep-alive without it). No full `uv sync`.
       - name: Install httpx
