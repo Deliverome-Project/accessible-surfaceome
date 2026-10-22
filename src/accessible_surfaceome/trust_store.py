@@ -155,7 +155,12 @@ def fix(root: str | Path) -> None:
     distrust_os_store(scan(root))
     for path in scan(root):
         if _confers_trust(path):
-            strip(path)
+            try:
+                strip(path)
+            except OSError:
+                # A read-only copy (a snap's squashfs image, a mounted volume) cannot be
+                # edited here; it stays in the report so it is updated at its source.
+                continue
 
 
 def remaining(root: str | Path) -> dict[Path, set[str]]:

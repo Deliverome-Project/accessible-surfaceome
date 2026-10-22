@@ -60,6 +60,26 @@ def test_fix_strips_only_the_bad_root_and_rechecks_clean(tmp_path):
     assert not der.exists()
 
 
+def test_fix_skips_read_only_copies_and_still_reports_them(tmp_path):
+    # A snap's squashfs image is read-only. --fix must carry on past it, not crash, and the
+    # copy must still be reported so it gets updated at its source.
+    ro = tmp_path / "snap" / "core22" / "etc"
+    ro.mkdir(parents=True)
+    bundle = ro / "ca-certificates.crt"
+    bundle.write_bytes(pem(GOOD_DER) + pem(BAD_DER))
+    writable = tmp_path / "cacert.pem"
+    writable.write_bytes(pem(BAD_DER) + pem(GOOD_DER))
+    bundle.chmod(0o444)
+    ro.chmod(0o555)
+    try:
+        assert ts.main(["--fix", str(tmp_path)]) == 1
+        assert set(ts.remaining(tmp_path)) == {bundle}
+        assert ts.compromised_in(writable.read_bytes()) == set()
+    finally:
+        ro.chmod(0o755)
+        bundle.chmod(0o644)
+
+
 def test_source_copies_do_not_count_as_trusted(tmp_path, monkeypatch):
     source = tmp_path / "usr" / "share" / "ca-certificates"
     (source / "mozilla").mkdir(parents=True)
