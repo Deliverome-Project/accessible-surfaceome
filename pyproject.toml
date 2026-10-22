@@ -3,7 +3,7 @@ name = "accessible-surfaceome"
 version = "1.2.0"
 description = "Standalone accessible surface-proteome annotation pipeline"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "anthropic>=0.99.0",
     "biopython>=1.84",
@@ -11,7 +11,7 @@ dependencies = [
     "boto3>=1.42,<2",
     "goatools>=1.6.4",
     "httpx>=0.28.0",
-    "matplotlib==3.9.4",
+    "matplotlib==3.11.2",
     "mygene>=3.2.2",
     "openpyxl>=3.1.5",
     "pandas>=2.3.0,<3",
@@ -106,7 +106,7 @@ dev = [
 ]
 
 [tool.ty.environment]
-python-version = "3.11"
+python-version = "3.14"
 root = ["./src"]
 
 [tool.ty.src]
