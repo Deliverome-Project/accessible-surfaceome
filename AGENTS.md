@@ -322,7 +322,7 @@ statement:
 
 ## Coding Style & Naming Conventions
 See [docs/coding-style.md](docs/coding-style.md) for the full conventions
-and the rubric we use to assess diffs. Quick summary: Python 3.11+,
+and the rubric we use to assess diffs. Quick summary: Python 3.14+,
 ruff-formatted, names that describe what's there, one way to do common
 things (paths, traceability), validate at boundaries only, no plumbing
 masquerading as algorithm.
