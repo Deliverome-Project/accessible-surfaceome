@@ -32,6 +32,10 @@ SRC = REPO / "src/accessible_surfaceome/sources/disorder.py"
 parse_image = modal.Image.debian_slim(python_version="3.11").add_local_file(
     SRC, "/opt/disorder.py", copy=True
 )
+if modal.is_local():  # the image is built from the laptop; containers only re-import this file
+    from accessible_surfaceome.trust_store import harden
+
+    parse_image = harden(parse_image)  # drop the compromised eMudhra roots
 
 app = modal.App("surfaceome-disorder-parse")
 volume = modal.Volume.from_name("disorder-runs", create_if_missing=False)

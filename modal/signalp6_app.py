@@ -71,6 +71,9 @@ if modal.is_local():
     image = image.add_local_dir(
         PKG_DIR, "/opt/signalp6-package", copy=True
     ).run_commands("pip install --no-deps /opt/signalp6-package")
+    from accessible_surfaceome.trust_store import harden
+
+    image = harden(image)  # drop the compromised eMudhra roots
 
 app = modal.App("surfaceome-signalp6")
 models = modal.Volume.from_name("signalp6-models", create_if_missing=True)
