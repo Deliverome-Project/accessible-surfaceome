@@ -13,6 +13,10 @@ import modal
 from pathlib import Path
 
 image = modal.Image.from_dockerfile(str(Path(__file__).parent / "masif" / "Dockerfile"))
+if modal.is_local():  # the image is built from the laptop; containers only re-import this file
+    from accessible_surfaceome.trust_store import harden
+
+    image = harden(image)  # drop the compromised eMudhra roots
 app = modal.App("masif-l1-sweep")
 vol = modal.Volume.from_name("masif-l1")
 

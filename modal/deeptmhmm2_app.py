@@ -64,7 +64,7 @@ WEIGHTS_DIR = "/opt/cache/deeptmhmm2"
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .apt_install("git", "ca-certificates")
-    .pip_install("uv>=0.5")
+    .pip_install("uv>=0.13.4")
     .env({"XDG_CACHE_HOME": "/opt/cache"})
     .run_commands(f"uv pip install --system --no-cache '{DTM2_SPEC}'")
     # Warm the caches so every container starts with weights on disk.
@@ -75,6 +75,10 @@ image = (
     )
     .env({"HF_HOME": "/opt/cache/huggingface", "TORCH_HOME": "/opt/cache/torch"})
 )
+if modal.is_local():  # the image is built from the laptop; containers only re-import this file
+    from accessible_surfaceome.trust_store import harden
+
+    image = harden(image)  # drop the compromised eMudhra roots
 
 app = modal.App("surfaceome-deeptmhmm2")
 volume = modal.Volume.from_name("surfaceome-topology2", create_if_missing=True)

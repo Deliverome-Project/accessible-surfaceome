@@ -33,6 +33,10 @@ import modal
 app = modal.App("bindome-concordance")
 vol = modal.Volume.from_name("bindome-concordance")
 image = modal.Image.debian_slim(python_version="3.11")
+if modal.is_local():  # the image is built from the laptop; containers only re-import this file
+    from accessible_surfaceome.trust_store import harden
+
+    image = harden(image)  # drop the compromised eMudhra roots
 
 A3 = {
     "ALA": "A",
