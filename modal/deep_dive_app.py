@@ -85,7 +85,7 @@ if _DEEP_DIVE_MODEL_OVERRIDE:
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .apt_install("git", "ca-certificates")
-    .pip_install("uv>=0.5", "modal==1.4.2")
+    .pip_install("uv>=0.13.4", "modal==1.4.2")
     # copy=True bakes the source into the image layer (instead of
     # runtime-mounting), which lets subsequent `run_commands` see the
     # files. Required because `uv sync --frozen` needs pyproject.toml +
@@ -139,6 +139,10 @@ image = (
     )
     .env(_IMAGE_ENV)
 )
+if modal.is_local():  # the image is built from the laptop; containers only re-import this file
+    from accessible_surfaceome.trust_store import harden
+
+    image = harden(image)  # drop the compromised eMudhra roots
 
 app = modal.App("surfaceome-deep-dive")
 volume = modal.Volume.from_name("surfaceome-annotations", create_if_missing=True)
