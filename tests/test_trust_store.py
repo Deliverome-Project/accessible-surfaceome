@@ -154,3 +154,8 @@ def test_every_modal_image_in_the_repo_is_hardened():
             counts[f] = (built, len(re.findall(r"= harden\(", text)))
     assert counts, "expected at least one Modal image definition"
     assert {f: c for f, c in counts.items() if c[0] != c[1]} == {}
+
+
+def test_modal_tooling_mount_is_not_scanned():
+    """Modal mounts its debug shell read-only at /__modal in every build; it is not ours."""
+    assert "/__modal" in ts.SKIP_DIRS
