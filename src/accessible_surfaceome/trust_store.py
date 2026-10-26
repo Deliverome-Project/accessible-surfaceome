@@ -39,7 +39,11 @@ PEM = re.compile(
     rb"-----BEGIN CERTIFICATE-----(.+?)-----END CERTIFICATE-----\r?\n?", re.S
 )
 SUFFIXES = {".pem", ".crt", ".cer", ".der"}
-SKIP_DIRS = {"/proc", "/sys", "/dev", "/run"}
+# /__modal is Modal's own injected tooling (its debug shell's nix store), mounted read-only
+# into every container and image builder. It is not our TLS stack, cannot be edited, and its
+# LibreSSL and Perl Mozilla::CA bundles carry both roots, so scanning it failed every
+# harden() build (found building the flashdia snapshots, 2026-10-26).
+SKIP_DIRS = {"/proc", "/sys", "/dev", "/run", "/__modal"}
 MAX_BYTES = 10_000_000
 # Debian/Ubuntu build the OS bundle from these files; Fedora/RHEL/Amazon Linux read blocklists here.
 DEBIAN_SOURCE = Path("/usr/share/ca-certificates")
