@@ -100,17 +100,18 @@
   word-break: normal;
 
   /* Hidden by default — CSS-only reveal on parent :hover / :focus-
-   * within (see selectors below). `visibility: hidden` (not
-   * `display: none`) keeps the popover in the accessibility tree so
-   * `role="tooltip"` stays meaningful when shown. `pointer-events:
-   * none` while hidden so the invisible popover never blocks clicks
-   * on whatever's beneath it. */
-  visibility: hidden;
+   * within (see selectors below). `display: none`, not `visibility:
+   * hidden`: a visibility-hidden popover keeps its layout box, and a
+   * wide one near the right edge (the 28em curated-list tips) widened
+   * the whole page, so phones and narrow windows scrolled sideways.
+   * `allow-discrete` keeps the fade-out; `@starting-style` below gives
+   * the fade-in. Browsers without them just show/hide instantly. */
+  display: none;
   opacity: 0;
   pointer-events: none;
   transition:
     opacity var(--dur-fast) var(--ease-out),
-    visibility 0s var(--dur-fast);
+    display var(--dur-fast) allow-discrete;
 }
 
 /* Authoritative white-space reset. The popover renders INSIDE chip rows
@@ -131,14 +132,17 @@
  * React state, no event listeners, no per-popover hydration boundary. */
 .wrap:hover .popover,
 .wrap:focus-within .popover {
-  visibility: visible;
+  display: block;
   opacity: 1;
   pointer-events: auto;
-  /* Override the visibility-delay transition so it appears immediately
-   * (instead of waiting for the opacity fade-in to finish). */
-  transition:
-    opacity var(--dur-fast) var(--ease-out),
-    visibility 0s;
+}
+
+/* Fade-in origin for the display:none → block switch above. */
+@starting-style {
+  .wrap:hover .popover,
+  .wrap:focus-within .popover {
+    opacity: 0;
+  }
 }
 
 /* Hover bridge — lets the reader move the cursor OFF the trigger and

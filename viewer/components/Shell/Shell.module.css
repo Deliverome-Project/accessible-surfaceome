@@ -377,12 +377,13 @@
 
 /* ---------- responsive ---------- */
 
-/* Below ~1040px the full brand lockup ("The Deliverome Project /
- * Surfaceome") + 4-item nav + GitHub icon doesn't fit in one row,
- * and the items collide because each text node has white-space:
- * nowrap. Drop the parent wordmark first — keep the logo, the
- * separator, and "Surfaceome" so the local brand still reads. */
-@media (max-width: 1040px) {
+/* Below ~1120px the full brand lockup ("The Deliverome Project /
+ * Surfaceome v1.3.0", ~430px) + 5-item nav + GitHub icon (~620px)
+ * doesn't fit in one row, and the items collide because each text
+ * node has white-space: nowrap (measured: they overlapped at 1041px
+ * when this sat at 1040px). Drop the parent wordmark first — keep the
+ * logo and "Surfaceome" so the local brand still reads. */
+@media (max-width: 1120px) {
   .brandParentText {
     display: none;
   }
@@ -401,9 +402,28 @@
   .headerInner {
     gap: 2.75rem;
   }
+  /* The brand never shrinks: when it could, the 617px nav squeezed it
+   * and "Surfaceome v1.3.0" drew underneath "Compare" (~760–950px).
+   * Tighter nav spacing buys back most of that width instead. */
+  .brandLockup {
+    flex: none;
+  }
+  .nav {
+    gap: 1.6rem;
+    letter-spacing: 0.14em;
+  }
 }
 
-@media (max-width: 760px) {
+/* Below the width where logo + "Surfaceome" + the tightened nav fit on
+ * one row, the nav drops to its own full-width row and scrolls inside
+ * itself rather than widening the page. */
+@media (max-width: 860px) {
+  /* Two-row header: measured 100px (brand row + nav row + padding).
+   * The gene page's sticky AnchorNav docks at this offset, so it must
+   * match or the AnchorNav slides under the nav row. */
+  .shell {
+    --shell-header-h: 100px;
+  }
   .headerInner {
     flex-wrap: wrap;
     row-gap: 0.5rem;
@@ -413,7 +433,13 @@
   }
   .nav {
     width: 100%;
+    min-width: 0;
     justify-content: flex-start;
     overflow-x: auto;
+    /* overflow-x:auto also clips vertically, which would cut off the
+     * hover/active underline sitting 0.3rem below each link; pad the
+     * scroll box to contain it and pull the row back up by the same. */
+    padding-bottom: 0.45rem;
+    margin-bottom: -0.45rem;
   }
 }
