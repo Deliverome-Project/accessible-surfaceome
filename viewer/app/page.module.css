@@ -1,8 +1,8 @@
 .page {
-  padding: var(--space-12) 0 var(--space-24);
+  padding: var(--space-8) 0 var(--space-24);
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-6);
 }
 
 /* Hero takes the full page width — H1 + lede sit on a single
@@ -29,16 +29,16 @@
   max-width: none;
 }
 
-/* Paper strip under the lede: citation on the left, one filled
- * "Read the paper" button plus quiet text links on the right, and a
+/* Paper strip under the lede: citation on the left, a tinted
+ * "Read the paper" pill plus quiet text links on the right, and a
  * "Cite this paper" disclosure underneath. Hairline rules instead of a
  * filled card keep it part of the hero rather than a banner. */
 .paper {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
-  padding: var(--space-5) 0;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-4) 0;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
