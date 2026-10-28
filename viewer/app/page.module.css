@@ -87,14 +87,15 @@
 .paperRead {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
   font-size: 0.88rem;
   font-weight: 500;
-  padding: 0.55rem 1.15rem;
+  padding: 0.35rem 0.95rem;
   border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: var(--accent-on);
-  transition: background-color var(--dur-fast) var(--ease-out);
+  border: 1px solid transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+  transition: border-color var(--dur-fast) var(--ease-out);
 }
 
 .paperRead span {
@@ -103,7 +104,7 @@
 
 .paperRead:hover,
 .paperRead:focus-visible {
-  background: var(--accent-deep);
+  border-color: var(--accent);
 }
 
 .paperRead:hover span,
