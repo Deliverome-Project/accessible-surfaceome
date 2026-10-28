@@ -4,6 +4,51 @@ import { loadCatalog, withDeepDiveFilters } from "../lib/surfaceome";
 import styles from "./page.module.css";
 
 /**
+ * Hero links to the preprint, its code and its data. The HTML and PDF
+ * are the copies hosted on the Deliverome site; bioRxiv and the DOI
+ * are the version of record. Data is the Zenodo concept DOI (all
+ * releases); /reproducibility lists the per-version handles.
+ */
+const PAPER_LINKS: {
+  label: string;
+  ariaLabel: string;
+  href: string;
+  primary?: boolean;
+}[] = [
+  {
+    label: "Read the paper",
+    ariaLabel: "Read the paper on the Deliverome site",
+    href: "https://deliverome.org/paper/accessible-surfaceome/",
+    primary: true,
+  },
+  {
+    label: "PDF",
+    ariaLabel: "Download the paper as a PDF",
+    href: "https://deliverome.org/paper/accessible-surfaceome/accessible-human-surfaceome.pdf",
+  },
+  {
+    label: "bioRxiv",
+    ariaLabel: "The preprint on bioRxiv",
+    href: "https://www.biorxiv.org/content/10.64898/2026.10.18.759859v1",
+  },
+  {
+    label: "DOI 10.64898/2026.10.18.759859",
+    ariaLabel: "Preprint DOI 10.64898/2026.10.18.759859",
+    href: "https://doi.org/10.64898/2026.10.18.759859",
+  },
+  {
+    label: "Code",
+    ariaLabel: "Source code on GitHub",
+    href: "https://github.com/Deliverome-Project/accessible-surfaceome",
+  },
+  {
+    label: "Data",
+    ariaLabel: "Data deposit on Zenodo",
+    href: "https://doi.org/10.5281/zenodo.20805383",
+  },
+];
+
+/**
  * Genome-wide index for `surfaceome.deliverome.org`. Pulls the
  * catalog from the public Worker's `/v1/catalog` endpoint at build
  * time (5k+ rows joining candidate_universe_public + triage_run_public
@@ -49,6 +94,33 @@ export default async function HomePage() {
             accessibility caveats — into per-gene records. Open
             accession, evidence-cited, agent-readable.
           </p>
+          <aside className={styles.paper} aria-labelledby="paper-heading">
+            <h2 id="paper-heading" className={`label-mono ${styles.paperLabel}`}>
+              The paper
+            </h2>
+            <p className={styles.paperCitation}>
+              <cite className={styles.paperTitle}>
+                The accessible human surfaceome
+              </cite>{" "}
+              · Carlson, Hollingsworth &amp; Smallegan · bioRxiv, 2026
+            </p>
+            <ul className={styles.paperLinks}>
+              {PAPER_LINKS.map((link) => (
+                <li key={link.href}>
+                  <a
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={link.primary ? styles.paperLinkPrimary : styles.paperLink}
+                    aria-label={`${link.ariaLabel} (opens in a new tab)`}
+                  >
+                    {link.label}
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </aside>
         </header>
 
         <CatalogTable

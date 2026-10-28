@@ -29,6 +29,87 @@
   max-width: none;
 }
 
+/* Paper card under the lede: citation line + pill links. The primary
+ * pill (HTML) reuses the filled ↗ pill from the gene page's
+ * "standalone" action; the rest are its outline variant. */
+.paper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.paperLabel {
+  /* label-mono sets the look; reset the h2 defaults. */
+  line-height: 1.2;
+}
+
+.paperCitation {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.paperTitle {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.paperLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paperLink,
+.paperLinkPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.paperLink {
+  background: var(--bg-soft);
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
+.paperLinkPrimary {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+.paperLink:hover,
+.paperLink:focus-visible {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+.paperLinkPrimary:hover,
+.paperLinkPrimary:focus-visible {
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+}
+
 .footnotes {
   display: flex;
   flex-direction: column;
