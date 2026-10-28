@@ -106,17 +106,19 @@ function placeFixed(wrap: Element, pop: HTMLElement) {
   if (dy !== 0) pop.style.top = `${Math.round(top) + dy}px`;
 }
 
-function place(wrap: Element) {
+/** Returns false when the popover had no layout box to measure (still
+ *  `display: none`, or inside a hidden section), so the caller can retry. */
+function place(wrap: Element): boolean {
   const pop = wrap.querySelector<HTMLElement>('[role="tooltip"]');
-  if (!pop) return;
+  if (!pop) return true;
   // Reset any prior placement so we measure the CSS-default position.
   resetInline(pop);
   const rect = pop.getBoundingClientRect();
-  if (rect.width === 0) return; // not laid out (hidden section)
+  if (rect.width === 0) return false;
 
   if (hasClippingAncestor(wrap)) {
     placeFixed(wrap, pop);
-    return;
+    return true;
   }
 
   const vw = document.documentElement.clientWidth;
@@ -129,6 +131,7 @@ function place(wrap: Element) {
   if (shift !== 0) {
     pop.style.setProperty("--infotip-shift", `${Math.round(shift)}px`);
   }
+  return true;
 }
 
 export function InfoTipAutoPlace() {
@@ -140,7 +143,17 @@ export function InfoTipAutoPlace() {
       const wrap = target?.closest?.("[data-infotip]");
       if (!wrap) return;
       active = wrap;
-      place(wrap);
+      // The popover is `display: none` until :hover / :focus-within
+      // applies. Browsers normally apply that before these events fire,
+      // but if it isn't laid out yet, measure again next frame (it is
+      // still fading in from opacity 0, so the nudge isn't visible).
+      if (!place(wrap)) {
+        requestAnimationFrame(() => {
+          if (active === wrap && wrap.matches(":hover, :focus-within")) {
+            place(wrap);
+          }
+        });
+      }
     }
 
     // A fixed-position popover doesn't move with its trigger, so re-place
@@ -155,9 +168,9 @@ export function InfoTipAutoPlace() {
       place(active);
     }
 
-    // Capture phase so we catch the event before the CSS :hover /
-    // :focus-within reveal paints — the popover keeps its layout box
-    // while `visibility: hidden`, so measuring here is accurate.
+    // Capture phase so we place the popover before the CSS :hover /
+    // :focus-within reveal paints (see the retry in onActivate for the
+    // case where it isn't laid out yet).
     document.addEventListener("pointerover", onActivate, true);
     document.addEventListener("focusin", onActivate, true);
     document.addEventListener("scroll", onReflow, true);

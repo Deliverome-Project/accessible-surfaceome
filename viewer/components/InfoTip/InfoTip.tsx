@@ -47,7 +47,7 @@ interface InfoTipProps {
  * + click/hover/keyboard handlers + auto-flip viewport detection.
  * Collectively that's 60 hydration islands of overhead. Converting
  * to CSS-only drops it to zero — the popover is always in the DOM
- * (hidden via `visibility: hidden`) and the browser reveals it
+ * (hidden via `display: none`) and the browser reveals it
  * natively on `:hover` / `:focus-within`.
  *
  * Trade-offs from the JS version:
@@ -65,9 +65,9 @@ interface InfoTipProps {
  *
  * The popover is rendered as a `<span role="tooltip">` inside the
  * wrapper. It's always in the DOM (necessary for CSS sibling
- * selectors to fire on hover/focus); visibility is toggled via
- * `visibility: hidden` → `visible` so it's still in the a11y tree
- * when shown.
+ * selectors to fire on hover/focus); it is toggled `display: none` →
+ * `block` (not `visibility`, whose hidden box still widened the page
+ * near the right edge) and is in the a11y tree whenever shown.
  */
 export function InfoTip({
   children,
