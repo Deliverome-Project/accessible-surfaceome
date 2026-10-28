@@ -2003,17 +2003,15 @@ export function CatalogTable({
             </>
           ) : null}
           <span className={styles.dot} aria-hidden="true">·</span>
+          {/* Kept to one clause so it shares the count line; the API
+              page documents /v1/triage/{SYMBOL} (reasoning) and
+              /v1/genes/{SYMBOL} (full records). */}
           <span>
-            TSV is verdicts + reason codes only. Free-text reasoning per
-            run is on{" "}
-            <Link href="/api/#triage" className={styles.apiHintLink}>
-              <code>GET /v1/triage/&#123;SYMBOL&#125;</code>
+            TSV has verdicts + reason codes; full reasoning and records
+            are in the{" "}
+            <Link href="/api/" className={styles.apiHintLink}>
+              API
             </Link>
-            ; the full deep-dive SurfaceomeRecord is on{" "}
-            <Link href="/api/#genes" className={styles.apiHintLink}>
-              <code>GET /v1/genes/&#123;SYMBOL&#125;</code>
-            </Link>
-            .
           </span>
         </p>
       </div>
