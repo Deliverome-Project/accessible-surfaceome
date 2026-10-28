@@ -1,5 +1,6 @@
 import { Shell } from "../components/Shell/Shell";
 import { CatalogTable } from "../components/CatalogTable/CatalogTable";
+import { PaperStrip } from "../components/PaperStrip/PaperStrip";
 import { loadCatalog, withDeepDiveFilters } from "../lib/surfaceome";
 import styles from "./page.module.css";
 
@@ -30,25 +31,12 @@ export default async function HomePage() {
             .
           </h1>
           <p className={`lede ${styles.lede}`}>
-            Roughly 10–20% of human proteins reach the cell surface, yet
-            over 65% of approved drugs target these molecules —
-            accessibility on the extracellular face of the plasma
-            membrane lets a drug act without crossing into the cell.
-            Five public databases (UniProt, GO Cellular Component, the
-            Human Protein Atlas, the Cell Surface Protein Atlas, and
-            SURFY) each catalog the surfaceome, but with different
-            definitions and methods, so their calls disagree more often
-            than they agree.
+            Five public surfaceome databases disagree more often than
+            they agree. This atlas reconciles them: an LLM agent triages
+            every protein-coding human gene, and a deep-dive agent
+            compiles cited evidence for each strong candidate.
           </p>
-          <p className={`lede ${styles.lede}`}>
-            This atlas reconciles them. An LLM triage agent scores
-            every protein-coding human gene against the union of the
-            five sources; a deep-dive agent then assembles the evidence
-            behind each strong candidate — surface-localization
-            methods, antibody validation, isoform topology,
-            accessibility caveats — into per-gene records. Open
-            accession, evidence-cited, agent-readable.
-          </p>
+          <PaperStrip />
         </header>
 
         <CatalogTable

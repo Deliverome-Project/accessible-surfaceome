@@ -1475,35 +1475,56 @@ export function CatalogTable({
               ) : null}
             </button>
           </div>
-          <button
-            type="button"
-            className={styles.downloadBtn}
-            onClick={() => {
-              // Download what the reader is actually looking at — the
-              // current filtered + sorted view, not the full 19k-row
-              // catalog. Clear filters to download the whole thing.
-              const tsv = buildCatalogTsv(sorted);
-              const tag = universe_version ?? "snapshot";
-              const filtered = sorted.length !== rows.length;
-              const suffix = filtered ? `-filtered-${sorted.length}` : "";
-              downloadTextFile(
-                `surfaceome-catalog-${tag}${suffix}.tsv`,
-                tsv,
-              );
-            }}
-            title={
-              sorted.length === rows.length
-                ? `Download all ${rows.length.toLocaleString()} catalog rows as TSV`
-                : `Download ${sorted.length.toLocaleString()} filtered rows as TSV (of ${rows.length.toLocaleString()} total)`
-            }
-          >
-            TSV ↓{" "}
-            <span className={styles.downloadCount}>
+          {/* Count, TSV download and the TSV/API note share the toolbar
+              so the table starts right under it — no separate meta row. */}
+          <div className={styles.toolbarEnd}>
+            <span className={styles.resultCount} aria-live="polite">
               {sorted.length === rows.length
-                ? rows.length.toLocaleString()
-                : `${sorted.length.toLocaleString()}/${rows.length.toLocaleString()}`}
+                ? `${sorted.length.toLocaleString()} genes`
+                : `${sorted.length.toLocaleString()} of ${rows.length.toLocaleString()} genes`}
             </span>
-          </button>
+            <button
+              type="button"
+              className={styles.downloadBtn}
+              onClick={() => {
+                // Download what the reader is actually looking at — the
+                // current filtered + sorted view, not the full 19k-row
+                // catalog. Clear filters to download the whole thing.
+                const tsv = buildCatalogTsv(sorted);
+                const tag = universe_version ?? "snapshot";
+                const filtered = sorted.length !== rows.length;
+                const suffix = filtered ? `-filtered-${sorted.length}` : "";
+                downloadTextFile(
+                  `surfaceome-catalog-${tag}${suffix}.tsv`,
+                  tsv,
+                );
+              }}
+              title={
+                sorted.length === rows.length
+                  ? `Download all ${rows.length.toLocaleString()} catalog rows as TSV`
+                  : `Download ${sorted.length.toLocaleString()} filtered rows as TSV (of ${rows.length.toLocaleString()} total)`
+              }
+            >
+              TSV ↓
+            </button>
+            <InfoTip align="end" label="About the TSV download" wide>
+              <p>
+                The TSV has verdicts and reason codes only. Free-text
+                reasoning per run is on{" "}
+                <Link href="/api/#triage" className={styles.apiHintLink}>
+                  <code>GET /v1/triage/&#123;SYMBOL&#125;</code>
+                </Link>
+                ; the full deep-dive record is on{" "}
+                <Link href="/api/#genes" className={styles.apiHintLink}>
+                  <code>GET /v1/genes/&#123;SYMBOL&#125;</code>
+                </Link>
+                .
+              </p>
+              {generated_at ? (
+                <p>Catalog generated {generated_at.slice(0, 10)}.</p>
+              ) : null}
+            </InfoTip>
+          </div>
         </div>
       </div>
 
@@ -1988,35 +2009,6 @@ export function CatalogTable({
           ) : null}
         </div>
       ) : null}
-
-      <div className={styles.resultRow}>
-        <p className={styles.resultMeta}>
-          {sorted.length === rows.length
-            ? `${sorted.length.toLocaleString()} genes`
-            : `${sorted.length.toLocaleString()} of ${rows.length.toLocaleString()} genes`}
-          {generated_at ? (
-            <>
-              <span className={styles.dot} aria-hidden="true">
-                ·
-              </span>
-              <span title={generated_at}>generated {generated_at.slice(0, 10)}</span>
-            </>
-          ) : null}
-          <span className={styles.dot} aria-hidden="true">·</span>
-          <span>
-            TSV is verdicts + reason codes only. Free-text reasoning per
-            run is on{" "}
-            <Link href="/api/#triage" className={styles.apiHintLink}>
-              <code>GET /v1/triage/&#123;SYMBOL&#125;</code>
-            </Link>
-            ; the full deep-dive SurfaceomeRecord is on{" "}
-            <Link href="/api/#genes" className={styles.apiHintLink}>
-              <code>GET /v1/genes/&#123;SYMBOL&#125;</code>
-            </Link>
-            .
-          </span>
-        </p>
-      </div>
 
       <div
         className={styles.tableScroll}
