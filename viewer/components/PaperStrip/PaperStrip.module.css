@@ -1,0 +1,205 @@
+/* Paper strip under the home-page lede: title + authors on the left, a
+ * tinted "Read the paper" pill and quiet text links on the right, the
+ * citation panel opening full-width underneath. Hairline rules instead
+ * of a filled card keep it part of the hero rather than a banner. */
+.paper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-8);
+}
+
+.citationLine {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-style: normal;
+  font-size: 1.3rem;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.meta {
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.read {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.35rem 0.95rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: var(--accent-soft);
+  color: var(--accent);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.read span {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.read:hover,
+.read:focus-visible {
+  border-color: var(--accent);
+}
+
+.read:hover span,
+.read:focus-visible span {
+  transform: translateX(2px);
+}
+
+/* Secondary links read as a dotted list: PDF · bioRxiv · Code · Data · Cite. */
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.88rem;
+}
+
+.links li + li::before {
+  content: "·";
+  padding: 0 0.6rem;
+  color: var(--muted-soft);
+}
+
+.link,
+.citeToggle {
+  color: var(--accent);
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.citeToggle {
+  font: inherit;
+  font-weight: 500;
+  line-height: inherit;
+  padding: 0;
+  background: none;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  cursor: pointer;
+}
+
+.link:hover,
+.link:focus-visible,
+.citeToggle:hover,
+.citeToggle:focus-visible,
+.citeToggle[aria-expanded="true"] {
+  border-bottom-color: var(--accent);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-warm);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.citeText {
+  margin: 0;
+  font: inherit;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bibtex {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.copy {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent);
+  background: var(--bg-soft);
+  color: var(--accent);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.copy:hover,
+.copy:focus-visible {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+/* Visible text so a failed copy is noticed by sighted readers too,
+ * not only screen readers. */
+.status {
+  align-self: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.status:empty {
+  display: none;
+}
+
+.note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.noteLink {
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.noteLink:hover,
+.noteLink:focus-visible {
+  border-bottom-color: var(--accent);
+}
