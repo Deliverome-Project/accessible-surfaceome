@@ -29,85 +29,114 @@
   max-width: none;
 }
 
-/* Paper card under the lede: citation line + pill links. The primary
- * pill (HTML) reuses the filled ↗ pill from the gene page's
- * "standalone" action; the rest are its outline variant. */
+/* Paper strip under the lede: citation on the left, one filled
+ * "Read the paper" button plus quiet text links on the right, and a
+ * "Cite this paper" disclosure underneath. Hairline rules instead of a
+ * filled card keep it part of the hero rather than a banner. */
 .paper {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-  padding: var(--space-4) var(--space-5);
-  background: var(--accent-soft);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-5) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
-.paperLabel {
-  /* label-mono sets the look; reset the h2 defaults. */
-  line-height: 1.2;
+.paperRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-8);
+}
+
+.paperText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
 .paperCitation {
   margin: 0;
-  font-size: 0.92rem;
-  line-height: 1.45;
-  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 .paperTitle {
   font-family: var(--font-display);
   font-style: normal;
-  font-size: 1.1rem;
+  font-size: 1.35rem;
+  line-height: 1.2;
   color: var(--ink);
 }
 
+.paperMeta {
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.paperActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.paperRead {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-on);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.paperRead span {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.paperRead:hover,
+.paperRead:focus-visible {
+  background: var(--accent-deep);
+}
+
+.paperRead:hover span,
+.paperRead:focus-visible span {
+  transform: translateX(2px);
+}
+
+/* Secondary links read as a dotted list: PDF · bioRxiv · Code · Data. */
 .paperLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: var(--space-1) 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
+  font-size: 0.88rem;
 }
 
-.paperLink,
-.paperLinkPrimary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  padding: 0.35rem 0.9rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--accent);
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out);
+.paperLinks li + li::before {
+  content: "·";
+  padding: 0 0.6rem;
+  color: var(--muted-soft);
 }
 
 .paperLink {
-  background: var(--bg-soft);
   color: var(--accent);
-  overflow-wrap: anywhere;
-}
-
-.paperLinkPrimary {
-  background: var(--accent);
-  color: var(--accent-on);
+  font-weight: 500;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
 }
 
 .paperLink:hover,
 .paperLink:focus-visible {
-  background: var(--accent);
-  color: var(--accent-on);
-}
-
-.paperLinkPrimary:hover,
-.paperLinkPrimary:focus-visible {
-  background: var(--accent-deep);
-  border-color: var(--accent-deep);
+  border-bottom-color: var(--accent);
 }
 
 .footnotes {

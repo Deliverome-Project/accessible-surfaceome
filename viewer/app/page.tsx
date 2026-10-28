@@ -1,40 +1,28 @@
 import { Shell } from "../components/Shell/Shell";
 import { CatalogTable } from "../components/CatalogTable/CatalogTable";
+import { PaperCite } from "../components/PaperCite/PaperCite";
 import { loadCatalog, withDeepDiveFilters } from "../lib/surfaceome";
 import styles from "./page.module.css";
 
 /**
- * Hero links to the preprint, its code and its data. The HTML and PDF
- * are the copies hosted on the Deliverome site; bioRxiv and the DOI
- * are the version of record. Data is the Zenodo concept DOI (all
- * releases); /reproducibility lists the per-version handles.
+ * Hero links to the preprint, its code and its data. The HTML copy on
+ * the Deliverome site is the primary call to action; the PDF sits
+ * beside it, bioRxiv is the version of record. Data is the Zenodo
+ * concept DOI (all releases); /reproducibility lists the per-version
+ * handles.
  */
-const PAPER_LINKS: {
-  label: string;
-  ariaLabel: string;
-  href: string;
-  primary?: boolean;
-}[] = [
-  {
-    label: "Read the paper",
-    ariaLabel: "Read the paper on the Deliverome site",
-    href: "https://deliverome.org/paper/accessible-surfaceome/",
-    primary: true,
-  },
+const PAPER_HTML_URL = "https://deliverome.org/paper/accessible-surfaceome/";
+
+const PAPER_LINKS: { label: string; ariaLabel: string; href: string }[] = [
   {
     label: "PDF",
-    ariaLabel: "Download the paper as a PDF",
+    ariaLabel: "Paper PDF",
     href: "https://deliverome.org/paper/accessible-surfaceome/accessible-human-surfaceome.pdf",
   },
   {
     label: "bioRxiv",
-    ariaLabel: "The preprint on bioRxiv",
+    ariaLabel: "Preprint on bioRxiv",
     href: "https://www.biorxiv.org/content/10.64898/2026.10.18.759859v1",
-  },
-  {
-    label: "DOI 10.64898/2026.10.18.759859",
-    ariaLabel: "Preprint DOI 10.64898/2026.10.18.759859",
-    href: "https://doi.org/10.64898/2026.10.18.759859",
   },
   {
     label: "Code",
@@ -95,31 +83,49 @@ export default async function HomePage() {
             accession, evidence-cited, agent-readable.
           </p>
           <aside className={styles.paper} aria-labelledby="paper-heading">
-            <h2 id="paper-heading" className={`label-mono ${styles.paperLabel}`}>
-              The paper
-            </h2>
-            <p className={styles.paperCitation}>
-              <cite className={styles.paperTitle}>
-                The accessible human surfaceome
-              </cite>{" "}
-              · Carlson, Hollingsworth &amp; Smallegan · bioRxiv, 2026
-            </p>
-            <ul className={styles.paperLinks}>
-              {PAPER_LINKS.map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={link.primary ? styles.paperLinkPrimary : styles.paperLink}
-                    aria-label={`${link.ariaLabel} (opens in a new tab)`}
-                  >
-                    {link.label}
-                    <span aria-hidden="true">↗</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <div className={styles.paperRow}>
+              <div className={styles.paperText}>
+                <h2 id="paper-heading" className="label-mono">
+                  The paper
+                </h2>
+                <p className={styles.paperCitation}>
+                  <cite className={styles.paperTitle}>
+                    The accessible human surfaceome
+                  </cite>
+                  <span className={styles.paperMeta}>
+                    Carlson, Hollingsworth &amp; Smallegan · bioRxiv, 2026
+                  </span>
+                </p>
+              </div>
+              <div className={styles.paperActions}>
+                <a
+                  href={PAPER_HTML_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.paperRead}
+                  aria-label="Read the paper (opens in a new tab)"
+                >
+                  Read the paper
+                  <span aria-hidden="true">→</span>
+                </a>
+                <ul className={styles.paperLinks}>
+                  {PAPER_LINKS.map((link) => (
+                    <li key={link.href}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.paperLink}
+                        aria-label={`${link.ariaLabel} (opens in a new tab)`}
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <PaperCite />
           </aside>
         </header>
 

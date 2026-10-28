@@ -1,0 +1,117 @@
+.cite {
+  font-size: 0.85rem;
+}
+
+.summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 500;
+  list-style: none;
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Chevron that turns when open. */
+.summary::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.cite[open] > .summary::before {
+  transform: rotate(45deg);
+}
+
+.summary:hover,
+.summary:focus-visible {
+  color: var(--accent-deep);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-warm);
+  border-radius: var(--radius-sm);
+}
+
+.citation {
+  margin: 0;
+  font: inherit;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bibtex {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+}
+
+/* Status sits after the buttons; visible text so a failed copy is
+ * noticed by sighted readers too, not only screen readers. */
+.status {
+  align-self: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.status:empty {
+  display: none;
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.copy {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent);
+  background: var(--bg-soft);
+  color: var(--accent);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.copy:hover,
+.copy:focus-visible {
+  background: var(--accent);
+  color: var(--accent-on);
+}
+
+.note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.noteLink {
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.noteLink:hover,
+.noteLink:focus-visible {
+  border-bottom-color: var(--accent);
+}
