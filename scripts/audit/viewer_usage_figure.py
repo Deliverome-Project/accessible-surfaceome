@@ -1,8 +1,9 @@
 """Slide figure: is the Surfaceome viewer being used?
 
 Pulls Cloudflare Web Analytics (cookie-free RUM, adaptively sampled) for
-``surfaceome.deliverome.org`` since the Oct 19 launch (capped at the last
-90 days, just inside the 13 weeks the account's GraphQL API serves) — plus the Zenodo data record's download count,
+``surfaceome.deliverome.org`` for the first 10 days after the Oct 19 launch
+(Oct 19–29, fixed so reruns don't change the numbers; the account's GraphQL
+API only serves the last 13 weeks, so this stops working after mid-January) — plus the Zenodo data record's download count,
 and renders a three-panel summary:
 
   a. visits and page views by region (US, Europe, Asia, other)
@@ -53,6 +54,7 @@ ASIA = set(
 REGIONS = ["United States", "Europe", "Asia", "Other"]
 ZENODO_CONCEPT = "20805383"
 LAUNCH = dt.date(2026, 10, 19)  # preprint posted, viewer announced
+WINDOW_END = LAUNCH + dt.timedelta(days=10)
 SECTIONS = {
     "": "Catalog (home)",
     "api": "API docs",
@@ -64,18 +66,18 @@ SECTIONS = {
 }
 
 QUERY = """
-query($acc: string!, $since: Date!) { viewer { accounts(filter:{accountTag:$acc}) {
+query($acc: string!, $since: Date!, $until: Date!) { viewer { accounts(filter:{accountTag:$acc}) {
   # Grouping both by date and requestHost keeps Cloudflare's adaptive sampling
   # fine-grained; a bare country rollup returns a handful of coarse rows.
-  countries: rumPageloadEventsAdaptiveGroups(limit: 10000, filter:{date_geq:$since, requestHost:"%s"}) {
+  countries: rumPageloadEventsAdaptiveGroups(limit: 10000, filter:{date_geq:$since, date_leq:$until, requestHost:"%s"}) {
     count sum { visits } dimensions { date requestHost countryName } }
-  paths: rumPageloadEventsAdaptiveGroups(limit: 10000, filter:{date_geq:$since, requestHost:"%s"}) {
+  paths: rumPageloadEventsAdaptiveGroups(limit: 10000, filter:{date_geq:$since, date_leq:$until, requestHost:"%s"}) {
     count dimensions { date requestHost requestPath } }
 }}}
 """ % (VIEWER, VIEWER)
 
 
-def fetch_rum(since: dt.date) -> dict:
+def fetch_rum(since: dt.date, until: dt.date) -> dict:
     r = httpx.post(
         "https://api.cloudflare.com/client/v4/graphql",
         headers={"Authorization": f"Bearer {os.environ['CLOUDFLARE_API_TOKEN']}"},
@@ -84,6 +86,7 @@ def fetch_rum(since: dt.date) -> dict:
             "variables": {
                 "acc": os.environ["CLOUDFLARE_ACCOUNT_ID"],
                 "since": since.isoformat(),
+                "until": until.isoformat(),
             },
         },
         timeout=60,
@@ -125,11 +128,8 @@ def section_of(path: str) -> str:
 
 def main() -> None:
     load_env()
-    today = dt.date.today()
-    # Exactly 13 weeks back sits on the API's retention edge, where the
-    # per-day country query intermittently returns no rows at all.
-    since = max(LAUNCH, today - dt.timedelta(days=90))
-    rum = fetch_rum(since)
+    since, until = LAUNCH, WINDOW_END
+    rum = fetch_rum(since, until)
     if not rum["countries"] or not rum["paths"]:
         raise SystemExit("Cloudflare returned no RUM rows; retry or shorten the window")
 
@@ -202,7 +202,7 @@ def main() -> None:
         )
     ax_a.set_ylim(0, regions_long["n"].max() * 1.1)
     ax_a.set_xlabel("")
-    ax_a.set_ylabel(f"Visits and page views since {since:%b %-d}")
+    ax_a.set_ylabel("Visits and page views, first 10 days after launch")
     ax_a.legend(title=None, frameon=False, loc="upper right")
     ax_a.text(0, 1.03, "a", transform=ax_a.transAxes, fontsize=22, fontweight="bold")
     sns.despine(ax=ax_a, top=True, right=True)
@@ -246,7 +246,7 @@ def main() -> None:
     fig.text(
         0.01,
         0.01,
-        f"Cloudflare Web Analytics (cookie-free, sampled estimates), {since:%b %d} – {today:%b %d, %Y}. "
+        f"Cloudflare Web Analytics (cookie-free, sampled estimates), {since:%b %d} – {until:%b %d, %Y}. "
         "A visit is a page load arriving from outside the site; there is no unique-person count.",
         fontsize=11,
         color=COLORS["neutral"],
@@ -255,11 +255,11 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     save_figure(fig, "viewer_usage_sab", OUT_DIR, formats=("pdf", "png"))
     regions.to_csv(OUT_DIR / "viewer_usage_regions.tsv", sep="\t", index=False)
-    plot_regions_compact(regions_long, since)
+    plot_regions_compact(regions_long)
     print(headline)
 
 
-def plot_regions_compact(regions_long: pd.DataFrame, since: dt.date) -> None:
+def plot_regions_compact(regions_long: pd.DataFrame) -> None:
     """Panel a alone at 6 x 3.5 in, for dropping into a slide beside text."""
     setup_plotting_style(font_scale=1.0)
     fig, ax = plt.subplots(figsize=(6, 3.5))
@@ -281,7 +281,7 @@ def plot_regions_compact(regions_long: pd.DataFrame, since: dt.date) -> None:
         )
     ax.set_ylim(0, regions_long["n"].max() * 1.15)
     ax.set_xlabel("")
-    ax.set_ylabel(f"Count since {since:%b %-d}", fontsize=12)
+    ax.set_ylabel("Count, first 10 days after launch", fontsize=12)
     ax.tick_params(labelsize=11)
     ax.legend(title=None, frameon=False, loc="upper right", fontsize=11)
     sns.despine(ax=ax, top=True, right=True)
