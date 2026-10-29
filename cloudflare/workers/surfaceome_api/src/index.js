@@ -4738,6 +4738,73 @@ function isD1Busy(e) {
   return D1_BUSY_PATTERNS.some((re) => re.test(msg));
 }
 
+// ---------------------------------------------------------------------------
+// Anonymous usage events: POST /v1/events
+//
+// The viewer beacons one event per click on a link or button so we can see
+// which pages and controls people use. Each event becomes one Workers
+// Analytics Engine data point of (page kind, gene, element kind, label) and
+// nothing else: no IP, user agent, country, cookie or visitor id is written,
+// so events can't be joined into a visitor or a session. The IP is used only
+// by the in-memory per-IP rate limiter, as on every other route. The viewer's
+// /privacy page describes this; keep the two in step.
+//
+// The endpoint always answers 204, whatever the body, so a beacon never
+// surfaces an error in the visitor's console and a junk payload learns
+// nothing. Without the USAGE_EVENTS binding it is a no-op.
+// ---------------------------------------------------------------------------
+
+const USAGE_EVENT_MAX_BODY = 2048;
+const USAGE_EVENT_KINDS = new Set(["link", "external", "button"]);
+const USAGE_SECTIONS = new Set([
+  "benchmark", "compare", "api", "prompts", "reproducibility", "privacy",
+]);
+const USAGE_ORIGIN_RE = /^(https:\/\/([a-z0-9-]+\.)*deliverome\.org|http:\/\/localhost(:\d+)?)$/;
+
+/** `/EGFR/` → { page: "gene", gene: "EGFR" }; `/benchmark/` → { page: "benchmark" }. */
+export function classifyUsagePage(pathname) {
+  const segments = String(pathname).split("/").filter(Boolean);
+  if (segments.length === 0) return { page: "home", gene: "" };
+  const first = segments[0].toLowerCase();
+  if (segments.length === 1 && USAGE_SECTIONS.has(first)) return { page: first, gene: "" };
+  if (segments.length === 1 && /^[A-Za-z0-9][A-Za-z0-9.-]{0,24}$/.test(segments[0])) {
+    return { page: "gene", gene: segments[0].toUpperCase() };
+  }
+  return { page: "other", gene: "" };
+}
+
+/** Collapse a UI label to one short line, and drop anything e-mail shaped. */
+export function cleanUsageLabel(label) {
+  const s = String(label).replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!s || s.includes("@")) return "";
+  return s.slice(0, 80);
+}
+
+async function handleUsageEvent(request, env) {
+  const done = () => new Response(null, { status: 204, headers: { ...CORS_HEADERS, "Cache-Control": "no-store" } });
+  if (!env.USAGE_EVENTS) return done();
+  if (!USAGE_ORIGIN_RE.test(request.headers.get("Origin") || "")) return done();
+  let ev;
+  try {
+    const body = await request.text();
+    if (body.length > USAGE_EVENT_MAX_BODY) return done();
+    ev = JSON.parse(body);
+  } catch {
+    return done();
+  }
+  if (!ev || typeof ev !== "object" || typeof ev.path !== "string" || !ev.path.startsWith("/")) return done();
+  if (!USAGE_EVENT_KINDS.has(ev.kind)) return done();
+  const label = cleanUsageLabel(ev.label ?? "");
+  if (!label) return done();
+  const { page, gene } = classifyUsagePage(ev.path.slice(0, 120));
+  env.USAGE_EVENTS.writeDataPoint({
+    indexes: [page],
+    blobs: [page, gene, ev.kind, label],
+    doubles: [1],
+  });
+  return done();
+}
+
 function databaseBusy() {
   return new Response(
     JSON.stringify({ error: "database_busy", retry_after_s: 30 }, null, 2),
@@ -4799,10 +4866,15 @@ async function routeRequest(request, env, ctx) {
       if (limited) return limited;
     }
 
-    // POST is allowed ONLY on the feedback submit endpoint.
+    // POST is allowed ONLY on the feedback submit and usage-event endpoints.
     if (request.method === "POST") {
       if (path === "/v1/feedback/submit") {
         return handleFeedbackSubmit(request, env, url);
+      }
+      if (path === "/v1/events") {
+        const limited = await checkRate(env, request, path);
+        if (limited) return limited;
+        return handleUsageEvent(request, env);
       }
       return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
     }

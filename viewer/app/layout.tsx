@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Playfair_Display } from "next/font/google";
+import { UsageBeacon } from "../components/UsageBeacon/UsageBeacon";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -72,7 +73,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // https://nextjs.org/docs/messages/missing-data-scroll-behavior
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${manrope.variable} ${playfair.variable}`}>{children}</body>
+      <body className={`${manrope.variable} ${playfair.variable}`}>
+        {children}
+        <UsageBeacon />
+      </body>
     </html>
   );
 }
