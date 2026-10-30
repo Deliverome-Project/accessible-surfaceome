@@ -2411,14 +2411,17 @@ function CatalogRowView({
       ) : null}
     </span>
   );
+  // Gene pages are one client shell with no per-gene build output, so
+  // next/link can't route to them client-side: it only adds a prefetch
+  // that 404s for every visible row. A plain anchor loads the page directly.
   const symbolButton = row.deep_dive ? (
-    <Link
+    <a
       href={`/${row.symbol}/`}
       className={styles.symbolButton}
       aria-label={`Open the deep-dive page for ${row.symbol}`}
     >
       {symbolStack}
-    </Link>
+    </a>
   ) : (
     <button
       type="button"
@@ -2570,14 +2573,14 @@ function CatalogRowView({
         ) => (
           <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
             {val ? (
-              <Link
+              <a
                 href={`/${row.symbol}/`}
                 className={`${styles.ddVital} ${DD_TONE_CLASS[tone]} ${styles.ddVitalLink}`}
                 title={`${title} — open the ${row.symbol} deep-dive`}
                 aria-label={`${title} — open the ${row.symbol} deep-dive page`}
               >
                 {label}
-              </Link>
+              </a>
             ) : (
               <span className={styles.dim}>—</span>
             )}
