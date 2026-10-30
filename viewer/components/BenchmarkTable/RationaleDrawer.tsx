@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import type {
   BenchmarkMatrix,
@@ -377,12 +376,12 @@ export function RationaleDrawer({
           </dl>
           {deepDiveGenes.has(data.symbol) ? (
             <p className={styles.drawerFooter}>
-              <Link
+              <a
                 href={`/${data.symbol}/`}
                 className={styles.drawerDeepDiveLink}
               >
                 ↗ Open the {data.symbol} deep-dive page
-              </Link>
+              </a>
             </p>
           ) : null}
         </div>

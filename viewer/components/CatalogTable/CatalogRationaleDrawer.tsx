@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { prettyEnum } from "../../lib/enums";
 import styles from "./CatalogRationaleDrawer.module.css";
 
@@ -226,12 +225,12 @@ export function CatalogRationaleDrawer({
           ) : null}
           {hasDeepDive ? (
             <p className={styles.drawerFooter}>
-              <Link
+              <a
                 href={`/${selectedSymbol}/`}
                 className={styles.drawerDeepDiveLink}
               >
                 ↗ Open the {selectedSymbol} deep-dive page
-              </Link>
+              </a>
             </p>
           ) : null}
         </div>

@@ -887,9 +887,9 @@ function BenchRowView({
         <div className={styles.expandedBlock}>
           {hasDeepDive ? (
             <p className={styles.expandedActions}>
-              <Link href={`/${row.gene_symbol}/`} className={styles.deepDiveLink}>
+              <a href={`/${row.gene_symbol}/`} className={styles.deepDiveLink}>
                 ↗ Open the {row.gene_symbol} deep-dive page
-              </Link>
+              </a>
             </p>
           ) : null}
           <VariantGrid

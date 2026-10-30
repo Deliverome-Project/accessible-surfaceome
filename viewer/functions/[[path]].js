@@ -22,13 +22,53 @@
  * fall back to the shell for genuinely-unmatched *navigation* requests. It
  * never masks a missing build asset (those keep their real 404), and — unlike
  * advanced-mode `_worker.js` — it leaves `_headers` / `_redirects` in force.
+ *
+ * It also stamps the security headers onto every HTML response, and rewrites
+ * the gene shell's <title> / description / og:url to name the gene, so a
+ * shared gene link doesn't unfurl as the generic site page.
  */
+import {
+  geneShellMeta,
+  geneSymbolFromPath,
+  withSecurityHeaders,
+} from "../lib/gene-shell-meta.js";
+
+function htmlWithSecurityHeaders(res) {
+  if (!(res.headers.get("content-type") || "").includes("text/html")) return res;
+  return new Response(res.body, {
+    status: res.status,
+    statusText: res.statusText,
+    headers: withSecurityHeaders(res.headers),
+  });
+}
+
+function rewriteGeneHead(res, meta) {
+  const setContent = (attr, value) => ({
+    element(el) {
+      el.setAttribute(attr, value);
+    },
+  });
+  return new HTMLRewriter()
+    .on("title", {
+      element(el) {
+        el.setInnerContent(meta.title);
+      },
+    })
+    .on('meta[name="description"]', setContent("content", meta.description))
+    .on('meta[property="og:title"]', setContent("content", meta.title))
+    .on('meta[property="og:description"]', setContent("content", meta.description))
+    .on('meta[property="og:url"]', setContent("content", meta.url))
+    .on('meta[name="twitter:title"]', setContent("content", meta.title))
+    .on('meta[name="twitter:description"]', setContent("content", meta.description))
+    .transform(res);
+}
+
 export async function onRequest(context) {
   const { request, next, env } = context;
 
   // Serve the real static asset if one exists (pages, chunks, /data, …).
   const res = await next();
-  if (res.status !== 404) return res;
+  if (res.status !== 404) return htmlWithSecurityHeaders(res);
 
   const url = new URL(request.url);
   const p = url.pathname;
@@ -55,8 +95,13 @@ export async function onRequest(context) {
     const shell = await env.ASSETS.fetch(new URL("/gene/", url).toString());
     // Preserve a clean 200 with the shell's own headers; the body is the
     // client-shell HTML, which resolves the symbol from the URL at runtime.
-    return new Response(shell.body, { status: 200, headers: shell.headers });
+    const page = new Response(shell.body, {
+      status: 200,
+      headers: withSecurityHeaders(shell.headers),
+    });
+    const symbol = geneSymbolFromPath(p);
+    return symbol ? rewriteGeneHead(page, geneShellMeta(symbol, url.origin)) : page;
   }
 
-  return res;
+  return htmlWithSecurityHeaders(res);
 }
