@@ -178,6 +178,7 @@ export function CommunityNotesCard({ gene, uniprotAcc, n }: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                     title={`ORCID: ${note.orcid}`}
+                    data-track="ORCID"
                   >
                     ORCID ↗
                   </a>

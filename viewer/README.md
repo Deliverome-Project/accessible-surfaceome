@@ -140,6 +140,20 @@ an old link opens a broader view instead of an error. Renaming a
 parameter or filter value breaks links people have already shared, so
 keep the old name accepted when you do.
 
+### Usage analytics
+
+Two sources, both cookie-free. Cloudflare Web Analytics gives page views and
+visits. Clicks on links and buttons are counted by `components/UsageBeacon`,
+which beacons `{path, kind, label}` to the Worker's `POST /v1/events`; the
+Worker stores page kind, gene, element kind and label in the
+`surfaceome_viewer_events` Analytics Engine dataset and nothing else (no IP,
+user agent or visitor id). Nothing is sent under Global Privacy Control or Do
+Not Track. A control's label is its `data-track`, else `aria-label`, `title`
+or text; set `data-track` on any control whose text or title could carry
+personal data (see the ORCID link), and `data-track-ignore` to skip a subtree.
+Read the counts with `uv run python scripts/cloud/viewer_usage_report.py`.
+Change `/privacy` in the same change as anything that alters what is sent.
+
 ## Layout
 
 - `app/` — Next.js App Router (catalogue `/` + client gene shell `app/gene/`,
