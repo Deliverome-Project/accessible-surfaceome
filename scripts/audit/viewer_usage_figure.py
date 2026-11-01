@@ -2,7 +2,7 @@
 
 Pulls Cloudflare Web Analytics (cookie-free RUM, adaptively sampled) for
 ``surfaceome.deliverome.org`` for the first 10 days after the Oct 19 launch
-(Oct 19–29, fixed so reruns don't change the numbers; the account's GraphQL
+(Oct 19–28, ten complete days, fixed so reruns don't change the numbers; the account's GraphQL
 API only serves the last 13 weeks, so this stops working after mid-January) — plus the Zenodo data record's download count,
 and renders a three-panel summary:
 
@@ -54,7 +54,9 @@ ASIA = set(
 REGIONS = ["United States", "Europe", "Asia", "Other"]
 ZENODO_CONCEPT = "20805383"
 LAUNCH = dt.date(2026, 10, 19)  # preprint posted, viewer announced
-WINDOW_END = LAUNCH + dt.timedelta(days=10)
+# Inclusive end date: Oct 19 + 9 = Oct 28, ten full days. Ending on a day
+# that is still in progress lets a rerun change the numbers.
+WINDOW_END = LAUNCH + dt.timedelta(days=9)
 SECTIONS = {
     "": "Catalog (home)",
     "api": "API docs",
