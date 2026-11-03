@@ -104,7 +104,7 @@ def resolve_gene_symbols_with_mygene(
                 "gene_symbol_resolved",
                 "gene_symbol_mapping_status",
                 "gene_symbol_mygene_score",
-            ]  # ty:ignore[invalid-argument-type]
+            ]
         )
         return empty, {
             "n_query_symbols": 0,
