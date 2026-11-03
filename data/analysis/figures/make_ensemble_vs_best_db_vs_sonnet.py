@@ -6,19 +6,27 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``ensemble_vs_best_db_vs_sonnet.{pdf,png}`` from the public repo.
+"""Reproduce ``ensemble_vs_best_db_vs_sonnet.{pdf,png}`` from the bundled TSV.
 
-Six-bar comparison on the 147-gene bench:
+Seven-bar comparison on the 147-gene bench:
 
-* Sonnet (+ IDs)        — the Claude triage agent on its canonical
-                           NCBI-resolver prompt variant
-* UniProt (TM+signal)    — best single classical DB, under its
-                           bench-optimized cutoff (TM OR signal-peptide
-                           positive)
-* ≥2 / ≥3 / ≥4 / ≥5 DB   — ensemble callers: "yes" iff at least k of
-                           the 5 surface DBs (UniProt, GO CC, HPA,
-                           SURFY, CSPA, each under its own optimized
-                           cutoff) vote yes
+* Sonnet (+ IDs)          — the Claude Sonnet 4.6 triage agent on its
+                            canonical NCBI-resolver ("gene identifiers")
+                            prompt variant. Bar = MEAN of the three
+                            per-replicate accuracies, with SEM error bar
+                            and the individual replicates as dots
+* UniProt (TM+signal)     — best single classical DB, under its
+                            bench-optimized cutoff (TM OR signal-peptide
+                            positive)
+* 1+ / 2+ / 3+ / 4+ / 5+ DB — ensemble callers: "yes" iff at least k of
+                            the 5 surface DBs (UniProt, GO CC, HPA,
+                            SURFY, CSPA, each under its own optimized
+                            cutoff) vote yes. k=1 is the union (any DB);
+                            k=5 is the strict intersection of all 5
+
+Reads only the bundled ``ensemble_vs_best_db_vs_sonnet.tsv`` sibling
+(in-repo: ``data/processed/figures/``; built by
+``scripts/build_figure_tsvs.py``).
 
 Accuracy uses the project's soft-credit rule: yes ≡ contextual on
 the positive side; ``no`` matches ``no`` only.
@@ -31,6 +39,7 @@ Standalone — ``uv run make_ensemble_vs_best_db_vs_sonnet.py``.
 """
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 
 import matplotlib.font_manager as fm
@@ -99,7 +108,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -108,12 +117,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 20,
-        "axes.labelsize": 20,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 15,
+        "axes.labelsize": 17,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -128,12 +137,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 20,
-        "ytick.labelsize": 20,
+        "xtick.labelsize": 15,
+        "ytick.labelsize": 15,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 20,
+        "legend.fontsize": 15,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -141,13 +150,24 @@ def _apply_brand_style() -> None:
 
 DB_LABELS = ["UniProt", "GO CC", "HPA", "SURFY", "CSPA"]
 
-# Sequential teal ramp for the ≥k ensembles: light → dark = permissive → strict.
+# Grey ramp for the k+ ensembles, light → dark as more databases must agree
+# (permissive union → strict intersection). Neutral so the ensembles can't be
+# mistaken for any single database's brand colour; shared by S5 and S6.
 ENSEMBLE_PALETTE = {
-    2: "#7AAB9F",  # teal-light
-    3: "#4D8A80",
-    4: "#3D6B60",
-    5: "#244840",  # teal-deep
+    1: "#CFCFCF",  # 1+ DB: the union
+    2: "#A7A7A7",
+    3: "#7E7E7E",
+    4: "#565656",
+    5: "#2E2E2E",  # 5+ DB: the strict intersection
 }
+
+def _count_text_color(hex_color: str, dark: str) -> str:
+    """Dark text on light bars, white on dark ones (WCAG relative luminance)."""
+    def _lin(c: float) -> float:
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (int(hex_color.lstrip("#")[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    lum = 0.2126 * _lin(r) + 0.7152 * _lin(g) + 0.0722 * _lin(b)
+    return dark if lum > 0.18 else "white"
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
@@ -207,19 +227,27 @@ def main() -> None:
                 return out
         return out
 
-    sonnet_ncbi = (
-        data[(data["model"] == "claude-sonnet-4-6") & (data["prompt_variant"] == "ncbi")]
-        .groupby("gene_symbol", sort=False)["predicted_verdict"].first().to_dict()
-    )
+    # Majority across replicates, not the first one. `.first()` silently
+    # reported replicate 1 as if it were the run's verdict, which flipped
+    # two genes (ABCB9, C3) and understated the agent by 1.4 pp. Same bug
+    # class as the reason-collapse fix in curator_vs_agent_reason.py.
+    _sonnet_rows = data[
+        (data["model"] == "claude-sonnet-4-6") & (data["prompt_variant"] == "ncbi")
+    ]
+    sonnet_ncbi = {
+        gene: Counter(verdicts).most_common(1)[0][0]
+        for gene, verdicts in _sonnet_rows.groupby("gene_symbol", sort=False)[
+            "predicted_verdict"
+        ]
+    }
 
     callers: list[tuple[str, callable, str]] = [
         ("Sonnet (+ IDs)",      lambda g: sonnet_ncbi.get(g) or "no",                              BRAND_CLAUDE_ORANGE),
         ("UniProt\n(TM+signal)", lambda g: "yes" if db_votes_for(acc_by_gene.get(g, "")).get("UniProt") else "no",
                                                                                                     BRAND_PALETTE[0]),
     ]
-    # "k+ DB" rather than "≥k DB" — static Manrope OTFs lack the ≥ glyph
-    # and matplotlib silently drops it; ASCII "+" stays robust.
-    for k in (2, 3, 4, 5):
+    # "k+ DB" = at least k of the 5 DBs vote yes.
+    for k in (1, 2, 3, 4, 5):
         callers.append((
             f"{k}+ DB",
             (lambda g, k=k: "yes" if sum(db_votes_for(acc_by_gene.get(g, "")).values()) >= k else "no"),
@@ -260,25 +288,33 @@ def main() -> None:
         print(f"  {row['caller'].replace(chr(10), ' '):20s}  "
               f"{row['accuracy']*100:5.1f}%  ({row['n_correct']}/{row['n_total']})")
 
-    fig, ax = plt.subplots(figsize=(10, 5.5))
+    fig, ax = plt.subplots(figsize=(13, 6))
     bars = ax.bar(
         df["caller"], df["accuracy"] * 100,
         color=df["color"], edgecolor="none", width=0.6,
     )
-    for bar, row in zip(bars, df.to_dict("records"), strict=True):
+    # Lift the Sonnet % label clear of its replicate dots + SEM cap.
+    _reps = [v * 100 for v in sonnet_rep_accs]
+    sonnet_top = 0.0
+    if len(_reps) >= 2:
+        _m = sum(_reps) / len(_reps)
+        _sem = ((sum((v - _m) ** 2 for v in _reps) / (len(_reps) - 1)) ** 0.5) / len(_reps) ** 0.5
+        sonnet_top = max(max(_reps), _m + _sem)
+    for i, (bar, row) in enumerate(zip(bars, df.to_dict("records"), strict=True)):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 1.2,
+            # Extra lift on Sonnet: clear the dot edge, not just its center.
+            max(bar.get_height(), sonnet_top if i == 0 else 0.0) + (2.2 if i == 0 else 1.2),
             f"{row['accuracy']*100:.1f}%",
             ha="center", va="bottom",
-            fontsize=20, fontweight="bold", color=BRAND_INK,
+            fontsize=13.5, color=BRAND_INK,
         )
         ax.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() / 2,
             f"{row['n_correct']}/{row['n_total']}",
             ha="center", va="center",
-            fontsize=15, color="white", fontweight="bold",
+            fontsize=13, color=_count_text_color(row["color"], BRAND_INK),
         )
 
     # Overlay individual-replicate accuracies + SEM on the Sonnet bar only.
@@ -300,10 +336,8 @@ def main() -> None:
             ax.scatter(xc + jitter, rv, s=24, color=BRAND_INK,
                        edgecolor="white", linewidth=0.5, zorder=5, alpha=0.9)
 
-    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)", fontsize=19)
+    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)")
     ax.set_ylim(0, 105)
-    ax.tick_params(axis="x", labelsize=17)
-    ax.tick_params(axis="y", labelsize=14)
     sns.despine(ax=ax, top=True, right=True)
 
     fig.tight_layout()

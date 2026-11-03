@@ -1,0 +1,196 @@
+"""Geometry verification + repair for literature tag-site proposals.
+
+The synthesis stage is handed the canonical sequence and per-residue topology,
+but it reads them as raw strings and mis-derives coordinates from them (the
+observed failure: a 26-residue signal-peptide run reported as 18, shifting every
+downstream boundary by 8). This module re-derives the geometry IN CODE and either
+repairs the proposal or rejects it, so a position that was never checked against
+the sequence can no longer reach D1.
+"""
+from __future__ import annotations
+
+import re
+
+from .normalize import compartment_for_site, topology_gate
+
+
+def check_residues(
+    *, sequence: str, residue: int | None, before: str | None, after: str | None
+) -> str | None:
+    """None when ``before``/``after`` match ``sequence`` at the junction
+    ``residue``|``residue+1``; else a human-readable mismatch reason.
+
+    ``after`` is not checked at the C-terminus (there is no residue+1 there).
+
+    ``residue == 0`` is the N-TERMINAL PREPEND: the tag goes before residue 1,
+    so there is no before-residue to read. It is a real and common junction —
+    two control rows use it, and it is the only position available on a protein
+    whose N-terminus is extracellular and which has no signal peptide, such as a
+    GPCR. Rejecting it as "outside the sequence" dropped a site the model had
+    proposed at exactly the position the benchmark expected."""
+    if not sequence or residue is None:
+        return "no sequence or residue to check"
+    if residue == 0:
+        real_after = sequence[0]
+        if after and after != real_after:
+            return f"claims {after} at 1 but sequence has {real_after}1"
+        if before:
+            return "an N-terminal prepend (residue 0) has no before-residue"
+        return None
+    if residue < 1 or residue > len(sequence):
+        return f"residue {residue} is outside the sequence (1-{len(sequence)})"
+    real_before = sequence[residue - 1]
+    if before and before != real_before:
+        return f"claims {before}{residue} but sequence has {real_before}{residue}"
+    if residue < len(sequence):
+        real_after = sequence[residue]
+        if after and after != real_after:
+            return (
+                f"claims {after} at {residue + 1} but sequence has "
+                f"{real_after}{residue + 1}"
+            )
+    return None
+
+
+# A junction the model spelled out in prose, e.g. "HSEAKK|GSKFDT". The pipe is the
+# insertion point, so the junction residue is (start + len(left) - 1).
+_JUNCTION_RE = re.compile(
+    r"(?<![A-Za-z])([ACDEFGHIKLMNPQRSTVWY]{3,})\|([ACDEFGHIKLMNPQRSTVWY]{3,})(?![A-Za-z])"
+)
+
+
+def junction_from_prose(text: str | None, sequence: str) -> int | None:
+    """The junction residue a pipe-delimited sequence window in ``text`` pins, or
+    None when there is no window or it does not locate UNIQUELY in ``sequence``.
+
+    Recovers the real position when the model described the right window but
+    wrote the wrong integer. Ambiguity is a refusal, never a guess."""
+    if not text or not sequence:
+        return None
+    for m in _JUNCTION_RE.finditer(text):
+        left, right = m.group(1), m.group(2)
+        window = left + right
+        first = sequence.find(window)
+        if first < 0 or sequence.find(window, first + 1) >= 0:
+            continue  # absent, or ambiguous
+        return first + len(left)
+    return None
+
+
+def _set_junction(site, residue: int, sequence: str) -> None:
+    """Move ``site`` to ``residue`` and re-read its flanking residues FROM the
+    sequence, so a repaired site can never keep the model's stale letters."""
+    site.insert_after_residue = residue
+    site.residue_before = sequence[residue - 1]
+    site.residue_after = sequence[residue] if residue < len(sequence) else ""
+
+
+def repair_proposal(site, *, sequence: str, sp_end: int = 0) -> str | None:  # noqa: ARG001
+    """Repair ``site``'s junction in place; return the repair kind, or None when
+    nothing was changed (either it already verifies, or it is unrecoverable).
+
+    One repair, deterministic:
+
+    * ``prose_window`` — the model spelled the right sequence window into its
+      rationale but wrote the wrong integer; the window re-pins it uniquely.
+      This is the TMEM123 K155 class.
+
+    A mismatched site with no recoverable window is left ALONE for the caller to
+    reject — relocating it by guesswork would launder a fabricated position.
+
+    There is deliberately NO signal-peptide snap. Moving a ``terminal_n`` to the
+    cleavage site looks principled but invents a position: for TMEM123 it yields
+    A26, which the curated controls removed twice as topology-derived with no
+    publication behind it, while the real validated site is A33 (EndoNB) — seven
+    residues further in, in the unstructured region. A tag inside the peptide is
+    rejected by the topology gate instead, which is the honest outcome."""
+    if not sequence:
+        return None
+
+    if check_residues(
+        sequence=sequence,
+        residue=site.insert_after_residue,
+        before=site.residue_before,
+        after=site.residue_after,
+    ) is None:
+        return None  # already verifies
+
+    pinned = junction_from_prose(site.rationale, sequence)
+    if pinned is not None:
+        _set_junction(site, pinned, sequence)
+        return "prose_window"
+
+    # * ``letter_only`` — the junction NUMBER is corroborated (residue_before
+    #   matches the sequence there) and only the descriptive residue_after
+    #   letter is wrong. Nothing moves: the site stays at the number it named,
+    #   and the letter is read off the authoritative sequence.
+    #
+    #   This is deliberately not the guesswork the docstring warns about. The
+    #   site is not relocated, so no position is laundered. SLC5A6 lost a real
+    #   site this way — a published EL3 ALFA tag with two corroborating ledger
+    #   lines — because the model wrote T at 484 where the sequence has P, while
+    #   naming 483 and its M correctly.
+    #
+    #   The guard is uniqueness: if the PAIR the model described occurs anywhere
+    #   in the sequence, it may have meant that other junction, and choosing
+    #   between them would be exactly the guesswork we refuse. Reject instead.
+    n = site.insert_after_residue
+    if n is not None and 1 <= n <= len(sequence) and site.residue_before:
+        if site.residue_before == sequence[n - 1]:
+            claimed_pair = f"{site.residue_before}{site.residue_after or ''}"
+            if site.residue_after and sequence.count(claimed_pair) == 0:
+                site.residue_after = sequence[n] if n < len(sequence) else ""
+                return "letter_only"
+    return None
+
+
+def apply_geometry_pass(
+    sites, *, sequence: str, topology: str, sp_end: int
+):
+    """Verify every site's junction against the computed sequence and topology,
+    repairing what is deterministically recoverable. Returns
+    ``(kept, rejected)`` where ``rejected`` is ``[(site, reason), ...]``.
+
+    Order matters: repair FIRST, then gate. A repair moves the junction, so
+    gating the pre-repair position would both miss real failures and drop sites
+    the repair would have saved."""
+    kept, rejected = [], []
+    for site in sites:
+        if site.insert_after_residue is None:
+            # A region-level site names a loop, not a junction. There is nothing
+            # to verify against the sequence and nothing to repair; dropping it
+            # for that would discard the published insertion it records.
+            kept.append(site)
+            continue
+        if repair_proposal(site, sequence=sequence, sp_end=sp_end):
+            site.position_repaired = True
+
+        mismatch = check_residues(
+            sequence=sequence,
+            residue=site.insert_after_residue,
+            before=site.residue_before,
+            after=site.residue_after,
+        )
+        if mismatch:
+            rejected.append((site, f"residue mismatch: {mismatch}"))
+            continue
+
+        ok, reason = topology_gate(
+            {"site_type": site.site_type, "insert_after_residue": site.insert_after_residue},
+            topology,
+            sp_end=sp_end,
+        )
+        if not ok:
+            rejected.append((site, f"topology: {reason}"))
+            continue
+
+        # Record the compartment the gate just judged, rather than whatever the
+        # model called it. The two used to disagree: the gate derived the real
+        # compartment and kept the site, then the record stored the model's
+        # string, which shipped sites reading `extracellular: false` on sites
+        # that had passed the extracellular gate.
+        site.topology_state = compartment_for_site(
+            site.site_type, site.insert_after_residue, topology, sp_end=sp_end
+        )
+        kept.append(site)
+    return kept, rejected

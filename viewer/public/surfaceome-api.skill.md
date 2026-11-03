@@ -17,7 +17,7 @@ Invoke before answering whenever the user:
 
 2. **References SurfaceBench or the 147-gene triage benchmark.** Fetch `/v1/benchmark/matrix` — the canonical view that joins ground truth + 5 per-DB flags + per-model LLM verdicts in one payload.
 
-3. **Compares LLM triage variants** (naive vs ncbi vs web vs pubmed prompts; opus vs sonnet vs haiku) on a specific gene. Fetch `/v1/triage/{SYMBOL}` for every run on record.
+3. **Compares LLM triage variants** (naive vs ncbi vs ncbi at low reasoning effort vs web vs pubmed prompts; eight Claude models across the Haiku, Sonnet and Opus families) on a specific gene. Fetch `/v1/triage/{SYMBOL}` for every run on record.
 
 4. **Asks for orthology data** (mouse, cynomolgus) on a human gene. Fetch `/v1/orthologs/{SYMBOL}`.
 
@@ -34,9 +34,9 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 | Method | Path | Returns | TTL |
 |---|---|---|---|
 | `GET` | `/v1/benchmark` | 147 ground-truth labels (JSON) for the current bench_version | 1d |
-| `GET` | `/v1/benchmark/export.tsv` | Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) with truth labels + DB votes joined in (24 cols). Flat version of `/v1/benchmark/matrix`. | 1d |
+| `GET` | `/v1/benchmark/export.tsv` | Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) cell with truth labels + DB votes joined in (34 cols). The verdict is the cell's 3-replicate majority, as in the paper. Flat version of `/v1/benchmark/matrix`. | 1d |
 | `GET` | `/v1/benchmark/{SYMBOL}` | Single gene's truth label | 1d |
-| `GET` | `/v1/benchmark/matrix` | One row per gene: truth + 5 per-DB flags + `verdicts[model][variant]` LLM cells (3 models × 4 variants, with reasoning + cost) | 1d |
+| `GET` | `/v1/benchmark/matrix` | One row per gene: truth + 5 per-DB flags + `verdicts[model][variant]` LLM cells (8 models × up to 5 variants — not every model ran every variant — with reasoning + cost). Each cell is the majority over its 3 replicates (refused replicates excluded), matching the paper. | 1d |
 
 ### Genome-wide (~19k human protein-coding genes)
 
@@ -44,14 +44,14 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 |---|---|---|---|
 | `GET` | `/v1/catalog` | Per-gene-per-source DB-vote matrix (5 DBs) + latest triage verdict + deep-dive flag | 60s |
 | `GET` | `/v1/triage/{SYMBOL}` | Every triage run for one gene — model × variant × replicate, with cost + token counts and the agent's free-text `verdict_reasoning` | 60s |
-| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, with per-source DB votes + `uniprot_acc` joined in server-side. Default `mainbench_canonical_v2` (the multi-model bench sweep); pass `run_id=genome_full_sonnet_ncbi_v1` for the full ~19k-gene Sonnet sweep. Reasoning columns omitted by default (figure-input exports stay prose-free). | 1d |
-| `GET` | `/v1/triage/export.tsv?…&with_reasoning=1` | Same export **with the agent's reasoning** appended (`predicted_key_uncertainty` + `verdict_reasoning` trailing columns). `with_reasoning=1` works on any `run_id`; use it with `run_id=genome_full_sonnet_ncbi_v1` for the **full genome-wide triage corpus with reasoning** — the bulk counterpart to per-gene `/v1/triage/{SYMBOL}`. | 1d |
+| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, with per-source DB votes + `uniprot_acc` joined in server-side. Default `mainbench_canonical_v2` (the multi-model bench sweep); pass `run_id=genome_full_sonnet_ncbi_v2` for the full ~19k-gene Sonnet sweep. Reasoning columns omitted by default (figure-input exports stay prose-free). | 1d |
+| `GET` | `/v1/triage/export.tsv?…&with_reasoning=1` | Same export **with the agent's reasoning** appended (`predicted_key_uncertainty` + `verdict_reasoning` trailing columns). `with_reasoning=1` works on any `run_id`; use it with `run_id=genome_full_sonnet_ncbi_v2` for the **full genome-wide triage corpus with reasoning** — the bulk counterpart to per-gene `/v1/triage/{SYMBOL}`. | 1d |
 
 ### Deep dive (per-gene) & utility
 
 | Method | Path | Returns | TTL |
 |---|---|---|---|
-| `GET` | `/v1` | Self-describing index: endpoint catalogue + path templates + docs/skill/llms.txt/schema links + live dataset versions. Also served at the bare service root. Hit first to discover the API. | 60s |
+| `GET` | `/v1` | Self-describing index: endpoint catalogue, path templates, and docs / skill/llms.txt/schema links + live dataset versions. Also served at the bare service root. Hit first to discover the API. | 60s |
 | `GET` | `/v1/health` | `{ ok, n_annotations }` — liveness | 60s |
 | `GET` | `/v1/genes` | List of genes with a deep-dive record (summary fields) | 60s |
 | `GET` | `/v1/genes/{SYMBOL}` | Full SurfaceomeRecord JSON (see schema below) | 1d |
@@ -60,6 +60,30 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 | `GET` | `/v1/meta/sizes` | Approximate per-endpoint response sizes, computed live from D1 row counts + `LENGTH(...)` sums. Utility endpoint backing the size badges on the /api docs page. | 60s |
 
 `/v1/orthologs/{SYMBOL}` is the **broad** ortholog view — latest Ensembl Compara for any of ~5k genes with a mouse/cyno ortholog (~90% of the surfaceome), carrying full-length % identity + orthology type + high-confidence flag. The deep-dive record's `deterministic_features.orthologs` is the **deep** view — mouse/cyno canonical only, ECD % identity + projected topology + sequence, but only for genes that have been deep-dived. Use the endpoint for breadth, the record for depth.
+
+### Record history & data releases
+
+Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change — numbering starts at **1** for a gene's first archived version; there's no revision 0. Numbered data releases pin a fixed revision per gene. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI.
+
+| Method | Path | Returns | TTL |
+|---|---|---|---|
+| `GET` | `/v1/genes/{SYMBOL}/revisions` | Every archived revision of this gene's served record (newest first), each with a `changed` label (`["first_archived"]`, or whichever of `record`/`evidence`/`markdown` differ from the previous revision) and the releases it belongs to | 60s |
+| `GET` | `/v1/genes/{SYMBOL}/revisions/{n}` | Revision n of the record, byte-for-byte as served; also `/evidence` and `.md` | immutable |
+| `GET` | `/v1/releases` | Numbered data releases with their GitHub tag, Zenodo version DOI, and `api_members` | 60s |
+| `GET` | `/v1/releases/{version}` | One release: metadata + the revision of every gene in it | 60s until published, then immutable |
+| `GET` | `/v1/releases/{version}/genes/{SYMBOL}` | A gene as it was in that release; also `/evidence` and `.md` | immutable |
+
+Release **1.0.0** (the 2026-08-15 Zenodo deposit, DOI `10.5281/zenodo.20805384`) predates per-gene record history and is **Zenodo-only**: `api_members` is `false`, `/v1/releases/1.0.0` returns `members: []` plus an `api_note` pointing at the DOI, and `/v1/releases/1.0.0/genes/{SYMBOL}` 404s `release_not_in_api_history` (DOI in the body) for every gene — those records live only in the Zenodo deposit, never in these history routes.
+
+### Reproducibility replicates
+
+**Not published records** — never use these in place of `/v1/genes/{SYMBOL}`. For the run-to-run reproducibility analysis (Supplementary Figure 16), 50 deep-dive genes drawn at random were re-analysed, and each is held three ways: `published_snapshot` (the published record as served when the study ran), `full_rerun` (the whole pipeline from scratch, same prompts) and `fixed_evidence_replay` (section builders + synthesizer re-run on the published evidence). Every response carries `reproducibility_replicate: true`.
+
+| Method | Path | Returns | TTL |
+|---|---|---|---|
+| `GET` | `/v1/replicates` | Every replicate study with its kinds and genes (metadata only) | 60s |
+| `GET` | `/v1/genes/{SYMBOL}/replicates` | The replicates held for one gene, with a link to each; 404 `no_replicates` if not sampled | 1 day |
+| `GET` | `/v1/genes/{SYMBOL}/replicates/{study}/{kind}` | One replicate record in full (evidence included) under `.record`, plus study / kind / run ids and the shared `deep_dive_tier` | 1 day |
 
 Gene symbols are case-insensitive on the wire (the Worker uppercases them) but the canonical HGNC form is upper-case.
 
@@ -107,8 +131,12 @@ Older records may lack newer fields — use optional-chaining / `?? null` when r
   "universe_version": "cu_2026_05_12",
   "generated_at": "<iso8601>",
   "sources": ["uniprot", "go", "surfy", "cspa", "hpa"],
-  "models": ["claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5"],
-  "variants": ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"],
+  "models": [
+    "claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5",
+    "claude-sonnet-5", "claude-opus-5",
+    "claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"
+  ],
+  "variants": ["naive", "ncbi", "web_ncbi", "pubmed_ncbi", "ncbi_effort_low"],
   "headline_variant": "ncbi",
   "n_genes": 147,
   "rows": [
@@ -137,7 +165,16 @@ Older records may lack newer fields — use optional-chaining / `?? null` when r
           },
           "naive": { ... }, "web_ncbi": { ... }, "pubmed_ncbi": { ... }
         },
-        "claude-sonnet-4-6": { ... }, "claude-haiku-4-5": { ... }
+        "claude-sonnet-4-6": { ... }, "claude-haiku-4-5": { ... },
+        // A model that didn't run a variant has null for that cell
+        // (e.g. claude-sonnet-5 ran ncbi only).
+        "claude-sonnet-5": { "ncbi": { ... }, "naive": null, ... },
+        // A cell whose replicates were all declined by the model's
+        // safety classifier: no verdict, error "refusal".
+        "claude-opus-5-5": {
+          "ncbi": { "verdict": null, "reason": null, "error": "refusal", ... },
+          "ncbi_effort_low": { ... }
+        }
       }
     }
   ]
@@ -145,6 +182,10 @@ Older records may lack newer fields — use optional-chaining / `?? null` when r
 ```
 
 `correct` is 1/0 with `yes ≡ contextual` collapsed (matching D1's `correct` semantics).
+
+Models and variants per model: Haiku 4.5 and Sonnet 4.6 ran `naive`, `ncbi`, `web_ncbi` and `pubmed_ncbi`; Opus 4.8, Haiku 5.5 and Sonnet 5.5 ran `naive` and `ncbi`; Sonnet 5 and Opus 5 ran `ncbi` only; Opus 5.5 ran `ncbi` and `ncbi_effort_low` (the `ncbi` prompt — HGNC + UniProt + NCBI summary — at low reasoning effort). Sonnet 4.6 on `ncbi` is the production triage configuration. Read the `models` / `variants` arrays rather than hard-coding them, since new models are added over time.
+
+A refused call (`verdict: null`, `error: "refusal"`) is not a wrong answer and not a missing run — score it separately, or exclude it, rather than counting it as `no`.
 
 ## Conventions
 
@@ -188,7 +229,7 @@ curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainb
   | head -5
 
 # full genome-wide sweep WITH agent reasoning:
-curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1&with_reasoning=1' \
+curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1&with_reasoning=1' \
   | head -5
 ```
 

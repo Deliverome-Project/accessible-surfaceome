@@ -27,6 +27,9 @@ from pathlib import Path
 
 
 from accessible_surfaceome.paths import DATA_DIR
+from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+    STUB_TOPOLOGY_TOOL_VERSION,
+)
 from accessible_surfaceome.tools._shared.models import (
     AccessibilityRisks,
     BiologicalContext,
@@ -253,7 +256,7 @@ def _load_triage_record_from_d1(symbol: str) -> TriageRecord | None:
                     WHERE gene_symbol = ?
                       AND run_id = ?
                       AND prompt_variant = ?
-                      AND model LIKE '%sonnet%'
+                      AND model = 'claude-sonnet-4-6'  -- production triage model; the bench run also holds other Sonnets
                       AND predicted_verdict IS NOT NULL
                     ORDER BY replicate ASC, created_at DESC
                     LIMIT 1;
@@ -426,7 +429,7 @@ def _stub_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         ecd_length_residues=0,
         icd_length_residues=0,
         per_residue_topology="",
-        tool_version="stub-no-fetchers-v1.0.0",
+        tool_version=STUB_TOPOLOGY_TOOL_VERSION,
         retrieved_at=now,
     )
     structure = StructureFeatures(

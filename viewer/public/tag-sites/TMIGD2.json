@@ -1,0 +1,120 @@
+{
+  "has_data": true,
+  "gene_symbol": "TMIGD2",
+  "uniprot_acc": "Q96BF3",
+  "sites": [
+    {
+      "site_id": "TMIGD2-disorder-142",
+      "gene_symbol": "TMIGD2",
+      "uniprot_acc": "Q96BF3",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 142,
+      "residue_before": "R",
+      "residue_after": "N",
+      "residue_label": "R142",
+      "residue_range": "P138-P149",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 59.5,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    },
+    {
+      "site_id": "TMIGD2-terminal-n",
+      "gene_symbol": "TMIGD2",
+      "uniprot_acc": "Q96BF3",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "S",
+      "residue_after": "L",
+      "residue_label": "S22",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "mature extracellular N-terminus after signal-peptide cleavage (signal 1-22, 'O' at residue 23) \u2014 N-terminal tag placed just after the cleavage site",
+      "sources": [],
+      "plddt": 91.9,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "TMIGD2-disorder-142::iso::Q96BF3-2",
+      "isoform_id": "Q96BF3-2",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 142,
+      "canonical_residue": 142,
+      "left_pct": 51.07913669064749
+    },
+    {
+      "site_id": "TMIGD2-disorder-150::iso::Q96BF3-2",
+      "isoform_id": "Q96BF3-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 150,
+      "canonical_residue": 150,
+      "left_pct": 53.956834532374096
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "TMIGD2-disorder-138::iso::A0A7N9CD49",
+      "isoform_id": "A0A7N9CD49",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 138,
+      "canonical_residue": 138,
+      "left_pct": 50.18181818181818
+    },
+    {
+      "site_id": "TMIGD2-disorder-149::iso::A0A7N9CD49",
+      "isoform_id": "A0A7N9CD49",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 149,
+      "canonical_residue": 149,
+      "left_pct": 54.18181818181819
+    },
+    {
+      "site_id": "TMIGD2-surface_loop-135::iso::A0A7N9CD49",
+      "isoform_id": "A0A7N9CD49",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 135,
+      "canonical_residue": 135,
+      "left_pct": 49.09090909090909
+    }
+  ]
+}

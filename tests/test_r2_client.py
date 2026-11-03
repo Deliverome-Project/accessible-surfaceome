@@ -16,7 +16,7 @@ import httpx
 import pytest
 
 from accessible_surfaceome.cloud import r2_client
-from accessible_surfaceome.cloud.r2_client import R2Config, head_object
+from accessible_surfaceome.cloud.r2_client import R2Config, get_object, head_object
 
 
 def _cfg() -> R2Config:
@@ -88,3 +88,25 @@ def test_head_object_returns_none_on_405_no_regression(
 
     _patch_client(monkeypatch, handler)
     assert head_object(key="anything.json", cfg=_cfg()) is None
+
+
+def test_get_object_returns_bytes_on_200(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured = _patch_client(
+        monkeypatch, lambda _: httpx.Response(200, content=b'{"a":1}')
+    )
+    assert get_object(key="records/sha256/abc.json", cfg=_cfg()) == b'{"a":1}'
+    req = captured["request"]
+    assert req.method == "GET"
+    assert req.url.path.endswith("/r2/buckets/buk/objects/records/sha256/abc.json")
+    assert "Range" not in req.headers
+
+
+def test_get_object_returns_none_on_404(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch_client(monkeypatch, lambda _: httpx.Response(404))
+    assert get_object(key="missing", cfg=_cfg()) is None
+
+
+def test_get_object_raises_on_server_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    _patch_client(monkeypatch, lambda _: httpx.Response(500, text="boom"))
+    with pytest.raises(httpx.HTTPStatusError):
+        get_object(key="x", cfg=_cfg())

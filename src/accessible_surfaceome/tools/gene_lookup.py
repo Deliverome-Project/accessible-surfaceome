@@ -379,7 +379,27 @@ def _load_universe_row(uniprot_acc: str) -> tuple[pd.Series | None, str]:
     ]:
         if not path.exists():
             continue
-        df = pd.read_csv(path, sep="\t", dtype=str)
+        # ``keep_default_na=False`` matters, and ``dtype=str`` does NOT cover
+        # it: pandas still turns an empty cell into ``float('nan')``. NaN is
+        # *truthy*, so a downstream ``row.get(a) or row.get(b) or ""`` chain
+        # short-circuits on the missing value instead of falling through, and
+        # the caller gets a float where it expects a string. That crashed SOD2
+        # (empty ``gene_symbol_resolved``) on ``hgnc_symbol.upper()`` in
+        # ``db_panel`` before any model call. Unlike ``_load_patent_handles``
+        # this omits ``na_values=[""]`` — that loader coerces every field
+        # through ``_str_or_empty`` afterwards, whereas callers here read the
+        # row directly, so an empty cell has to arrive as ``""``.
+        #
+        # Callers must read ``gene_symbol_resolved`` and NOT fall back to the
+        # raw ``gene_symbol``. ``gene_symbol`` is the *input* symbol, and it is
+        # only ever consulted when ``gene_symbol_resolved`` is empty — which is
+        # exactly when mygene returned ``not_found`` / ``ambiguous`` for it. So
+        # the fallback fires only in the cases where its value is known to be
+        # unreliable: P04179 carries ``gene_symbol='SOD2-2'`` at mygene score
+        # 0.0, and keying anything on that is a lookup on a known-bad key.
+        # Leaving the symbol empty lets callers fall through to the UniProt
+        # primary symbol, which answers ``SOD2``.
+        df = pd.read_csv(path, sep="\t", dtype=str, keep_default_na=False)
         if "uniprot_accession" not in df.columns:
             continue
         match = df.loc[df["uniprot_accession"] == uniprot_acc]
@@ -396,7 +416,9 @@ def db_panel(uniprot_acc: str, *, http: CachedHTTP) -> DBVotePanel:
     # example). UniProt entry is already cached → effectively free.
     hgnc_symbol = ""
     if row is not None:
-        hgnc_symbol = row.get("gene_symbol_resolved") or row.get("gene_symbol") or ""
+        # Resolved symbol only — never the raw ``gene_symbol``. See
+        # ``_load_universe_row`` for why that fallback is worse than none.
+        hgnc_symbol = row.get("gene_symbol_resolved") or ""
     if not hgnc_symbol:
         try:
             entry = _uniprot_entry(uniprot_acc, http=http)
@@ -538,7 +560,9 @@ def miss_diagnosis(uniprot_acc: str, *, http: CachedHTTP) -> MissDiagnosis:
     # lookup when the controls TSV row has an empty uniprot_id.
     hgnc_symbol = ""
     if row is not None:
-        hgnc_symbol = row.get("gene_symbol_resolved") or row.get("gene_symbol") or ""
+        # Resolved symbol only — never the raw ``gene_symbol``. See
+        # ``_load_universe_row`` for why that fallback is worse than none.
+        hgnc_symbol = row.get("gene_symbol_resolved") or ""
     if not hgnc_symbol:
         try:
             entry = _uniprot_entry(uniprot_acc, http=http)

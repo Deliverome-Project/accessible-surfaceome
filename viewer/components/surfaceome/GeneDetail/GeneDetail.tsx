@@ -22,11 +22,12 @@ import { FEATURE_TAB_LABEL } from "../FeatureChips/FeatureChips";
 import { FiltersCard } from "../FiltersCard/FiltersCard";
 import { GeneHeader } from "../GeneHeader/GeneHeader";
 import { GeneJump } from "../GeneJump/GeneJump";
+import { RevisionStrip } from "../RevisionStrip/RevisionStrip";
 // IsoformsCard now subsumes the old standalone OrthologsCard +
 // ParalogsCard — three section tabs collapsed to one ("Isoforms ·
 // orthologs · paralogs").
 import { IsoformsCard } from "../IsoformsCard/IsoformsCard";
-import { SurfaceBindCard } from "../SurfaceBindCard/SurfaceBindCard";
+import { BindingSitesCard } from "../BindingSitesCard/BindingSitesCard";
 import { SurfaceEvidenceCard } from "../SurfaceEvidenceCard/SurfaceEvidenceCard";
 import { TriageRow } from "../TriageRow/TriageRow";
 import type { CatalogRow, GeneEntry } from "../../../lib/surfaceome";
@@ -45,13 +46,20 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import type { TriageHeadlinePayload } from "../../../lib/triage-headline";
 import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
+import { isLiteratureProvenance } from "../../../lib/tag-sites-types";
+import type { Revisions } from "../../../lib/revisions";
 import styles from "./GeneDetail.module.css";
 
 interface GeneDetailProps {
-  papers?: PaperMetadataMap;
   /** The full SurfaceomeRecord — the only hard requirement, fetched by the
    *  client shell from the Worker before this renders. */
   rec: SurfaceomeRecord;
+  /** `source_id` → NCBI citation metadata for the papers the evidence
+   *  ledger cites, from `GET /v1/genes/{sym}/evidence`. Arrives with the
+   *  lazy ledger fetch, so it's undefined on first paint and absent
+   *  entirely on the offline-snapshot path — the EvidenceDrawer falls back
+   *  to the bare accession in both cases. */
+  papers?: PaperMetadataMap;
   /** Descriptive protein name + synonyms. On the client shell this comes
    *  from the record's `deterministic_features.surface_bind.protein_name`
    *  (the build-time NCBI/HGNC gene-name TSV is not client-safe), so
@@ -82,8 +90,12 @@ interface GeneDetailProps {
    *  on a fetch miss — GeneHeader / TriageRow then fall back to
    *  `rec.triage_signal`. */
   triageHeadline: TriageHeadlinePayload | null;
-  /** Deep-dive genes for the toolbar's GeneJump typeahead. */
+  /** Deep-dive genes, used to order the FG-library prev/next nav. Empty until
+   *  the page shell fetches the index (library members only). */
   deepDiveGenes: readonly GeneEntry[];
+  /** Lazy loader for the toolbar's GeneJump typeahead universe. Deferred so
+   *  the ~1.7 MB gene index stays off the gene page's initial load. */
+  loadGenes: () => Promise<readonly GeneEntry[]>;
   /** Parsed FG-library membership overlay (fetched client-side), or null on a
    *  miss. Drives the prev/next library navigation and is forwarded to
    *  <IsoformsCard> for the per-variant in-library pills. */
@@ -99,7 +111,9 @@ interface GeneDetailProps {
   /** Tedman GPCR canonical surface expression (PME); null for non-GPCRs.
    *  Forwarded to <GeneHeader> for the "Low surface" chip. */
   tedmanPme: number | null;
-}
+  /** Latest archived revision (record history); null until fetched or on a
+   *  miss — the strip is then omitted. */
+  revisions: Revisions | null;}
 
 /**
  * GeneDetail — the per-gene deep-dive page composition, extracted from the
@@ -120,11 +134,13 @@ export function GeneDetail({
   benchmarkRow,
   triageHeadline,
   deepDiveGenes,
+  loadGenes,
   fgLibrary,
   inFgLibrary,
   oversized,
   oversizedOrfKb,
   tedmanPme,
+  revisions,
 }: GeneDetailProps) {
   const router = useRouter();
 
@@ -242,13 +258,13 @@ export function GeneDetail({
       render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
     // Tag sites — its OWN tab (distinct from Internalization). Shown only
-    // when the gene has at least one RENDERED tag site (literature_retrieved,
+    // when the gene has at least one RENDERED tag site (any literature pass,
     // deterministic_computed, or screen_validated); validated_literature is
     // validation-only and never rendered, matching `renderableTagSites`.
     ...(taggedSites?.has_data &&
     taggedSites.sites.some(
       (s) =>
-        s.provenance === "literature_retrieved" ||
+        isLiteratureProvenance(s.provenance) ||
         s.provenance === "deterministic_computed" ||
         s.provenance === "screen_validated",
     )
@@ -260,19 +276,20 @@ export function GeneDetail({
           },
         ]
       : []),
-    // SURFACE-Bind section only when the protein has at least one
-    // scored patch. Two empty cases are filtered out so the AnchorNav
-    // strip never offers a tab that opens a sites-less section:
-    //   * not in SURFACE-Bind's table (`has_data=false`), and
-    //   * scored but no patch cleared the MaSIF threshold
-    //     (`n_sites=0`, e.g. CLDN18).
-    ...(rec.deterministic_features.surface_bind.has_data &&
-    rec.deterministic_features.surface_bind.n_sites > 0
+    // Binding-sites section when ANY source has a site. Gating on
+    // SURFACE-Bind alone would hide the card for a protein Bindome
+    // designed against but SURFACE-Bind never scored — which is 403
+    // proteins, and exactly the case the second source exists to cover.
+    // Still filtered when every source is empty, so the AnchorNav strip
+    // never offers a tab that opens a sites-less section.
+    ...((rec.deterministic_features.surface_bind.has_data &&
+      rec.deterministic_features.surface_bind.n_sites > 0) ||
+    (rec.deterministic_features.bindome?.n_sites ?? 0) > 0
       ? [
           {
-            kind: "surface-bind",
-            label: "SURFACE-Bind",
-            render: (n: number) => <SurfaceBindCard rec={rec} n={n} />,
+            kind: "binding-sites",
+            label: "Binding sites",
+            render: (n: number) => <BindingSitesCard rec={rec} n={n} />,
           },
         ]
       : []),
@@ -329,7 +346,7 @@ export function GeneDetail({
           </Link>
           {/* Jump to another gene's deep dive without going back to the
               catalog table. Suggestions are the deep-dive set only. */}
-          <GeneJump genes={deepDiveGenes} current={rec.gene.hgnc_symbol} />
+          <GeneJump loadGenes={loadGenes} current={rec.gene.hgnc_symbol} />
           {/* Prev/next across the FG library (alphabetical). Only rendered when
               this gene is itself in the library — otherwise it has no position
               in the ordered list. Arrow keys drive the same navigation (see the
@@ -399,6 +416,8 @@ export function GeneDetail({
             </a>
           </span>
         </nav>
+
+        {revisions ? <RevisionStrip revisions={revisions} /> : null}
 
         <Reveal>
           <GeneHeader

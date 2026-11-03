@@ -1,0 +1,81 @@
+{
+  "has_data": true,
+  "gene_symbol": "LSMEM2",
+  "uniprot_acc": "Q8N112",
+  "sites": [
+    {
+      "site_id": "LSMEM2-terminal-c",
+      "gene_symbol": "LSMEM2",
+      "uniprot_acc": "Q8N112",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 164,
+      "residue_before": "S",
+      "residue_after": null,
+      "residue_label": "S164",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular C-terminus (topology 'O' at residue L) \u2014 direct C-terminal tag",
+      "sources": [],
+      "plddt": 45.8,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "LSMEM2-disorder-126::iso::A0A7N9CCH1",
+      "isoform_id": "A0A7N9CCH1",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 126,
+      "canonical_residue": 127,
+      "left_pct": 77.30061349693251
+    },
+    {
+      "site_id": "LSMEM2-disorder-134::iso::A0A7N9CCH1",
+      "isoform_id": "A0A7N9CCH1",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 134,
+      "canonical_residue": 135,
+      "left_pct": 82.20858895705521
+    },
+    {
+      "site_id": "LSMEM2-disorder-150::iso::A0A571BE98",
+      "isoform_id": "A0A571BE98",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 150,
+      "canonical_residue": 164,
+      "left_pct": 100.0
+    },
+    {
+      "site_id": "LSMEM2-disorder-163::iso::A0A7N9CCH1",
+      "isoform_id": "A0A7N9CCH1",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 163,
+      "canonical_residue": 164,
+      "left_pct": 100.0
+    }
+  ]
+}

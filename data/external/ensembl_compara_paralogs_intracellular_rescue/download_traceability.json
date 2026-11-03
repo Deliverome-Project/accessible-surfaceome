@@ -1,0 +1,38 @@
+{
+  "dataset": "Ensembl_Compara_surfaceome_paralogs",
+  "extras": {
+    "compara_version": "ensembl_compara_2026_06_01_v2bf",
+    "n_input_records": 148,
+    "n_raw_paralog_rows": 1066,
+    "n_top_n_rows": 1066,
+    "n_unique_query_genes": 148,
+    "top_n_per_gene": 50
+  },
+  "generated_at_utc": "2026-09-20T23:09:42.234369+00:00",
+  "n_files": 2,
+  "records": [
+    {
+      "captured_at_utc": "2026-09-20T23:09:42.233951+00:00",
+      "dataset": "Ensembl_Compara_surfaceome_paralogs",
+      "file_name": "compara_paralogs_raw_rows.csv",
+      "local_path": "data/external/ensembl_compara_paralogs_intracellular_rescue/compara_paralogs_raw_rows.csv",
+      "note": "BioMart paralog rows (compara_version=ensembl_compara_2026_06_01_v2bf)",
+      "sha256": "3f616a7ac3e1cd72a762f1ac6cd0fb55b8d0136c055979fe6344cc138d72d63a",
+      "size_bytes": 99691,
+      "source_url": "https://www.ensembl.org/biomart/martservice",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-09-20T23:09:42.234230+00:00",
+      "dataset": "Ensembl_Compara_surfaceome_paralogs",
+      "file_name": "compara_paralogs_by_gene.csv",
+      "local_path": "data/external/ensembl_compara_paralogs_intracellular_rescue/compara_paralogs_by_gene.csv",
+      "note": "Top-50 paralogs per query gene",
+      "sha256": "b5b34dcd5b7e7c6cdc714f844f95c67df1db279b23866d321e350ee6a68a0c84",
+      "size_bytes": 105773,
+      "source_url": "https://www.ensembl.org/biomart/martservice",
+      "status": "derived"
+    }
+  ],
+  "script": "src/accessible_surfaceome/sources/ensembl_compara_paralogs.py"
+}

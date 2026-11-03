@@ -4,6 +4,33 @@
   "uniprot_acc": "P46093",
   "sites": [
     {
+      "site_id": "GPR4-disorder-14",
+      "gene_symbol": "GPR4",
+      "uniprot_acc": "P46093",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 14,
+      "residue_before": "R",
+      "residue_after": "V",
+      "residue_label": "R14",
+      "residue_range": "S13-D16",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 64.2,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    },
+    {
       "site_id": "GPR4-nterm-tedman",
       "gene_symbol": "GPR4",
       "uniprot_acc": "P46093",
@@ -37,7 +64,102 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR4-terminal-n",
+      "gene_symbol": "GPR4",
+      "uniprot_acc": "P46093",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": null,
+      "residue_after": "M",
+      "residue_label": null,
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular N-terminus (topology 'O' at residue 1) \u2014 direct N-terminal tag",
+      "sources": [],
+      "plddt": 36.2,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "GPR4-disorder-162::iso::Q8BUD0",
+      "isoform_id": "Q8BUD0",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 162,
+      "canonical_residue": 160,
+      "left_pct": 44.38356164383562
+    },
+    {
+      "site_id": "GPR4-disorder-16::iso::Q8BUD0",
+      "isoform_id": "Q8BUD0",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 16,
+      "canonical_residue": 14,
+      "left_pct": 4.383561643835616
+    },
+    {
+      "site_id": "GPR4-disorder-173::iso::Q8BUD0",
+      "isoform_id": "Q8BUD0",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 173,
+      "canonical_residue": 171,
+      "left_pct": 47.397260273972606
+    },
+    {
+      "site_id": "GPR4-disorder-1::iso::Q8BUD0",
+      "isoform_id": "Q8BUD0",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 1,
+      "canonical_residue": 1,
+      "left_pct": 0.273972602739726
+    },
+    {
+      "site_id": "GPR4-surface_loop-19::iso::Q8BUD0",
+      "isoform_id": "Q8BUD0",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 19,
+      "canonical_residue": 17,
+      "left_pct": 5.205479452054795
+    },
+    {
+      "site_id": "GPR4-surface_loop-86::iso::Q8BUD0",
+      "isoform_id": "Q8BUD0",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 86,
+      "canonical_residue": 84,
+      "left_pct": 23.56164383561644
+    }
+  ]
 }

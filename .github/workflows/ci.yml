@@ -14,15 +14,24 @@ jobs:
   python-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
-      - uses: astral-sh/setup-uv@v3
+          python-version: "3.14"
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - uses: astral-sh/setup-uv@v7
       - name: Install dependencies
         run: uv sync --frozen
       - name: Validate lockfile
         run: uv lock --check
+      - name: Check shared API compatibility with dev
+        # The main Worker also serves the dev viewer. These routes must remain
+        # available even while the corresponding UI exists only on dev.
+        env:
+          REQUIRE_WORKER_NODE: "1"
+        run: uv run --frozen pytest -q tests/test_worker_internalization.py
       - name: Run Python checks
         # Wire the public-D1 read creds so tests/test_d1_records_schema_drift.py
         # can enumerate every published record and validate it against the
@@ -42,8 +51,8 @@ jobs:
   contact-api-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
       - name: Contact API and viewer contract tests

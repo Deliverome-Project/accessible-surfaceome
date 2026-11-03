@@ -10,8 +10,9 @@
 
 Supp Fig 9 — a single **bubble matrix** of surface inclusion sources (rows) ×
 topology features (columns). For every gene in the FULL any-yes-vote universe
-(Sonnet yes/contextual incl. the PubMed rescue OR any optimized-DB vote; 960
-zero-DB Sonnet rescues), 9 binary topology features are scored per source. Each
+(Sonnet yes/contextual incl. the PubMed rescue OR any optimized-DB vote; 1,108
+zero-DB Sonnet rescues = 794 no-literature + 314 PubMed rescue), 9 binary
+topology features are scored per source. Each
 cell's dot encodes BOTH metrics at once:
 
   • dot AREA  ∝ within-source enrichment — % of that source's OWN calls carrying
@@ -19,15 +20,19 @@ cell's dot encodes BOTH metrics at once:
   • dot COLOR = coverage — % of the whole surface universe those represent
     (``|source ∩ feature| / |universe|``)
 
-CSPA × glycosylation is a large, pale dot (~75% of its own calls, but a small
-slice of the universe — its N-glycocapture chemistry); SURFY/UniProt show the
-same glyco enrichment at larger scale (dark); the zero-DB Sonnet rescues are
-dominated by likely-secreted + glycosylated contextual-surface proteins the
-classical-topology DBs miss (and carry no GPCR / GPI).
+CSPA × glycosylation is a large, pale dot (~96% of its own calls, but a small
+slice of the universe, ~14% — its N-glycocapture chemistry); SURFY/UniProt show
+the same glyco enrichment at larger scale (dark). The zero-DB Sonnet rescues
+split by how triage called them: the no-literature row (794) is mostly
+likely-secreted (55%) and glycosylated (41%); the PubMed-rescue row (314) most
+often has no TM and no signal peptide (49%). Neither row has GPCR or GPI
+proteins.
 
 Reads the dedicated per-figure TSV (built by scripts/build_figure_tsvs.py from
-scripts/export_s9_full_universe_features.py): src_* source flags, optimized
-cutoffs, n_sources_optimized, and the 9 topology features on full coverage.
+scripts/tsv-export/export_s9_full_universe_features.py): src_* source flags, optimized
+cutoffs, n_sources_optimized, the 9 topology features on full coverage, and
+verdict_source, which splits the zero-DB Sonnet rescues into the first-pass
+(no literature) and PubMed-rescue rows, as in Figure 3.
 
 Visual styling matches the in-repo `_plotting_config`, inlined so the gist runs
 standalone — ``uv run make_topology_coverage_by_source.py``.
@@ -93,10 +98,10 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 18,
+        "font.weight": "semibold",
+        "font.size": 16,
         "axes.labelsize": 18,
         "axes.titlesize": 0,
         "axes.spines.top": False,
@@ -110,11 +115,11 @@ def _apply_brand_style() -> None:
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
         "xtick.labelsize": 16,
-        "ytick.labelsize": 17,
+        "ytick.labelsize": 16,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 14,
+        "legend.fontsize": 16,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -134,10 +139,17 @@ FEATURES: list[tuple[str, str]] = [
 ]
 
 # Rows (sources), top-to-bottom.
-SOURCE_ORDER = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
+SOURCE_ORDER = [
+    "sonnet", "sonnet_only_ncbi", "sonnet_only_pubmed",
+    "uniprot", "surfy", "cspa", "go", "hpa",
+]
 SOURCE_LABEL = {
     "sonnet":      "Sonnet",
-    "sonnet_only": "Sonnet-only\n(zero-DB)",
+    # The zero-DB Sonnet rescues, split by how the triage called them (as in
+    # Figure 3): the first pass on the NCBI gene summary alone, or only once a
+    # PubMed rescue lane added literature (``verdict_source``).
+    "sonnet_only_ncbi":   "Sonnet-only, zero-DB\n(no literature)",
+    "sonnet_only_pubmed": "Sonnet-only, zero-DB\n(PubMed rescue)",
     "uniprot":     "UniProt",
     "surfy":       "SURFY",
     "cspa":        "CSPA",
@@ -153,7 +165,7 @@ SOURCE_COL = {
     "hpa":     "src_hpa",
 }
 
-_S_SCALE = 26.0
+_S_SCALE = 19.0
 _S_FLOOR = 18.0
 _SIZE_LEGEND = [10, 40, 80]
 
@@ -178,10 +190,16 @@ def main() -> None:
     _apply_brand_style()
     df = _fetch_tsv(FEATURES_TSV)
     universe = int(len(df))
-    sonnet_only_mask = (df[SOURCE_COL["sonnet"]] == 1) & (df["n_sources_optimized"] == 0)
+    sonnet_only = (df[SOURCE_COL["sonnet"]] == 1) & (df["n_sources_optimized"] == 0)
+    zero_db_masks = {
+        "sonnet_only_ncbi":   sonnet_only & (df["verdict_source"] == "ncbi"),
+        "sonnet_only_pubmed": sonnet_only & (df["verdict_source"] == "pubmed_rescue"),
+    }
+    # Every zero-DB rescue lands in exactly one of the two rows.
+    assert int(sum(m.sum() for m in zero_db_masks.values())) == int(sonnet_only.sum())
 
     def _mask(src: str) -> pd.Series:
-        return sonnet_only_mask if src == "sonnet_only" else (df[SOURCE_COL[src]] == 1)
+        return zero_db_masks[src] if src in zero_db_masks else (df[SOURCE_COL[src]] == 1)
 
     nrows, ncols = len(SOURCE_ORDER), len(FEATURES)
     xs, ys, sizes, covs = [], [], [], []
@@ -199,7 +217,7 @@ def main() -> None:
             sizes.append(max(enrichment * _S_SCALE, _S_FLOOR))
             covs.append(100.0 * n / universe)
 
-    fig, ax = plt.subplots(figsize=(17, 8.5))
+    fig, ax = plt.subplots(figsize=(14.5, 8.2))
     cmap = LinearSegmentedColormap.from_list("coverage", BRAND_SEQUENTIAL["teal"][::-1])
     norm = Normalize(vmin=0.0, vmax=max(covs))
     sc = ax.scatter(xs, ys, s=sizes, c=covs, cmap=cmap, norm=norm,
@@ -218,8 +236,8 @@ def main() -> None:
 
     cbar = fig.colorbar(sc, ax=ax, shrink=0.5, pad=0.015,
                         anchor=(0.0, 1.0), panchor=(0.0, 1.0))
-    cbar.set_label("Coverage\n(% of surface universe)", fontsize=14)
-    cbar.ax.tick_params(labelsize=12)
+    cbar.set_label("Coverage\n(% of surface universe)", fontsize=18)
+    cbar.ax.tick_params(labelsize=16)
     cbar.outline.set_visible(False)  # ty: ignore  # Colorbar.outline is a Spine
 
     handles = [
@@ -231,8 +249,8 @@ def main() -> None:
     ]
     leg = ax.legend(handles=handles, title="Enrichment\n(% of source's own calls)",
                     loc="upper left", bbox_to_anchor=(1.015, 0.44),
-                    labelspacing=3.4, borderpad=1.0, handletextpad=1.8,
-                    frameon=False, fontsize=13, title_fontsize=13)
+                    labelspacing=2.4, borderpad=1.0, handletextpad=1.4,
+                    frameon=False, fontsize=16, title_fontsize=18)
     leg._legend_box.align = "left"  # ty: ignore[unresolved-attribute]
 
     fig.tight_layout()

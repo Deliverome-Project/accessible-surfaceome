@@ -45,3 +45,37 @@ test("no pins prop -> no pin markup (unchanged bar)", () => {
   const html = renderToStaticMarkup(<TopologyBar topology={"O".repeat(10)} />);
   assert.equal((html.match(/data-provenance=/g) ?? []).length, 0);
 });
+
+test("markerResidue draws one pink marker at the residue's position", () => {
+  const html = renderToStaticMarkup(
+    <TopologyBar topology={"O".repeat(200)} markerResidue={50} />,
+  );
+  assert.equal((html.match(/Highlighted residue 50/g) ?? []).length, 1);
+  assert.match(html, /left:\s*25%/);
+  assert.match(html, /#FF1F8F/i);
+});
+
+test("out-of-range or absent markerResidue draws no marker", () => {
+  for (const markerResidue of [null, 0, 201]) {
+    const html = renderToStaticMarkup(
+      <TopologyBar topology={"O".repeat(200)} markerResidue={markerResidue} />,
+    );
+    assert.doesNotMatch(html, /Highlighted residue/);
+  }
+});
+
+test("onResidueClick marks the bar clickable and pins carry their residue", () => {
+  const pins = [
+    { siteId: "a", leftPct: 25, provenance: "deterministic_computed" as const, tagType: "ALFA", residue: 50 },
+  ];
+  const clickable = renderToStaticMarkup(
+    <TopologyBar topology={"O".repeat(200)} pins={pins} onResidueClick={() => {}} />,
+  );
+  assert.match(clickable, /data-clickable="true"/);
+  assert.match(clickable, /data-residue="50"/);
+  // Without a click handler the bar stays inert: no clickable flag and no
+  // pin residue targets.
+  const inert = renderToStaticMarkup(<TopologyBar topology={"O".repeat(200)} pins={pins} />);
+  assert.doesNotMatch(inert, /data-clickable/);
+  assert.doesNotMatch(inert, /data-residue/);
+});

@@ -29,11 +29,13 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import sys
 import os
 import tempfile
 import urllib.request
 from pathlib import Path
 
+from accessible_surfaceome.agents.tag_site.record import merge as merge_record
 from accessible_surfaceome.tag_sites import features as F
 from accessible_surfaceome.tag_sites.run import run_gene, run_isoform_pins, run_ortholog_pins
 from accessible_surfaceome.tools.afdb_plddt import read_afdb_model_links
@@ -47,6 +49,9 @@ PDB_CACHE = ROOT / "data/cache/afdb_pdb"
 # Public API record is the source of ortholog seq/topology/acc — the same data the
 # viewer's ortholog tiles read (deterministic_features.orthologs).
 API_BASE = os.environ.get("SURFACEOME_API_BASE", "https://api.deliverome.org/surfaceome").rstrip("/")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 
 log = logging.getLogger("regenerate_tag_sites")
 
@@ -90,12 +95,34 @@ def af_pdb(acc: str) -> str:
     return str(path)
 
 
-def _hazard(acc: str) -> set[int]:
+def _hazard(acc: str, pdb_path: str | None = None) -> set[int]:
     try:
-        return F.hazard_residues(F.fetch_uniprot_features(acc))
+        # Model bonds included: a disulfide UniProt does not annotate is
+        # invisible to the clearance veto otherwise, and that is how ACKR3
+        # P35 published at a reported 12.1 A while sitting 3.8 A from C287.
+        return F.hazard_residues_with_model(F.fetch_uniprot_features(acc), pdb_path)
     except Exception as ex:  # noqa: BLE001 — best-effort veto
         log.warning("  UniProt features unavailable for %s (%s) -> empty veto", acc, type(ex).__name__)
         return set()
+
+
+def _propeptide(acc: str, length: int) -> tuple[int, int] | None:
+    """The span maturation removes from the C-terminus, or None.
+
+    Same cached UniProt entry `_hazard` reads, so this costs no extra request.
+    Without it the terminal lane proposes a C-terminal tag on a GPI-anchored
+    protein at the full precursor length — inside the propeptide the omega-site
+    cleavage removes — which is what all 115 GPI `terminal_c` rows in
+    `tag_site_public` currently are.
+    """
+    try:
+        return F.cleaved_c_terminus(F.fetch_uniprot_features(acc), length)
+    except Exception as ex:  # noqa: BLE001 — best-effort; absent means "not annotated"
+        log.warning(
+            "  UniProt features unavailable for %s (%s) -> no propeptide refusal",
+            acc, type(ex).__name__,
+        )
+        return None
 
 
 def orthologs_for(symbol: str) -> list[tuple[str, str, str]]:
@@ -158,13 +185,48 @@ def _existing_non_deterministic(path: Path) -> list[dict]:
     ]
 
 
+
+def _canon_from_api(acc: str, symbol: str) -> tuple[str, str] | None:
+    """(sequence, topology) from the public API when the accession is absent
+    from the committed 3line predictions.
+
+    The 3line files cover the SURFACEOME COHORT. Six benchmark controls sit
+    outside it — CFTR, KCNH2, KCNQ1, PMP22, TRPC5, VANGL1 — so the deterministic
+    lanes skipped them entirely while the literature agent handled them fine,
+    because it reads the same topology off the API record. This closes that gap
+    rather than leaving a gene with literature sites and no deterministic ones."""
+    try:
+        import regenerate_tag_site_lit as lit  # same scripts/ dir
+
+        _acc, seq, topo = lit.extract_from_record(lit.fetch_record(symbol))
+        if seq and topo and len(seq) == len(topo):
+            return seq, topo
+    except Exception as exc:  # noqa: BLE001 - absent topology must not kill the batch
+        log.warning("  %s (%s): API topology fallback failed: %s", symbol, acc, exc)
+    return None
+
+
+
+def _read_record(path: Path) -> dict[str, object]:
+    """The record already on disk, or {} when there is none."""
+    try:
+        return json.loads(path.read_text())
+    except Exception:  # noqa: BLE001 - no prior record, or unreadable
+        return {}
+
+
 def regenerate_gene(
     symbol: str, acc: str, *, canon: dict[str, tuple[str, str]],
     iso_map: dict[str, tuple[str, str]], out_dir: Path, dry_run: bool,
+    signals_dir: str | None = None,
 ) -> dict[str, int] | None:
     if acc not in canon:
-        log.warning("skip %s (%s): not in canonical 3line topology", symbol, acc)
-        return None
+        fallback = _canon_from_api(acc, symbol)
+        if fallback is None:
+            log.warning("skip %s (%s): not in canonical 3line topology", symbol, acc)
+            return None
+        log.info("  %s (%s): not in 3line; using the API record's topology", symbol, acc)
+        canon = {**canon, acc: fallback}
     seq, topo_s = canon[acc]
     topo = {i + 1: c for i, c in enumerate(topo_s)}
     try:
@@ -172,14 +234,27 @@ def regenerate_gene(
     except Exception as ex:  # noqa: BLE001
         log.warning("skip %s (%s): AFDB canonical model unavailable (%s)", symbol, acc, ex)
         return None
-    hazard = _hazard(acc)
+    hazard = _hazard(acc, pdb)
+
+    # Orthologs are fetched BEFORE the canonical gate run, not after: the surface_loop
+    # ranking is (-own RSA, conservation, -gap_freq), and with no ortholog sequences both
+    # conservation and gap_freq are 0.0 at every residue, which silently reduces the rank
+    # to RSA alone. The same sequences are reused for the ortholog pins below.
+    orths = orthologs_for(symbol)
+    if not orths:
+        # Not fatal — conservation is defined as neutral (0.0) with no orthologs — but it
+        # silently drops two of the three surface_loop ranking keys, so say so per gene
+        # rather than letting the run look identical to one that had them.
+        log.warning("  %s: no orthologs available — surface_loop ranks on RSA alone", symbol)
 
     # Canonical deterministic sites (incl. terminals) via run_gene into a temp dir
     # (temp starts empty, so its payload holds ONLY the fresh deterministic set).
     with tempfile.TemporaryDirectory() as tmp:
         payload = run_gene(
-            symbol, acc, sequence=seq, topology=topo, ortholog_seqs=[],
-            pdb_path=pdb, hazard_res=hazard, out_dir=tmp,
+            symbol, acc, sequence=seq, topology=topo,
+            ortholog_seqs=[o_seq for _o_acc, o_seq, _o_topo in orths],
+            pdb_path=pdb, hazard_res=hazard, out_dir=tmp, signals_dir=signals_dir,
+            propeptide=_propeptide(acc, len(seq)),
         )
     det_sites = payload["sites"]
 
@@ -193,7 +268,6 @@ def regenerate_gene(
     # Per-ortholog pins (gates on each ortholog's OWN AFDB model, classified vs
     # human canonical). Keyed by ortholog acc; rendered on the ortholog's own
     # structure at its own residue axis. Best-effort (orthologs sourced from the API).
-    orths = orthologs_for(symbol)
     opins = run_ortholog_pins(
         symbol, acc, canonical_sequence=seq, canonical_sites=det_sites,
         orthologs=orths, fetch_pdb=af_pdb, hazard_for=None,
@@ -210,6 +284,10 @@ def regenerate_gene(
         "isoform_pins": sorted(pins, key=lambda p: p["site_id"]),
         "ortholog_pins": sorted(opins, key=lambda p: p["site_id"]),
     }
+    # One record, two writers. `merge` keeps every field owned by the LITERATURE
+    # pipeline — its prompt provenance above all — which rebuilding this dict
+    # from scratch used to erase.
+    result = merge_record(_read_record(out_path), result, owner="deterministic")
     n_term = sum(1 for s in det_sites if s.get("det_path") in ("terminal", "snorkel"))
     summary = {
         "deterministic": len(det_sites), "terminal_or_snorkel": n_term,
@@ -224,7 +302,13 @@ def regenerate_gene(
     else:
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(result, indent=2, default=_json_default) + "\n")
-        log.info("wrote %s -> %s", out_path.relative_to(ROOT), summary)
+        # relative_to() raises for an --out-dir outside the repo, which is a legitimate
+        # place to stage a run; fall back to the absolute path rather than crashing.
+        try:
+            shown = out_path.relative_to(ROOT)
+        except ValueError:
+            shown = out_path
+        log.info("wrote %s -> %s", shown, summary)
     return summary
 
 
@@ -258,13 +342,28 @@ def main() -> None:
     ap.add_argument("--gene", nargs=2, metavar=("SYMBOL", "ACC"), action="append",
                     help="one gene (repeatable)")
     ap.add_argument("--manifest", help="TSV of symbol<TAB>acc")
+    ap.add_argument(
+        "--extra-3line", action="append", default=[],
+        help="additional predicted_topologies.3line to merge into the canonical set. "
+             "591 s1e3 library members are absent from human_canonical_non_hla (5 are HLA, "
+             "which that export excludes by construction); their same-version v1 rows are "
+             "re-exported from D1 into library_members_from_d1. Later files do not override "
+             "an accession already present.",
+    )
     ap.add_argument("--out-dir", default=str(OUT_DIR))
     ap.add_argument("--limit", type=int, default=0, help="cap number of genes (0 = all)")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--signals-dir", default=None,
+                    help="also write the per-residue signals the gates consumed, one "
+                         "gzipped record per gene, so cutoffs can be re-applied later "
+                         "without refetching AlphaFold or rerunning DSSP")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
 
     canon = parse_3line(CANON_3LINE)
+    for extra in args.extra_3line:
+        for acc, rec in parse_3line(Path(extra)).items():
+            canon.setdefault(acc, rec)   # first file wins; supplements never override
     iso_map = parse_3line(ISO_3LINE)
     genes = _gene_list(args)
     if args.limit:
@@ -276,7 +375,8 @@ def main() -> None:
     totals = {"genes": 0, "det": 0, "term": 0, "pins": 0, "unique": 0, "opins": 0, "ounique": 0}
     for symbol, acc in genes:
         s = regenerate_gene(symbol, acc, canon=canon, iso_map=iso_map,
-                            out_dir=out_dir, dry_run=args.dry_run)
+                            out_dir=out_dir, dry_run=args.dry_run,
+                            signals_dir=args.signals_dir)
         if s:
             totals["genes"] += 1
             totals["det"] += s["deterministic"]

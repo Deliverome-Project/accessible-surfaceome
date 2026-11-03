@@ -5,9 +5,9 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-# scripts/probe_oa_buckets.py isn't on a package path — load it as a
+# scripts/probes/probe_oa_buckets.py isn't on a package path — load it as a
 # module by path so we can exercise the helpers without invoking main().
-_SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "probe_oa_buckets.py"
+_SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "probes" / "probe_oa_buckets.py"
 _spec = importlib.util.spec_from_file_location("_probe", _SCRIPT)
 assert _spec is not None and _spec.loader is not None
 _probe = importlib.util.module_from_spec(_spec)

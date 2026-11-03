@@ -6,6 +6,11 @@
 .header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(380px, 42%);
+  /* The structure slot spans both rows, and a spanning item's extra height
+     is spread across every row it covers. With two `auto` rows that pushed
+     the symbol's row taller than the symbol, opening a gap under the
+     protein name. A `1fr` second row soaks up the slack instead. */
+  grid-template-rows: auto 1fr;
   gap: 4px var(--space-6);
   /* No bottom border / padding: the sticky AnchorNav strip directly
      below owns the separating hairline (its own border-top). A
@@ -75,6 +80,7 @@
 @media (max-width: 1000px) {
   .header {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
   }
 
   .headerText {

@@ -371,7 +371,7 @@ LEFT JOIN deep_dive_latest d ON d.gene_symbol = t.gene_symbol;
 -- where the symbol-keyed resolver bugs (CCR4 → NOCT, COX1 → PTGS1, WAS →
 -- MT-RNR1, etc.) entered the pipeline.
 --
--- Populated by scripts/build_gene_identifier_table.py, which iterates the
+-- Populated by scripts/build/build_gene_identifier_table.py, which iterates the
 -- cohort TSV (Homo_sapiens.protein_coding.with_hgnc.tsv) and calls
 -- resolve_by_hgnc_id() for every row. Resolver-version-pinned so a future
 -- resolver change can repopulate without losing the audit trail.

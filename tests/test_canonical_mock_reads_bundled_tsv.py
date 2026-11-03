@@ -33,7 +33,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCRIPTS = REPO_ROOT / "scripts"
+SCRIPTS = REPO_ROOT / "scripts" / "figures"
 
 # Figures whose canonical generator reads its dedicated per-figure TSV
 # (``data/processed/figures/<slug>.tsv``) as the single source of truth,
@@ -46,8 +46,10 @@ SCRIPTS = REPO_ROOT / "scripts"
 #     optimized-cutoff TSV (their old initial-flag reads from the raw
 #     catalog / per-protein-features were the drift hazard).
 READS_BUNDLED_TSV = [
+    "surface_evidence_assay_types",
     "deep_dive_final_categories",
     "deep_dive_record_richness",
+    "deep_dive_replicate_kappa",
     "deep_dive_vs_sonnet_benchmark",
     "evidence_corpus_vs_selected",
     "triage_vs_deep_dive_reason",
@@ -55,7 +57,7 @@ READS_BUNDLED_TSV = [
     "topology_coverage_by_source",
     # Migrated off the triage_bench_db_barplot monolith (2026-06-30): its own
     # canonical now reads the figure TSV, so the model list comes from the data
-    # — fixes the opus-4-7 hardcode that shipped empty bars on Supp Fig 1.
+    # — fixes the opus-4-7 hardcode that shipped empty bars on Supp Fig 2.
     "db_correctness_overall",
     # Migrated 2026-06-30: canonical reads the union TSV (in_universe + is_bench
     # flags); bench cohort is the benchmark's ground-truth yes/contextual genes.
@@ -71,10 +73,11 @@ READS_BUNDLED_TSV = [
     # opus-4-8). db_cutoff_tradeoff was also extracted but reads a
     # data/processed/triage_bench/ TSV (not a figures/ one), so it's guarded by
     # mirror-sync only and intentionally absent from this list.
-    "db_overlap_venn",
+    "db_overlap_upset",
+    "blog_db_overlap_venn",
     "db_correctness_by_class",
     "benchmark_cost_vs_accuracy",
-    # Supp S13 — deterministic-features 3×3 (MOCK: buckets are Sonnet verdicts
+    # Supp S15 — deterministic-features 3×3 (MOCK: buckets are Sonnet verdicts
     # standing in for deep-dive confidence tiers). The bundled TSV is the sole
     # source of truth. Supp S7 — positive-control DB coverage: its upstream is
     # a D1-built long TSV (Sonnet dual-pass verdicts), not offline-reproducible,

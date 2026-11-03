@@ -98,7 +98,7 @@ REPO_ORIGIN = "https://github.com/Deliverome-Project/accessible-surfaceome"
 # FIGURE_PROVENANCE in scripts/embed_figure_gist_metadata.py — keep in
 # sync as new figure gists are minted.
 GIST_ORIGINS = [
-    "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",  # db_overlap_venn
+    "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",  # db_overlap_upset (Figure 1)
     # add more figure gists here as they're built and gain a slot in
     # FIGURE_PROVENANCE
 ]
@@ -149,7 +149,8 @@ GIST_ORIGINS = [
 #      (bench gene × model × variant). Server endpoint:
 #      /v1/benchmark/export.tsv — bench-scoped, JOINs truth labels
 #      from benchmark_version + DB votes from candidate_universe_public
-#      + latest replicate per cell from triage_run_public. Haiku and
+#      + the majority over each cell's replicates from
+#      triage_run_public (the paper's per-cell numbers). Haiku and
 #      Opus only appear here — the broad triage in #1 is Sonnet-only.
 #
 #   3. deep_dives_all.tar.gz  →  "every published SurfaceomeRecord
@@ -182,7 +183,7 @@ ZENODO_DATA_DOI = "10.5281/zenodo.20805384"
 # The CODE record DOI is minted by GitHub-Zenodo auto-archive on the
 # next tagged release; until that happens, the related-identifiers
 # link is a placeholder.
-ZENODO_CODE_CONCEPT_DOI: str | None = None  # TODO populate after first release
+ZENODO_CODE_CONCEPT_DOI: str | None = "10.5281/zenodo.22116981"  # concept DOI (all versions)
 
 EXTRA_FILES: list[str | dict[str, Any]] = [
     # The active path today uses build_consolidated_deposit_tsvs.py +
@@ -197,13 +198,34 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2",
         "filename": "triage-runs-genome-ncbi-with-reasoning.tsv",
     },
+    # Four literature-rescue lanes, not one. Each widened the pool the one
+    # before it left out, and the universe gate reconciles across all four —
+    # prefer the more inclusive verdict. All four are needed to reproduce the
+    # 5,332-gene cohort; the first two alone reproduce an older, smaller one.
     {
-        # Sonnet+pubmed_ncbi rescue sweep on the ambiguous-reason
-        # zero-DB Sonnet-no slice (~2,626 cells). Flips 177 ncbi-no
-        # to yes/contextual (KLK2 et al). Read-side reconciliation
-        # rule: prefer pubmed when verdict is more inclusive.
+        # Lane 1 — ambiguous-reason zero-DB "no" calls (~2,626 cells).
+        # Flips 177 (KLK2 et al).
         "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_pubmed_ncbi_v1",
         "filename": "triage-runs-genome-pubmed-rescue-with-reasoning.tsv",
+    },
+    {
+        # Lane 2 — the confidently intracellular buckets lane 1 skipped
+        # (cytoplasmic / nuclear / mitochondrial, 10,287 cells). Flips 148.
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_intracellular_pubmed_ncbi_v1",
+        "filename": "triage-runs-genome-intracellular-rescue-with-reasoning.tsv",
+    },
+    {
+        # Lane 3 — "no" calls carried by exactly one database (1,417 cells),
+        # the slice the conservative trim would otherwise drop unread.
+        # Flips 53.
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_1db_trim_pubmed_ncbi_v1",
+        "filename": "triage-runs-genome-1db-trim-rescue-with-reasoning.tsv",
+    },
+    {
+        # Lane 4 — zero-DB under the optimized cutoff only (74 cells).
+        # Flips 1.
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_optcut_zerodb_pubmed_ncbi_v1",
+        "filename": "triage-runs-genome-optcut-zerodb-rescue-with-reasoning.tsv",
     },
     {
         # 147-gene mainbench: Haiku/Sonnet/Opus × 4 prompt variants,
@@ -211,6 +233,13 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "url": "https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv",
         "filename": "triage-benchmark-with-reasoning.tsv",
     },
+    # Per-accession surface calls under both rules: each source's native
+    # flag and the SurfaceBench-recalibrated one. Deposited because the
+    # recalibrated rule now decides DB membership on the API, the viewer
+    # and the benchmark table, not just in the figure scripts. A positive
+    # list — an accession that isn't here is 0 under the optimized rule,
+    # never its native flag.
+    "data/processed/triage_bench/db_optimized_cutoffs.tsv",
     # ── PUBLICATION-WORKFLOW PLACEHOLDERS (per scripts/release/README.md) ──
     # Each is a known artifact that the publication ritual expects in
     # this Zenodo data record but isn't ready yet. Uncomment the
@@ -290,16 +319,11 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
     # always passes `--standalone --to jats`; you only need extras for
     # specific transformations (e.g. `--metadata title="…"` override).
     #
-    # **Citations note** — if you're using Zotero in Word, leave
-    # `extra_pandoc_args` empty. Zotero already bakes the formatted
-    # citations + bibliography into the `.docx` as text, and pandoc
-    # carries that through into the JATS XML verbatim. References
-    # land as plain text (not structured `<ref>` elements), which is
-    # plenty for a Zenodo deposit. Switching to pandoc-managed
-    # citations would require exporting a `.bib` from Zotero AND
-    # toggling the Zotero Word plugin from "Word fields" mode to
-    # "BibTeX cite keys" mode in Document Preferences — only worth
-    # doing if you specifically need structured-reference JATS.
+    # **Citations note** — if you're using Zotero in Word / Google
+    # Docs, leave `extra_pandoc_args` empty. A `.docx` source goes
+    # through paper/jats_build.py (the step paper/build.py runs), which
+    # resolves Zotero's in-text citations to the reference list and
+    # emits structured `<ref>` / `<xref>` elements without a `.bib`.
     #
     # Tooling install:
     #   macOS:   brew install pandoc
@@ -363,17 +387,14 @@ SEED_METADATA = {
             "open data",
         ],
         # Link this data record to the auto-archived code record(s).
-        # The code-record concept DOI is minted by the GitHub-Zenodo
-        # auto-archive on the FIRST tagged release (none exists yet —
-        # see ZENODO_CODE_CONCEPT_DOI at the top of this file). When
-        # that DOI is known, set ZENODO_CODE_CONCEPT_DOI and uncomment
-        # the placeholder below; the link makes the relationship
-        # explicit in CrossRef/DataCite and Zenodo's UI.
+        # The code-record concept DOI now exists and is set in
+        # ZENODO_CODE_CONCEPT_DOI at the top of this file. Uncomment the
+        # entry below to emit the link, which makes the relationship
+        # explicit in CrossRef/DataCite and Zenodo's UI. Left commented so
+        # enabling it stays a deliberate release decision.
         "related_identifiers": [
-            # PUBLICATION-WORKFLOW PLACEHOLDER — populate after the
-            # first code-record release. See ZENODO_CODE_CONCEPT_DOI.
             # {
-            #     "identifier": f"10.5281/zenodo.{ZENODO_CODE_CONCEPT_DOI}",
+            #     "identifier": ZENODO_CODE_CONCEPT_DOI,
             #     "relation": "isSupplementTo",
             #     "scheme": "doi",
             # },
@@ -817,10 +838,12 @@ def _build_manuscript_bundle(
         the deposit should match it byte-for-byte. Cleanup=False on this
         entry — the file lives in your repo, we don't touch it.
 
-      * **JATS XML**: pandoc-converted from ``entry["source"]`` (any
+      * **JATS XML**: converted from ``entry["source"]`` (any
         pandoc-readable manuscript: ``.md`` / ``.tex`` / ``.docx``).
         Written under ``_extra-download/`` and uploaded with
-        cleanup=True so it doesn't litter the working tree.
+        cleanup=True so it doesn't litter the working tree. For a
+        ``.docx`` the figure files the XML references are written and
+        uploaded beside it.
 
     Pandoc invocation is:
 
@@ -839,13 +862,17 @@ def _build_manuscript_bundle(
     fully automatic (it's plain XML, no engine needed) and require the
     PDF to be supplied as-is.
 
-    Validation note: the resulting JATS XML is ``--standalone``
-    pandoc output, which is well-formed but is NOT guaranteed to pass
-    the PMC JATS DTD's tighter constraints (e.g. ``article-meta``
-    structural requirements). Run it through JATS4R's validator
-    (https://www.jats4r.org/) or ``xmllint --dtdvalid …`` if you need
-    PMC-grade validation; for deposit-with-the-data purposes the
-    standalone XML is usually sufficient.
+    A ``.docx`` source goes through ``paper/jats_build.build_jats`` —
+    the same step ``paper/build.py`` runs — which yields structured JATS
+    (title, authors and abstract in the front matter, a ``<fig>`` per
+    figure, a ``<ref-list>``, typed ``<xref>``s). Its figure files are
+    yielded too, for upload beside the XML. That output validated
+    against the JATS 1.2 archiving DTD when the step was written; check
+    a new manuscript with ``xmllint --dtdvalid …`` before depositing.
+
+    Any other source (``.md`` / ``.tex``) gets pandoc's own
+    ``--standalone`` JATS, which is well-formed but carries little
+    structure and is not guaranteed to pass the DTD.
 
     Pre-conditions checked:
       - ``pandoc`` is installed and on ``PATH``. We shell out to it as
@@ -895,29 +922,61 @@ def _build_manuscript_bundle(
             # bare FileNotFoundError on subprocess invocation, since
             # the failure mode tells the operator exactly what to fix.
             from shutil import which
-            if which("pandoc") is None:
+            pandoc_bin = which("pandoc")
+            if pandoc_bin is None:
+                # The paper build's own pandoc (bundled in the
+                # pypandoc-binary wheel) is as good as a system one, and
+                # is what built the PDF: `uv run --extra paper …`.
+                try:
+                    import pypandoc  # ty: ignore[unresolved-import]
+
+                    pandoc_bin = pypandoc.get_pandoc_path()
+                except (ImportError, OSError):
+                    pandoc_bin = None
+            if pandoc_bin is None:
                 raise RuntimeError(
-                    "manuscript bundle needs `pandoc` on PATH but it "
-                    "isn't installed. Install with `brew install "
-                    "pandoc` (macOS) or `apt install pandoc` (Linux), "
-                    "or remove the manuscript entry from EXTRA_FILES."
+                    "manuscript bundle needs `pandoc` but none was found. "
+                    "Run with the paper extras (`uv run --extra paper …`), "
+                    "install it with `brew install pandoc` (macOS) or "
+                    "`apt install pandoc` (Linux), or remove the "
+                    "manuscript entry from EXTRA_FILES."
                 )
             tmp_root.mkdir(exist_ok=True)
-            cmd = [
-                "pandoc",
-                str(source),
-                "--standalone",
-                "--to", "jats",
-                "-o", str(out_path),
-                *extra_args,
-            ]
-            try:
-                subprocess.run(cmd, check=True, cwd=REPO_ROOT)
-            except subprocess.CalledProcessError as exc:
-                raise RuntimeError(
-                    f"pandoc JATS conversion failed (exit {exc.returncode}). "
-                    f"Command: {' '.join(cmd)}"
-                ) from exc
+            if source.suffix.lower() == ".docx":
+                # The same step paper/build.py runs, so the deposited XML
+                # is the structured one (front matter, <fig>, <ref-list>,
+                # <xref>) and not pandoc's raw conversion. A deposit has a
+                # flat file namespace, so the figures sit beside the XML
+                # and the XML names them without a directory.
+                sys.path.insert(0, str(REPO_ROOT / "paper"))
+                from jats_build import build_jats  # ty: ignore[unresolved-import]
+
+                report, figure_files = build_jats(
+                    source, out_path, pandoc=pandoc_bin,
+                    figures_out=tmp_root, href_prefix="", extra_args=extra_args,
+                )
+                print(report.summary())
+                for path in figure_files:
+                    outputs.append((path, True))
+                ok(f"{len(figure_files)} figure file(s) referenced by {out_path.name}")
+            else:
+                # Markdown / LaTeX sources are not shaped by the .docx
+                # filters; they get pandoc's own JATS.
+                cmd = [
+                    pandoc_bin,
+                    str(source),
+                    "--standalone",
+                    "--to", "jats",
+                    "-o", str(out_path),
+                    *extra_args,
+                ]
+                try:
+                    subprocess.run(cmd, check=True, cwd=REPO_ROOT)
+                except subprocess.CalledProcessError as exc:
+                    raise RuntimeError(
+                        f"pandoc JATS conversion failed (exit {exc.returncode}). "
+                        f"Command: {' '.join(cmd)}"
+                    ) from exc
             size_kb = out_path.stat().st_size / 1024
             ok(f"built {out_path.name} ({size_kb:.1f} KB) via pandoc")
             outputs.append((out_path, True))

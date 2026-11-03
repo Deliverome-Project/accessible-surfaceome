@@ -7,6 +7,7 @@ import {
   EvidenceChipList,
   linkifyEvidenceRefs,
 } from "../EvidenceChip/EvidenceChip";
+import { prettyEnum } from "../../../lib/enums";
 import styles from "./ReasoningDrawer.module.css";
 
 interface Props {
@@ -209,7 +210,7 @@ export function ReasoningDrawer({
           {reasonCode ? (
             <p className={styles.drawerReason}>
               <span className="label-mono">Reason code · </span>
-              {reasonCode.replace(/_/g, " ")}
+              {prettyEnum(reasonCode)}
             </p>
           ) : null}
           {body}
@@ -244,7 +245,7 @@ export function ReasoningDrawer({
                     </span>
                     {s.reason ? (
                       <span className={styles.drawerSecondaryReason}>
-                        · {s.reason.replace(/_/g, " ")}
+                        · {prettyEnum(s.reason)}
                       </span>
                     ) : null}
                   </li>

@@ -27,6 +27,7 @@ pass it transiently):
 
 from __future__ import annotations
 
+import argparse
 import io
 import re
 from pathlib import Path
@@ -672,6 +673,10 @@ def build_indicator_df(
 
 
 def main() -> None:
+    argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    ).parse_args()  # no options; makes --help work and rejects stray argv
     print("=== Loading cohort + candidate universe ===")
     cohort, sym_to_hgnc, ensg_to_hgnc, ensg_to_sym = _load_cohort()
     cohort_desc = dict(zip(cohort["ensembl_gene"].dropna(), cohort["description"]))

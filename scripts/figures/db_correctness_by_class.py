@@ -1,0 +1,305 @@
+"""Figure 2 — per-class DB-vs-LLM accuracy on the 147-protein benchmark.
+
+For 6 callers (5 DBs + Sonnet 4.6 with identifiers and no tools),
+grouped bars showing overall accuracy + per-verdict-bucket accuracy
+(yes / contextual / no). The Sonnet bar is the mean over its 3
+replicates, with per-replicate dots and an SEM error bar.
+
+DB cutoffs are the **trade-off-audit optimized** versions:
+
+  * **UniProt — TM+signal**: admit any accession with a transmembrane
+    domain, a signal peptide, OR a strict surface subcellular term.
+  * **CSPA — HC-only**: admit only the high-confidence flag.
+  * **GO CC / HPA / SURFY**: canonical baselines.
+
+DATA SOURCE — reads ``data/processed/figures/db_correctness_by_class.tsv``
+(built by ``scripts/build_figure_tsvs.py``), the same TSV the gist
+bundles. The Sonnet caller is pinned to ``claude-sonnet-4-6`` /
+``prompt_variant=ncbi``, matching the gist mirror; the TSV also holds
+other models (including Sonnet 5) that this figure does not
+plot. This replaces the ``triage_bench_db_barplot.py::make_by_class_plot``
+path.
+
+Run: ``uv run python scripts/figures/db_correctness_by_class.py``
+# Reproduction: https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+
+from accessible_surfaceome.audit._plotting_config import save_figure, setup_plotting_style
+
+REPO = Path(__file__).resolve().parents[2]
+DATA_TSV = REPO / "data/processed/figures/db_correctness_by_class.tsv"
+OUT_DIR = REPO / "data/analysis/figures"
+GIST_URL = "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d"
+SONNET_MODEL = "claude-sonnet-4-6"
+
+INK = "#1F1718"
+NEUTRAL = "#6F5D5A"
+
+# Deliverome categorical palette (matches _plotting_config.CATEGORICAL_PALETTE)
+BRAND_PALETTE = [
+    "#BC3C4C",  # maroon-light
+    "#3D6B60",  # teal-mid
+    "#F4AA28",  # amber-bright
+    "#8878C8",  # lavender-bright
+    "#6E1428",  # maroon-dark
+    "#7AAB9F",  # teal-light
+]
+BRAND_CLAUDE_ORANGE = "#d87851"
+
+DB_LABELS = ["UniProt", "GO CC", "HPA", "SURFY", "CSPA"]
+DB_PALETTE = {
+    "UniProt":         BRAND_PALETTE[0],
+    "GO CC":           BRAND_PALETTE[1],
+    "HPA":             BRAND_PALETTE[2],
+    "SURFY":           BRAND_PALETTE[3],
+    "CSPA":            BRAND_PALETTE[4],
+    "Sonnet (+ IDs)": BRAND_CLAUDE_ORANGE,
+}
+COLUMNS = ["overall", "yes", "contextual", "no"]
+COLUMN_LABEL = {
+    "overall":    "overall\n(all 147 proteins)",
+    "yes":        "yes",
+    "contextual": "contextual\n(yes-vote = correct)",
+    "no":         "no",
+}
+
+
+def _vote_correct(vote: str, truth: str) -> bool:
+    if vote == truth:
+        return True
+    return vote in ("yes", "contextual") and truth in ("yes", "contextual")
+
+
+def main() -> None:
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    # Match the gist mirror's layout fingerprint (tests/test_figure_canonical_mirror_sync).
+    plt.rcParams.update({
+        "axes.labelsize": 17, "xtick.labelsize": 15, "ytick.labelsize": 15,
+        "legend.fontsize": 15, "axes.titlesize": 0, "font.size": 15,
+    })
+
+    data = pd.read_csv(DATA_TSV, sep="\t")
+
+    # Derive per-gene tables — per-DB flags + truth are identical across
+    # reps of the same gene; take the first row per gene.
+    gene_first = data.groupby("gene_symbol", sort=False).first()
+    truth_by_gene = gene_first["ground_truth_verdict"].to_dict()
+
+    db_flags = gene_first[[
+        "uniprot_optimized", "cspa_optimized",
+        "go_surface_flag", "hpa_surface_flag", "surfy_surface_flag",
+    ]]
+
+    def _vote(gene: str, source: str) -> str:
+        if gene not in db_flags.index:
+            return "no"
+        row = db_flags.loc[gene]
+        if source == "UniProt":
+            return "yes" if row["uniprot_optimized"] == 1 else "no"
+        if source == "CSPA":
+            return "yes" if row["cspa_optimized"] == 1 else "no"
+        flag_col = {
+            "GO CC":  "go_surface_flag",
+            "HPA":    "hpa_surface_flag",
+            "SURFY":  "surfy_surface_flag",
+        }[source]
+        return "yes" if row[flag_col] == 1 else "no"
+
+    # Sonnet/ncbi per-cell predicted_verdict: first row per gene in that cell.
+    # Pinned to claude-sonnet-4-6 (as the gist mirror is): the TSV also has
+    # Sonnet 5 ncbi rows, so a "first model containing 'sonnet'"
+    # pick would depend on row order.
+    sonnet_rows = data[data["prompt_variant"] == "ncbi"].copy()
+    ncbi_model: str | None = SONNET_MODEL
+    if ncbi_model not in set(sonnet_rows["model"]):
+        raise ValueError(f"{SONNET_MODEL} / ncbi rows missing from {DATA_TSV}")
+    sonnet_label = "Sonnet (+ IDs)"
+    if ncbi_model is not None:
+        sonnet_ncbi = (
+            sonnet_rows[sonnet_rows["model"] == ncbi_model]
+            .groupby("gene_symbol", sort=False)["predicted_verdict"]
+            .first()
+            .to_dict()
+        )
+    else:
+        sonnet_ncbi = {}
+
+    def _overall_acc(caller_label: str) -> float:
+        if caller_label == sonnet_label:
+            def vote_fn(g: str) -> str:
+                return sonnet_ncbi.get(g) or "no"
+        else:
+            def vote_fn(g: str, lbl: str = caller_label) -> str:
+                return _vote(g, lbl)
+        genes = list(truth_by_gene)
+        n_correct = sum(_vote_correct(vote_fn(g), truth_by_gene[g]) for g in genes)
+        return n_correct / len(genes)
+
+    db_labels_sorted = sorted(DB_LABELS, key=lambda lbl: -_overall_acc(lbl))
+    callers_in_plot = [sonnet_label, *db_labels_sorted]
+
+    # Sonnet per-bucket MEAN-of-replicate fraction so the bar height
+    # lines up with the overlaid per-rep points + SEM.
+    sonnet_rep_frac: dict[str, float] = {}
+    try:
+        _s = sonnet_rows[sonnet_rows["model"] == ncbi_model].copy() if ncbi_model else pd.DataFrame()
+        if len(_s):
+            _s["is_match"] = _s["is_match"].astype(int)
+            _s["truth"] = _s["gene_symbol"].map(truth_by_gene)
+            _rep_ids = sorted(_s["replicate"].unique())
+            for bucket in COLUMNS:
+                sub = _s if bucket == "overall" else _s[_s["truth"] == bucket]
+                per_rep = [
+                    sub[sub["replicate"] == rid]["is_match"].mean()
+                    for rid in _rep_ids if len(sub[sub["replicate"] == rid])
+                ]
+                if per_rep:
+                    sonnet_rep_frac[bucket] = sum(per_rep) / len(per_rep)
+    except Exception:  # noqa: BLE001
+        sonnet_rep_frac = {}
+
+    rows = []
+    for caller_label in callers_in_plot:
+        if caller_label == sonnet_label:
+            def vote_fn(g: str) -> str:
+                return sonnet_ncbi.get(g) or "no"
+        else:
+            def vote_fn(g: str, lbl: str = caller_label) -> str:
+                return _vote(g, lbl)
+        for bucket in COLUMNS:
+            genes = (
+                list(truth_by_gene)
+                if bucket == "overall"
+                else [g for g, t in truth_by_gene.items() if t == bucket]
+            )
+            if not genes:
+                continue
+            n_correct = sum(_vote_correct(vote_fn(g), truth_by_gene[g]) for g in genes)
+            frac = n_correct / len(genes)
+            if caller_label == sonnet_label and bucket in sonnet_rep_frac:
+                frac = sonnet_rep_frac[bucket]
+            rows.append({
+                "caller": caller_label,
+                "bucket": bucket,
+                "bucket_label": COLUMN_LABEL[bucket],
+                "n_correct": n_correct,
+                "n_total": len(genes),
+                "fraction": frac,
+            })
+    df = pd.DataFrame(rows)
+
+    overall = {row["caller"]: row["fraction"]
+               for row in rows if row["bucket"] == "overall"}
+    totals = {row["bucket"]: row["n_total"]
+              for row in rows if row["caller"] == sonnet_label and row["bucket"] != "overall"}
+
+    fig, ax = plt.subplots(figsize=(11, 5.5))
+    palette = [DB_PALETTE[c] for c in callers_in_plot]
+    sns.barplot(
+        data=df,
+        x="bucket_label", y="fraction",
+        hue="caller",
+        order=[COLUMN_LABEL[c] for c in COLUMNS],
+        hue_order=callers_in_plot,
+        palette=palette,
+        edgecolor="none", saturation=1.0,
+        ax=ax,
+    )
+
+    # Insert a small visible gap between the single LLM bar and the
+    # 5-DB cluster within each column group.
+    n_col = len(COLUMNS)
+    n_callers = len(callers_in_plot)
+    bar_width = ax.patches[0].get_width()
+    gap = bar_width * 0.6
+    for caller_idx in range(1, n_callers):
+        for j in range(n_col):
+            patch = ax.patches[caller_idx * n_col + j]
+            patch.set_x(patch.get_x() + gap)
+
+    # Overlay individual-replicate accuracy + SEM on the Sonnet bars.
+    label_floor: dict[int, float] = {}
+    try:
+        if ncbi_model is not None:
+            srep = sonnet_rows[sonnet_rows["model"] == ncbi_model].copy()
+            srep["is_match"] = srep["is_match"].astype(int)
+            srep["truth"] = srep["gene_symbol"].map(truth_by_gene)
+            rep_ids = sorted(srep["replicate"].unique())
+            for j, bucket in enumerate(COLUMNS):
+                patch = ax.patches[0 * n_col + j]
+                xc = patch.get_x() + patch.get_width() / 2
+                sub = srep if bucket == "overall" else srep[srep["truth"] == bucket]
+                accs = []
+                for rid in rep_ids:
+                    cell = sub[sub["replicate"] == rid]
+                    if len(cell):
+                        accs.append(cell["is_match"].mean())
+                if len(accs) >= 2:
+                    m = sum(accs) / len(accs)
+                    sd = (sum((v - m) ** 2 for v in accs) / (len(accs) - 1)) ** 0.5
+                    sem = sd / (len(accs) ** 0.5)
+                    label_floor[j] = max(max(accs), m + sem)
+                    ax.errorbar(xc, m, yerr=sem, fmt="none", ecolor=INK,
+                                elinewidth=1.0, capsize=2.5, capthick=1.0, zorder=5)
+                    for k, av in enumerate(accs):
+                        jitter = (k - (len(accs) - 1) / 2) * (patch.get_width() * 0.22)
+                        ax.scatter(xc + jitter, av, s=14, color=INK,
+                                   edgecolor="white", linewidth=0.4, zorder=6, alpha=0.9)
+    except Exception:  # noqa: BLE001
+        pass
+
+    # Per-bar percentage labels, rotated so each stays inside its own bar's
+    # width; Sonnet's sit above its replicate dots + SEM cap.
+    for i, caller in enumerate(callers_in_plot):
+        for j, bucket in enumerate(COLUMNS):
+            patch = ax.patches[i * n_col + j]
+            frac = df[(df["caller"] == caller) & (df["bucket"] == bucket)].iloc[0]["fraction"]
+            floor = label_floor.get(j) if i == 0 else None
+            top = max(patch.get_height(), floor or 0.0)
+            ax.annotate(
+                f"{frac:.0%}",
+                xy=(patch.get_x() + patch.get_width() / 2, top),
+                xytext=(0, 9 if floor else 4), textcoords="offset points",
+                ha="center", va="bottom", rotation=90,
+                fontsize=13.5, color=INK,
+            )
+
+    ax.set_xlabel("")
+    ax.set_ylabel("Fraction correctly\nclassified")
+    ax.set_ylim(0, 1.2)
+    ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+
+    handles, _ = ax.get_legend_handles_labels()
+    legend_labels = [f"{lbl} ({overall[lbl]:.0%})" for lbl in callers_in_plot]
+    ax.legend(
+        handles, legend_labels,
+        title="Caller (overall acc.)",
+        loc="upper left", bbox_to_anchor=(1.02, 1.0),
+        frameon=False, borderaxespad=0.0, title_fontsize=17,
+    )
+
+    subtitle_parts = [f"n(overall) = {sum(totals.values())}"]
+    subtitle_parts += [f"n({v}) = {totals[v]}" for v in ["yes", "contextual", "no"]]
+    ax.text(
+        0.5, -0.21, "  ·  ".join(subtitle_parts),
+        transform=ax.transAxes, ha="center", va="top",
+        fontsize=12.5, color=NEUTRAL,
+    )
+    sns.despine(ax=ax, top=True, right=True)
+
+    save_figure(fig, "db_correctness_by_class", OUT_DIR, gist_url=GIST_URL)
+    n_uniprot_opt = int(db_flags["uniprot_optimized"].sum())
+    n_cspa_opt    = int(db_flags["cspa_optimized"].sum())
+    print(f"Wrote db_correctness_by_class.{{pdf,png}}  ({len(df)} (caller, bucket) cells; "
+          f"UniProt TM+signal n={n_uniprot_opt:,}, CSPA HC-only n={n_cspa_opt:,})")
+
+
+if __name__ == "__main__":
+    main()

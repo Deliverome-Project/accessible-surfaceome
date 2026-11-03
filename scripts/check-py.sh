@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  cat <<'USAGE'
+Usage: scripts/check-py.sh
+
+Runs everything CI runs, in order:
+  ruff check src tests scripts   lint
+  ty check                       type check
+  compileall src                 syntax check
+  pytest -q                      the test suite
+  check_viewer_types_sync.py     viewer TS interfaces vs Pydantic models
+
+Takes no options. Requires uv.
+USAGE
+  exit 0
+fi
+
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 

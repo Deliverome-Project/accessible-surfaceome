@@ -3,7 +3,7 @@
 Read-only investigation: why Anthropic prompt caching shows
 `cache_creation_input_tokens=0` and `cache_read_input_tokens=0` on the Sonnet
 builder + Haiku trim paths despite `cache_control` being wired in. Probe
-script: [`scripts/probe_cache_engagement.py`](../../scripts/probe_cache_engagement.py).
+script: [`scripts/probe_cache_engagement.py`](../../scripts/probes/probe_cache_engagement.py).
 
 **STATUS (2026-06-08, post-fix):** Probe results reproduced + fix applied.
 Haiku trim cached prefix padded from 2,654 / 2,083 tokens (a1 / a2) to

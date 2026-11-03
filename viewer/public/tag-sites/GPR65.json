@@ -37,7 +37,201 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "GPR65-terminal-n",
+      "gene_symbol": "GPR65",
+      "uniprot_acc": "Q8IYL9",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": null,
+      "residue_after": "M",
+      "residue_label": null,
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular N-terminus (topology 'O' at residue 1) \u2014 direct N-terminal tag",
+      "sources": [],
+      "plddt": 36.7,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "GPR65-disorder-13::iso::Q61038",
+      "isoform_id": "Q61038",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 13,
+      "canonical_residue": 11,
+      "left_pct": 3.857566765578635
+    },
+    {
+      "site_id": "GPR65-disorder-153::iso::A0A2K5UMR2",
+      "isoform_id": "A0A2K5UMR2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 153,
+      "canonical_residue": 153,
+      "left_pct": 45.40059347181009
+    },
+    {
+      "site_id": "GPR65-disorder-155::iso::Q61038",
+      "isoform_id": "Q61038",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 155,
+      "canonical_residue": 153,
+      "left_pct": 45.99406528189911
+    },
+    {
+      "site_id": "GPR65-disorder-164::iso::A0A2K5UMR2",
+      "isoform_id": "A0A2K5UMR2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 164,
+      "canonical_residue": 164,
+      "left_pct": 48.6646884272997
+    },
+    {
+      "site_id": "GPR65-disorder-166::iso::Q61038",
+      "isoform_id": "Q61038",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 166,
+      "canonical_residue": 164,
+      "left_pct": 49.25816023738873
+    },
+    {
+      "site_id": "GPR65-disorder-175::iso::A0A2K5UMR2",
+      "isoform_id": "A0A2K5UMR2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 175,
+      "canonical_residue": 175,
+      "left_pct": 51.92878338278932
+    },
+    {
+      "site_id": "GPR65-disorder-1::iso::A0A2K5UMR2",
+      "isoform_id": "A0A2K5UMR2",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 1,
+      "canonical_residue": 1,
+      "left_pct": 0.2967359050445104
+    },
+    {
+      "site_id": "GPR65-disorder-1::iso::Q61038",
+      "isoform_id": "Q61038",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 1,
+      "canonical_residue": null,
+      "left_pct": 0.2967359050445104
+    },
+    {
+      "site_id": "GPR65-disorder-259::iso::A0A2K5UMR2",
+      "isoform_id": "A0A2K5UMR2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 259,
+      "canonical_residue": 259,
+      "left_pct": 76.8545994065282
+    },
+    {
+      "site_id": "GPR65-disorder-260::iso::Q61038",
+      "isoform_id": "Q61038",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 260,
+      "canonical_residue": 258,
+      "left_pct": 77.1513353115727
+    },
+    {
+      "site_id": "GPR65-disorder-9::iso::A0A2K5UMR2",
+      "isoform_id": "A0A2K5UMR2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 9,
+      "canonical_residue": 9,
+      "left_pct": 2.6706231454005933
+    },
+    {
+      "site_id": "GPR65-surface_loop-253::iso::A0A2K5UMR2",
+      "isoform_id": "A0A2K5UMR2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 253,
+      "canonical_residue": 253,
+      "left_pct": 75.07418397626114
+    },
+    {
+      "site_id": "GPR65-surface_loop-257::iso::Q61038",
+      "isoform_id": "Q61038",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 257,
+      "canonical_residue": 255,
+      "left_pct": 76.26112759643917
+    },
+    {
+      "site_id": "GPR65-surface_loop-81::iso::A0A2K5UMR2",
+      "isoform_id": "A0A2K5UMR2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 81,
+      "canonical_residue": 81,
+      "left_pct": 24.03560830860534
+    },
+    {
+      "site_id": "GPR65-surface_loop-83::iso::Q61038",
+      "isoform_id": "Q61038",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 83,
+      "canonical_residue": 81,
+      "left_pct": 24.629080118694365
+    }
+  ]
 }

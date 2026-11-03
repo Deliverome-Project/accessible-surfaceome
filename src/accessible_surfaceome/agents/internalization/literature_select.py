@@ -48,6 +48,7 @@ def select_clips(
     gene: str,
     synonyms: list[str] | None = None,
     system_prompt: str | None = None,
+    usage_sink: list[Any] | None = None,
 ) -> SelectionResponse:
     return _select_clips(
         client,
@@ -55,6 +56,7 @@ def select_clips(
         gene=gene,
         synonyms=synonyms,
         system_prompt=system_prompt or load_select_prompt(),
+        usage_sink=usage_sink,
         menu_instruction=_MENU_INSTRUCTION,
     )
 

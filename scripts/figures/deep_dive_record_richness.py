@@ -1,0 +1,219 @@
+"""Deep-dive record richness across five axes, faceted by deep-dive tier.
+
+Five-panel violin showing the *real* per-gene distribution along the axes that
+characterise *how much information* a single deep dive captures. Every panel is
+faceted by the deep-dive **tier** (canonical / likely / low / no) — so the
+reader can see how record richness scales with confidence rather than a coarse
+non-surface-vs-surface split. Each violin is the real distribution of that
+tier's genes; there is no synthesised fan.
+
+The five axes
+-------------
+a. **Papers found** — the discovery-corpus size (EuropePMC + PubTator NER +
+   gene2pubmed union). Tiers: canonical, likely, low, no.
+
+b. **Papers selected** — unique papers read full-text into the evidence list.
+   Tiers: canonical, likely, low, no.
+
+c. **Papers with extracellular evidence** — selected papers carrying an
+   experimental extracellular / surface-method tag. Tiers: canonical, likely,
+   low (the "no" tier is dropped — non-surface proteins carry little
+   extracellular evidence by definition).
+
+d. **LLM filters with a positive finding** — how many of the 24 LLM filter
+   facets carry a positive/substantive determination; definitive negatives and
+   "unknown" don't count, so this reads record *richness* (what the agent found)
+   rather than schema completeness. The LLM analogue of e. Tiers: canonical,
+   likely, low.
+
+e. **Deterministic features (derived, 0–7)** — how many of the seven derived
+   deterministic structural/topology features are present. Tiers: canonical,
+   likely, low.
+
+The ``uncertain`` tier (n=55) is dropped everywhere as too small to show a
+distribution.
+
+Why per-panel violins?
+----------------------
+Each axis has a very different scale (papers in the hundreds vs feature counts
+0–7) so a shared Y axis would compress the small axes into the baseline. Five
+small per-panel violins (one Y axis each) let each real distribution speak for
+itself.
+
+Data source
+-----------
+Reads the bundled per-figure TSV at
+``data/processed/figures/deep_dive_record_richness.tsv`` (one row per deep-dived
+gene: the five real per-gene axes + the deep-dive ``tier``).
+
+Computed over the completed deep-dive sweep (5,332 genes).
+
+Run::
+
+    uv run python scripts/figures/deep_dive_record_richness.py
+
+# Reproduction: https://gist.github.com/beccajcarlson/35119ea2bca9585c7245d247334b8c01
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+from matplotlib.transforms import offset_copy
+from matplotlib.colors import to_rgb
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
+from accessible_surfaceome.audit._plotting_config import (
+    COLORS,
+    save_figure,
+    setup_plotting_style,
+)
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT_DIR = ROOT / "data/analysis/figures"
+SLUG = "deep_dive_record_richness"
+# In-repo per-figure TSV: one row per deep-dived gene, carrying the five real
+# per-gene axes + the deep-dive `tier`.
+DATA_TSV = ROOT / "data/processed/figures/deep_dive_record_richness.tsv"
+
+# Published reproduction gist (embedded into output PNG Source / PDF Subject
+# metadata via save_figure(gist_url=...)).
+GIST_URL = "https://gist.github.com/beccajcarlson/35119ea2bca9585c7245d247334b8c01"
+
+# Tier colors — MUST match Fig 5. canonical=green, likely=teal, low=amber,
+# no=muted warm-grey. `uncertain` is dropped everywhere (n=55, too small).
+TIER_COLORS = {
+    "canonical": "#2E7A55",
+    "likely":    "#3D6B60",
+    "low":       "#C99A5B",
+    "no":        "#9C8C88",
+}
+
+# Five-panel specs: (tsv_key, subtitle, tiers-to-show).
+# Panels a/b keep the "no" tier; c/d/e drop it (non-surface genes carry
+# little extracellular evidence by definition).
+_FOUR = ["canonical", "likely", "low", "no"]
+_THREE = ["canonical", "likely", "low"]
+PANELS = [
+    ("papers_found",       "Papers found (discovery corpus)",       _FOUR,  "Papers per protein"),
+    ("papers_selected",    "Papers selected (into evidence list)",  _FOUR,  "Papers per protein"),
+    ("papers_with_ec",     "Papers with extracellular evidence",    _THREE, "Papers per protein"),
+    ("n_filters_evidence", "LLM filters with a positive finding",   _THREE, "Filters per protein"),
+    ("n_det_features",     "Deterministic features (derived, 0-7)", _THREE, "Features per protein"),
+]
+
+# Two rows (the 4-tier panels a/b on top, the 3-tier panels c-e below) so the
+# figure prints at a legible scale; a single 5-wide row needed a ~25 in canvas.
+FIGSIZE = (16, 10)
+
+
+def _load_real_values() -> pd.DataFrame:
+    """Read the bundled per-figure TSV (one row per deep-dived gene)."""
+    return pd.read_csv(DATA_TSV, sep="\t")
+
+
+def _draw_panel(ax: plt.Axes, data: pd.DataFrame, key: str,
+                tiers: list[str]) -> None:
+    """Real violins, one per tier, in tier colors. Median line inside each
+    violin + a faint real-value point strip so the reader sees the actual n."""
+    sub = data[data["tier"].isin(tiers)].copy()
+    sub = sub[["tier", key]].dropna()
+    sub[key] = sub[key].astype(float)
+
+    palette = {t: TIER_COLORS[t] for t in tiers}
+    sns.violinplot(
+        data=sub, x="tier", y=key, order=tiers, hue="tier",
+        hue_order=tiers, palette=palette, legend=False,
+        inner="quartile", cut=0, density_norm="width",
+        linewidth=1.2, saturation=1.0, ax=ax,
+    )
+    # Soften the violin bodies + recolor the inner quartile lines so the
+    # median (middle line) reads as a solid tick and the quartiles as faint.
+    for coll in ax.collections:
+        coll.set_alpha(0.35)
+    for line in ax.lines:
+        line.set_color(COLORS["dark"])
+        line.set_alpha(0.9)
+        line.set_linewidth(1.4)
+
+    # Real-value point strip on top so the actual per-tier n is visible. The
+    # jitter is seeded so a re-render places every point where the last did.
+    np.random.seed(0)
+    # A darker shade of each tier's color so points stay legible over their own
+    # violin without outweighing it.
+    point_palette = {t: tuple(0.6 * v for v in to_rgb(c)) for t, c in palette.items()}
+    sns.stripplot(
+        data=sub, x="tier", y=key, order=tiers, hue="tier",
+        hue_order=tiers, palette=point_palette, legend=False,
+        size=2.0, alpha=0.35, linewidth=0, jitter=0.18, zorder=3, ax=ax,
+    )
+
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.margins(y=0.04)
+
+
+def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    plt.rcParams.update({
+        # Each subplot uses a TITLE (axes.titlesize) as its subtitle so the
+        # per-panel description renders at a readable size; the tier names
+        # occupy the x-tick labels.
+        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 16,
+        "axes.titleweight": "semibold", "axes.titlepad": 12,
+        "xtick.labelsize": 18, "ytick.labelsize": 18, "legend.fontsize": 18,
+    })
+
+    data = _load_real_values()
+
+    fig = plt.figure(figsize=FIGSIZE)
+    gs = fig.add_gridspec(2, 6)
+    axes = [fig.add_subplot(gs[0, 0:3]), fig.add_subplot(gs[0, 3:6]),
+            fig.add_subplot(gs[1, 0:2]), fig.add_subplot(gs[1, 2:4]),
+            fig.add_subplot(gs[1, 4:6])]
+    panel_letters = ["a", "b", "c", "d", "e"]
+
+    for idx, (ax, (key, subtitle, tiers, ylabel)) in enumerate(
+        zip(axes, PANELS, strict=True)
+    ):
+        _draw_panel(ax, data, key, tiers)
+        ax.set_ylabel(ylabel)
+
+        # ``setup_plotting_style`` monkey-patches ``Axes.set_title`` (and
+        # ``Figure.suptitle``) to NO-OPS, so a ``set_title`` subtitle silently
+        # vanishes. Render the per-panel subtitle as centered text just above
+        # each panel instead so the reader can see what each panel shows.
+        ax.text(
+            0.5, 1.03, subtitle, transform=ax.transAxes,
+            ha="center", va="bottom", fontsize=17.5, fontweight="semibold",
+            color=COLORS["dark"],
+        )
+
+        # Subpanel letter (lowercase, ExtraBold) at the panel's upper-left,
+        # baseline-aligned with the subtitle — figure_subpanel_labels memory.
+        ax.text(
+            0.0, 1.03, panel_letters[idx],
+            # Fixed inch offset so the letter sits the same distance left of
+            # every panel regardless of its width.
+            transform=offset_copy(ax.transAxes, fig=fig, x=-0.95, units="inches"),
+            ha="left", va="bottom",
+            fontsize=27, fontweight=800, color=COLORS["dark"],
+        )
+
+        sns.despine(ax=ax, top=True, right=True)
+
+
+    fig.tight_layout(rect=(0, 0, 1, 0.99))
+    return fig, list(axes)
+
+
+def main() -> None:
+    fig, _ = make_plot()
+    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"),
+                gist_url=GIST_URL)
+
+
+if __name__ == "__main__":
+    main()

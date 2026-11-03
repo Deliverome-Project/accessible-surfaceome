@@ -2,7 +2,7 @@
 
 Each block-builder is a focused Sonnet call that turns an ``EvidenceClaim``
 ledger slice + the target schema into a structured block. The pattern is
-identical across all nine builders, so it lives here:
+identical across every builder, so it lives here:
 
 1. Read a per-builder system prompt from disk.
 2. Format the user prompt as: gene context + claim ledger (JSON) + target

@@ -75,36 +75,36 @@ local LINKABLE_SECTIONS = {
 -- reported on stderr at build time — see the report at the bottom.
 local REFERENCE_TARGETS = {
   {
-    contains = "prominent examples",
+    contains = "not fully independent",
     target = "candidate-universe-construction",
     note = "Intro: names the five source databases",
   },
   {
-    contains = "Five-way Venn diagram",
+    contains = "UpSet plot of five surface protein databases",
     target = "candidate-universe-construction",
     note = "Fig 1 caption: per-source inclusion rules",
   },
   {
-    contains = "secreted targets primarily from ADCdb",
+    contains = "three orthogonal target lists",
     target = "positive-control-target-sets",
     note = "Results: the three positive-control target lists",
   },
   {
-    -- Keyed off the paragraph's opening clause, not "pipeline runs in
-    -- three stages": that sentence appears twice — here, and again in
-    -- Methods > Deep-dive pipeline architecture, which is the very
-    -- paragraph this link points AT.
-    contains = "We therefore constructed a deep-dive pipeline",
+    -- Keyed off the figure reference that only the Results line
+    -- carries, not "pipeline runs in three stages": that sentence
+    -- appears twice — here, and again in Methods > Deep-dive pipeline
+    -- architecture, which is the very paragraph this link points AT.
+    contains = "three stages (Figure 4b",
     target = "deep-dive-pipeline-architecture",
     note = "Results: three-stage pipeline → the subsection that expands it",
   },
   {
-    contains = "induction trigger",
+    contains = "Every deep-dived protein resolves to a surface tier",
     target = "deep-dive-scoring",
     note = "Fig 5 caption: canonical/likely tier predicates",
   },
   {
-    contains = "Five axes of richness",
+    contains = "Five axes of content",
     target = "deep-dive-scoring",
     note = "Fig 6 caption: confidence-tier definitions",
   },

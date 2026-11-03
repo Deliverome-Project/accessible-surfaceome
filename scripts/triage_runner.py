@@ -130,6 +130,10 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     "claude-haiku-4-5":  (1.0, 5.0),
     "claude-opus-4-7":   (15.0, 75.0),
     "claude-opus-4-8":   (15.0, 75.0),  # same list price as 4-7
+    "claude-opus-5":     (5.0, 25.0),
+    "claude-opus-5-5":   (4.0, 20.0),
+    "claude-sonnet-5-5": (2.0, 10.0),
+    "claude-haiku-5-5":  (0.10, 0.50),  # prompts <=100K tokens
 }
 WEB_SEARCH_USD_PER_QUERY = 0.01  # $10 / 1000 searches
 
@@ -162,6 +166,16 @@ VARIANTS = {
         "prompt": "system_web.md",
         "resolver": True, "web_search": True,
         "max_tokens": 2048, "web_max_uses": 2,
+    },
+    # Reasoning-effort variant of ncbi: same prompt and resolver context,
+    # output_config.effort="low". Exists for models whose thinking cannot be
+    # disabled (Opus 5.5): at its default effort Opus 5.5 over-calls
+    # contextual on the mainbench, and low effort is the closest it gets to
+    # answering directly. A separate variant label keeps these rows from
+    # colliding with default-effort ncbi rows on the D1 natural key.
+    "ncbi_effort_low": {
+        "prompt": "system.md", "resolver": True, "web_search": False,
+        "effort": "low",
     },
     # PubMed evidence variant: NCBI resolver + relevance-ranked PubMed
     # esearch (gene × surface terms) + efetch abstracts, sentence-filtered
@@ -491,6 +505,8 @@ def _run_one(
         if "web_max_uses" in cfg:
             web_tool["max_uses"] = cfg["web_max_uses"]
         create_kwargs["tools"] = [web_tool]
+    if "effort" in cfg:
+        create_kwargs["output_config"] = {"effort": cfg["effort"]}
     # Snapshot the decoding params we'll send so they land in the
     # persisted record even on the error path below.
     decode_params = {
@@ -542,7 +558,13 @@ def _run_one(
             predicted_verdict=None, predicted_reason=None, verdict_reasoning="",
             correct=False, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens,
             n_web_searches=n_searches, cost_usd=cost, latency_s=latency,
-            error="could not parse JSON from response", raw_text=raw_text[:1000],
+            # A refusal returns no JSON either; name it so downstream
+            # scoring can tell a declined call from a malformed one.
+            error=(
+                "refusal" if api_meta["api_stop_reason"] == "refusal"
+                else "could not parse JSON from response"
+            ),
+            raw_text=raw_text[:1000],
             user_message=user_message, search_log=search_log,
             cache_creation_tokens=cache_creation_tokens,
             cache_read_tokens=cache_read_tokens,

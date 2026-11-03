@@ -8,9 +8,17 @@
 # ///
 """Reproduce ``benchmark_cost_vs_accuracy.{pdf,png}`` from the public repo.
 
-Fetches the canonical main-bench export (D1 → flat TSV) +
-benchmark-truth TSV via ``raw.githubusercontent.com``, then renders the
-8-cell cost/accuracy frontier in the Claude-orange palette.
+Reads the bundled ``benchmark_cost_vs_accuracy.tsv`` (the sibling file in
+the gist; falls back to the in-repo copy under ``data/processed/figures/``),
+then renders the 18-cell cost/accuracy frontier: Haiku 4.5 and Sonnet 4.6
+each × {naive, + IDs, + IDs + PubMed, + IDs + web}, Sonnet 5 × {+ IDs},
+Opus 4.8 × {naive, + IDs}, Opus 5 × {+ IDs}, Haiku 5.5 and Sonnet 5.5 each ×
+{naive, + IDs}, and Opus 5.5 × {+ IDs, + IDs at low reasoning effort}.
+Accuracy is the mean over 3 replicates on the 147-gene bench, over answered
+calls: refused calls (``refused`` = 1) are excluded and the cell's refusal
+rate is printed in its label. Color encodes model generation (orange Claude
+4.x, blue Claude 5, teal Claude 5.5); the two Sonnet 4.6 configurations the
+production pipeline uses are lavender.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist
@@ -21,19 +29,22 @@ you need.
 """
 from __future__ import annotations
 
+import colorsys
 from pathlib import Path
 
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from matplotlib.colors import to_hex, to_rgb
+from matplotlib.lines import Line2D
 
-# Final-figure data sources — pinned to the public repo at raw.githubusercontent.com
-# for citation stability. The predictions TSV is refreshed from public D1
-# by `scripts/export_mainbench_to_tsv.py`; truth labels come from the
-# curated benchmark TSV in `data/eval/`. (Live consumers wanting the same
-# shape can hit `api.deliverome.org/surfaceome/v1/{triage,benchmark}/
-# export.tsv` instead — see the API page on the viewer.)
+# Data source. BASE is used only to name the TSV and to map it to its
+# in-repo path; the script never downloads it (see _fetch_tsv). Upstream,
+# per-replicate predictions are exported from public D1 by
+# `scripts/tsv-export/export_mainbench_to_tsv.py` into
+# `data/processed/triage_bench/mainbench_replicates_v2.tsv`, which
+# `scripts/build_figure_tsvs.py` turns into the per-figure TSV below.
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
@@ -66,6 +77,8 @@ BRAND_SEQUENTIAL = {
     "lavender": ["#1E1450", "#3A2888", "#5848A8", "#8878C8", "#A090D4", "#E4E0F8"],
 }
 BRAND_CLAUDE_ORANGE = "#d87851"
+PRODUCTION_COLOR = "#7B6BB0"
+PRODUCTION_LIGHT = "#B3A6DA"
 BRAND_INK = "#1F1718"
 BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
@@ -90,7 +103,7 @@ def _apply_brand_style() -> None:
     """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
-    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
+    static Manrope-{Regular,Medium,SemiBold,Bold}.ttf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -99,12 +112,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 14,
-        "axes.labelsize": 14,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 10.5,
+        "axes.labelsize": 12,
+        "axes.labelweight": "semibold",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -119,40 +132,70 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 13,
-        "ytick.labelsize": 13,
+        "xtick.labelsize": 10.5,
+        "ytick.labelsize": 10.5,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 13,
+        "legend.fontsize": 10.5,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
 
 
-# Anthropic published prices ($/M tokens, 2026-05).
+# Per-million-token prices used for the figure: in = input, out = output,
+# cr = cache read, cw = cache write. Verified 2026-10-11 against
+# https://platform.claude.com/docs/en/about-claude/pricing.
+#
+# Two corrections landed here together, for different reasons:
+#  * Opus 4.8 was carrying 15/75/1.50/18.75 — an exact four-way match for the
+#    retired Opus 4.1 row. It was copied forward from a claude-opus-4-7 entry
+#    that had the same problem. No Opus since 4.5 has been priced above 5/25.
+#  * Sonnet 5 was deliberately entered at Sonnet 4.6's rate, because that was
+#    the increase Anthropic had scheduled for 2026-09-01. The increase was
+#    cancelled and the 2/10 launch price became the standard price, so the
+#    legend sentence that explained the choice is gone too.
 _PRICE = {
     "claude-haiku-4-5":  {"in": 1.00, "out": 5.00,  "cr": 0.10, "cw": 1.25},
     "claude-sonnet-4-6": {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
-    "claude-sonnet-5":   {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
-    "claude-opus-4-8":   {"in": 15.0, "out": 75.0,  "cr": 1.50, "cw": 18.75},
+    "claude-sonnet-5":   {"in": 2.00, "out": 10.00, "cr": 0.20, "cw": 2.50},
+    "claude-opus-4-8":   {"in": 5.00, "out": 25.00, "cr": 0.50, "cw": 6.25},
+    "claude-opus-5":     {"in": 5.00, "out": 25.00, "cr": 0.50, "cw": 6.25},
+    # Claude 5.5 family, verified 2026-10-12. Cache write is 1.25x input;
+    # Haiku 5.5's cache-read rate is not listed separately and is taken as
+    # 0.1x input, the rate every other tier uses. Haiku 5.5's prices hold for
+    # prompts up to 100K tokens, far above any triage call.
+    "claude-opus-5-5":   {"in": 4.00, "out": 20.00, "cr": 0.20, "cw": 5.00},
+    "claude-sonnet-5-5": {"in": 2.00, "out": 10.00, "cr": 0.20, "cw": 2.50},
+    "claude-haiku-5-5":  {"in": 0.10, "out": 0.50,  "cr": 0.01, "cw": 0.125},
 }
 WEB_SEARCH_USD_PER_QUERY = 0.01
 WHOLE_GENOME_N = 19_324  # protein-coding human genes with a valid HGNC + UniProt mapping
 
-# Per-cell label + Claude-orange sequential walk (light → dark = more-context cells).
+# Per-cell label + color. Hue = model generation, shade = model size and
+# context (light → dark): orange Claude 4.x, blue Claude 5, teal Claude 5.5.
+# The two production configurations (Sonnet 4.6 + IDs, + IDs + PubMed) are
+# lavender instead, so they stand out from their own generation.
 CELL_LABEL = {
-    ("claude-haiku-4-5",  "naive"):       "Haiku (naive)",
-    ("claude-haiku-4-5",  "ncbi"):        "Haiku (+ IDs)",
-    ("claude-haiku-4-5",  "pubmed_ncbi"): "Haiku (+ IDs + PubMed)",
-    ("claude-haiku-4-5",  "web_ncbi"):    "Haiku (+ IDs + web)",
+    ("claude-haiku-4-5",  "naive"):       "Haiku 4.5 (naive)",
+    ("claude-haiku-4-5",  "ncbi"):        "Haiku 4.5 (+ IDs)",
+    ("claude-haiku-4-5",  "pubmed_ncbi"): "Haiku 4.5 (+ IDs + PubMed)",
+    ("claude-haiku-4-5",  "web_ncbi"):    "Haiku 4.5 (+ IDs + web)",
     ("claude-sonnet-4-6", "naive"):       "Sonnet 4.6 (naive)",
     ("claude-sonnet-4-6", "ncbi"):        "Sonnet 4.6 (+ IDs)",
     ("claude-sonnet-4-6", "pubmed_ncbi"): "Sonnet 4.6 (+ IDs + PubMed)",
     ("claude-sonnet-4-6", "web_ncbi"):    "Sonnet 4.6 (+ IDs + web)",
     ("claude-sonnet-5",   "ncbi"):        "Sonnet 5 (+ IDs)",
-    ("claude-opus-4-8",   "naive"):       "Opus (naive)",
-    ("claude-opus-4-8",   "ncbi"):        "Opus (+ IDs)",
+    ("claude-opus-4-8",   "naive"):       "Opus 4.8 (naive)",
+    ("claude-opus-4-8",   "ncbi"):        "Opus 4.8 (+ IDs)",
+    ("claude-opus-5",     "ncbi"):        "Opus 5 (+ IDs)",
+    ("claude-haiku-5-5",  "naive"):       "Haiku 5.5 (naive)",
+    ("claude-haiku-5-5",  "ncbi"):        "Haiku 5.5 (+ IDs)",
+    ("claude-sonnet-5-5", "naive"):       "Sonnet 5.5 (naive)",
+    ("claude-sonnet-5-5", "ncbi"):        "Sonnet 5.5 (+ IDs)",
+    ("claude-opus-5-5",   "ncbi"):        "Opus 5.5 (+ IDs)",
+    # Two lines: the label also carries the refusal rate.
+    ("claude-opus-5-5",   "ncbi_effort_low"): "Opus 5.5 (+ IDs,\nlow effort)",
 }
 CELL_COLOR = {
     ("claude-haiku-4-5",  "naive"):       "#f7d8c4",
@@ -160,40 +203,64 @@ CELL_COLOR = {
     ("claude-haiku-4-5",  "pubmed_ncbi"): "#eab695",
     ("claude-haiku-4-5",  "web_ncbi"):    "#ec9e7d",
     ("claude-sonnet-4-6", "naive"):       "#e3a07d",
-    ("claude-sonnet-4-6", "ncbi"):        BRAND_CLAUDE_ORANGE,
-    ("claude-sonnet-4-6", "pubmed_ncbi"): "#cb6f4a",
+    ("claude-sonnet-4-6", "ncbi"):        PRODUCTION_COLOR,
+    ("claude-sonnet-4-6", "pubmed_ncbi"): PRODUCTION_LIGHT,
     ("claude-sonnet-4-6", "web_ncbi"):    "#c46139",
-    ("claude-sonnet-5",   "ncbi"):        "#b35238",
+    ("claude-sonnet-5",   "ncbi"):        "#6b9cc4",
     ("claude-opus-4-8",   "naive"):       "#b66547",
     ("claude-opus-4-8",   "ncbi"):        "#a85b3f",
+    ("claude-opus-5",     "ncbi"):        "#2e5d7a",
+    ("claude-haiku-5-5",  "naive"):       "#d3eeeb",
+    ("claude-haiku-5-5",  "ncbi"):        "#9fd3cf",
+    ("claude-sonnet-5-5", "naive"):       "#8fcac5",
+    ("claude-sonnet-5-5", "ncbi"):        "#3f9c96",
+    ("claude-opus-5-5",   "ncbi"):        "#1f5f5b",
+    ("claude-opus-5-5",   "ncbi_effort_low"): "#2d7a74",
 }
+# Legend: one swatch per generation plus the production configurations.
+GENERATION_LEGEND = [
+    ("Claude 4.x (Haiku 4.5, Sonnet 4.6, Opus 4.8)", BRAND_CLAUDE_ORANGE),
+    ("Claude 5 (Sonnet 5, Opus 5)", "#2e5d7a"),
+    ("Claude 5.5 (Haiku, Sonnet, Opus)", "#3f9c96"),
+    ("Production triage (Sonnet 4.6)", PRODUCTION_COLOR),
+]
 
-# Per-cell label offsets (pixels) to deconflict dense clusters — mirrors
-# scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot. Without
-# these, Opus(naive) and Sonnet(+NCBI+web) land at similar (cost, acc.) and
-# their labels stack. When abs(dy) >= 16 a short leader line is drawn so
-# the label → point mapping stays unambiguous. Re-tune if cells move.
+# Per-cell label offsets (points) — mirrors
+# scripts/figures/benchmark_cost_vs_accuracy.py. Labels are vertically
+# centered on the anchor; dx < 0 right-aligns them to the left of the point.
+# Offsets >= 18 pt get a leader line. Checked so no label touches a dot,
+# another label or a leader line — re-tune if cells move.
 CELL_LABEL_OFFSET = {
-    ("claude-haiku-4-5",  "naive"):       (7,   6),
-    ("claude-haiku-4-5",  "ncbi"):        (7,  10),
-    ("claude-haiku-4-5",  "pubmed_ncbi"): (7, -18),
-    ("claude-haiku-4-5",  "web_ncbi"):    (7,   6),
-    # Sonnet 4.6 (naive) sits just above Sonnet 5 (+ IDs) at a near-identical
-    # cost — send its label LEFT (into the empty gap toward Haiku) so it
-    # doesn't collide with the Sonnet 5 point/label below it.
-    ("claude-sonnet-4-6", "naive"):       (-128,  2),
-    ("claude-sonnet-4-6", "ncbi"):        (7,   12),
-    # + IDs + web and + IDs + PubMed nearly overlap (same cost, 0.5pp apart):
-    # push PubMed's label HIGH (clear above the +IDs row) with a leader, and
-    # keep web's label just up-right on its point — so neither lands on the
-    # other's point or on Opus (naive) to their right.
-    ("claude-sonnet-4-6", "pubmed_ncbi"): (7,  34),
-    ("claude-sonnet-4-6", "web_ncbi"):    (7,   6),
-    # Sonnet 5 (+ IDs) sits ~1pp below Sonnet 4.6 (naive) at a very similar
-    # cost; push its label well down with a leader line.
-    ("claude-sonnet-5",   "ncbi"):        (16, -44),
-    ("claude-opus-4-8",   "naive"):       (7, -18),
-    ("claude-opus-4-8",   "ncbi"):        (7,  10),
+    ("claude-haiku-4-5",  "naive"):       (10,   0),
+    # Below-right: the + IDs + PubMed point sits level with it to the right.
+    ("claude-haiku-4-5",  "ncbi"):        (10, -13),
+    ("claude-haiku-4-5",  "pubmed_ncbi"): (10,   0),
+    ("claude-haiku-4-5",  "web_ncbi"):    (-10,  0),
+    # Sonnet 4.6 naive / + IDs sit close together: both labels go LEFT into
+    # the empty gap toward Haiku.
+    ("claude-sonnet-4-6", "naive"):       (-10,  0),
+    ("claude-sonnet-4-6", "ncbi"):        (-14,  9),
+    # + IDs + PubMed is boxed in by Sonnet 5.5 (+ IDs) to its upper left and
+    # Opus 4.8 (+ IDs) to its right: its label goes straight up on a leader,
+    # into the empty band along the top of the axes.
+    ("claude-sonnet-4-6", "pubmed_ncbi"): (2,   40),
+    ("claude-sonnet-4-6", "web_ncbi"):    (10,   9),
+    # Sonnet 5 (+ IDs) and Opus 4.8 (naive) labels go left, clearing the
+    # space right of the Opus points for the Opus 5.5 labels.
+    ("claude-sonnet-5",   "ncbi"):        (-12,  0),
+    ("claude-opus-4-8",   "naive"):       (-12,  7),
+    ("claude-opus-4-8",   "ncbi"):        (10,   0),
+    ("claude-opus-5",     "ncbi"):        (10,  10),
+    ("claude-haiku-5-5",  "naive"):       (10,   0),
+    ("claude-haiku-5-5",  "ncbi"):        (10,   0),
+    # Sonnet 5.5 sits on top of Sonnet 4.6 in cost: naive goes left between
+    # the two Sonnet 4.6 labels, + IDs goes up-left on a leader.
+    ("claude-sonnet-5-5", "naive"):       (-12,  0),
+    ("claude-sonnet-5-5", "ncbi"):        (-16, 18),
+    # The two Opus 5.5 labels carry refusal rates, so they are long: + IDs
+    # goes down-left on a leader, low effort down-right below Opus 5.
+    ("claude-opus-5-5",   "ncbi"):        (-14, -22),
+    ("claude-opus-5-5",   "ncbi_effort_low"): (80, -45),
 }
 
 
@@ -222,7 +289,11 @@ def _whole_genome_cost(group: pd.DataFrame) -> float:
     so token columns already carry per-replicate counts. Cost is per single
     triage pass — average the per-rep counts across the cell's
     (gene, replicate) rows. ``n`` here is gene-count (rows ÷ reps per gene
-    ≈ unique genes), used only in the system-prompt amortization."""
+    ≈ unique genes), used only in the system-prompt amortization: the
+    shared system prompt is charged once at the cache-write rate and
+    reused ``n - 1`` times at the cache-read rate. Cells with no recorded
+    cache tokens treat the first 2,000 prompt tokens as that system
+    prompt. Each web search adds WEB_SEARCH_USD_PER_QUERY."""
     model = group["model"].iloc[0]
     pricing = _PRICE[model]
     n = group["gene_symbol"].nunique()
@@ -248,11 +319,30 @@ def _whole_genome_cost(group: pd.DataFrame) -> float:
     return (sys_per_cell + user_per_cell + out_per_cell + web_per_cell) * WHOLE_GENOME_N
 
 
+def _label(model: str, variant: str, refusal_pct: float) -> str:
+    """Cell label, with the refusal rate folded into the parenthetical."""
+    label = CELL_LABEL[(model, variant)]
+    if refusal_pct:
+        label = f"{label[:-1]}, {refusal_pct:.1f}% refused)"
+    return label
+
+
+def _text_color(hex_color: str) -> str:
+    """The point's hue, darkened so labels for pale points stay legible."""
+    h, lightness, sat = colorsys.rgb_to_hls(*to_rgb(hex_color))
+    return to_hex(colorsys.hls_to_rgb(h, min(lightness, 0.38), max(sat, 0.45)))
+
+
 def main() -> None:
     _apply_brand_style()
     # Single bundled per-rep TSV with truth + is_match denormalized.
     reps_df = _fetch_tsv(DATA_TSV)
     reps_df["is_match"] = reps_df["is_match"].astype(int)
+    # Refused calls carry no verdict; report their rate and score the cell on
+    # the calls the model answered.
+    refused = reps_df.get("refused", pd.Series(0, index=reps_df.index)).fillna(0).astype(int)
+    refusal_pct = (refused.groupby([reps_df["model"], reps_df["prompt_variant"]]).mean() * 100).to_dict()
+    reps_df = reps_df[refused == 0]
     # Mean-of-replicate accuracy per (model, variant) — matches the 3
     # bar figures. Equivalent to mean-of-cells-of-mean-of-reps.
     rep_mean_acc = (
@@ -268,7 +358,7 @@ def main() -> None:
         cells.append({
             "model": model,
             "variant": variant,
-            "label": CELL_LABEL[(model, variant)],
+            "label": _label(model, variant, refusal_pct.get((model, variant), 0.0)),
             "color": CELL_COLOR[(model, variant)],
             "accuracy": rep_mean_acc.get((model, variant), grp["is_match"].mean()),
             "cost_whole_genome_usd": _whole_genome_cost(grp),
@@ -283,16 +373,23 @@ def main() -> None:
             x, y,
             s=180, c=row["color"], edgecolor=BRAND_INK, linewidth=0.8, zorder=3,
         )
-        dx, dy = CELL_LABEL_OFFSET.get((row["model"], row["variant"]), (8, -3))
+        dx, dy = CELL_LABEL_OFFSET.get((row["model"], row["variant"]), (9, 0))
+        # Labels are vertically centered on their anchor and grow away from
+        # the point (left-anchored when dx > 0); the leader starts at the
+        # dot's rim so it never crosses the marker.
         arrowprops = (
             dict(arrowstyle="-", color=BRAND_NEUTRAL,
-                 linewidth=0.6, alpha=0.7, shrinkA=0, shrinkB=4)
-            if abs(dy) >= 16 else None
+                 linewidth=0.6, alpha=0.8, shrinkA=2, shrinkB=7.5,
+                 # Attach to the label's near edge, not its center, so a
+                 # leader to a long label doesn't cut across other points.
+                 relpos=(0, 0.5) if dx >= 0 else (1, 0.5))
+            if (dx * dx + dy * dy) ** 0.5 >= 18 else None
         )
         ax.annotate(
             row["label"], (x, y),
             xytext=(dx, dy), textcoords="offset points",
-            fontsize=14, color=BRAND_INK,
+            ha="left" if dx >= 0 else "right", va="center",
+            fontsize=9.75, color=_text_color(row["color"]),
             arrowprops=arrowprops,
         )
     ax.set_xscale("log")
@@ -300,6 +397,17 @@ def main() -> None:
     ax.set_ylabel("Verdict accuracy on\n147-gene bench (%)")
     ymin = min(c["accuracy"] for c in cells) * 100
     ax.set_ylim(max(78, ymin - 2), 100)
+    legend_handles = [
+        Line2D([0], [0], marker="o", linestyle="", markersize=11, markerfacecolor=color,
+               markeredgecolor=BRAND_INK, label=label)
+        for label, color in GENERATION_LEGEND
+    ]
+    ax.legend(
+        handles=legend_handles, loc="lower left", fontsize=10, title_fontsize=10.5,
+        alignment="left",
+        title="Color: model generation (darker = larger model / more context).\n"
+              "Refused calls are excluded from accuracy; refusal rate is labeled.",
+    )
     sns.despine(ax=ax, top=True, right=True)
 
     out_pdf = Path("benchmark_cost_vs_accuracy.pdf")

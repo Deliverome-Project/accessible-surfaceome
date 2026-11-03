@@ -1,0 +1,261 @@
+"""Papers found vs papers selected as evidence per gene, colored by the
+agent's ``evidence_grade`` verdict (Supplementary Figure 12a), plus the
+deep-dive surface tier composition by papers-found bin (panel b).
+
+For each gene in the deep-dive cohort, the literature pipeline records two
+corpus sizes:
+
+  * **Papers found** — the size of the per-gene candidate corpus from
+    discovery (EuropePMC + PubTator NER + gene2pubmed union), i.e.
+    ``n_papers_found`` (median 220, range 1–395 across the 5,332 plotted
+    genes). Panel a's log axis starts at 25, so the 120 genes with fewer
+    than 25 papers found are not drawn.
+  * **Papers selected as evidence** — the subset the deep-dive's
+    ``plan_trim_select`` step ranks high enough to read full-text and feed
+    into the block builders (``n_papers_selected``, median 10). The median
+    selection rate rises from ~2% of the corpus for small corpora to ~8% at
+    200–300 papers found, then falls again for larger corpora.
+
+Each gene's evidence base is graded ``evidence_grade`` from the closed enum:
+
+  * ``direct_multi_method``     — multiple independent assay types
+  * ``direct_single_method``    — direct surface evidence from one assay
+  * ``supportive_but_indirect`` — circumstantial / topology-based
+  * ``conflicting``             — evidence points both ways
+  * ``weak``                    — sparse or low-quality evidence
+
+The verdict tracks the two corpus axes — well-evidenced surface targets pile
+up toward the upper-right (rich corpus + rich selection → multi-method
+verdict), while weak calls cluster low.
+
+**Real data.** Every point is a published deep-dive record with real gene
+symbols and real counts, read from the bundled per-figure TSV at
+``data/processed/figures/evidence_corpus_vs_selected.tsv`` (columns:
+``gene_symbol, uniprot_acc, papers_found, papers_selected, evidence_grade,
+tier``). The single source of that TSV is ``scripts/build_figure_tsvs.py``
+(``build_evidence_corpus_vs_selected``), which reads the deep-dive export;
+this canonical generator reads the TSV so it renders the **same** dataset as
+the gist mirror (``data/analysis/figures/make_evidence_corpus_vs_selected.py``).
+
+Computed over the completed deep-dive sweep: all 5,332 deep-dive records
+carry both counts. (19 replayed records published a null ``n_papers_found``
+until it was restored from their run intermediates on 2026-10-10 — see
+``scripts/build/restore_n_papers_found_from_intermediates.py``.)
+
+# Reproduction: https://gist.github.com/beccajcarlson/cb550702344d7626ee80804bc7f6c549
+
+Run:
+    uv run python scripts/figures/evidence_corpus_vs_selected.py
+"""
+from __future__ import annotations
+
+from collections import Counter
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+
+from accessible_surfaceome.audit._plotting_config import (
+    COLORS,
+    save_figure,
+    setup_plotting_style,
+)
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT_DIR = ROOT / "data/analysis/figures"
+SLUG = "evidence_corpus_vs_selected"
+# Published reproduction gist; embedded in the PNG Source / PDF Subject
+# metadata by save_figure. Must match GIST_URL in the gist mirror and
+# data/analysis/figures/gist_map.json.
+GIST_URL = "https://gist.github.com/beccajcarlson/cb550702344d7626ee80804bc7f6c549"
+
+# Bundled per-figure TSV — one row per published deep-dive record, produced by
+# ``scripts/build_figure_tsvs.py`` (``build_evidence_corpus_vs_selected``).
+# Reading it here keeps canonical == gist mirror == bundled TSV.
+DATA_TSV = ROOT / "data/processed/figures/evidence_corpus_vs_selected.tsv"
+
+# Verdict ordering = best → worst evidence quality (used for legend
+# + plot z-order so weak dots don't occlude direct_multi dots).
+VERDICT_ORDER = [
+    "direct_multi_method",
+    "direct_single_method",
+    "supportive_but_indirect",
+    "conflicting",
+    "weak",
+]
+VERDICT_COLOR = {
+    "direct_multi_method":     "#2E7A55",  # success green
+    "direct_single_method":    "#3D6B60",  # teal-mid
+    "supportive_but_indirect": "#C07830",  # amber-dark
+    "conflicting":             "#8878C8",  # lavender — points both ways
+    "weak":                    "#9C8C88",  # neutral grey
+}
+VERDICT_LABEL = {
+    "direct_multi_method":     "direct, multi-method",
+    "direct_single_method":    "direct, single method",
+    "supportive_but_indirect": "supportive but indirect",
+    "conflicting":             "conflicting",
+    "weak":                    "weak / sparse",
+}
+
+
+def _load_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Read the bundled per-figure TSV and return three same-length arrays
+    ``(papers_found, papers_selected, verdicts)``.
+
+    The TSV is the single source of the data, produced by
+    ``scripts/build_figure_tsvs.py`` (``build_evidence_corpus_vs_selected``),
+    so this canonical generator and the gist mirror render the identical
+    dataset. Enforced by tests/test_canonical_mock_reads_bundled_tsv.py."""
+    data = pd.read_csv(DATA_TSV, sep="\t")
+    found = data["papers_found"].to_numpy()
+    selected = data["papers_selected"].to_numpy()
+    verdicts = data["evidence_grade"].to_numpy()
+    return found, selected, verdicts, data
+
+
+
+# ── Panel b: tier composition within literature-size strata ────────────────
+# A reviewer asked to separate "well studied" from "strong evidence": the
+# low-literature flag says which genes are sparse, but not what the pipeline
+# concluded about them. The manuscript reports the canonical rate per stratum
+# in prose; showing the full composition makes the other tiers visible, and
+# the clearest signal is `low` collapsing from ~60% to ~11% across strata —
+# sparse literature produces weak calls, not negative ones.
+#
+# Tier colours MUST match Figure 5a and Supp S14; a tier name carrying a
+# different colour across figures is exactly the inconsistency a reviewer
+# caught on S11.
+_STRATA_EDGES = [0, 75, 100, 150, 200, 10**9]
+_STRATA_LABELS = ["<75", "75-100", "100-150", "150-200", ">200"]
+_TIER_ORDER_B = ["canonical", "likely", "low", "no", "uncertain"]
+_TIER_COLOR_B = {
+    "canonical": "#2E7A55",   # success green — strict tier
+    "likely":    "#3D6B60",   # teal-mid — broader tier
+    "low":       "#C99A5B",   # amber-tan — weak evidence
+    "no":        "#9C8C88",   # lifted neutral — leaned not-surface
+    "uncertain": "#C7BDB6",   # light warm grey — undetermined
+}
+
+
+def _draw_tier_composition(ax, data) -> None:
+    import pandas as _pd
+
+    strata = _pd.cut(data["papers_found"], bins=_STRATA_EDGES,
+                     labels=_STRATA_LABELS, right=False)
+    ct = _pd.crosstab(strata, data["tier"], normalize="index") * 100
+    n_per = strata.value_counts().reindex(_STRATA_LABELS)
+
+    bottom = [0.0] * len(_STRATA_LABELS)
+    x = range(len(_STRATA_LABELS))
+    for tier in _TIER_ORDER_B:
+        if tier not in ct.columns:
+            continue
+        vals = ct.reindex(_STRATA_LABELS)[tier].fillna(0).to_numpy()
+        ax.bar(x, vals, bottom=bottom, width=0.72,
+               color=_TIER_COLOR_B[tier], edgecolor="white", linewidth=0.8,
+               label=tier, zorder=2)
+        for xi, (v, b) in enumerate(zip(vals, bottom, strict=True)):
+            if v >= 6:  # only label a segment tall enough to hold the text
+                ax.text(xi, b + v / 2, f"{v:.0f}%", ha="center", va="center",
+                        fontsize=13, color="white")
+        bottom = [b + v for b, v in zip(bottom, vals, strict=True)]
+
+    ax.set_xticks(list(x))
+    ax.set_xticklabels([f"{lab}\n(n={int(n_per[lab]):,})" for lab in _STRATA_LABELS])
+    ax.set_xlabel("Papers found per gene  (discovery corpus)")
+    ax.set_ylabel("Share of genes\nin stratum (%)")
+    ax.set_ylim(0, 100)
+    ax.grid(axis="x", visible=False)
+    ax.legend(title="deep-dive surface tier", loc="upper center",
+              bbox_to_anchor=(0.5, -0.23), ncol=5, frameon=False,
+              title_fontsize=16)
+
+
+def _panel_letter(ax, letter: str) -> None:
+    ax.text(-0.02, 1.04, letter, transform=ax.transAxes, fontsize=21.5,
+            fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
+
+
+def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    plt.rcParams.update({
+        "font.size": 18, "axes.labelsize": 16, "axes.titlesize": 0,
+        "xtick.labelsize": 14.5, "ytick.labelsize": 14.5, "legend.fontsize": 14.5,
+    })
+    found, selected, verdicts, data = _load_data()
+
+    # Stacked (a over b): side by side, panel a's legend could not fit the
+    # empty low-literature corner without covering points at print size.
+    fig, (ax, ax_b) = plt.subplots(
+        2, 1, figsize=(15, 13.5),
+        gridspec_kw={"height_ratios": [1.15, 1.0], "hspace": 0.4},
+    )
+
+    # Plot in worst → best verdict order so the strong verdicts land on
+    # top of the weak ones and aren't occluded.
+    counts = Counter(verdicts.tolist())
+    for verdict in reversed(VERDICT_ORDER):
+        mask = verdicts == verdict
+        ax.scatter(
+            found[mask], selected[mask],
+            s=55, alpha=0.32, edgecolor="white", linewidth=0.6,
+            color=VERDICT_COLOR[verdict],
+            label=f"{VERDICT_LABEL[verdict]}  (n={counts.get(verdict, 0)})",
+            zorder=3 + VERDICT_ORDER.index(verdict),
+        )
+
+
+    ax.set_xscale("log")
+    ax.set_xlim(25, 600)
+    ax.set_ylim(0, 55)
+    ax.set_xlabel("Papers found per gene  (discovery corpus)")
+    ax.set_ylabel("Papers selected\nas evidence")
+    ax.set_xticks([30, 50, 100, 200, 400])
+    ax.set_xticklabels(["30", "50", "100", "200", "400"])
+
+    handles, labels = ax.get_legend_handles_labels()
+    # Re-order legend to best → worst so the reader's eye moves
+    # natural reading direction (top label = best verdict).
+    handle_by_label = dict(zip(labels, handles))
+    ordered_labels = [
+        f"{VERDICT_LABEL[v]}  (n={counts.get(v, 0)})" for v in VERDICT_ORDER
+    ]
+    leg_a = ax.legend(
+        [handle_by_label[lbl] for lbl in ordered_labels if lbl in handle_by_label],
+        [lbl for lbl in ordered_labels if lbl in handle_by_label],
+        title="agent evidence_grade verdict",
+        loc="upper left", bbox_to_anchor=(0.01, 0.99),
+        frameon=False, title_fontsize=16,
+    )
+    for _h in leg_a.legend_handles:  # solid swatches despite translucent points
+        _h.set_alpha(1.0)
+
+    # Footer sits under panel a (which it describes), below its x-axis label.
+    ax.text(
+        0.5, -0.155,
+        f"Real deep-dive records with a papers-found count: n={len(found):,} genes "
+        f"(median {np.median(found):.0f} papers found, {np.median(selected):.0f} selected; "
+        f"x-axis starts at 25).",
+        ha="center", va="top", transform=ax.transAxes, fontsize=13, style="italic", color=COLORS["neutral"],
+    )
+
+    _draw_tier_composition(ax_b, data)
+    _panel_letter(ax, "a")
+    _panel_letter(ax_b, "b")
+    for _a in (ax, ax_b):
+        sns.despine(ax=_a, top=True, right=True)
+    fig.tight_layout()
+    return fig, (ax, ax_b)
+
+
+def main() -> None:
+    fig, _ = make_plot()
+    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"),
+                gist_url=GIST_URL)
+
+
+if __name__ == "__main__":
+    main()

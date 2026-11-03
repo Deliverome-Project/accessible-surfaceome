@@ -10,7 +10,7 @@
 
 - `/gene/:symbol` route reads `viewer/public/data/genes/{SYMBOL}.json` and
   validates the `SurfaceomeRecord` schema at the type level (TS mirror in
-  [`viewer/src/lib/types.ts`](../../viewer/src/lib/types.ts) of the Pydantic
+  `../../viewer/src/lib/types.ts` of the Pydantic
   model in [models.py](../../src/accessible_surfaceome/tools/_shared/models.py)).
 - Detail page: `GeneHeader` + 5-cell vitals strip, `KeyFindings` with
   `HlaAllele`/`Peptide` typed tokens, Recommendation + Modalities, tabs

@@ -73,6 +73,17 @@ function collapseDeepDive(
  *   ``possibly_accessible`` (≈ contextual) is also a soft agree with
  *   ``yes`` (a surface that's reachable across more states than the triage
  *   estimated isn't a conflict — just a stronger result).
+ * - `"narrowed"` — both sides say the protein reaches the surface, but the
+ *   deep dive qualifies it: ``likely_accessible`` triage / ``yes`` bench
+ *   truth against a deep-dive ``contextual``. Not an agreement (the deep
+ *   dive restricted the call to specific cell states or lineages) and not a
+ *   conflict (nobody is saying "not surface"). This is by far the most
+ *   common cross-bucket outcome — 928 of 5,332 deep-dived genes, e.g. a
+ *   triage ``yes`` / ``multipass_with_exposed_loops`` that the deep dive
+ *   re-called ``tissue_restricted_surface``. It used to fall through to
+ *   ``"unclear"`` and render NO pill at all, which left 18% of gene pages
+ *   silent on whether the two passes agreed — the same failure the
+ *   ``unlikely`` + ``contextual`` note below argues against.
  * - `"conflict"` — strong disagreement: positive vs no, or negative vs yes.
  *   Tighter than the old naive-binary check: a deep-dive verdict of
  *   ``low + cell_state_induced`` no longer trips ``conflict`` against a
@@ -88,7 +99,7 @@ export function triageVsDeepDive(
   triage: string,
   accessibility: string,
   callReason: string | null | undefined,
-): "agree" | "conflict" | "unclear" {
+): "agree" | "narrowed" | "conflict" | "unclear" {
   const triageStrongPositive = triage === "likely_accessible";
   const triageSoftPositive = triage === "possibly_accessible";
   const triageNegative = triage === "unlikely";
@@ -97,7 +108,11 @@ export function triageVsDeepDive(
   if (triageStrongPositive) {
     if (deepVerdict === "yes") return "agree";
     if (deepVerdict === "no") return "conflict";
-    return "unclear"; // contextual under "yes"-leaning triage — softer than expected, not a hard conflict
+    // contextual under "yes"-leaning triage — softer than expected, not a
+    // hard conflict, but not an agreement either. Its own state so the row
+    // renders something; see the "narrowed" note in the doc comment.
+    if (deepVerdict === "contextual") return "narrowed";
+    return "unclear";
   }
   if (triageSoftPositive) {
     if (deepVerdict === "yes" || deepVerdict === "contextual") return "agree";

@@ -16,8 +16,10 @@
  *     pre-rendered SSG HTML — the snapshot is already baked in.
  *   - No client/runtime code fetches `/data/surfaceome/{sym}.json`
  *     (grep-verified); the live site reads from the Worker/D1 API.
- * The per-gene `.md` files ARE user-facing downloads (linked from the gene
- * page at `/data/surfaceome/{sym}.md`) and are KEPT.
+ * The per-gene `.md` files are KEPT in the export. Note the public site does
+ * NOT serve them from `/data/surfaceome/{sym}.md` (that path 404s) — the rich
+ * per-gene Markdown is uploaded to R2 by `build-markdown-exports.mjs`
+ * (`MD_TARGET=r2`) and served by the Worker at `GET /v1/genes/{sym}.md`.
  *
  * The `structure-viewer/{UNIPROT}.json` files are likewise consumed only at
  * SSG time by `loadStructureViewerData` (baked into the page); the HTTP path

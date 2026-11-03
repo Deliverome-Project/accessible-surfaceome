@@ -13,22 +13,23 @@ topology composition vs the Sonnet 2-tier yes/contextual universe.
 Side-by-side grouped barplot over 9 topology categories with two
 hues:
 
-  * **Sonnet 2-tier yes/contextual universe** — the genes the
-    production pipeline calls accessible after the Sonnet+NCBI
-    sweep plus the Sonnet+PubMed rescue lane. This is what the
-    catalog *actually ships*, not the broader "any-DB-voted-yes"
-    union.
-  * **SurfaceBench** — the 147-protein hand-curated benchmark, of
-    which 97 are members of the Sonnet 2-tier yes/contextual
-    universe.
+  * **Sonnet 2-tier yes/contextual universe** (n = 4,628) — the
+    genes the production pipeline calls accessible after the
+    Sonnet+NCBI sweep plus all of the Sonnet+PubMed rescue lanes.
+    This is what the catalog *actually ships*, not the broader
+    "any-DB-voted-yes" union.
+  * **SurfaceBench** (n = 99) — the genes in the 147-protein
+    hand-curated benchmark whose ground-truth verdict is yes or
+    contextual. 96 of the 99 are in the universe; the other 3 (C3,
+    SRC, TGOLN2) are genes Sonnet missed.
 
 The figure surfaces the **bench enrichment bias**: the bench is
-*not* a random topological sample. Three classes reach Bonferroni-
+*not* a random topological sample. Four classes reach Bonferroni-
 corrected significance (p < 0.05 after 9-test correction):
-GPI-anchored (+14.5 pp), glycosylation-positive (+20.1 pp), and
-multi-pass TM (-11.0 pp). Bench bars carry Wilson 95% binomial
-confidence intervals to make the small-n classes read as noisier
-than they would as bare bars.
+GPI-anchored (+14.2 pp), glycosylation site (+18.9 pp), multi-pass
+TM (-13.9 pp) and TM without signal peptide (-17.6 pp). Bench bars
+carry Wilson 95% binomial confidence intervals to make the small-n
+classes read as noisier than they would as bare bars.
 
 SurfaceBench accuracy is therefore a *lower bound* on expected
 full-proteome accuracy, not a representative point estimate.
@@ -49,9 +50,9 @@ import seaborn as sns
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-# Single per-figure TSV: one row per gene in the Sonnet 2-tier
-# yes/contextual universe with is_bench + 9 topology booleans
-# denormalized in. Produced by scripts/build_figure_tsvs.py. Gist
+# Single per-figure TSV: the union of the Sonnet 2-tier yes/contextual
+# universe and the bench, with in_universe + is_bench flags and 9
+# topology booleans denormalized in. Produced by scripts/build_figure_tsvs.py. Gist
 # bundles this TSV next to the script; the figure reads only from
 # the sibling — no other URLs.
 _TSV = f"{BASE}/data/processed/figures/bench_topology_vs_universe.tsv"
@@ -101,19 +102,19 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 0,
+        "font.weight": "semibold", "axes.labelweight": "semibold",
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none",
         "text.color": BRAND_INK,
         "grid.alpha": 0.35, "grid.linestyle": "-", "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 14, "ytick.labelsize": 16,
+        "xtick.labelsize": 16, "ytick.labelsize": 16,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
-        "legend.frameon": False, "legend.fontsize": 14,
+        "legend.frameon": False, "legend.fontsize": 16,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
     })
 
@@ -212,9 +213,9 @@ def _compute_distribution(data: pd.DataFrame) -> tuple[
 ]:
     """Per-class universe % + bench % + bench Wilson 95% CI half-widths
     + Bonferroni-corrected bench-vs-universe binomial p-values."""
-    # Union TSV: universe = in_universe rows (4,426); bench = is_bench rows
+    # Union TSV: universe = in_universe rows (4,628); bench = is_bench rows
     # (99 ground-truth yes/contextual benchmark genes, incl. 3 outside the
-    # universe). See the canonical scripts/bench_topology_vs_universe.py.
+    # universe). See the canonical scripts/figures/bench_topology_vs_universe.py.
     rows = data[data["in_universe"].astype(bool)]
     bench_rows = data[data["is_bench"].astype(bool)]
     n_universe = len(rows)
@@ -227,7 +228,7 @@ def _compute_distribution(data: pd.DataFrame) -> tuple[
     bench_pvals_bonf: list[float] = []
     for col, _label in FEATURES:
         # Per-figure TSV stores topology flags as ints (1/0); blank/NaN
-        # treated as negative (matches the canonical's _feature_positive
+        # treated as negative (consistent with the original _feature_positive
         # semantics for missing DeepTMHMM predictions).
         col_int = pd.to_numeric(rows[col], errors="coerce").fillna(0).astype(int)
         col_b = pd.to_numeric(bench_rows[col], errors="coerce").fillna(0).astype(int)
@@ -251,7 +252,7 @@ def main() -> None:
     univ, bench, ci, pvals, n_u, n_b = _compute_distribution(data)
     n = len(FEATURES)
 
-    fig, ax = plt.subplots(figsize=(15, 8))
+    fig, ax = plt.subplots(figsize=(14, 7.5))
     width = 0.40
     x = np.arange(n)
 
@@ -281,20 +282,20 @@ def main() -> None:
         star = _star(p)
         # Color/weight encode SIGNIFICANCE, not magnitude: a class that
         # clears the Bonferroni gate (star != "ns") is dark ink + bold;
-        # a non-significant class is neutral gray + normal weight, so a
-        # large-but-ns delta (e.g. a +11.8 pp shift at p=0.125) doesn't
+        # a non-significant class is neutral gray + the default weight, so a
+        # large-but-ns delta (e.g. Single-pass TM, +10.5 pp at p=0.28) doesn't
         # read as "significant" the way a bold label would. Dark neutral
         # (not the bench color) so the annotations carry no red/highlight.
         significant = star != "ns"
         color = BRAND_INK if significant else BRAND_NEUTRAL
-        weight = "bold" if significant else "normal"
+        weight = "bold" if significant else "semibold"
         label = f"{sign}{abs(delta):.1f} pp"
         if star != "ns":
             label += f"  {star}"
         ax.text(
             i, y_text, label,
             ha="center", va="bottom",
-            fontsize=12, color=color, fontweight=weight,
+            fontsize=15, color=color, fontweight=weight,
         )
 
     ax.set_xticks(x)
@@ -304,11 +305,11 @@ def main() -> None:
     ax.set_xlabel("")
 
     # Upper-LEFT: the left side of the plot is empty (GPI / 7TM bars are
-    # short there), whereas the tall Glyc.-site bar + its "+20.5 pp ***"
+    # short there), whereas the tall Glyc.-site bar + its "+18.9 pp ***"
     # label collides with an upper-right legend.
     ax.legend(
         loc="upper left", bbox_to_anchor=(0.01, 0.99),
-        frameon=False, fontsize=14,
+        frameon=False, fontsize=16,
     )
 
     sns.despine(ax=ax, top=True, right=True)

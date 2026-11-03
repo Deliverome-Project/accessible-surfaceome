@@ -24,12 +24,11 @@ import { handleContactSites } from "./contact-sites.js";
 //   GET /v1/orthologs/:symbol   — ortholog table for a gene
 //   GET /v1/benchmark           — full benchmark truth labels (latest version)
 //   GET /v1/benchmark/matrix    — 147-gene matrix: truth + per-DB flags +
-//                                  per-model headline & alt LLM verdicts
-//   GET /v1/benchmark/export.tsv — 7-column TSV of curated truth labels,
-//                                  mirrors `data/eval/triage_benchmark_v1.tsv`
-//                                  shape (gene/uniprot/class/verdict/
-//                                  signal/reason/rationale). Figure scripts
-//                                  load truth labels from here.
+//                                  per-(model, variant) LLM verdicts, each
+//                                  the majority over the cell's replicates
+//   GET /v1/benchmark/export.tsv — the matrix flattened to one TSV row per
+//                                  (gene, model, variant) cell: majority
+//                                  verdict, truth labels, per-DB votes.
 //   GET /v1/benchmark/:symbol   — single gene's truth label
 //   GET /v1/triage/:symbol      — model verdicts across runs (with costs)
 //   GET /v1/triage/:symbol/:model/:variant — per-cell replicate detail:
@@ -89,9 +88,14 @@ const CACHE_SWR       = 86400;     // serve-stale window (revalidate / on-error)
 // purge-on-publish (cloud/surface_annotation.publish_record), so the long
 // TTL + serve-stale window costs nothing in staleness. ttl === 0 (e.g. a 400
 // on bad input) opts out — a non-cacheable error must not be served stale.
-function cacheControl(ttl) {
+// `immutable` is an opt-in for content that's genuinely permanent (e.g. a
+// data release once its Zenodo DOI is set) — it replaces the
+// stale-while-revalidate/stale-if-error pair (which imply the content MAY
+// still change) with the `immutable` directive instead.
+function cacheControl(ttl, { immutable = false } = {}) {
   const base = `public, max-age=${ttl}, s-maxage=${ttl}`;
   if (ttl <= 0) return base;
+  if (immutable) return `${base}, immutable`;
   return `${base}, stale-while-revalidate=${CACHE_SWR}, stale-if-error=${CACHE_SWR}`;
 }
 
@@ -99,17 +103,31 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
+  // Let cross-origin clients read the record-history / degraded headers the
+  // API docs tell them to act on (browsers hide non-safelisted headers).
+  "Access-Control-Expose-Headers": "ETag, X-Surfaceome-Degraded, X-Surfaceome-Revision, X-Surfaceome-Content-Hash",
 };
 
-function json(data, { status = 200, ttl = CACHE_TTL_SHORT } = {}) {
-  return new Response(JSON.stringify(data, null, 2), {
-    status,
-    headers: {
-      "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": cacheControl(ttl),
-      ...CORS_HEADERS,
-    },
-  });
+// The header a serve-time-enrichment failure sets on an otherwise-200
+// response (see the `soft`/`degraded` machinery around handleGene /
+// handleGeneEvidence below). `json()` centralizes it so every caller that
+// passes `degraded` gets the same two behaviors for free: the header itself,
+// and forcing `Cache-Control: no-store` so `withEdgeCache` never persists
+// the degraded bytes (edge or KV) even though it still returns them to this
+// one caller. Mirrored as DEGRADED_HEADER in
+// src/accessible_surfaceome/cloud/record_history/archive.py; a test pins the
+// two literals together so the archiver's check can't drift.
+const DEGRADED_HEADER = "X-Surfaceome-Degraded";
+
+function json(data, { status = 200, ttl = CACHE_TTL_SHORT, immutable = false, degraded = null } = {}) {
+  const isDegraded = Array.isArray(degraded) && degraded.length > 0;
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": isDegraded ? "no-store" : cacheControl(ttl, { immutable }),
+    ...CORS_HEADERS,
+  };
+  if (isDegraded) headers[DEGRADED_HEADER] = degraded.join(",");
+  return new Response(JSON.stringify(data, null, 2), { status, headers });
 }
 
 function notFound(msg = "not_found") {
@@ -118,6 +136,30 @@ function notFound(msg = "not_found") {
 
 function badRequest(msg) {
   return json({ error: msg }, { status: 400, ttl: 0 });
+}
+
+// A D1 error whose message names a missing table is a PERSISTENT,
+// intentional condition (the table hasn't been provisioned by this point in
+// a rollout — e.g. deploying the Worker before a new table's sync has run
+// once), not a transient hiccup. It reads the same on every request until
+// the table exists, so treating it as "degraded" would permanently poison
+// the cache for that route (every request forced to no-store) instead of
+// just degrading gracefully to nulls, same as today. Real transient errors
+// (timeout, isolate reset, temporary D1 unavailability) do NOT match this
+// and fall through to the degraded path. Mirrors the existing tolerance in
+// handleTagSites ("Resilient to deploy order: if tag_site_public isn't
+// provisioned yet...") and fetchPaperMetadata's comment ("or when the table
+// hasn't been created yet") — same intentional case, now applied uniformly
+// via `soft()` instead of ad hoc per callsite.
+// Schema-rollout errors (a table or column the Worker reads before its
+// migration/sync has landed) are persistent, not transient: flagging them as
+// degraded would force no-store on every gene and disable caching
+// cohort-wide. Treat them as "absent" like before, but log loudly.
+function isMissingTable(e) {
+  const msg = String(e?.message ?? e ?? "");
+  if (!/no such (table|column)/i.test(msg)) return false;
+  if (/no such column/i.test(msg)) console.error("schema_rollout_missing_column", msg);
+  return true;
 }
 
 // TSV response — same cache/CORS posture as `json` but text/tsv.
@@ -141,6 +183,11 @@ function tsvCell(v) {
   return String(v).replace(/[\t\r\n]+/g, " ");
 }
 
+// D1 cost note (2026-09-28): the topology release lookups below use EXISTS
+// probes on idx_topology_public_cohort_version instead of
+// `IN (SELECT DISTINCT topology_version FROM topology_public WHERE cohort=…)`,
+// which read every row of the cohort (6k–23k rows, 3× per record) and made
+// public D1 fragile under load. Same result, ~7 rows read.
 // Light gene-symbol validation: alnum + dash + dot, ≤30 chars.
 const SYMBOL_OK = /^[A-Za-z0-9][A-Za-z0-9._-]{0,29}$/;
 
@@ -153,6 +200,473 @@ function checkSymbol(sym) {
   // misses them and the record endpoint 404s while `/v1/genes` still
   // lists them. Keep new per-symbol WHERE clauses `COLLATE NOCASE`.
   return sym.toUpperCase();
+}
+
+// --- Record history (spec docs/superpowers/specs/2026-09-27-record-history-design.md) ---
+// Archived bodies live write-once in the RECORD_HISTORY R2 bucket, named by
+// content hash, so they are cacheable forever. They are read straight from
+// R2 rather than through withEdgeCache, which would rebuild the response
+// with only Content-Type + Cache-Control and drop ETag / X-Surfaceome-*.
+const CACHE_TTL_IMMUTABLE = 31536000;  // 1 year
+const RELEASE_VERSION_OK = /^v?(\d+\.\d+\.\d+)$/;
+const REVISION_OK = /^[1-9]\d{0,5}$/;
+const HISTORY_BASE = "https://api.deliverome.org/surfaceome/v1";
+const REVISION_PARTS = {
+  record:   { col: "json_hash",     ext: "json", ct: "application/json; charset=utf-8" },
+  evidence: { col: "evidence_hash", ext: "json", ct: "application/json; charset=utf-8", missing: "evidence_not_archived" },
+  md:       { col: "md_hash",       ext: "md",   ct: "text/markdown; charset=utf-8",   missing: "markdown_not_archived" },
+};
+
+// Constant-time byte comparison for the fallback path below (equal-length
+// arrays only — callers check .length first).
+function timingSafeEqualFallback(a, b) {
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
+// The archiver (accessible_surfaceome.cloud.record_history) must see the
+// current D1 state, not a cached copy, and sweeps ~5k genes from one IP.
+// A request carrying the ARCHIVE_BYPASS_TOKEN secret skips both cache tiers
+// and the rate limiter. Without the exact secret nothing changes.
+//
+// The comparison is timing-safe: a naive `===` leaks the token length and
+// the position of the first mismatched byte through response-time
+// variance, which over enough requests is a practical side channel for
+// guessing a long-lived secret. `crypto.subtle.timingSafeEqual` is a
+// Cloudflare Workers-runtime-specific (non-standard) addition to
+// SubtleCrypto; Node's webcrypto (used by the offline test harness below)
+// doesn't implement it, so we fall back to a manual constant-time compare.
+async function isArchiveBypass(request, env) {
+  const token = env?.ARCHIVE_BYPASS_TOKEN;
+  if (!token) return false;
+  const given = request.headers.get("X-Archive-Bypass");
+  if (!given) return false;
+  const enc = new TextEncoder();
+  const tokenBytes = enc.encode(token);
+  const givenBytes = enc.encode(given);
+  if (tokenBytes.length !== givenBytes.length) return false;
+  const subtle = globalThis.crypto && globalThis.crypto.subtle;
+  if (subtle && typeof subtle.timingSafeEqual === "function") {
+    return await subtle.timingSafeEqual(tokenBytes, givenBytes);
+  }
+  return timingSafeEqualFallback(tokenBytes, givenBytes);
+}
+
+function normalizeVersion(v) {
+  const m = RELEASE_VERSION_OK.exec(v || "");
+  return m ? m[1] : null;
+}
+
+// `/v1/releases/v1.0.0...` and `/v1/releases/1.0.0...` must resolve to ONE
+// cache key (the bare form) so cut_data_release's purge — which only ever
+// targets the bare path — always invalidates the live entry. A v-prefixed
+// request redirects (301, no-store) to the canonical bare path rather than
+// ever being handled or cached under its own key. Returns null (no
+// redirect needed) for an already-bare version or a not-quite-version
+// string (the handler's own badRequest("invalid_version") covers that).
+function bareVersionRedirect(rawVer, suffix = "") {
+  if (!/^v/i.test(rawVer || "")) return null;
+  const bare = rawVer.slice(1);
+  if (!RELEASE_VERSION_OK.test(bare)) return null;
+  return new Response(null, {
+    status: 301,
+    headers: {
+      Location: `${HISTORY_BASE}/releases/${bare}${suffix}`,
+      "Cache-Control": "no-store",
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+async function archivedPart(env, row, part) {
+  const p = REVISION_PARTS[part];
+  const hash = row[p.col];
+  if (!hash) return notFound(p.missing);
+  if (!env.RECORD_HISTORY) return json({ error: "history_unavailable" }, { status: 503, ttl: 0 });
+  const obj = await env.RECORD_HISTORY.get(`records/sha256/${hash}.${p.ext}`);
+  if (!obj) return json({ error: "archive_body_missing" }, { status: 500, ttl: 0 });
+  return new Response(obj.body, {
+    status: 200,
+    headers: {
+      "Content-Type": p.ct,
+      "Cache-Control": `public, max-age=${CACHE_TTL_IMMUTABLE}, s-maxage=${CACHE_TTL_IMMUTABLE}, immutable`,
+      "ETag": `"${hash}"`,
+      "X-Surfaceome-Revision": String(row.revision),
+      "X-Surfaceome-Content-Hash": hash,
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+async function handleRevisionList(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const { results } = await env.DB.prepare(
+    `SELECT r.gene_symbol, r.hgnc_id, r.revision, r.published_at, r.source,
+            r.json_hash, r.evidence_hash, r.md_hash, r.schema_version, r.prompt_corpus_version,
+            (SELECT json_group_array(json_object('version', v, 'zenodo_version_doi', doi))
+               FROM (
+                 SELECT m.version AS v, d.zenodo_version_doi AS doi
+                   FROM data_release_member m JOIN data_release d ON d.version = m.version
+                  WHERE m.gene_symbol = r.gene_symbol COLLATE NOCASE AND m.revision = r.revision
+                  ORDER BY d.cut_at
+               )) AS releases
+       FROM record_revision r
+      WHERE r.gene_symbol = ? COLLATE NOCASE
+      ORDER BY r.revision DESC`
+  ).bind(sym).all();
+  if (!results.length) return notFound("gene_not_annotated");
+  const g = results[0];
+  const base = `${HISTORY_BASE}/genes/${g.gene_symbol}/revisions`;
+  // `results` is ordered newest-first (revision DESC); `changed` is computed
+  // by walking oldest-first and diffing each row against the previous
+  // (numerically lower) revision of the SAME gene — no extra query, since
+  // every row for this gene is already in hand. Revision 1 (a gene's first
+  // ARCHIVED version — history no longer contains a seeded/deposited
+  // revision 0) is always `["first_archived"]`, since there is no prior
+  // revision to diff against and a part-by-part comparison against nothing
+  // would be meaningless. It's "first_archived" and not "first_served"
+  // deliberately: for a gene that was seeded and then had that seed row
+  // renumbered away (drop_seed_revisions.py), its new revision 1 is
+  // whatever was first captured into record_revision AFTER that migration
+  // — the API had already been serving that gene's record for a while
+  // before history (or this migration) existed. Every later revision
+  // lists whichever of record/evidence/markdown differ from the previous
+  // revision — a NULL-to-value or value-to-NULL transition counts as a
+  // change via plain `!==` (NULL !== "somehash").
+  const ascending = [...results].sort((a, b) => a.revision - b.revision);
+  const changedByRevision = new Map();
+  let prev = null;
+  for (const r of ascending) {
+    let changed;
+    if (prev === null) {
+      changed = ["first_archived"];
+    } else {
+      changed = [];
+      if (r.json_hash !== prev.json_hash) changed.push("record");
+      if (r.evidence_hash !== prev.evidence_hash) changed.push("evidence");
+      if (r.md_hash !== prev.md_hash) changed.push("markdown");
+    }
+    changedByRevision.set(r.revision, changed);
+    prev = r;
+  }
+  return json({
+    gene_symbol: g.gene_symbol,
+    hgnc_id: g.hgnc_id,
+    current_revision: g.revision,
+    revisions: results.map((r) => ({
+      revision: r.revision,
+      published_at: r.published_at,
+      source: r.source,
+      json_hash: r.json_hash,
+      evidence_hash: r.evidence_hash,
+      md_hash: r.md_hash,
+      schema_version: r.schema_version,
+      prompt_corpus_version: r.prompt_corpus_version,
+      changed: changedByRevision.get(r.revision),
+      releases: r.releases ? JSON.parse(r.releases) : [],
+      url: `${base}/${r.revision}`,
+      evidence_url: r.evidence_hash ? `${base}/${r.revision}/evidence` : null,
+      md_url: r.md_hash ? `${base}/${r.revision}.md` : null,
+    })),
+  });
+}
+
+async function handleRevisionBody(env, symbol, n, part) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  if (!REVISION_OK.test(n)) return badRequest("invalid_revision");
+  const row = await env.DB.prepare(
+    `SELECT revision, json_hash, evidence_hash, md_hash FROM record_revision
+      WHERE gene_symbol = ? COLLATE NOCASE AND revision = ?`
+  ).bind(sym, Number(n)).first();
+  if (!row) return notFound("revision_not_found");
+  return archivedPart(env, row, part);
+}
+
+// A release whose `archive_scope` is 'zenodo_only' predates this system
+// (only release 1.0.0, the 2026-08-15 Zenodo deposit, today) — its records
+// were never individually archived into `record_revision`/R2, only bundled
+// into the Zenodo deposit tarball. NULL/'api' (every release cut under this
+// system) has real `data_release_member` rows behind it. See
+// docs/superpowers/specs/2026-09-27-record-history-design.md.
+function isZenodoOnly(rel) {
+  return rel.archive_scope === "zenodo_only";
+}
+
+const DATA_RELEASE_COLS =
+  "version, cut_at, github_tag, zenodo_version_doi, n_genes, notes";
+
+// `data_release.archive_scope` is added by `drop_seed_revisions.py`'s
+// idempotent `ALTER TABLE` (or a fresh `apply_record_history_ddl.py`
+// apply) — a Worker deploy that reads it can land BEFORE that migration
+// has run against public D1, in which case the column doesn't exist yet
+// and every `SELECT ... archive_scope ...` below would otherwise 500 on
+// every /v1/releases* route. `isMissingTable` already recognizes "no such
+// column" as the persistent, deploy-order-dependent case (not a flaky
+// one), so on that specific failure this re-queries WITHOUT the column
+// and reports every release as `archive_scope: null` (never zenodo-only)
+// until the column exists — the same "degrade to absent" posture used
+// everywhere else in this file for a not-yet-provisioned table/column.
+async function dataReleaseRows(env, whereSql, params) {
+  try {
+    const { results } = await env.DB.prepare(
+      `SELECT ${DATA_RELEASE_COLS}, archive_scope FROM data_release ${whereSql}`
+    ).bind(...params).all();
+    return results;
+  } catch (e) {
+    if (!isMissingTable(e)) throw e;
+    const { results } = await env.DB.prepare(
+      `SELECT ${DATA_RELEASE_COLS} FROM data_release ${whereSql}`
+    ).bind(...params).all();
+    return results.map((r) => ({ ...r, archive_scope: null }));
+  }
+}
+
+async function dataReleaseRow(env, whereSql, params) {
+  const rows = await dataReleaseRows(env, whereSql, params);
+  return rows[0] ?? null;
+}
+
+// --- Reproducibility replicates (API-only) ---
+// Genes re-annotated for the run-to-run reproducibility analysis
+// (Supplementary Figure 16), served from public D1 `deep_dive_replicate`.
+// These are NOT the published records: surface_annotation stays the only
+// source of /v1/genes/{SYMBOL}, nothing in the catalog or viewer reads this
+// table, and every response is labelled `reproducibility_replicate: true`
+// with a pointer back to the published record. Rows are loaded once from a
+// frozen bundle and never rewritten, so the per-gene routes' 1-day TTL needs
+// no purge path; the cohort-level index stays on the 1-minute TTL (tiny
+// metadata query) so it never needs a purge-map entry.
+const REPLICATE_KINDS = ["published_snapshot", "full_rerun", "fixed_evidence_replay"];
+const REPLICATE_STUDY_OK = /^[a-z0-9_]{1,64}$/;
+const REPLICATE_NOTICE =
+  "Reproducibility replicate, not the published record. Kept for the run-to-run " +
+  "reproducibility analysis (Supplementary Figure 16); the published record is " +
+  "/v1/genes/{symbol}.";
+const REPLICATE_KIND_NOTES = {
+  published_snapshot: "The published record exactly as served when the study ran (the comparator); the live record may since have been republished.",
+  full_rerun: "The whole pipeline re-run from scratch with the same prompts: literature discovery, abstract triage, paper selection, section builders and synthesizer.",
+  fixed_evidence_replay: "Section builders and synthesizer re-run on the published record's own evidence ledger; discovery and selection held fixed.",
+};
+
+function replicateUrl(sym, study, kind) {
+  return `${HISTORY_BASE}/genes/${sym}/replicates/${study}/${kind}`;
+}
+
+// GET /v1/replicates — every study, its kinds and genes (metadata only; never
+// reads annotation_json).
+async function handleReplicateIndex(env) {
+  let results;
+  try {
+    ({ results } = await env.DB.prepare(
+      `SELECT study_id, replicate_kind, gene_symbol, hgnc_id, sample_batch,
+              run_id, compared_against_run_id
+         FROM deep_dive_replicate
+        ORDER BY study_id, gene_symbol, replicate_kind`
+    ).all());
+  } catch (e) {
+    if (isMissingTable(e)) return json({ notice: REPLICATE_NOTICE, studies: [] });
+    throw e;
+  }
+  const studies = new Map();
+  for (const r of results) {
+    let st = studies.get(r.study_id);
+    if (!st) {
+      st = { study_id: r.study_id, compared_against_run_id: r.compared_against_run_id,
+             kinds: {}, genes: new Map() };
+      studies.set(r.study_id, st);
+    }
+    st.kinds[r.replicate_kind] ??= { n: 0, run_id: r.run_id, description: REPLICATE_KIND_NOTES[r.replicate_kind] ?? null };
+    st.kinds[r.replicate_kind].n++;
+    if (!st.genes.has(r.gene_symbol)) {
+      st.genes.set(r.gene_symbol, { gene_symbol: r.gene_symbol, hgnc_id: r.hgnc_id,
+        sample_batch: r.sample_batch, url: `${HISTORY_BASE}/genes/${r.gene_symbol}/replicates` });
+    }
+  }
+  return json({
+    notice: REPLICATE_NOTICE,
+    studies: [...studies.values()].map((st) => ({
+      study_id: st.study_id,
+      compared_against_run_id: st.compared_against_run_id,
+      n_genes: st.genes.size,
+      kinds: st.kinds,
+      genes: [...st.genes.values()],
+    })),
+  }, { ttl: CACHE_TTL_SHORT });
+}
+
+// GET /v1/genes/{SYMBOL}/replicates — the replicates held for one gene.
+async function handleGeneReplicates(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  let results = [];
+  try {
+    ({ results } = await env.DB.prepare(
+      `SELECT study_id, replicate_kind, gene_symbol, hgnc_id, uniprot_acc, sample_batch,
+              run_id, compared_against_run_id, schema_version, prompt_corpus_version,
+              record_generated_at
+         FROM deep_dive_replicate
+        WHERE gene_symbol = ? COLLATE NOCASE
+        ORDER BY study_id, replicate_kind`
+    ).bind(sym).all());
+  } catch (e) {
+    if (!isMissingTable(e)) throw e;
+  }
+  if (!results.length) return notFound("no_replicates");
+  const g = results[0];
+  return json({
+    reproducibility_replicate: true,
+    notice: REPLICATE_NOTICE,
+    gene_symbol: g.gene_symbol,
+    hgnc_id: g.hgnc_id,
+    uniprot_acc: g.uniprot_acc,
+    published_record_url: `${HISTORY_BASE}/genes/${g.gene_symbol}`,
+    replicates: results.map((r) => ({
+      study_id: r.study_id,
+      replicate_kind: r.replicate_kind,
+      description: REPLICATE_KIND_NOTES[r.replicate_kind] ?? null,
+      sample_batch: r.sample_batch,
+      run_id: r.run_id,
+      compared_against_run_id: r.compared_against_run_id,
+      schema_version: r.schema_version,
+      prompt_corpus_version: r.prompt_corpus_version,
+      record_generated_at: r.record_generated_at,
+      url: replicateUrl(r.gene_symbol, r.study_id, r.replicate_kind),
+    })),
+  }, { ttl: CACHE_TTL_LONG });
+}
+
+// GET /v1/genes/{SYMBOL}/replicates/{study}/{kind} — one replicate record, in
+// full (evidence included), wrapped so it cannot be mistaken for the published
+// record. The deep-dive tier is attached with the same shared predicate
+// handleGene uses, so a replicate's tier is directly comparable.
+async function handleGeneReplicate(env, symbol, study, kind) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  if (!REPLICATE_STUDY_OK.test(study)) return badRequest("invalid_study");
+  if (!REPLICATE_KINDS.includes(kind)) return badRequest("invalid_replicate_kind");
+  let row = null;
+  try {
+    row = await env.DB.prepare(
+      `SELECT study_id, replicate_kind, gene_symbol, hgnc_id, uniprot_acc, sample_batch,
+              run_id, compared_against_run_id, schema_version, prompt_corpus_version,
+              record_generated_at, annotation_json
+         FROM deep_dive_replicate
+        WHERE gene_symbol = ? COLLATE NOCASE AND study_id = ? AND replicate_kind = ?`
+    ).bind(sym, study, kind).first();
+  } catch (e) {
+    if (!isMissingTable(e)) throw e;
+  }
+  if (!row) return notFound("replicate_not_found");
+  let record;
+  try {
+    record = JSON.parse(row.annotation_json);
+  } catch (e) {
+    return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
+  }
+  const out = {
+    reproducibility_replicate: true,
+    notice: REPLICATE_NOTICE,
+    study_id: row.study_id,
+    replicate_kind: row.replicate_kind,
+    description: REPLICATE_KIND_NOTES[row.replicate_kind] ?? null,
+    gene_symbol: row.gene_symbol,
+    hgnc_id: row.hgnc_id,
+    uniprot_acc: row.uniprot_acc,
+    sample_batch: row.sample_batch,
+    run_id: row.run_id,
+    compared_against_run_id: row.compared_against_run_id,
+    published_record_url: `${HISTORY_BASE}/genes/${row.gene_symbol}`,
+  };
+  if (record?.filters) {
+    attachDeepDiveClassification(out, {
+      ...record.filters,
+      evidence_grade_summary: record?.executive_summary?.evidence_grade_summary ?? null,
+    });
+  }
+  out.record = record;
+  return json(out, { ttl: CACHE_TTL_LONG });
+}
+
+async function handleReleaseList(env) {
+  const results = await dataReleaseRows(env, "ORDER BY cut_at DESC", []);
+  return json({
+    releases: results.map((r) => ({
+      version: r.version,
+      cut_at: r.cut_at,
+      github_tag: r.github_tag,
+      zenodo_version_doi: r.zenodo_version_doi,
+      n_genes: r.n_genes,
+      notes: r.notes,
+      api_members: !isZenodoOnly(r),
+    })),
+  });
+}
+
+async function handleRelease(env, ver) {
+  const v = normalizeVersion(ver);
+  if (!v) return badRequest("invalid_version");
+  const rel = await dataReleaseRow(env, "WHERE version = ?", [v]);
+  if (!rel) return notFound("release_not_found");
+  // Immutable once its Zenodo version is published; until then a short TTL
+  // so --set-doi shows up promptly.
+  const hasDoi = Boolean(rel.zenodo_version_doi);
+  const ttl = hasDoi ? CACHE_TTL_IMMUTABLE : CACHE_TTL_SHORT;
+  const base = {
+    version: rel.version,
+    cut_at: rel.cut_at,
+    github_tag: rel.github_tag,
+    zenodo_version_doi: rel.zenodo_version_doi,
+    n_genes: rel.n_genes,
+    notes: rel.notes,
+  };
+  if (isZenodoOnly(rel)) {
+    return json(
+      {
+        ...base,
+        api_members: false,
+        members: [],
+        api_note:
+          `Release ${rel.version} predates the API's per-gene record history ` +
+          "and is archived only in its Zenodo deposit" +
+          (rel.zenodo_version_doi ? ` (${rel.zenodo_version_doi})` : "") +
+          "; its records are not individually served through these history routes.",
+      },
+      { ttl, immutable: hasDoi },
+    );
+  }
+  const { results } = await env.DB.prepare(
+    `SELECT r.gene_symbol, r.hgnc_id, m.revision, r.json_hash, r.evidence_hash, r.md_hash
+       FROM data_release_member m
+       JOIN record_revision r ON r.gene_symbol = m.gene_symbol AND r.revision = m.revision
+      WHERE m.version = ? ORDER BY r.gene_symbol`
+  ).bind(v).all();
+  return json({ ...base, api_members: true, members: results }, { ttl, immutable: hasDoi });
+}
+
+async function handleReleaseGene(env, ver, symbol, part) {
+  const v = normalizeVersion(ver);
+  if (!v) return badRequest("invalid_version");
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const rel = await dataReleaseRow(env, "WHERE version = ?", [v]);
+  if (!rel) return notFound("release_not_found");
+  if (isZenodoOnly(rel)) {
+    return json(
+      { error: "release_not_in_api_history", zenodo_version_doi: rel.zenodo_version_doi },
+      { status: 404, ttl: 60 },
+    );
+  }
+  const row = await env.DB.prepare(
+    `SELECT r.revision, r.json_hash, r.evidence_hash, r.md_hash
+       FROM data_release_member m
+       JOIN record_revision r ON r.gene_symbol = m.gene_symbol AND r.revision = m.revision
+      WHERE m.version = ? AND m.gene_symbol = ? COLLATE NOCASE`
+  ).bind(v, sym).first();
+  if (!row) return notFound("gene_not_in_release");
+  return archivedPart(env, row, part);
 }
 
 // Per-IP rate limiting via the native Workers Rate Limiting binding
@@ -180,7 +694,10 @@ async function checkRate(env, request, path) {
   // secret, so it stays rate-limited.
   const bypass = env.BUILD_BYPASS_TOKEN;
   if (bypass && request.headers.get("X-Build-Bypass") === bypass) return null;
-  const heavy = path === "/v1/catalog" || path.endsWith(".tsv");
+  // Archive bypass (see isArchiveBypass) also skips the rate limiter — the
+  // archiver sweeps ~5k genes from one IP just like the build does above.
+  if (await isArchiveBypass(request, env)) return null;
+  const heavy = path === "/v1/catalog" || path.endsWith(".tsv") || /^\/v1\/releases\/[^/]+$/.test(path);
   const limiter = heavy ? env.RATE_LIMITER_HEAVY : env.RATE_LIMITER;
   if (!limiter) return null;
   const ip = request.headers.get("CF-Connecting-IP") || "anon";
@@ -263,6 +780,17 @@ function cacheEpoch(env) {
 
 
 async function withEdgeCache(request, env, ctx, handler, { includeQuery = false } = {}) {
+  // Archiver reads the live state: no cache read, no cache write. The echo
+  // header lets the archiver refuse to archive if the bypass was NOT honoured
+  // (wrong token / old Worker) instead of silently archiving cached bytes.
+  if (await isArchiveBypass(request, env)) {
+    const fresh = await handler();
+    const headers = new Headers(fresh.headers);
+    headers.set("X-Archive-Bypass-Honored", "1");
+    headers.set("Cache-Control", "no-store");
+    return new Response(fresh.body, { status: fresh.status, headers });
+  }
+
   const cache = caches.default;
   const url = new URL(request.url);
   const keyPath = includeQuery ? url.pathname + url.search : url.pathname;
@@ -303,7 +831,18 @@ async function withEdgeCache(request, env, ctx, handler, { includeQuery = false 
 
   // (3) full miss — run the handler (D1) and populate both tiers.
   const response = await handler();
-  if (response.status === 200 || response.status === 404) {
+  // A response whose serve-time enrichment hit a real (non-missing-table)
+  // D1 error carries DEGRADED_HEADER and Cache-Control: no-store (see
+  // `json()`'s `degraded` param). Never persist those bytes to either cache
+  // tier — the whole point of the header is that this response reflects a
+  // transient failure, not the record's actual content, and caching it
+  // would serve the degraded shape to every other reader for up to a day
+  // (S100A7A revision 3's null topology fields were exactly this). The
+  // response is still returned to THIS caller below, degraded header and
+  // all — same posture as the archive-bypass path above, which also never
+  // caches.
+  const isDegraded = response.headers.has(DEGRADED_HEADER);
+  if (!isDegraded && (response.status === 200 || response.status === 404)) {
     if (kv) {
       const ttl = maxAgeFromCacheControl(response.headers.get("Cache-Control"));
       const meta = {
@@ -412,7 +951,7 @@ async function fetchTriagePrior(env, sym) {
         WHERE gene_symbol = ? COLLATE NOCASE
           AND run_id = ?
           AND prompt_variant = ?
-          AND model LIKE '%sonnet%'
+          AND model = 'claude-sonnet-4-6'
           AND predicted_verdict IS NOT NULL
         ORDER BY replicate ASC, created_at DESC
         LIMIT 1`
@@ -457,6 +996,27 @@ async function handleGene(env, symbol) {
   } catch (e) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
   }
+  // Every enrichment query below used to swallow its own errors with a bare
+  // `.catch(() => null)` — including a genuine D1 hiccup, not just "this
+  // gene has no row here". That meant a transient failure silently served
+  // (and, via withEdgeCache, PERMANENTLY cached for up to a day) a record
+  // with those fields null even though D1 actually had the data — exactly
+  // what happened to S100A7A's revision 3 (canonical_topology.protein_length
+  // etc. archived null despite the topology_public row existing). `soft()`
+  // still degrades a failed query to null (never breaks the endpoint), but
+  // now records WHICH query failed in `degraded`, unless the failure is a
+  // "no such table" error — that's a persistent, intentional condition (see
+  // `isMissingTable`), not a transient one, and stays silent. `degraded` is
+  // read at the end of this handler to set DEGRADED_HEADER + force
+  // Cache-Control: no-store, so withEdgeCache never caches the response.
+  const degraded = [];
+  const soft = (p, label) =>
+    p.catch((e) => {
+      if (isMissingTable(e)) return null;
+      degraded.push(label);
+      console.warn("enrichment_failed", label, e?.message);
+      return null;
+    });
   // Enrich with Schweke 2024 homo-oligomer prediction at serve time.
   // The annotator already bakes ``deterministic_features.homo_oligomerization``
   // into newly-annotated records (consistent with how the other deterministic
@@ -474,15 +1034,18 @@ async function handleGene(env, symbol) {
     const existing = record?.deterministic_features?.homo_oligomerization;
     const needsEnrichment = !existing || existing.is_homo_oligomer === false;
     if (needsEnrichment) {
-      const schwekeRow = await env.DB.prepare(
-        `SELECT stoichiometry, af_model_num, is_ecd_only,
-                has_higher_order_complex, dimer_pdb_filename,
-                complex_pdb_filename
-           FROM schweke_homomer_public
-          WHERE uniprot_acc = ?
-          ORDER BY universe_version DESC
-          LIMIT 1`
-      ).bind(uniprot).first().catch(() => null);
+      const schwekeRow = await soft(
+        env.DB.prepare(
+          `SELECT stoichiometry, af_model_num, is_ecd_only,
+                  has_higher_order_complex, dimer_pdb_filename,
+                  complex_pdb_filename
+             FROM schweke_homomer_public
+            WHERE uniprot_acc = ?
+            ORDER BY universe_version DESC
+            LIMIT 1`
+        ).bind(uniprot).first(),
+        "schweke_homomer_public",
+      );
       if (schwekeRow) {
         if (!record.deterministic_features) record.deterministic_features = {};
         record.deterministic_features.homo_oligomerization = {
@@ -578,28 +1141,42 @@ async function handleGene(env, symbol) {
     // null on a missing release row or D1 hiccup; the per-feature blocks
     // below skip enrichment when their version is absent.
     const [topoCanonRow, topoIsoRow, paralogRelRow, orthoEcdRelRow] = await Promise.all([
-      env.DB.prepare(
-        `SELECT topology_version FROM topology_release
-            WHERE topology_version IN (
-              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_canonical'
-            )
-            ORDER BY loaded_at DESC LIMIT 1`
-      ).first().catch(() => null),
-      env.DB.prepare(
-        `SELECT topology_version FROM topology_release
-            WHERE topology_version IN (
-              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_isoforms'
-            )
-            ORDER BY loaded_at DESC LIMIT 1`
-      ).first().catch(() => null),
-      env.DB.prepare(
-        `SELECT paralog_version FROM compara_paralog_release
-            ORDER BY fetched_at DESC LIMIT 1`
-      ).first().catch(() => null),
-      env.DB.prepare(
-        `SELECT ortholog_ecd_version FROM compara_ortholog_ecd_release
-            ORDER BY computed_at DESC LIMIT 1`
-      ).first().catch(() => null),
+      soft(
+        env.DB.prepare(
+          `SELECT r.topology_version FROM topology_release r
+              WHERE EXISTS (
+                SELECT 1 FROM topology_public p
+                 WHERE p.cohort = 'human_canonical' AND p.topology_version = r.topology_version
+              )
+              ORDER BY r.loaded_at DESC LIMIT 1`
+        ).first(),
+        "topology_release_canonical",
+      ),
+      soft(
+        env.DB.prepare(
+          `SELECT r.topology_version FROM topology_release r
+              WHERE EXISTS (
+                SELECT 1 FROM topology_public p
+                 WHERE p.cohort = 'human_isoforms' AND p.topology_version = r.topology_version
+              )
+              ORDER BY r.loaded_at DESC LIMIT 1`
+        ).first(),
+        "topology_release_isoform",
+      ),
+      soft(
+        env.DB.prepare(
+          `SELECT paralog_version FROM compara_paralog_release
+              ORDER BY fetched_at DESC LIMIT 1`
+        ).first(),
+        "compara_paralog_release",
+      ),
+      soft(
+        env.DB.prepare(
+          `SELECT ortholog_ecd_version FROM compara_ortholog_ecd_release
+              ORDER BY computed_at DESC LIMIT 1`
+        ).first(),
+        "compara_ortholog_ecd_release",
+      ),
     ]);
     const canonicalTopoVersion = topoCanonRow?.topology_version ?? null;
     const isoformTopoVersion = topoIsoRow?.topology_version ?? null;
@@ -618,40 +1195,33 @@ async function handleGene(env, symbol) {
     // through have the block but not these keys. Without this every already
     // published gene keeps hiding the tool's own classification behind the
     // derived ECD/ICD numbers.
+    // Records store the call as an explicit null too (the Python builder
+    // didn't select the column until 2026-10-17), so test == null, not
+    // === undefined, or the call stays blank on nearly every gene.
     const canonTopoLacksCall = !!existingCanonTopo
-      && existingCanonTopo.predicted_surface_membrane === undefined;
+      && existingCanonTopo.predicted_surface_membrane == null;
     const canonTopoNeedsEnrich =
       !existingCanonTopo || canonTopoIsPlaceholder || canonTopoLacksCall;
     if (canonTopoNeedsEnrich && canonicalTopoVersion) {
-      const tr = await env.DB.prepare(
-        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
-                n_terminal_orientation, c_terminal_orientation,
-                signal_peptide_length, ecd_length_residues, icd_length_residues,
-                per_residue_topology, sequence, tool_version, retrieved_at,
-                predicted_surface_membrane, predicted_secreted,
-                beta_strand_count, protein_length
-           FROM topology_public
-          WHERE uniprot_acc = ? AND cohort = 'human_canonical'
-            AND topology_version = ?
-          LIMIT 1`
-      ).bind(uniprot, canonicalTopoVersion).first().catch(() => null);
+      const tr = await soft(
+        env.DB.prepare(
+          `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                  n_terminal_orientation, c_terminal_orientation,
+                  signal_peptide_length, ecd_length_residues, icd_length_residues,
+                  per_residue_topology, sequence, tool_version, retrieved_at,
+                  predicted_surface_membrane, predicted_secreted,
+                  beta_strand_count, protein_length
+             FROM topology_public
+            WHERE uniprot_acc = ? AND cohort = 'human_canonical'
+              AND topology_version = ?
+            LIMIT 1`
+        ).bind(uniprot, canonicalTopoVersion).first(),
+        "topology_public_canonical",
+      );
       if (tr) {
-        if (!record.deterministic_features) record.deterministic_features = {};
-        record.deterministic_features.canonical_topology = {
-          isoform_id: tr.isoform_id || `${uniprot}-1`,
-          uniprot_acc: tr.uniprot_acc_full || uniprot,
-          tm_helix_count: Number(tr.tm_helix_count || 0),
-          n_terminal_orientation: tr.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
-          c_terminal_orientation: tr.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
-          signal_peptide_length: Number(tr.signal_peptide_length || 0),
-          ecd_length_residues: Number(tr.ecd_length_residues || 0),
-          icd_length_residues: Number(tr.icd_length_residues || 0),
-          per_residue_topology: tr.per_residue_topology || "",
-          sequence: tr.sequence ?? null,
-          tool_version: tr.tool_version || "deeptmhmm-1.0.24",
-          retrieved_at: tr.retrieved_at || new Date().toISOString(),
-          // DeepTMHMM's own call. Stored as 0/1 INTEGER in D1; null stays
-          // null so "column absent" never reads as a confident false.
+        // DeepTMHMM's own call. Stored as 0/1 INTEGER in D1; null stays null
+        // so "column absent" never reads as a confident false.
+        const call = {
           predicted_surface_membrane:
             tr.predicted_surface_membrane == null ? null : Boolean(Number(tr.predicted_surface_membrane)),
           predicted_secreted:
@@ -661,7 +1231,180 @@ async function handleGene(env, symbol) {
           protein_length:
             tr.protein_length == null ? null : Number(tr.protein_length),
         };
+        if (existingCanonTopo && !canonTopoIsPlaceholder) {
+          // A real annotator block that only lacks the call: fill those
+          // fields and keep every other key as the record stores it.
+          // Rebuilding the block here dropped the record's explicit-null
+          // keys (ecd_pct_identity_to_canonical and friends) on every gene.
+          for (const [k, v] of Object.entries(call)) {
+            if (existingCanonTopo[k] == null) existingCanonTopo[k] = v;
+          }
+        } else {
+          if (!record.deterministic_features) record.deterministic_features = {};
+          record.deterministic_features.canonical_topology = {
+            isoform_id: tr.isoform_id || `${uniprot}-1`,
+            uniprot_acc: tr.uniprot_acc_full || uniprot,
+            tm_helix_count: Number(tr.tm_helix_count || 0),
+            n_terminal_orientation: tr.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+            c_terminal_orientation: tr.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+            signal_peptide_length: Number(tr.signal_peptide_length || 0),
+            ecd_length_residues: Number(tr.ecd_length_residues || 0),
+            icd_length_residues: Number(tr.icd_length_residues || 0),
+            per_residue_topology: tr.per_residue_topology || "",
+            sequence: tr.sequence ?? null,
+            tool_version: tr.tool_version || "deeptmhmm-1.0.24",
+            retrieved_at: tr.retrieved_at || new Date().toISOString(),
+            ...call,
+          };
+        }
       }
+    }
+
+    // ----- deterministic_features.library_designed_topology -----
+    // The topology of the protein each LIBRARY MEMBER actually encodes, as opposed
+    // to canonical_topology above, which is the topology of the gene's canonical
+    // UniProt sequence. Those are frequently different proteins: a member's ORF is
+    // its designed CDS, an Ensembl-transcript product, which for a substantial
+    // minority corresponds to a UniProt *isoform* record (816 of 5,896 resolved
+    // members; 119 of the 121 whose AlphaFold model turned out to be the wrong
+    // protein). Colouring a library member's structure with canonical_topology
+    // therefore offsets the overlay silently, with a plausible helix count.
+    //
+    // The matching row CANNOT be found here by accession. It is resolved offline by
+    // exact sequence and stored as a pointer in library_topology_public, which this
+    // joins straight through to topology_public. A member with no pointer row has
+    // had no v1 run on its exact sequence and gets NO entry — never the canonical
+    // as a stand-in. `tool` is always deeptmhmm_v1: the v1 string is what the
+    // structure viewer colours by, and the v2 back-projection is lossy.
+    //
+    // Additive: older viewers ignore the field. Keyed on gene_symbol because that
+    // is what identifies the gene page; the member's own accession travels in
+    // `topology_acc` so a caller can still see which record was matched.
+    const libTopo = await soft(
+      env.DB.prepare(
+        `SELECT lt.candidate_id, lt.library, lt.candidate_set, lt.species,
+                lt.topology_tool, lt.topology_cohort, lt.topology_version,
+                lt.topology_acc, lt.ordered_length_aa, lt.sequence_sha256,
+                tp.per_residue_topology, tp.tm_helix_count, tp.beta_strand_count,
+                tp.n_terminal_orientation, tp.c_terminal_orientation,
+                tp.signal_peptide_length, tp.ecd_length_residues,
+                tp.icd_length_residues, tp.predicted_surface_membrane,
+                tp.predicted_secreted, tp.tool_version
+           FROM library_topology_public lt
+           JOIN topology_public tp
+             ON tp.cohort = lt.topology_cohort
+            AND tp.topology_version = lt.topology_version
+            AND tp.uniprot_acc_full = lt.topology_acc
+          WHERE lt.gene_symbol = ?
+          ORDER BY lt.library ASC, lt.candidate_id ASC`
+      )
+        .bind(sym)
+        .all(),
+      "library_topology_public",
+    );
+    if (libTopo?.results?.length) {
+      if (!record.deterministic_features) record.deterministic_features = {};
+      record.deterministic_features.library_designed_topology =
+        libTopo.results.map((r) => ({
+          candidate_id: r.candidate_id,
+          // Library TRANCHE (l1/l2) — not a tool version.
+          library: r.library,
+          candidate_set: r.candidate_set,
+          species: r.species,
+          tool: r.topology_tool,
+          cohort: r.topology_cohort,
+          topology_version: r.topology_version,
+          // Which topology_public row this came from, so the match is auditable.
+          topology_acc: r.topology_acc,
+          // sha256 of the ordered protein — the key the match was made on.
+          sequence_sha256: r.sequence_sha256,
+          ordered_length_aa:
+            r.ordered_length_aa == null ? null : Number(r.ordered_length_aa),
+          per_residue_topology: r.per_residue_topology || "",
+          tm_helix_count: Number(r.tm_helix_count || 0),
+          beta_strand_count:
+            r.beta_strand_count == null ? null : Number(r.beta_strand_count),
+          n_terminal_orientation:
+            r.n_terminal_orientation === "extracellular"
+              ? "extracellular"
+              : "cytoplasmic",
+          c_terminal_orientation:
+            r.c_terminal_orientation === "extracellular"
+              ? "extracellular"
+              : "cytoplasmic",
+          signal_peptide_length: Number(r.signal_peptide_length || 0),
+          ecd_length_residues: Number(r.ecd_length_residues || 0),
+          icd_length_residues: Number(r.icd_length_residues || 0),
+          predicted_surface_membrane:
+            r.predicted_surface_membrane == null
+              ? null
+              : Boolean(Number(r.predicted_surface_membrane)),
+          predicted_secreted:
+            r.predicted_secreted == null
+              ? null
+              : Boolean(Number(r.predicted_secreted)),
+          tool_version: r.tool_version || "deeptmhmm-1.0.24",
+        }));
+    }
+
+    // ----- deterministic_features.library_designed_structure -----
+    // Which structure a library member should render, and how to renumber it.
+    // The viewer's default -- AFDB's model for the gene's canonical accession -- is the
+    // wrong protein for 296 of 2,725 L1 members, and nothing on the page said so.
+    //
+    // `residue_offset` is NOT decoration. For a `contained` member the ordered protein is
+    // a subsequence of the model, so construct residue i is model residue i + offset
+    // (offsets here run to 134). A viewer that ignores it draws SLC3A2 101 residues out of
+    // frame while looking entirely plausible. `display_first_model_residue` /
+    // `display_last_model_residue` are the span the construct actually covers, so the
+    // renderer can clip to it rather than silently showing extra protein.
+    //
+    // Alternates (is_chosen = 0) travel too, with the note saying why they lost, so the
+    // page can show "AlphaFold DB models a different proteoform" instead of hiding it.
+    const libStruct = await soft(
+      env.DB.prepare(
+        `SELECT candidate_id, candidate_set, species, source, r2_key, model_url,
+                proteoform_match, residue_offset, ordered_length_aa, model_length_aa,
+                is_chosen, mean_plddt, note
+           FROM library_structure_public
+          WHERE gene_symbol = ?
+          ORDER BY is_chosen DESC, candidate_id ASC`
+      )
+        .bind(sym)
+        .all(),
+      "library_structure_public",
+    );
+    if (libStruct?.results?.length) {
+      if (!record.deterministic_features) record.deterministic_features = {};
+      record.deterministic_features.library_designed_structure =
+        libStruct.results.map((r) => {
+          const offset = Number(r.residue_offset || 0);
+          const orderedLen =
+            r.ordered_length_aa == null ? null : Number(r.ordered_length_aa);
+          return {
+            candidate_id: r.candidate_id,
+            candidate_set: r.candidate_set,
+            species: r.species,
+            // 'colabfold' = we folded the ordered sequence; 'alphafold_db' = AFDB's
+            // model is genuinely the ordered protein (or contains it).
+            source: r.source,
+            r2_key: r.r2_key || null,
+            model_url: r.model_url || null,
+            proteoform_match: r.proteoform_match,
+            residue_offset: offset,
+            ordered_length_aa: orderedLen,
+            model_length_aa:
+              r.model_length_aa == null ? null : Number(r.model_length_aa),
+            // The model residues the construct covers, 1-based and inclusive. Null when
+            // the ordered length is unknown, never guessed.
+            display_first_model_residue: orderedLen == null ? null : offset + 1,
+            display_last_model_residue:
+              orderedLen == null ? null : offset + orderedLen,
+            is_chosen: Boolean(Number(r.is_chosen)),
+            mean_plddt: r.mean_plddt == null ? null : Number(r.mean_plddt),
+            note: r.note || null,
+          };
+        });
     }
 
     // ----- gene.ensembl_canonical_protein -----
@@ -671,12 +1414,15 @@ async function handleGene(env, symbol) {
     // references a specific protein isoform". Enrich rather than require a
     // re-annotation, and only when absent so a baked value always wins.
     if (record?.gene && record.gene.ensembl_canonical_protein == null) {
-      const giRow = await env.DB.prepare(
-        `SELECT ensembl_canonical_protein
-           FROM gene_identifier_public
-          WHERE uniprot_acc = ?
-          LIMIT 1`
-      ).bind(uniprot).first().catch(() => null);
+      const giRow = await soft(
+        env.DB.prepare(
+          `SELECT ensembl_canonical_protein
+             FROM gene_identifier_public
+            WHERE uniprot_acc = ?
+            LIMIT 1`
+        ).bind(uniprot).first(),
+        "gene_identifier_public",
+      );
       if (giRow?.ensembl_canonical_protein) {
         record.gene.ensembl_canonical_protein = giRow.ensembl_canonical_protein;
       }
@@ -696,16 +1442,19 @@ async function handleGene(env, symbol) {
     const isoTopoNeedsEnrich = !Array.isArray(existingIsoTopo)
       || (existingIsoTopo.length === 0 && !isoTopoChecked);
     if (isoTopoNeedsEnrich && isoformTopoVersion) {
-      const isoRows = await env.DB.prepare(
-        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
-                n_terminal_orientation, c_terminal_orientation,
-                signal_peptide_length, ecd_length_residues, icd_length_residues,
-                per_residue_topology, sequence, tool_version, retrieved_at
-           FROM topology_public
-          WHERE uniprot_acc = ? AND cohort = 'human_isoforms'
-            AND topology_version = ?
-          ORDER BY uniprot_acc_full ASC`
-      ).bind(uniprot, isoformTopoVersion).all().catch(() => null);
+      const isoRows = await soft(
+        env.DB.prepare(
+          `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                  n_terminal_orientation, c_terminal_orientation,
+                  signal_peptide_length, ecd_length_residues, icd_length_residues,
+                  per_residue_topology, sequence, tool_version, retrieved_at
+             FROM topology_public
+            WHERE uniprot_acc = ? AND cohort = 'human_isoforms'
+              AND topology_version = ?
+            ORDER BY uniprot_acc_full ASC`
+        ).bind(uniprot, isoformTopoVersion).all(),
+        "topology_public_isoform",
+      );
       // Belt-and-suspenders dedup: even though the query filters by
       // topology_version, a stale topology_release row would let multiple
       // versions slip through and produce duplicate isoform rows (one per
@@ -753,23 +1502,26 @@ async function handleGene(env, symbol) {
     const paralogsNeedEnrich = !Array.isArray(existingParalogs)
       || (existingParalogs.length === 0 && !paralogsChecked);
     if (paralogsNeedEnrich && paralogVersion) {
-      const paralogRows = await env.DB.prepare(
-        `SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity,
-                cp.ecd_pct_similarity, cp.biomart_percent_identity, cp.family_id,
-                cp.compara_version, cp.rank_by_ecd_identity,
-                tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count,
-                tp.ecd_length_residues, tp.icd_length_residues,
-                tp.n_terminal_orientation, tp.c_terminal_orientation,
-                tp.signal_peptide_length, tp.sequence
-           FROM compara_paralog cp
-           LEFT JOIN topology_public tp
-             ON tp.uniprot_acc = cp.paralog_uniprot_acc
-            AND tp.cohort = 'human_canonical' AND tp.topology_version = ?
-          WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ?
-            AND cp.paralog_gene_symbol IS NOT NULL
-            AND cp.paralog_uniprot_acc IS NOT NULL
-          ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT 50`
-      ).bind(canonicalTopoVersion ?? "", uniprot, paralogVersion).all().catch(() => null);
+      const paralogRows = await soft(
+        env.DB.prepare(
+          `SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity,
+                  cp.ecd_pct_similarity, cp.biomart_percent_identity, cp.family_id,
+                  cp.compara_version, cp.rank_by_ecd_identity,
+                  tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count,
+                  tp.ecd_length_residues, tp.icd_length_residues,
+                  tp.n_terminal_orientation, tp.c_terminal_orientation,
+                  tp.signal_peptide_length, tp.sequence
+             FROM compara_paralog cp
+             LEFT JOIN topology_public tp
+               ON tp.uniprot_acc = cp.paralog_uniprot_acc
+              AND tp.cohort = 'human_canonical' AND tp.topology_version = ?
+            WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ?
+              AND cp.paralog_gene_symbol IS NOT NULL
+              AND cp.paralog_uniprot_acc IS NOT NULL
+            ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT 50`
+        ).bind(canonicalTopoVersion ?? "", uniprot, paralogVersion).all(),
+        "compara_paralog",
+      );
       // Belt-and-suspenders dedup: the LEFT JOIN against topology_public
       // is keyed on (uniprot_acc, cohort, topology_version); a stale
       // topology_release would let multiple cohort/version rows survive
@@ -832,39 +1584,46 @@ async function handleGene(env, symbol) {
       // annotator resolves mouse_topo_version specifically; in practice
       // mouse_ortholog + cyno_ortholog share a version. Default to the
       // canonical topology_version if no mouse-cohort row exists.
-      const mouseTopoRow = await env.DB.prepare(
-        `SELECT topology_version FROM topology_release
-            WHERE topology_version IN (
-              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'mouse_ortholog'
-            )
-            ORDER BY loaded_at DESC LIMIT 1`
-      ).first().catch(() => null);
+      const mouseTopoRow = await soft(
+        env.DB.prepare(
+          `SELECT r.topology_version FROM topology_release r
+              WHERE EXISTS (
+                SELECT 1 FROM topology_public p
+                 WHERE p.cohort = 'mouse_ortholog' AND p.topology_version = r.topology_version
+              )
+              ORDER BY r.loaded_at DESC LIMIT 1`
+        ).first(),
+        "topology_release_ortholog",
+      );
       const orthoTopoVersion = mouseTopoRow?.topology_version ?? canonicalTopoVersion ?? "";
-      const orthologRows = await env.DB.prepare(
-        `SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene,
-                eo.ortholog_gene_symbol, eo.ecd_pct_identity,
-                co.percent_identity AS full_length_pct_identity,
-                tp.tm_helix_count, tp.ecd_length_residues,
-                tp.per_residue_topology, tp.deeptmhmm_label,
-                tp.sequence AS ortholog_sequence,
-                eo.compara_release
-           FROM compara_ortholog_ecd eo
-           LEFT JOIN topology_public tp
-             ON tp.uniprot_acc = eo.ortholog_uniprot_acc
-            AND tp.topology_version = ?
-            AND (
-              (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR
-              (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog')
-            )
-           LEFT JOIN compara_ortholog co
-             ON co.release_version = eo.compara_release
-            AND co.human_ensembl_gene = eo.human_ensembl_gene
-            AND co.species = eo.species
-            AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene
-          WHERE eo.human_uniprot_acc = ?
-            AND eo.ortholog_ecd_version = ?
-          ORDER BY eo.species ASC`
-      ).bind(orthoTopoVersion, uniprot, orthologEcdVersion).all().catch(() => null);
+      const orthologRows = await soft(
+        env.DB.prepare(
+          `SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene,
+                  eo.ortholog_gene_symbol, eo.ecd_pct_identity,
+                  co.percent_identity AS full_length_pct_identity,
+                  tp.tm_helix_count, tp.ecd_length_residues,
+                  tp.per_residue_topology, tp.deeptmhmm_label,
+                  tp.sequence AS ortholog_sequence,
+                  eo.compara_release
+             FROM compara_ortholog_ecd eo
+             LEFT JOIN topology_public tp
+               ON tp.uniprot_acc = eo.ortholog_uniprot_acc
+              AND tp.topology_version = ?
+              AND (
+                (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR
+                (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog')
+              )
+             LEFT JOIN compara_ortholog co
+               ON co.release_version = eo.compara_release
+              AND co.human_ensembl_gene = eo.human_ensembl_gene
+              AND co.species = eo.species
+              AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene
+            WHERE eo.human_uniprot_acc = ?
+              AND eo.ortholog_ecd_version = ?
+            ORDER BY eo.species ASC`
+        ).bind(orthoTopoVersion, uniprot, orthologEcdVersion).all(),
+        "compara_ortholog_ecd",
+      );
       // Belt-and-suspenders dedup: the LEFT JOIN against topology_public is
       // gated on topology_version; a stale topology_release lets multiple
       // versions slip through and produce two rows per (species, ortholog).
@@ -949,22 +1708,28 @@ async function handleGene(env, symbol) {
       || existingSurfaceBind.has_data === false
       || sbSitesLackTopology;
     if (sbNeedsEnrichment) {
-      const sbProteinRow = await env.DB.prepare(
-        `SELECT chain, main_class, sub_class, protein_name, n_sites,
-                n_seeds_alpha, n_seeds_beta, n_seeds_total, pdbs
-           FROM surface_bind_protein
-          WHERE uniprot_acc = ?
-          ORDER BY surfacebind_version DESC
-          LIMIT 1`
-      ).bind(uniprot).first().catch(() => null);
-      if (sbProteinRow) {
-        const sbSiteRows = await env.DB.prepare(
-          `SELECT site_id, anchor_residue, area_a2, n_seeds_alpha,
-                  n_seeds_beta, hydrophobicity
-             FROM surface_bind_site
+      const sbProteinRow = await soft(
+        env.DB.prepare(
+          `SELECT chain, main_class, sub_class, protein_name, n_sites,
+                  n_seeds_alpha, n_seeds_beta, n_seeds_total, pdbs
+             FROM surface_bind_protein
             WHERE uniprot_acc = ?
-            ORDER BY site_id`
-        ).bind(uniprot).all().catch(() => null);
+            ORDER BY surfacebind_version DESC
+            LIMIT 1`
+        ).bind(uniprot).first(),
+        "surface_bind_protein",
+      );
+      if (sbProteinRow) {
+        const sbSiteRows = await soft(
+          env.DB.prepare(
+            `SELECT site_id, anchor_residue, area_a2, n_seeds_alpha,
+                    n_seeds_beta, hydrophobicity
+               FROM surface_bind_site
+              WHERE uniprot_acc = ?
+              ORDER BY site_id`
+          ).bind(uniprot).all(),
+          "surface_bind_site",
+        );
         // Which side of the membrane each anchor residue sits on.
         // SURFACE-Bind scores the whole solved structure, so a scored
         // patch is not necessarily reachable from outside the cell:
@@ -973,13 +1738,22 @@ async function handleGene(env, symbol) {
         // sites). Served as its own scalar pull rather than a JOIN so a
         // missing topology row degrades to nulls instead of dropping the
         // whole surface_bind block.
-        const sbTopoRow = await env.DB.prepare(
-          `SELECT per_residue_topology
-             FROM topology_public
-            WHERE uniprot_acc = ? AND species = 'human'
-              AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
-            LIMIT 1`
-        ).bind(uniprot).first().catch(() => null);
+        // Pinned to the served canonical release: topology_public also holds
+        // unregistered runs from other predictors (a full DeepTMHMM2 sweep
+        // since 2026-09-27), and an unpinned LIMIT 1 could return any of them.
+        const sbTopoRow = canonicalTopoVersion
+          ? await soft(
+              env.DB.prepare(
+                `SELECT per_residue_topology
+                   FROM topology_public
+                  WHERE uniprot_acc = ? AND species = 'human'
+                    AND is_canonical IN ('1', 1) AND cohort = 'human_canonical'
+                    AND topology_version = ?
+                  LIMIT 1`
+              ).bind(uniprot, canonicalTopoVersion).first(),
+              "topology_public_surface_bind",
+            )
+          : null;
         const prt = sbTopoRow?.per_residue_topology ?? null;
         // DeepTMHMM alphabet, per the per_residue_topology column comment
         // in cloudflare/d1_public_schema.sql ("O/M/I/S/B chars").
@@ -1053,6 +1827,67 @@ async function handleGene(env, symbol) {
         };
       }
     }
+
+    // ----- bindome -----
+    // Bindome (Wenckstern 2026, doi 10.64898/2026.07.30.741542) is a second
+    // answer to "where could a binder go", from 305,806 BindCraft designs.
+    // It publishes no target-side site list -- its own InterfaceResidues
+    // column is the *binder* chain and every design ran `no_hotspot` -- so
+    // `bindome_site_public` holds sites recovered from where the designs
+    // land (scripts/build/build_bindome_sites.py).
+    //
+    // Served as its own block rather than merged into surface_bind: the two
+    // are different methods with different per-site metrics (seed pools vs
+    // design counts), and collapsing them would make the viewer's source
+    // toggle a lie. `compartment` is computed from the same DeepTMHMM string
+    // that labels surface_bind anchors, so one EC filter spans both.
+    //
+    // Attached only when D1 has rows. Every other enrichment here leaves the
+    // body untouched when its query returns nothing, and
+    // test_healthy_request_has_no_degraded_header_and_stable_body pins that:
+    // an empty block on the ~4,800 genes with no Bindome data is noise.
+    const bindomeRows = await soft(
+      env.DB.prepare(
+        `SELECT site_id, anchor_residue, compartment, n_residues,
+                n_designs_supporting, n_designs_total, mean_design_fraction,
+                residues, bindome_release
+           FROM bindome_site_public
+          WHERE uniprot_acc = ?
+          ORDER BY site_id`
+      ).bind(uniprot).all(),
+      "bindome_site_public",
+    );
+    const bindomeSites = (bindomeRows?.results ?? []).map((s) => ({
+      site_id: Number(s.site_id),
+      anchor_residue: Number(s.anchor_residue),
+      // Same key as surface_bind's per-site field, so the viewer reads one
+      // property across both sources.
+      anchor_topology: s.compartment ?? null,
+      n_residues: Number(s.n_residues),
+      n_designs_supporting: Number(s.n_designs_supporting),
+      n_designs_total: Number(s.n_designs_total),
+      mean_design_fraction:
+        s.mean_design_fraction === null ? null : Number(s.mean_design_fraction),
+      residues: String(s.residues ?? "")
+        .split(",")
+        .map((x) => Number(x))
+        .filter(Number.isFinite),
+    }));
+    if (bindomeSites.length > 0) {
+      if (!record.deterministic_features) record.deterministic_features = {};
+      record.deterministic_features.bindome = {
+        has_data: true,
+        n_sites: bindomeSites.length,
+        n_sites_extracellular: bindomeSites.filter(
+          (s) => s.anchor_topology === "extracellular",
+        ).length,
+        sites: bindomeSites,
+        release: bindomeRows?.results?.[0]?.bindome_release ?? null,
+        source: "Bindome (Wenckstern 2026, BindCraft)",
+        attribution: "\u00a9 Wenckstern et al., Correia lab \u2014 EPFL",
+        citation: "10.64898/2026.07.30.741542",
+      };
+    }
   }
   // Triage-signal overlay — the load-bearing freshness fix for the
   // June-2026 silent-failure bug. The annotator bakes `triage_signal` +
@@ -1066,7 +1901,12 @@ async function handleGene(env, symbol) {
   // Posture matches the other enrich steps: fail-open on a D1 hiccup
   // (don't break the per-gene endpoint), and don't overwrite a
   // populated record with null (a brand-new gene the triage sweep
-  // hasn't covered yet leaves the annotator's call intact).
+  // hasn't covered yet leaves the annotator's call intact). A real
+  // (non-missing-table) failure here now also marks the response
+  // degraded, same as the `soft()`-wrapped queries above — this is a
+  // plain try/catch rather than a promise chain because
+  // `fetchTriagePrior` walks a priority list of queries internally,
+  // not a single one `soft()` could wrap directly.
   try {
     const triagePrior = await fetchTriagePrior(env, sym);
     if (triagePrior) {
@@ -1077,7 +1917,10 @@ async function handleGene(env, symbol) {
       }
     }
   } catch (e) {
-    // Best-effort — never break the endpoint over a triage miss.
+    if (!isMissingTable(e)) {
+      degraded.push("triage_run_public");
+      console.warn("enrichment_failed", "triage_run_public", e?.message);
+    }
   }
   // Store the shared deep-dive classification on the record so the gene page
   // AND the Zenodo deposit tarball (raw /v1/genes responses) carry the same
@@ -1097,7 +1940,7 @@ async function handleGene(env, symbol) {
   // GET /v1/genes/{SYMBOL}/evidence (handleGeneEvidence) so the gene
   // page's initial record load isn't dominated by the evidence array.
   if (record && "evidence" in record) delete record.evidence;
-  return json(record, { ttl: CACHE_TTL_LONG });
+  return json(record, { ttl: CACHE_TTL_LONG, degraded });
 }
 
 // Max distinct papers we'll look up citation metadata for in one request.
@@ -1138,7 +1981,14 @@ function collectSourceIds(evidence) {
 // Returns {} on any failure or when the table hasn't been created yet: the
 // drawer degrades to the bare accession it showed before, which is a worse
 // reading experience but never a broken page.
-async function fetchPaperMetadata(env, sourceIds) {
+//
+// `onError`, when given, is called with the caught error for a REAL failure
+// (i.e. one `isMissingTable` doesn't recognize as the persistent/intentional
+// "table not provisioned yet" case) — handleGeneEvidence uses it to fold
+// this query into its own `degraded` list. Callers that don't need that
+// (handleInternalization) simply omit it and keep today's silent-degrade
+// behavior unchanged.
+async function fetchPaperMetadata(env, sourceIds, { onError } = {}) {
   if (!sourceIds.length) return {};
   const statements = [];
   for (let i = 0; i < sourceIds.length; i += PAPER_METADATA_CHUNK) {
@@ -1157,6 +2007,7 @@ async function fetchPaperMetadata(env, sourceIds) {
   try {
     batches = await env.DB.batch(statements);
   } catch (e) {
+    if (onError && !isMissingTable(e)) onError(e);
     return {};
   }
   const papers = {};
@@ -1216,8 +2067,14 @@ async function handleGeneEvidence(env, symbol) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
   }
   const evidence = Array.isArray(record?.evidence) ? record.evidence : [];
-  const papers = await fetchPaperMetadata(env, collectSourceIds(evidence));
-  return json({ gene: sym, evidence, papers }, { ttl: CACHE_TTL_LONG });
+  const degraded = [];
+  const papers = await fetchPaperMetadata(env, collectSourceIds(evidence), {
+    onError: (e) => {
+      degraded.push("paper_metadata");
+      console.warn("enrichment_failed", "paper_metadata", e?.message);
+    },
+  });
+  return json({ gene: sym, evidence, papers }, { ttl: CACHE_TTL_LONG, degraded });
 }
 
 async function handleOrthologs(env, symbol) {
@@ -1354,6 +2211,120 @@ const ECD_BAND_SOURCES = [
   ["max_paralog_ecd", "max_paralog_ecd_pct_identity", 70, 40],
 ];
 
+// Surface-evidence method categories (catalog "Direct surface method" /
+// "Supporting method" facets), derived from the record's
+// surface_evidence.methods block. Each methods row is one experiment the
+// methods builder judged `direct_surface_accessibility` (an antibody or probe
+// reached the protein from outside an intact cell) or
+// `supports_surface_localization` (at the membrane, outside not shown); other
+// relevance levels are not surface evidence and are dropped. The family and
+// subclass vocabularies overlap, so the rules are tried in order and the
+// first match wins; anything unmatched is "other". Copied verbatim from
+// scripts/build_figure_tsvs.py (Supp Fig 13) and mirrored in
+// viewer/lib/deep-dive-fields.ts — tests/test_surface_method_rules_sync.py
+// fails if the three drift.
+const SURFACE_METHOD_RULES = [
+  ["family", "proximity_labeling", "proximity_labeling"],
+  ["subclass", "surface_biotinylation", "surface_biotin_pulldown"],
+  ["subclass", "cell_surface_capture", "cell_surface_capture_ms"],
+  ["subclass", "N_glycoproteomics", "cell_surface_capture_ms"],
+  ["family", "glycoproteomics", "cell_surface_capture_ms"],
+  ["subclass", "live_cell_flow", "flow_cytometry"],
+  ["subclass", "fixed_cell_flow", "flow_cytometry"],
+  ["family", "flow_cytometry", "flow_cytometry"],
+  ["subclass", "nonpermeabilized_IF", "immunofluorescence"],
+  ["subclass", "permeabilized_IF", "immunofluorescence"],
+  ["family", "immunofluorescence", "immunofluorescence"],
+  ["subclass", "IHC", "immunohistochemistry"],
+  ["subclass", "IHC_membranous", "immunohistochemistry"],
+  ["family", "immunohistochemistry", "immunohistochemistry"],
+  ["family", "functional_surface_assay", "functional_surface_assay"],
+];
+
+// Expression systems that keep the protein at its own expression level, so
+// a direct readout there says the native protein is reachable. Overexpressed
+// constructs can force surface localization the native protein never shows.
+const NATIVE_EXPRESSION_SYSTEMS = new Set(["endogenous", "mixed", "knock_in_tag"]);
+
+// Surface labeling / capture chemistries only work on intact cells with
+// membrane-impermeable reagents, so they count as live-cell unless a row is
+// explicitly permeabilized (the methods builder often labels them
+// "nonpermeabilized"). Flow and IF need an explicit live_cell label: their
+// "nonpermeabilized" rows are usually fixed cells. Functional assays never
+// count — find those under the method facet.
+const LIVE_BY_CHEMISTRY = new Set([
+  "surface_biotin_pulldown",
+  "cell_surface_capture_ms",
+  "proximity_labeling",
+]);
+
+function isLiveCellRow(method, permeabilization) {
+  if (method === "functional_surface_assay") return false;
+  if (permeabilization === "live_cell") return true;
+  return LIVE_BY_CHEMISTRY.has(method) && permeabilization !== "permeabilized";
+}
+
+function surfaceMethodCategory(family, subclass) {
+  for (const [field, value, method] of SURFACE_METHOD_RULES) {
+    if ((field === "family" ? family : subclass) === value) return method;
+  }
+  return "other";
+}
+
+// `packed` is the catalog query's `ddf_surface_methods` column: one
+// "family|subclass|relevance|expression_system|permeabilization" token per
+// distinct methods row, comma-joined (only direct + supporting rows are
+// selected). Returns sorted, de-duplicated method lists (a method that has a
+// direct row is never also listed as supporting) plus two flags:
+//   * has_native_direct_surface_evidence — any direct row in a native
+//     expression system.
+//   * has_live_cell_surface_evidence — a direct row on live cells in a
+//     native expression system, excluding functional assays (see
+//     isLiveCellRow). Overrides the record's baked flag, which keyed on
+//     method family and so missed capture MS and counted fixed-cell flow.
+function projectSurfaceMethods(packed) {
+  const direct = new Set();
+  const supporting = new Set();
+  let native = false;
+  let liveCell = false;
+  for (const tok of (packed || "").split(",")) {
+    if (!tok) continue;
+    const [family, subclass, relevance, system, permeabilization] = tok.split("|");
+    const method = surfaceMethodCategory(family, subclass);
+    if (relevance === "direct_surface_accessibility") {
+      direct.add(method);
+      if (NATIVE_EXPRESSION_SYSTEMS.has(system)) {
+        native = true;
+        if (isLiveCellRow(method, permeabilization)) liveCell = true;
+      }
+    } else if (relevance === "supports_surface_localization") {
+      supporting.add(method);
+    }
+  }
+  for (const m of direct) supporting.delete(m);
+  return {
+    surface_method_direct: [...direct].sort(),
+    surface_method_supporting: [...supporting].sort(),
+    has_native_direct_surface_evidence: native,
+    has_live_cell_surface_evidence: liveCell,
+  };
+}
+
+// Correlated subquery packing a record's direct + supporting methods rows
+// into one short string (median ~80 chars) — never the methods objects
+// themselves, which carry antibody and expression-observation detail that
+// would bloat the catalog query toward D1's isolate-memory cap. `alias` is
+// the surface_annotation alias at the call site.
+const surfaceMethodsSql = (alias) => `(SELECT group_concat(DISTINCT
+      COALESCE(json_extract(m.value, '$.method_family'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.method_subclass'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.accessibility_relevance'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.expression_system'), '') || '|' ||
+      COALESCE(json_extract(m.value, '$.permeabilization'), ''))
+    FROM json_each(${alias}.annotation_json, '$.surface_evidence.methods') m
+   WHERE json_extract(m.value, '$.accessibility_relevance')
+         IN ('direct_surface_accessibility', 'supports_surface_localization'))`;
+
 // Try JSON.parse and return the result, or null on failure / falsy input.
 // Also passes through pre-parsed objects — SQLite `json_extract` on an
 // object path returns a JSON string, but D1's client-side handling can
@@ -1484,6 +2455,11 @@ function projectDeepDiveFiltersFromParts(parts) {
     out.tm_count_band = tmc === 0 ? "none" : tmc === 1 ? "single" : "multi";
     any = true;
   }
+  // Surface-evidence method facets — sourced from surface_evidence.methods
+  // (packed server-side; see projectSurfaceMethods). Emitted for every
+  // deep-dive row, empty lists included, so "no direct method" is filterable
+  // and distinguishable from a pre-v10 catalog that lacks the keys.
+  Object.assign(out, projectSurfaceMethods(parts.surface_methods));
   return any ? out : null;
 }
 
@@ -1519,6 +2495,10 @@ function ddfPartsFromRow(row, prefix) {
       typeof row[`${prefix}topo_signal_peptide_length`] === "number"
         ? row[`${prefix}topo_signal_peptide_length`]
         : null,
+    surface_methods:
+      typeof row[`${prefix}surface_methods`] === "string"
+        ? row[`${prefix}surface_methods`]
+        : null,
   };
 }
 
@@ -1533,6 +2513,30 @@ function ddfPartsFromRow(row, prefix) {
 // TSV export endpoints do hgnc_id via a separate join), and wraps the
 // whole handler in caches.default so the cold-start CPU cost is paid
 // once per universe_version, not per request.
+// Majority verdict across a cell's replicates, then the most common reason
+// within the winning verdict. Both tiebreak on the most recent `created_at`,
+// so a single-replicate cell returns that replicate.
+function majorityVerdictAndReason(reps) {
+  const pick = (rows, field) => {
+    const tally = new Map();
+    const latest = new Map();
+    for (const r of rows) {
+      tally.set(r[field], (tally.get(r[field]) || 0) + 1);
+      const prev = latest.get(r[field]);
+      if (prev == null || r.created_at > prev) latest.set(r[field], r.created_at);
+    }
+    return [...tally.entries()].sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      const ma = latest.get(a[0]) || "";
+      const mb = latest.get(b[0]) || "";
+      return mb < ma ? -1 : (mb > ma ? 1 : 0);
+    })[0][0];
+  };
+  const verdict = pick(reps, "predicted_verdict");
+  const reason = pick(reps.filter((r) => r.predicted_verdict === verdict), "predicted_reason");
+  return { verdict, reason };
+}
+
 async function handleCatalog(env, request) {
   // Self-managed edge cache, keyed on the request URL. CF's HTTP cache
   // already does this via Cache-Control, but the in-Worker cache lets
@@ -1625,6 +2629,8 @@ async function handleCatalog(env, request) {
             u.n_sources_surface,
             u.uniprot_surface_flag, u.go_surface_flag, u.surfy_surface_flag,
             u.cspa_surface_flag, u.hpa_surface_flag,
+            COALESCE(oc.uniprot_optimized, 0) AS uniprot_optimized,
+            COALESCE(oc.cspa_optimized, 0) AS cspa_optimized,
             sb.n_sites AS sb_n_sites,
             sa.ddf_filters AS sa_ddf_filters,
             sa.ddf_evidence_grade_summary AS sa_ddf_evidence_grade_summary,
@@ -1635,6 +2641,7 @@ async function handleCatalog(env, request) {
             sa.ddf_homo_oligomerization AS sa_ddf_homo_oligomerization,
             sa.ddf_topo_tm_helix_count AS sa_ddf_topo_tm_helix_count,
             sa.ddf_topo_signal_peptide_length AS sa_ddf_topo_signal_peptide_length,
+            sa.ddf_surface_methods AS sa_ddf_surface_methods,
             si.intern_grade AS intern_grade,
             si.intern_has_lit AS intern_has_lit,
             si.intern_lit_grade AS intern_lit_grade,
@@ -1642,6 +2649,13 @@ async function handleCatalog(env, request) {
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
+       -- SurfaceBench-recalibrated DB cutoffs. A POSITIVE LIST: no row means
+       -- (0, 0), never "fall back to the native flag" -- a fallback
+       -- resurrects the low-confidence CSPA-only proteins the tightening
+       -- drops. Hence the COALESCE to 0 above, and hence the table must be
+       -- loaded before this Worker deploys.
+       LEFT JOIN db_optimized_cutoff_public oc
+         ON oc.accession = COALESCE(gi.uniprot_acc, u.uniprot_acc)
        -- Internalization sequence-prior grade (separate standalone pass;
        -- scalar grade columns only — never record_json, which carries the
        -- per-residue topology string that would blow D1's isolate memory
@@ -1678,7 +2692,8 @@ async function handleCatalog(env, request) {
                 -- a ~protein-length string that would blow D1's per-query
                 -- isolate memory across ~1.2k catalog rows).
                 json_extract(annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
-                json_extract(annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length
+                json_extract(annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
+                ${surfaceMethodsSql("sa1")} AS ddf_surface_methods
            FROM surface_annotation sa1
           WHERE schema_version = (
             SELECT MAX(schema_version) FROM surface_annotation sa2
@@ -1702,25 +2717,26 @@ async function handleCatalog(env, request) {
   // published figures use as headline.
   //
   // Aggregation: majority verdict across replicates per (gene, model),
-  // then most common reason within the winning verdict. Tiebreak on
-  // most recent `created_at` (matches the single-replicate behavior
-  // when there's only one row). For 1-rep cells the majority degenerates
-  // to that single verdict — backward-compatible with the pre-2/3-rep
-  // catalog. The matching per-cell majority logic for the benchmark
-  // drawer lives in `handleTriageCell` below; this is the catalog-tier
-  // mirror so the genome-wide summary surfaces consensus the same way.
+  // then most common reason within the winning verdict, both tiebroken
+  // on most recent `created_at` (see majorityVerdictAndReason).
   //
   // Coverage today:
-  //   - Sonnet/ncbi: full ~19k genome (genome_full_sonnet_ncbi_v2,
-  //                  with multi-rep on the ambiguous-no zero-DB slice
-  //                  to expose 2/3 consensus).
+  //   - Sonnet/ncbi: full ~19k genome (genome_full_sonnet_ncbi_v2)
   //   - Haiku/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v2)
   //   - Opus/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v2)
   // So most rows will show only the Sonnet column populated.
+  //
+  // The Sonnet slot is the paper's two-stage triage verdict, so its stage
+  // one is the GENOME run alone. The 147 SurfaceBench genes also carry
+  // three benchmark replicates of the same (model, variant); letting those
+  // vote turned a 2:2 tie into "contextual" for a gene the genome run
+  // called "no". Benchmark replicates are used only for a gene the genome
+  // run does not cover.
   const CATALOG_MODELS = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-8"];
+  const SONNET = "claude-sonnet-4-6";
   const triageByGene = new Map();
   const triageRows = await env.DB.prepare(
-    `SELECT gene_symbol, model, predicted_verdict, predicted_reason, created_at
+    `SELECT gene_symbol, model, run_id, predicted_verdict, predicted_reason, created_at
        FROM triage_run_public
       WHERE prompt_variant = 'ncbi'
         AND model IN ('claude-haiku-4-5','claude-sonnet-4-6','claude-opus-4-8')
@@ -1734,99 +2750,58 @@ async function handleCatalog(env, request) {
     if (!lst) { lst = []; triageReplicates.set(key, lst); }
     lst.push(r);
   }
-  // For each cell, take the most common verdict, then the most common
-  // reason within that verdict. Both tiebreak on max(created_at).
   for (const [key, reps] of triageReplicates) {
     const [gene_symbol, model] = key.split("\t");
-    const vTally = new Map();
-    const vMax = new Map();
-    for (const r of reps) {
-      vTally.set(r.predicted_verdict, (vTally.get(r.predicted_verdict) || 0) + 1);
-      const prev = vMax.get(r.predicted_verdict);
-      if (prev == null || r.created_at > prev) vMax.set(r.predicted_verdict, r.created_at);
+    let cell = reps;
+    if (model === SONNET) {
+      const genome = reps.filter((r) => r.run_id === GENOME_RUN_ID);
+      if (genome.length) cell = genome;
     }
-    const winVerdict = [...vTally.entries()].sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      const ma = vMax.get(a[0]) || "";
-      const mb = vMax.get(b[0]) || "";
-      return mb < ma ? -1 : (mb > ma ? 1 : 0);
-    })[0][0];
-    const rTally = new Map();
-    const rMax = new Map();
-    for (const r of reps) {
-      if (r.predicted_verdict !== winVerdict) continue;
-      rTally.set(r.predicted_reason, (rTally.get(r.predicted_reason) || 0) + 1);
-      const prev = rMax.get(r.predicted_reason);
-      if (prev == null || r.created_at > prev) rMax.set(r.predicted_reason, r.created_at);
-    }
-    const winReason = [...rTally.entries()].sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      const ma = rMax.get(a[0]) || "";
-      const mb = rMax.get(b[0]) || "";
-      return mb < ma ? -1 : (mb > ma ? 1 : 0);
-    })[0][0];
     let perModel = triageByGene.get(gene_symbol);
     if (!perModel) { perModel = {}; triageByGene.set(gene_symbol, perModel); }
-    perModel[model] = { verdict: winVerdict, reason: winReason };
+    perModel[model] = majorityVerdictAndReason(cell);
   }
 
-  // Pubmed_ncbi rescue lane: if Sonnet's pubmed_ncbi call is more
-  // inclusive than its ncbi call (pubmed says yes/contextual, ncbi
-  // says no), prefer pubmed for the catalog's Sonnet slot. Justified
-  // by mainbench: pubmed_ncbi catches the KLK2/SRC class of FNs that
-  // ncbi misses; never overrides ncbi-yes/contextual since pubmed-no
-  // doesn't add evidence-of-absence.
+  // Stage two (literature rescue): a gene the genome run called "no" takes
+  // the verdict of any rescue run that called it yes/contextual. A rescue
+  // "no" never overrides a positive call, since it adds no evidence of
+  // absence.
   //
-  // Pulls all pubmed_ncbi sonnet replicates, computes the same
-  // majority-verdict + within-verdict-majority-reason aggregate as
-  // the ncbi loop above, then applies the prefer-positive rule.
-  const pubmedRows = await env.DB.prepare(
-    `SELECT gene_symbol, predicted_verdict, predicted_reason, created_at
+  // Rows are selected by RUN ID, not by prompt_variant, to match
+  // scripts/build_candidate_universe_v3.py (RESCUE_RUNS), which builds the
+  // candidate universe and every count in the paper:
+  //   - A rescue cell falls back to the `naive` variant when its PubMed
+  //     fetch fails. It is still that gene's second look; filtering on
+  //     `pubmed_ncbi` dropped it and left a rescued gene showing "no".
+  //   - SurfaceBench genes carry `pubmed_ncbi` rows from the benchmark,
+  //     which are not a proteome-wide second look; treating them as one
+  //     rescued genes the paper's triage calls "no".
+  // A gene re-run in more than one lane is rescued if ANY lane is positive.
+  const rescueRows = await env.DB.prepare(
+    `SELECT gene_symbol, run_id, predicted_verdict, predicted_reason, created_at
        FROM triage_run_public
-      WHERE prompt_variant = 'pubmed_ncbi'
+      WHERE run_id IN (${RESCUE_RUN_IDS.map(() => "?").join(", ")})
         AND model = 'claude-sonnet-4-6'
         AND predicted_verdict IS NOT NULL`
-  ).all();
-  const pubmedReps = new Map();
-  for (const r of pubmedRows.results) {
-    let lst = pubmedReps.get(r.gene_symbol);
-    if (!lst) { lst = []; pubmedReps.set(r.gene_symbol, lst); }
+  ).bind(...RESCUE_RUN_IDS).all();
+  const rescueByGene = new Map();
+  for (const r of rescueRows.results) {
+    let byRun = rescueByGene.get(r.gene_symbol);
+    if (!byRun) { byRun = new Map(); rescueByGene.set(r.gene_symbol, byRun); }
+    let lst = byRun.get(r.run_id);
+    if (!lst) { lst = []; byRun.set(r.run_id, lst); }
     lst.push(r);
   }
-  for (const [gene_symbol, reps] of pubmedReps) {
-    const vTally = new Map();
-    const vMax = new Map();
-    for (const r of reps) {
-      vTally.set(r.predicted_verdict, (vTally.get(r.predicted_verdict) || 0) + 1);
-      const prev = vMax.get(r.predicted_verdict);
-      if (prev == null || r.created_at > prev) vMax.set(r.predicted_verdict, r.created_at);
-    }
-    const winVerdict = [...vTally.entries()].sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      const ma = vMax.get(a[0]) || ""; const mb = vMax.get(b[0]) || "";
-      return mb < ma ? -1 : (mb > ma ? 1 : 0);
-    })[0][0];
-    const rTally = new Map();
-    const rMax = new Map();
-    for (const r of reps) {
-      if (r.predicted_verdict !== winVerdict) continue;
-      rTally.set(r.predicted_reason, (rTally.get(r.predicted_reason) || 0) + 1);
-      const prev = rMax.get(r.predicted_reason);
-      if (prev == null || r.created_at > prev) rMax.set(r.predicted_reason, r.created_at);
-    }
-    const winReason = [...rTally.entries()].sort((a, b) => {
-      if (b[1] !== a[1]) return b[1] - a[1];
-      const ma = rMax.get(a[0]) || ""; const mb = rMax.get(b[0]) || "";
-      return mb < ma ? -1 : (mb > ma ? 1 : 0);
-    })[0][0];
-    // Apply the rescue rule.
-    const perModel = triageByGene.get(gene_symbol);
-    if (!perModel) continue;
-    const ncbi = perModel["claude-sonnet-4-6"];
-    if (!ncbi) continue;
-    if (ncbi.verdict === "no" && (winVerdict === "yes" || winVerdict === "contextual")) {
-      perModel["claude-sonnet-4-6"] = { verdict: winVerdict, reason: winReason };
-    }
+  for (const [gene_symbol, byRun] of rescueByGene) {
+    const stageOne = triageByGene.get(gene_symbol)?.[SONNET];
+    if (!stageOne || stageOne.verdict !== "no") continue;
+    const positive = RESCUE_RUN_IDS
+      .filter((id) => byRun.has(id))
+      .map((id) => majorityVerdictAndReason(byRun.get(id)))
+      .filter((c) => c.verdict === "yes" || c.verdict === "contextual");
+    if (!positive.length) continue;
+    triageByGene.get(gene_symbol)[SONNET] =
+      positive.find((c) => c.verdict === "yes") || positive[0];
   }
 
   // Track which genes we've emitted so we can append deep-dive-only
@@ -1856,18 +2831,54 @@ async function handleCatalog(env, request) {
     });
     return out.some((x) => x) ? out : undefined;
   }
+  // How many library members (l1+l2) have a DeepTMHMM v1 topology for their EXACT
+  // designed sequence. One aggregate query for the whole cohort, not per row.
+  // Deliberately a count and not a boolean: a gene can contribute several members
+  // (library_reference plus isoform and ortholog arms), and "2 of this gene's
+  // members are covered" is the thing a reviewer needs to see. Genes with none are
+  // absent from the map and get no field — never a 0, which would be
+  // indistinguishable from "not a library gene" in the UI.
+  const libTopoByGene = new Map();
+  {
+    const r = await env.DB.prepare(
+      `SELECT gene_symbol, COUNT(*) AS n
+         FROM library_topology_public
+        WHERE gene_symbol IS NOT NULL
+        GROUP BY gene_symbol`
+    )
+      .all()
+      .catch(() => null);
+    for (const row of r?.results ?? []) {
+      libTopoByGene.set(row.gene_symbol, Number(row.n));
+    }
+  }
+
   const rows = enrichedRows.results.map((u) => {
     covered.add(u.gene_symbol);
     if (u.has_deep_dive) deepSet.add(u.gene_symbol);
+      // UniProt and CSPA are scored on the SurfaceBench-recalibrated cutoffs,
+      // the same rule the paper and every figure use: UniProt expanded to
+      // TM>0 / signal-peptide>0 / strict subcellular term, CSPA tightened to
+      // high-confidence only. GO, SURFY and HPA are not recalibrated and
+      // keep their native flag. db_optimized_cutoff_public is a POSITIVE
+      // LIST — absent means 0, never "fall back to native", or the tightened
+      // CSPA members it exists to drop come straight back.
+    const upOpt = u.uniprot_optimized ? 1 : 0;
+    const cspaOpt = u.cspa_optimized ? 1 : 0;
+    const goFlag = u.go_surface_flag ? 1 : 0;
+    const surfyFlag = u.surfy_surface_flag ? 1 : 0;
+    const hpaFlag = u.hpa_surface_flag ? 1 : 0;
     const db =
-      (u.uniprot_surface_flag ? 1 : 0) |
-      (u.go_surface_flag ? 2 : 0) |
-      (u.surfy_surface_flag ? 4 : 0) |
-      (u.cspa_surface_flag ? 8 : 0) |
-      (u.hpa_surface_flag ? 16 : 0);
+      (upOpt ? 1 : 0) |
+      (goFlag ? 2 : 0) |
+      (surfyFlag ? 4 : 0) |
+      (cspaOpt ? 8 : 0) |
+      (hpaFlag ? 16 : 0);
     const row = {
       symbol: u.gene_symbol,
-      n_sources: u.n_sources_surface,
+      // Recomputed, not u.n_sources_surface: that column is the native
+      // 5-vote and would contradict the flags beside it.
+      n_sources: upOpt + goFlag + surfyFlag + cspaOpt + hpaFlag,
       db,
     };
     if (u.uniprot_acc) row.uniprot = u.uniprot_acc;
@@ -1881,6 +2892,11 @@ async function handleCatalog(env, request) {
     // independent of deep-dive coverage (viewer filters it as its own category).
     if (u.intern_grade) row.intern = u.intern_grade;
     if (u.intern_has_lit) row.intern_lit = 1;
+    // Library members whose exact ordered sequence has a v1 topology (row_schema
+    // v11). Independent of `ddf` and of the canonical-topology facets, which
+    // describe a different protein for a substantial minority of members.
+    const nLibTopo = libTopoByGene.get(u.gene_symbol);
+    if (nLibTopo) row.libtopo = nLibTopo;
     // Literature-track overall grade (Grade: high|moderate|low|no|unknown) —
     // distinct from the seq prior above, so the catalog can render a SEPARATE
     // "Internalization (literature)" column + filter. Only present once a gene
@@ -1896,7 +2912,13 @@ async function handleCatalog(env, request) {
       const ddf = projectDeepDiveFiltersFromParts(ddfPartsFromRow(u, "sa_ddf_"));
       if (ddf) {
         row.ddf = ddf;
-        attachDeepDiveClassification(row, ddf, !!u.uniprot_surface_flag);
+        // Low-literature badge gates on the OPTIMIZED UniProt call, not the
+        // native flag. The badge's own rationale is that UniProt outperformed
+        // the other sources on our positive controls -- and that result is
+        // measured under the recalibrated cutoff, which is what every figure
+        // and the paper score membership on. Gating on the native flag made
+        // the live badge disagree with the published numbers.
+        attachDeepDiveClassification(row, ddf, !!u.uniprot_optimized);
       }
     }
     return row;
@@ -1918,6 +2940,7 @@ async function handleCatalog(env, request) {
             -- Canonical-topology SCALARS only (see main catalog query).
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
+            ${surfaceMethodsSql("sa1")} AS ddf_surface_methods,
             gi.uniprot_acc AS uniprot_acc,
             si.seq_canonical_grade AS intern_grade,
             si.has_literature AS intern_has_lit,
@@ -1945,6 +2968,11 @@ async function handleCatalog(env, request) {
     if (r.intern_grade) row.intern = r.intern_grade;
     if (r.intern_has_lit) row.intern_lit = 1;
     if (r.intern_lit_grade) row.intern_lit_grade = r.intern_lit_grade;
+    // Same v11 field as the main catalog rows; an orphan deep-dive gene can still
+    // be a library member, and omitting it here would make `libtopo` depend on
+    // which of the two row builders a gene happened to come through.
+    const nOrphanLibTopo = libTopoByGene.get(sym);
+    if (nOrphanLibTopo) row.libtopo = nOrphanLibTopo;
     const t = packTriage(sym);
     if (t) row.tr = t;
     const dd = projectDeepDiveFiltersFromParts(ddfPartsFromRow(r, "ddf_"));
@@ -2046,7 +3074,26 @@ async function handleCatalog(env, request) {
       //        internalization-literature column + filter. Present only once a
       //        gene has a literature run; `intern_lit`=1 stays as the has-lit
       //        flag for back-compat. Older viewers ignore the new field.
-      row_schema: 9,
+      //   v10 = adds `ddf.surface_method_direct` / `ddf.surface_method_supporting`
+      //        (sorted method-category lists from surface_evidence.methods;
+      //        a method with a direct row is not repeated as supporting) and
+      //        `ddf.has_native_direct_surface_evidence` (a direct row in an
+      //        endogenous / mixed / knock-in system), and re-derives
+      //        `ddf.has_live_cell_surface_evidence` from the methods rows
+      //        (live cells, native expression, not a functional assay).
+      //        See projectSurfaceMethods.
+      //   v11 = adds optional top-level `libtopo` — the number of library
+      //        members (l1+l2) whose EXACT designed sequence has a DeepTMHMM v1
+      //        topology, from library_topology_public. Present only for genes
+      //        with at least one. Distinct from `ddf.has_tm` / `tm_count_band`,
+      //        which are derived from the gene's CANONICAL topology: a library
+      //        member's ORF is an Ensembl-transcript product and for a
+      //        substantial minority is a different protein from the canonical,
+      //        so the two can legitimately disagree. The per-member strings
+      //        travel on the gene record as
+      //        `deterministic_features.library_designed_topology`, not here.
+      //        Older viewers ignore the new field.
+      row_schema: 11,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
@@ -2076,9 +3123,24 @@ const BENCH_MATRIX_MODELS = [
   "claude-opus-4-8",
   "claude-sonnet-4-6",
   "claude-haiku-4-5",
+  "claude-sonnet-5",
+  "claude-opus-5",
+  "claude-haiku-5-5",
+  "claude-sonnet-5-5",
+  "claude-opus-5-5",
 ];
-const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"];
+// ncbi_effort_low = the ncbi prompt at output_config.effort="low" (Opus 5.5
+// only, whose thinking cannot be disabled).
+const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi", "ncbi_effort_low"];
 const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
+// The run that holds every SurfaceBench cell (all models x variants x 3
+// replicates, scored against the bench truth). The bench genes are also
+// in the genome-wide Sonnet sweeps and the PubMed rescue lanes, which
+// write the same (gene, claude-sonnet-4-6, ncbi | pubmed_ncbi) cells with
+// correct = 0 (those runs have no truth to score against) and a later
+// created_at, so every benchmark query must pin to this run_id or the
+// genome-run rows land in the bench cells.
+const BENCH_RUN_ID = "mainbench_canonical_v2";
 // Five gating DBs — same five the homepage CatalogTable renders. The
 // matrix used to expose two auxiliary signals (DeepTMHMM, COMPARTMENTS)
 // but those were demoted from the M1 universe gate and only confused
@@ -2086,6 +3148,187 @@ const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
 const BENCH_MATRIX_SOURCES = [
   "uniprot", "go", "surfy", "cspa", "hpa",
 ];
+
+// --- SurfaceBench cell aggregation ----------------------------------------
+// Every (gene, model, variant) cell of the bench run has three replicates.
+// The paper and data/processed/triage_bench/mainbench_canonical_v2.tsv score
+// each cell by its MAJORITY verdict, so the matrix, the export TSV and the
+// per-cell drawer all do the same. This is a line-for-line port of
+// `_collapse_to_majority` in scripts/tsv-export/export_mainbench_to_tsv.py;
+// change both together (tests/test_worker_benchmark_majority.py replays the
+// committed replicate TSV through this code and diffs it against the
+// committed majority TSV).
+//
+//   - Only replicates with a yes / contextual / no verdict vote. A refused
+//     or errored replicate (null verdict) is out of the vote and out of
+//     n_reps, so a cell with one refusal is a majority of the other two.
+//   - The binary surface vote decides the side (yes and contextual both
+//     vote surface), then the most common raw verdict on that side is the
+//     cell's verdict, then the most common reason and the most common
+//     confidence among replicates carrying that verdict.
+//   - Every tie goes to the value seen first in replicate order, which is
+//     what Python's Counter.most_common does on the replicate-ordered rows.
+//   - A cell with no valid replicate has no verdict and is not scored.
+//   - `totals` sums telemetry over ALL the cell's replicates, refused ones
+//     included, exactly like the TSV's token / cost / latency columns.
+//
+// The per-call fields (reasoning, latency, cost, tokens) describe one
+// representative replicate: the lowest-numbered replicate carrying the
+// majority verdict and reason, so the reasoning shown next to a verdict is
+// a replicate that actually made that call.
+
+function benchSurfaceVote(verdict) {
+  if (verdict === "yes" || verdict === "contextual") return true;
+  if (verdict === "no") return false;
+  return null;
+}
+
+// Most common value; ties go to the first one seen (Counter.most_common).
+function benchModeFirstSeen(values) {
+  const tally = new Map();
+  for (const v of values) tally.set(v, (tally.get(v) || 0) + 1);
+  let best = null;
+  let bestN = 0;
+  for (const [v, n] of tally) {
+    if (n > bestN) {
+      best = v;
+      bestN = n;
+    }
+  }
+  return best;
+}
+
+// Soft credit, as in the figures' is_match: yes and contextual agree with
+// each other, no agrees only with no.
+function benchSoftMatch(predicted, truth) {
+  if (!predicted || !truth) return 0;
+  if (predicted === truth) return 1;
+  return benchSurfaceVote(predicted) === true && benchSurfaceVote(truth) === true ? 1 : 0;
+}
+
+// `reps` = one cell's replicates in ascending replicate order. Returns null
+// when no replicate carries a verdict.
+function benchCellMajority(reps) {
+  const valid = reps.filter((r) => benchSurfaceVote(r.predicted_verdict) !== null);
+  if (!valid.length) return null;
+  const winSide = benchModeFirstSeen(valid.map((r) => benchSurfaceVote(r.predicted_verdict)));
+  const winReps = valid.filter((r) => benchSurfaceVote(r.predicted_verdict) === winSide);
+  const verdict = benchModeFirstSeen(winReps.map((r) => r.predicted_verdict));
+  const sameVerdict = winReps.filter((r) => r.predicted_verdict === verdict);
+  const modal = (col) => {
+    const vals = sameVerdict.map((r) => r[col]).filter((v) => v);
+    return vals.length ? benchModeFirstSeen(vals) : null;
+  };
+  const reason = modal("predicted_reason");
+  const confidence = modal("predicted_confidence");
+  const rep = sameVerdict.find((r) => reason == null || r.predicted_reason === reason) ?? sameVerdict[0];
+  return {
+    verdict,
+    reason,
+    confidence,
+    rep,
+    n_reps: valid.length,
+    agreement: Math.round((winReps.length / valid.length) * 1000) / 1000,
+  };
+}
+
+const BENCH_TOTAL_COLUMNS = [
+  "prompt_tokens", "completion_tokens", "cache_creation_tokens",
+  "cache_read_tokens", "n_web_searches", "cost_usd", "latency_s",
+];
+
+// Python 3.12+ sum() over floats is Neumaier-compensated, and the TSV's
+// totals come from it; a naive loop lands one ulp away often enough to flip
+// the sixth decimal of a cost. Same algorithm as CPython's builtin_sum.
+function benchFsum(rows, col) {
+  let sum = 0;
+  let c = 0;
+  for (const r of rows) {
+    const x = Number(r[col]) || 0;
+    const t = sum + x;
+    c += Math.abs(sum) >= Math.abs(x) ? (sum - t) + x : (x - t) + sum;
+    sum = t;
+  }
+  return c && Number.isFinite(c) ? sum + c : sum;
+}
+
+function benchCellTotals(reps) {
+  const totals = {};
+  for (const col of BENCH_TOTAL_COLUMNS) {
+    const sum = benchFsum(reps, col);
+    // toFixed rounds the exact binary value, as Python's round() does;
+    // Math.round(sum * 1e6) would round the already-perturbed product.
+    if (col === "cost_usd") totals[col] = Number(sum.toFixed(6));
+    else if (col === "latency_s") totals[col] = Number(sum.toFixed(3));
+    else totals[col] = Math.trunc(sum);
+  }
+  return totals;
+}
+
+// Read the bench run's replicates for the bench genes and aggregate them to
+// one entry per cell: Map "gene\tmodel\tvariant" -> cell. A cell's `rep` is
+// its representative replicate row (the latest replicate for a cell with no
+// verdict, so its `error` says why). The light columns of all ~8k replicate
+// rows come back in one query; the free-text fields are fetched in a second
+// query for the representative replicates only, so the Worker never pulls
+// three copies of every reasoning string out of D1.
+async function loadBenchCells(env, benchVersion, { withText = false } = {}) {
+  const variantPlaceholders = BENCH_MATRIX_VARIANTS.map(() => "?").join(",");
+  const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
+  const repRows = await env.DB.prepare(
+    `SELECT t.id, t.gene_symbol, t.model, t.prompt_variant, t.replicate,
+            t.predicted_verdict, t.predicted_reason, t.predicted_confidence,
+            t.latency_s, t.n_web_searches, t.created_at, t.error,
+            t.cost_usd, t.prompt_tokens, t.completion_tokens,
+            t.cache_creation_tokens, t.cache_read_tokens
+       FROM triage_run_public t
+      WHERE t.run_id = ?
+        AND t.gene_symbol IN (
+              SELECT gene_symbol FROM benchmark_version WHERE bench_version = ?)
+        AND t.prompt_variant IN (${variantPlaceholders})
+        AND t.model IN (${modelPlaceholders})
+      ORDER BY t.gene_symbol, t.model, t.prompt_variant, t.replicate,
+               t.created_at DESC`
+  ).bind(BENCH_RUN_ID, benchVersion, ...BENCH_MATRIX_VARIANTS, ...BENCH_MATRIX_MODELS).all();
+
+  // Group by cell, keeping one row per replicate number (the latest), the
+  // same guard handleTriageCell applies against a duplicate-replicate sync.
+  const byCell = new Map();
+  for (const r of repRows.results) {
+    const key = `${r.gene_symbol}\t${r.model}\t${r.prompt_variant}`;
+    let reps = byCell.get(key);
+    if (!reps) {
+      reps = [];
+      byCell.set(key, reps);
+    }
+    const last = reps[reps.length - 1];
+    if (last && last.replicate === r.replicate) continue;
+    reps.push(r);
+  }
+
+  const cells = new Map();
+  for (const [key, reps] of byCell) {
+    const maj = benchCellMajority(reps);
+    let rep = maj?.rep;
+    if (!rep) {
+      rep = reps[0];
+      for (const r of reps) if ((r.created_at || "") > (rep.created_at || "")) rep = r;
+    }
+    cells.set(key, { reps, maj, rep, totals: benchCellTotals(reps) });
+  }
+
+  if (withText && cells.size) {
+    const ids = [...cells.values()].map((c) => c.rep.id);
+    const textRows = await env.DB.prepare(
+      `SELECT id, predicted_key_uncertainty, verdict_reasoning
+         FROM triage_run_public
+        WHERE id IN (SELECT value FROM json_each(?))`
+    ).bind(JSON.stringify(ids)).all();
+    const textById = new Map(textRows.results.map((r) => [r.id, r]));
+    for (const c of cells.values()) c.text = textById.get(c.rep.id) ?? null;
+  }
+  return cells;
+}
 
 async function handleBenchmarkMatrix(env) {
   // 1. Pick the canonical curated benchmark — the bench_version with
@@ -2132,118 +3375,85 @@ async function handleBenchmarkMatrix(env) {
   const dbByGene = new Map();
   if (universeVersion) {
     const universeRows = await env.DB.prepare(
-      `SELECT gene_symbol, uniprot_surface_flag, go_surface_flag,
-              surfy_surface_flag, cspa_surface_flag, hpa_surface_flag,
-              n_sources_surface
-         FROM candidate_universe_public
-        WHERE universe_version = ?`
+      // SurfaceBench scores each database at its BEST — the recalibrated
+      // cutoff — because that is what the accuracy figures compare the agent
+      // against. Serving native flags here would have the benchmark table
+      // disagree with the benchmark figures. Positive list: absent -> 0.
+      `SELECT c.gene_symbol, c.uniprot_surface_flag, c.go_surface_flag,
+              c.surfy_surface_flag, c.cspa_surface_flag, c.hpa_surface_flag,
+              c.n_sources_surface,
+              COALESCE(oc.uniprot_optimized, 0) AS uniprot_optimized,
+              COALESCE(oc.cspa_optimized, 0) AS cspa_optimized
+         FROM candidate_universe_public c
+         LEFT JOIN db_optimized_cutoff_public oc ON oc.accession = c.uniprot_acc
+        WHERE c.universe_version = ?`
     ).bind(universeVersion).all();
     for (const u of universeRows.results) {
+      const upOpt = u.uniprot_optimized ? 1 : 0;
+      const cspaOpt = u.cspa_optimized ? 1 : 0;
+      const goFlag = u.go_surface_flag ? 1 : 0;
+      const surfyFlag = u.surfy_surface_flag ? 1 : 0;
+      const hpaFlag = u.hpa_surface_flag ? 1 : 0;
       dbByGene.set(u.gene_symbol, {
-        uniprot: u.uniprot_surface_flag ? 1 : 0,
-        go: u.go_surface_flag ? 1 : 0,
-        surfy: u.surfy_surface_flag ? 1 : 0,
-        cspa: u.cspa_surface_flag ? 1 : 0,
-        hpa: u.hpa_surface_flag ? 1 : 0,
-        n_sources_surface: u.n_sources_surface ?? 0,
+        uniprot: upOpt,
+        go: goFlag,
+        surfy: surfyFlag,
+        cspa: cspaOpt,
+        hpa: hpaFlag,
+        n_sources_surface: upOpt + goFlag + surfyFlag + cspaOpt + hpaFlag,
       });
     }
   }
 
-  // 4. Triage runs for the model/variant grid we care about. The
-  // partition-and-rank used to scan the whole ~19k-row genome-wide
-  // sweep (~228k cells across all model×variant combinations) and
-  // then JS-filter down to the 147 benchmark genes — that's a hot
-  // ROW_NUMBER() window over D1 that exceeded Cloudflare's Worker
-  // CPU budget (HTTP 503, cf-error 1102). Joining inside the SQL
-  // against the benchmark_version table (just 1 bound parameter for
-  // bench_version) shrinks the partition-and-rank working set to
-  // 147 genes × 3 models × 4 variants ≈ 1.7k rows — well inside the
-  // CPU budget. Runs tagged against any bench_version still count
-  // (we don't filter triage_run_public by bench_version, only by
-  // gene_symbol membership in the current bench) so the matrix
-  // keeps full Opus/Haiku coverage from earlier sweeps.
-  const wantedVariants = BENCH_MATRIX_VARIANTS;
-  const variantPlaceholders = wantedVariants.map(() => "?").join(",");
-  const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
-  const triageRows = await env.DB.prepare(
-    `WITH bench_genes AS (
-       SELECT DISTINCT gene_symbol
-         FROM benchmark_version
-        WHERE bench_version = ?
-     ),
-     ranked AS (
-       SELECT t.gene_symbol, t.model, t.prompt_variant, t.predicted_verdict,
-              t.predicted_reason, t.predicted_confidence, t.predicted_key_uncertainty,
-              t.verdict_reasoning,
-              t.correct, t.latency_s, t.n_web_searches, t.created_at, t.error,
-              t.cost_usd, t.prompt_tokens, t.completion_tokens,
-              t.cache_creation_tokens, t.cache_read_tokens,
-              ROW_NUMBER() OVER (
-                PARTITION BY t.gene_symbol, t.model, t.prompt_variant
-                ORDER BY t.created_at DESC
-              ) AS rn
-         FROM triage_run_public t
-         INNER JOIN bench_genes b ON t.gene_symbol = b.gene_symbol
-        WHERE t.prompt_variant IN (${variantPlaceholders})
-          AND t.model IN (${modelPlaceholders})
-     )
-     SELECT gene_symbol, model, prompt_variant, predicted_verdict,
-            predicted_reason, predicted_confidence, predicted_key_uncertainty,
-            verdict_reasoning,
-            correct, latency_s, n_web_searches, created_at, error,
-            cost_usd, prompt_tokens, completion_tokens,
-            cache_creation_tokens, cache_read_tokens
-       FROM ranked
-      WHERE rn = 1`
-  ).bind(benchVersion, ...wantedVariants, ...BENCH_MATRIX_MODELS).all();
+  // 4. The bench run's replicates, aggregated to one majority verdict per
+  // (gene, model, variant) cell — the same per-cell numbers the paper and
+  // mainbench_canonical_v2.tsv report (see benchCellMajority). The cell
+  // used to be the single latest replicate, which put the page a few
+  // genes off the paper on several models. Pinned to BENCH_RUN_ID: the
+  // genome-wide Sonnet sweep and the PubMed rescue lanes write the same
+  // (gene, claude-sonnet-4-6, ncbi | pubmed_ncbi) cells with no truth to
+  // score against.
+  const cells = await loadBenchCells(env, benchVersion, { withText: true });
 
-  // Build a nested map: gene → model → variant → run. The SQL JOIN
-  // above already restricts to benchmark genes, so no JS-side
-  // membership check is needed.
-  const runMap = new Map();
-  for (const r of triageRows.results) {
-    let byModel = runMap.get(r.gene_symbol);
-    if (!byModel) {
-      byModel = new Map();
-      runMap.set(r.gene_symbol, byModel);
-    }
-    let byVariant = byModel.get(r.model);
-    if (!byVariant) {
-      byVariant = new Map();
-      byModel.set(r.model, byVariant);
-    }
-    byVariant.set(r.prompt_variant, {
-      verdict: r.predicted_verdict,
-      reason: r.predicted_reason,
-      confidence: r.predicted_confidence,
-      key_uncertainty: r.predicted_key_uncertainty,
-      reasoning: r.verdict_reasoning,
-      correct: r.correct,
-      latency_s: r.latency_s,
-      n_web_searches: r.n_web_searches,
-      created_at: r.created_at,
-      error: r.error,
-      cost_usd: r.cost_usd,
-      prompt_tokens: r.prompt_tokens,
-      completion_tokens: r.completion_tokens,
-      cache_creation_tokens: r.cache_creation_tokens,
-      cache_read_tokens: r.cache_read_tokens,
-    });
-  }
-
-  // 5. Stitch. Flat verdicts dict: model → variant → run (or null when
-  // we have no data for that cell). Replaces the prior headline+alts
-  // split; the page renders all 4 variants per model as their own
-  // columns and shows each cell's verdict_reasoning on row-expand.
+  // 5. Stitch. Flat verdicts dict: model → variant → cell (or null when
+  // no replicate is on file). `correct` is the soft-credit match of the
+  // majority verdict against truth; a cell with no valid replicate keeps
+  // its refusal / error marker but has verdict and correct null, so it is
+  // never scored. `replicate` names the representative replicate whose
+  // reasoning and per-call telemetry the cell carries; `totals` sums the
+  // telemetry over all the cell's replicates.
   const rows = truthRows.results.map((t) => {
-    const byModel = runMap.get(t.gene_symbol);
     const verdicts = {};
     for (const model of BENCH_MATRIX_MODELS) {
-      const byVariant = byModel?.get(model);
       const perVariant = {};
       for (const variant of BENCH_MATRIX_VARIANTS) {
-        perVariant[variant] = byVariant?.get(variant) ?? null;
+        const c = cells.get(`${t.gene_symbol}\t${model}\t${variant}`);
+        if (!c) {
+          perVariant[variant] = null;
+          continue;
+        }
+        const { maj, rep, text } = c;
+        perVariant[variant] = {
+          verdict: maj ? maj.verdict : null,
+          reason: maj ? maj.reason : null,
+          confidence: maj ? maj.confidence : null,
+          key_uncertainty: maj ? (text?.predicted_key_uncertainty ?? null) : null,
+          reasoning: maj ? (text?.verdict_reasoning ?? null) : null,
+          correct: maj ? benchSoftMatch(maj.verdict, t.truth_verdict) : null,
+          latency_s: rep.latency_s,
+          n_web_searches: rep.n_web_searches,
+          created_at: rep.created_at,
+          error: rep.error,
+          cost_usd: rep.cost_usd,
+          prompt_tokens: rep.prompt_tokens,
+          completion_tokens: rep.completion_tokens,
+          cache_creation_tokens: rep.cache_creation_tokens,
+          cache_read_tokens: rep.cache_read_tokens,
+          replicate: rep.replicate,
+          n_reps: maj ? maj.n_reps : 0,
+          majority_agreement: maj ? maj.agreement : null,
+          totals: c.totals,
+        };
       }
       verdicts[model] = perVariant;
     }
@@ -2276,6 +3486,10 @@ async function handleBenchmarkMatrix(env) {
       models: BENCH_MATRIX_MODELS,
       variants: BENCH_MATRIX_VARIANTS,
       headline_variant: BENCH_MATRIX_HEADLINE_VARIANT,
+      // Each cell is the majority across the run's replicates (refused
+      // replicates excluded), as in the paper — not one replicate.
+      cell_aggregation: "majority_of_replicates",
+      run_id: BENCH_RUN_ID,
       n_genes: rows.length,
       rows,
     },
@@ -2313,12 +3527,28 @@ const EXPORT_COLUMNS = [
   "n_web_searches",
   "cost_usd",
   "latency_s",
+  // Why a row has no verdict: "refusal" (the model's safety classifier
+  // declined) or a runner error. Empty for a normal call. Last so existing
+  // column positions are unchanged.
+  "error",
 ];
-const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v2";
+const DEFAULT_EXPORT_RUN_ID = BENCH_RUN_ID;
 // The genome-wide Sonnet/NCBI triage sweep over the full protein-coding
 // cohort (~19k genes). Used as the run_id for the genome-wide export and
 // referenced by the /v1/meta/sizes estimator.
 const GENOME_RUN_ID = "genome_full_sonnet_ncbi_v2";
+
+// The literature-rescue runs that make up stage two of the proteome-wide
+// triage. Must equal RESCUE_RUNS in scripts/build_candidate_universe_v3.py,
+// which builds the candidate universe the paper reports
+// (tests/test_worker_catalog_rescue.py pins the two together). Order is the
+// order a positive call is taken in when two lanes are both positive.
+const RESCUE_RUN_IDS = [
+  "genome_full_sonnet_pubmed_ncbi_v1",
+  "genome_intracellular_pubmed_ncbi_v1",
+  "genome_1db_trim_pubmed_ncbi_v1",
+  "genome_optcut_zerodb_pubmed_ncbi_v1",
+];
 // Reasoning columns appended to the triage export when `with_reasoning=1`.
 // Default-off keeps the figure-input exports prose-free (see CLAUDE.md
 // "Figure-input TSV conventions" — never ship full reasoning in those);
@@ -2335,8 +3565,8 @@ const V1_ENDPOINTS = [
   { group: "Contact sites", method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}/ligands/{ligandId}/evidence", summary: "Original observations, paginated with next_cursor; omit ligands/{ligandId}/ to retrieve every observation including unnamed partners" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark", summary: "147 ground-truth labels for the current bench_version" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/{symbol}", summary: "One gene's ground-truth label + rationale" },
-  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/matrix", summary: "Full bench matrix: truth + 5 per-DB flags + verdicts[model][variant]" },
-  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/export.tsv", summary: "Long-format TSV of the bench multi-model sweep" },
+  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/matrix", summary: "Full bench matrix: truth + 5 per-DB flags + verdicts[model][variant], each the 3-replicate majority" },
+  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/export.tsv", summary: "Long-format TSV of the bench multi-model sweep, one majority row per cell" },
   { group: "Genome-wide", method: "GET", path: "/v1/catalog", summary: "Per-gene 5-DB surface-vote matrix + latest triage verdict + deep-dive flag (~19k genes)" },
   { group: "Genome-wide", method: "GET", path: "/v1/catalog/{symbol}", summary: "One gene's 5-DB surface-vote row (slim; for the per-gene page's DB-presence strip)" },
   { group: "Genome-wide", method: "GET", path: "/v1/triage/{symbol}", summary: "Every triage run for one gene, with the agent's verdict_reasoning" },
@@ -2355,6 +3585,14 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON (WITHOUT `evidence` — fetch that from /v1/genes/{symbol}/evidence)" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}/evidence", summary: "The gene's evidence ledger (quote+span items) split out of the record: { gene, evidence[], papers{} } — papers carries NCBI citation metadata (title, byline, journal, year) keyed by source_id" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}.md", summary: "Rich Markdown export (sequences, DeepTMHMM topology, AlphaFold links) — served from R2" },
+  { group: "History", method: "GET", path: "/v1/genes/{symbol}/revisions", summary: "Every archived revision of this gene's served record (newest first), with the releases each belongs to" },
+  { group: "History", method: "GET", path: "/v1/genes/{symbol}/revisions/{n}", summary: "Revision n of the record, byte-for-byte as served; also /evidence and .md" },
+  { group: "History", method: "GET", path: "/v1/releases", summary: "Numbered data releases with their GitHub tag and Zenodo version DOI" },
+  { group: "History", method: "GET", path: "/v1/releases/{version}", summary: "One release: metadata + the revision of every gene in it" },
+  { group: "History", method: "GET", path: "/v1/releases/{version}/genes/{symbol}", summary: "A gene as it was in that release; also /evidence and .md" },
+  { group: "Reproducibility", method: "GET", path: "/v1/replicates", summary: "Reproducibility replicates (NOT published records): each study with its replicate kinds and genes — e.g. deep_dive_concordance_v1, the 50-gene run-to-run study behind Supplementary Figure 16" },
+  { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates", summary: "The reproducibility replicates held for one gene (404 if none), with links to each" },
+  { group: "Reproducibility", method: "GET", path: "/v1/genes/{symbol}/replicates/{study}/{kind}", summary: "One replicate SurfaceomeRecord in full (evidence included), wrapped with reproducibility_replicate: true; kind ∈ published_snapshot · full_rerun · fixed_evidence_replay" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },
   { group: "Tag sites", method: "GET", path: "/v1/tag-sites/{symbol}", summary: "TaggedSitesFile: engineered epitope/tag insertion points (deterministic loop/disorder/terminal + literature-validated); empty-but-200 when the gene has none. isoform_pins ship static-only." },
@@ -2396,7 +3634,7 @@ async function handleV1Index(env) {
       docs: "https://surfaceome.deliverome.org/api",
       skill: "https://surfaceome.deliverome.org/surfaceome-api.skill.md",
       llms_txt: "https://surfaceome.deliverome.org/llms.txt",
-      record_markdown_template: "https://surfaceome.deliverome.org/data/surfaceome/{symbol}.md",
+      record_markdown_template: "https://api.deliverome.org/surfaceome/v1/genes/{symbol}.md",
       schema: {
         name: "SurfaceomeRecord",
         source: "src/accessible_surfaceome/tools/_shared/models.py",
@@ -2527,12 +3765,12 @@ async function handleMetaSizes(env) {
       approx: true,
       note: DEFAULT_EXPORT_RUN_ID,
     },
-    "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1": {
+    [`/v1/triage/export.tsv?run_id=${GENOME_RUN_ID}`]: {
       bytes: r0(genome.export_chars + genome.n * EXPORT_NCOLS),
       approx: true,
       note: GENOME_RUN_ID,
     },
-    "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1": {
+    [`/v1/triage/export.tsv?run_id=${GENOME_RUN_ID}&with_reasoning=1`]: {
       bytes: r0(genome.export_chars + genome.reasoning_chars + genome.n * (EXPORT_NCOLS + 2)),
       approx: true,
       note: `${GENOME_RUN_ID} + reasoning`,
@@ -2601,18 +3839,26 @@ async function handleTriageExport(env, url) {
     `       COALESCE(t.uniprot_acc, gi.uniprot_acc) AS uniprot_acc,`,
     `       COALESCE(t.hgnc_id, gi.hgnc_id) AS hgnc_id,`,
     `       COALESCE(t.ensembl_gene, gi.ensembl_gene) AS ensembl_gene,`,
-    `       COALESCE(c.uniprot_surface_flag, 0) AS db_uniprot,`,
+    // Recalibrated UniProt + CSPA, matching the catalog, the gene page and
+    // the benchmark matrix. n_db_surface is recomputed rather than read
+    // from n_sources_surface, which is the native count and would
+    // contradict the flags in the same row.
+    `       COALESCE(oc.uniprot_optimized, 0)   AS db_uniprot,`,
     `       COALESCE(c.go_surface_flag, 0)      AS db_go,`,
     `       COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,`,
-    `       COALESCE(c.cspa_surface_flag, 0)    AS db_cspa,`,
+    `       COALESCE(oc.cspa_optimized, 0)      AS db_cspa,`,
     `       COALESCE(c.hpa_surface_flag, 0)     AS db_hpa,`,
-    `       COALESCE(c.n_sources_surface, 0)    AS n_db_surface,`,
+    `       COALESCE(oc.uniprot_optimized, 0) + COALESCE(c.go_surface_flag, 0)`,
+    `         + COALESCE(c.surfy_surface_flag, 0) + COALESCE(oc.cspa_optimized, 0)`,
+    `         + COALESCE(c.hpa_surface_flag, 0)   AS n_db_surface,`,
     `       ${[...EXPORT_COLUMNS.slice(1), ...extraCols].map((c) => `t.${c}`).join(", ")}`,
     `  FROM triage_run_public t`,
     `  LEFT JOIN gene_identifier_public gi`,
     `         ON gi.hgnc_symbol = t.gene_symbol`,
     `  LEFT JOIN candidate_universe_public c`,
     `         ON c.gene_symbol = t.gene_symbol`,
+    `  LEFT JOIN db_optimized_cutoff_public oc`,
+    `         ON oc.accession = COALESCE(t.uniprot_acc, gi.uniprot_acc)`,
     `        AND c.universe_version = ?`,
     ` WHERE t.run_id = ?`,
   ];
@@ -2640,15 +3886,36 @@ async function handleTriageExport(env, url) {
 }
 
 
-// Long-format TSV: every benchmark gene × every model × every variant
-// (latest replicate per cell), with curated truth labels and per-
-// source DB votes joined in. Same data as `/v1/benchmark/matrix` but
-// reshaped from wide nested JSON to long flat TSV. Drives the
+// Long-format TSV: one row per benchmark gene × model × variant cell, with
+// curated truth labels and per-source DB votes joined in. Same cells as
+// `/v1/benchmark/matrix`, flattened: predicted_* is the cell's majority
+// over its replicates (benchCellMajority — the paper's per-cell numbers),
+// `replicate` and the per-call telemetry columns describe the cell's
+// representative replicate, and the trailing columns carry the majority's
+// n_reps / agreement, the soft-credit is_match against truth, and the
+// telemetry summed over all the cell's replicates (the `*_total` columns
+// equal mainbench_canonical_v2.tsv's token / cost / latency columns). A
+// cell whose replicates all refused keeps its row with an empty verdict,
+// n_reps 0 and an empty is_match. Drives the
 // triage-benchmark-with-reasoning Zenodo deposit file.
 //
 // Replaces an earlier truth-labels-only version of this endpoint —
 // truth labels alone are still available as the truth_* columns here,
 // or as the `/v1/benchmark[/{symbol}]` JSON endpoints.
+const BENCH_EXPORT_COLUMNS = [
+  "gene_symbol", "uniprot_acc",
+  "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa", "n_db_surface",
+  "truth_verdict", "truth_signal", "truth_reason",
+  "model", "prompt_variant", "replicate",
+  "predicted_verdict", "predicted_reason", "predicted_confidence",
+  "prompt_tokens", "completion_tokens",
+  "cache_creation_tokens", "cache_read_tokens",
+  "n_web_searches", "cost_usd", "latency_s",
+  // Additive (appended so existing column positions are unchanged).
+  "n_reps", "majority_agreement", "is_match",
+  ...BENCH_TOTAL_COLUMNS.map((c) => `${c}_total`),
+];
+
 async function handleBenchmarkExport(env) {
   // 1. Canonical curated bench_version (same rule as the matrix
   // handler — most labeled rows wins).
@@ -2664,76 +3931,71 @@ async function handleBenchmarkExport(env) {
   }
   const benchVersion = benchRow.bench_version;
 
-  // 2. Truth + DB + model output, joined inside SQL so a single round-
-  // trip returns everything. LEFT JOIN on candidate_universe_public
-  // so bench rows without a current-universe entry still appear (db
-  // columns come out 0).
+  // 2. Per-gene truth + DB votes in one round-trip. LEFT JOIN on
+  // candidate_universe_public so bench rows without a current-universe
+  // entry still appear (db columns come out 0).
   const releaseRow = await env.DB.prepare(
     `SELECT universe_version FROM candidate_universe_release
       ORDER BY loaded_at DESC LIMIT 1`
   ).first();
   const universeVersion = releaseRow?.universe_version ?? "";
-
-  const variantPlaceholders = BENCH_MATRIX_VARIANTS.map(() => "?").join(",");
-  const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
-  const rs = await env.DB.prepare(
-    `WITH ranked AS (
-       SELECT t.gene_symbol, t.model, t.prompt_variant, t.replicate,
-              t.predicted_verdict, t.predicted_reason, t.predicted_confidence,
-              t.prompt_tokens, t.completion_tokens,
-              t.cache_creation_tokens, t.cache_read_tokens,
-              t.n_web_searches, t.cost_usd, t.latency_s,
-              ROW_NUMBER() OVER (
-                PARTITION BY t.gene_symbol, t.model, t.prompt_variant
-                ORDER BY t.created_at DESC
-              ) AS rn
-         FROM triage_run_public t
-         INNER JOIN benchmark_version bv ON bv.gene_symbol = t.gene_symbol
-        WHERE bv.bench_version = ?
-          AND t.prompt_variant IN (${variantPlaceholders})
-          AND t.model IN (${modelPlaceholders})
-     )
-     SELECT r.gene_symbol, bv.uniprot_acc,
-            COALESCE(c.uniprot_surface_flag, 0) AS db_uniprot,
+  const genes = await env.DB.prepare(
+    `SELECT bv.gene_symbol, bv.uniprot_acc,
+            COALESCE(oc.uniprot_optimized, 0)   AS db_uniprot,
             COALESCE(c.go_surface_flag, 0)      AS db_go,
             COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,
-            COALESCE(c.cspa_surface_flag, 0)    AS db_cspa,
+            COALESCE(oc.cspa_optimized, 0)      AS db_cspa,
             COALESCE(c.hpa_surface_flag, 0)     AS db_hpa,
-            COALESCE(c.n_sources_surface, 0)    AS n_db_surface,
-            bv.truth_verdict, bv.truth_signal, bv.truth_reason,
-            r.model, r.prompt_variant, r.replicate,
-            r.predicted_verdict, r.predicted_reason, r.predicted_confidence,
-            r.prompt_tokens, r.completion_tokens,
-            r.cache_creation_tokens, r.cache_read_tokens,
-            r.n_web_searches, r.cost_usd, r.latency_s
-       FROM ranked r
-       INNER JOIN benchmark_version bv
-               ON bv.gene_symbol = r.gene_symbol AND bv.bench_version = ?
-       LEFT  JOIN candidate_universe_public c
-               ON c.gene_symbol = r.gene_symbol AND c.universe_version = ?
-      WHERE r.rn = 1
-      ORDER BY r.gene_symbol, r.model, r.prompt_variant`
-  ).bind(
-    benchVersion,
-    ...BENCH_MATRIX_VARIANTS, ...BENCH_MATRIX_MODELS,
-    benchVersion, universeVersion,
-  ).all();
+            COALESCE(oc.uniprot_optimized, 0) + COALESCE(c.go_surface_flag, 0)
+              + COALESCE(c.surfy_surface_flag, 0) + COALESCE(oc.cspa_optimized, 0)
+              + COALESCE(c.hpa_surface_flag, 0)  AS n_db_surface,
+            bv.truth_verdict, bv.truth_signal, bv.truth_reason
+       FROM benchmark_version bv
+       LEFT JOIN candidate_universe_public c
+              ON c.gene_symbol = bv.gene_symbol AND c.universe_version = ?
+       LEFT JOIN db_optimized_cutoff_public oc
+              ON oc.accession = bv.uniprot_acc
+      WHERE bv.bench_version = ?
+      ORDER BY bv.gene_symbol`
+  ).bind(universeVersion, benchVersion).all();
 
-  const cols = [
-    "gene_symbol", "uniprot_acc",
-    "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa", "n_db_surface",
-    "truth_verdict", "truth_signal", "truth_reason",
-    "model", "prompt_variant", "replicate",
-    "predicted_verdict", "predicted_reason", "predicted_confidence",
-    "prompt_tokens", "completion_tokens",
-    "cache_creation_tokens", "cache_read_tokens",
-    "n_web_searches", "cost_usd", "latency_s",
-  ];
-  const headers = cols.join("\t");
-  const body = rs.results
-    .map((r) => cols.map((c) => tsvCell(r[c])).join("\t"))
-    .join("\n");
-  return tsv(`${headers}\n${body}\n`, { ttl: CACHE_TTL_LONG });
+  // 3. The majority-aggregated cells, emitted gene → model → variant.
+  const cells = await loadBenchCells(env, benchVersion);
+  const models = [...BENCH_MATRIX_MODELS].sort();
+  const variants = [...BENCH_MATRIX_VARIANTS].sort();
+  const lines = [];
+  for (const g of genes.results) {
+    for (const model of models) {
+      for (const variant of variants) {
+        const c = cells.get(`${g.gene_symbol}\t${model}\t${variant}`);
+        if (!c) continue;
+        const { maj, rep, totals } = c;
+        const row = {
+          ...g,
+          model,
+          prompt_variant: variant,
+          replicate: rep.replicate,
+          predicted_verdict: maj?.verdict ?? null,
+          predicted_reason: maj?.reason ?? null,
+          predicted_confidence: maj?.confidence ?? null,
+          prompt_tokens: rep.prompt_tokens,
+          completion_tokens: rep.completion_tokens,
+          cache_creation_tokens: rep.cache_creation_tokens,
+          cache_read_tokens: rep.cache_read_tokens,
+          n_web_searches: rep.n_web_searches,
+          cost_usd: rep.cost_usd,
+          latency_s: rep.latency_s,
+          n_reps: maj ? maj.n_reps : 0,
+          majority_agreement: maj ? maj.agreement : null,
+          is_match: maj ? benchSoftMatch(maj.verdict, g.truth_verdict) : null,
+        };
+        for (const col of BENCH_TOTAL_COLUMNS) row[`${col}_total`] = totals[col];
+        lines.push(BENCH_EXPORT_COLUMNS.map((col) => tsvCell(row[col])).join("\t"));
+      }
+    }
+  }
+  const headers = BENCH_EXPORT_COLUMNS.join("\t");
+  return tsv(`${headers}\n${lines.join("\n")}\n`, { ttl: CACHE_TTL_LONG });
 }
 
 
@@ -2791,10 +4053,10 @@ async function handleInternalization(env, symbol) {
 // Per-(gene, model, variant) replicate detail — backs the benchmark
 // RationaleDrawer's "majority reason first, then all reps on scroll" view.
 // Returns every replicate for the cell (so the drawer can show the
-// per-rep spread), plus a computed `majority` block (the binary
-// surface-vote majority + the winning-side representative replicate's
-// verdict/reason/reasoning). Lazy-loaded by the drawer on open, so the
-// /benchmark/matrix payload stays single-rep + small.
+// per-rep spread), plus a computed `majority` block — the same majority
+// the /benchmark/matrix cell carries (benchCellMajority), with the
+// representative replicate's reasoning. Lazy-loaded by the drawer on open,
+// so the matrix payload carries one reasoning string per cell.
 async function handleTriageCell(env, symbol, model, variant) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -2803,7 +4065,7 @@ async function handleTriageCell(env, symbol, model, variant) {
   if (!BENCH_MATRIX_MODELS.includes(model)) return badRequest("invalid_model");
   if (!BENCH_MATRIX_VARIANTS.includes(variant)) return badRequest("invalid_variant");
   // Scope to the canonical bench run — without this, a gene that also
-  // appears in the whole-genome sweep (genome_full_sonnet_ncbi_v1, same
+  // appears in the whole-genome sweep (genome_full_sonnet_ncbi_v2, same
   // sonnet/ncbi cell) would have its rows collide with the bench reps.
   // One row per replicate number (latest by created_at) so a stray
   // duplicate-replicate row from a bad sync can't surface as two "Rep N".
@@ -2827,40 +4089,24 @@ async function handleTriageCell(env, symbol, model, variant) {
             cache_creation_tokens, cache_read_tokens
        FROM ranked WHERE rn = 1
       ORDER BY replicate`
-  ).bind(DEFAULT_EXPORT_RUN_ID, sym, model, variant).all();
+  ).bind(BENCH_RUN_ID, sym, model, variant).all();
   const reps = rows.results;
-  // Binary surface-vote majority over valid-verdict reps (yes/contextual =
-  // surface; no = not-surface). Representative = the most common raw
-  // verdict on the winning side, with its reason + free-text reasoning.
-  const surfaceVote = (v) =>
-    (v === "yes" || v === "contextual") ? true : (v === "no" ? false : null);
-  const valid = reps.filter((r) => surfaceVote(r.predicted_verdict) !== null);
-  let majority = null;
-  if (valid.length) {
-    const tally = new Map();
-    for (const r of valid) {
-      const s = surfaceVote(r.predicted_verdict);
-      tally.set(s, (tally.get(s) || 0) + 1);
-    }
-    const ranked = [...tally.entries()].sort((a, b) => b[1] - a[1]);
-    const winSide = ranked[0][0];
-    const winReps = valid.filter((r) => surfaceVote(r.predicted_verdict) === winSide);
-    // Representative raw verdict = most common on the winning side.
-    const vTally = new Map();
-    for (const r of winReps) {
-      vTally.set(r.predicted_verdict, (vTally.get(r.predicted_verdict) || 0) + 1);
-    }
-    const repVerdict = [...vTally.entries()].sort((a, b) => b[1] - a[1])[0][0];
-    const rep = winReps.find((r) => r.predicted_verdict === repVerdict);
-    majority = {
-      verdict: repVerdict,
-      reason: rep?.predicted_reason ?? null,
-      reasoning: rep?.verdict_reasoning ?? null,
-      confidence: rep?.predicted_confidence ?? null,
-      n_reps: valid.length,
-      agreement: Math.round((winReps.length / valid.length) * 1000) / 1000,
-    };
-  }
+  // The same majority the matrix serves for this cell (benchCellMajority):
+  // binary surface vote over valid-verdict reps, then the modal verdict,
+  // reason and confidence on the winning side, with the representative
+  // replicate's free-text reasoning.
+  const maj = benchCellMajority(reps);
+  const majority = maj
+    ? {
+        verdict: maj.verdict,
+        reason: maj.reason,
+        reasoning: maj.rep.verdict_reasoning ?? null,
+        confidence: maj.confidence,
+        replicate: maj.rep.replicate,
+        n_reps: maj.n_reps,
+        agreement: maj.agreement,
+      }
+    : null;
   return json({
     gene_symbol: sym,
     model,
@@ -3290,11 +4536,17 @@ async function handleCatalogOne(env, symbol) {
             u.n_sources_surface,
             u.uniprot_surface_flag, u.go_surface_flag, u.surfy_surface_flag,
             u.cspa_surface_flag, u.hpa_surface_flag,
+            COALESCE(oc.uniprot_optimized, 0) AS uniprot_optimized,
+            COALESCE(oc.cspa_optimized, 0) AS cspa_optimized,
             sb.n_sites AS sb_n_sites,
             CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
+       -- Recalibrated UniProt + CSPA membership, matching handleCatalog.
+       -- Positive list: absent -> 0, never a native fallback.
+       LEFT JOIN db_optimized_cutoff_public oc
+              ON oc.accession = COALESCE(gi.uniprot_acc, u.uniprot_acc)
        LEFT JOIN (SELECT DISTINCT gene_symbol FROM surface_annotation) sa
               ON sa.gene_symbol = u.gene_symbol
       WHERE u.gene_symbol = ? COLLATE NOCASE
@@ -3303,16 +4555,22 @@ async function handleCatalogOne(env, symbol) {
   ).bind(sym, release.universe_version).first();
   if (!r) return notFound("gene_not_in_universe");
   const flag = (v) => (v ? 1 : 0);
+  const upOpt = flag(r.uniprot_optimized);
+  const cspaOpt = flag(r.cspa_optimized);
+  const goFlag = flag(r.go_surface_flag);
+  const surfyFlag = flag(r.surfy_surface_flag);
+  const hpaFlag = flag(r.hpa_surface_flag);
   return json({
     symbol: r.gene_symbol,
     uniprot: r.uniprot_acc ?? "",
-    n_sources: r.n_sources_surface ?? 0,
+    // Recomputed from the recalibrated flags, not the table's native count.
+    n_sources: upOpt + goFlag + surfyFlag + cspaOpt + hpaFlag,
     db: {
-      uniprot: flag(r.uniprot_surface_flag),
-      go: flag(r.go_surface_flag),
-      surfy: flag(r.surfy_surface_flag),
-      cspa: flag(r.cspa_surface_flag),
-      hpa: flag(r.hpa_surface_flag),
+      uniprot: upOpt,
+      go: goFlag,
+      surfy: surfyFlag,
+      cspa: cspaOpt,
+      hpa: hpaFlag,
     },
     deep_dive: r.has_deep_dive === 1,
     surface_bind_sites:
@@ -3370,12 +4628,115 @@ async function handleTagSites(env, symbol) {
     plddt: r.plddt ?? null,
     conservation_rank: r.conservation_rank ?? null,
     median_conservation: r.median_conservation ?? null,
+    // Additive: the agent metadata that used to be concatenated into
+    // `rationale` as "[validation: ...; position: ...]". An older viewer
+    // ignores unknown fields; a newer one renders them as badges.
+    validation_level: r.validation_level ?? null,
+    position_evidence: r.position_evidence ?? null,
+    source_tier: r.source_tier ?? null,
+    cited_tag_residue: r.cited_tag_residue ?? null,
+    entailment_verified:
+      r.entailment_verified == null ? null : r.entailment_verified === 1,
+    // Which proteoform frame the citation numbered in, when it was not the
+    // protein's own ("mature", "isoform:P54289-2"). Null is the ordinary case.
+    // Additive: an older viewer ignores it, a newer one renders it as a badge —
+    // and without it a position recovered from a foreign frame looks identical
+    // to one the paper stated directly.
+    position_frame: r.position_frame ?? null,
   }));
+
+  // Per-GENE facts, which the per-SITE table cannot carry. Without these a gene
+  // the agent searched and found nothing in is indistinguishable from one
+  // nobody looked at — it has no site rows either way — and the published
+  // intracellular / function-abrogating positions have nowhere to live.
+  // LEFT JOIN semantics: absent row => never searched, which is the claim.
+  //
+  // A gene can carry SEVERAL searches. The table is keyed
+  // (gene_symbol, candidate_id, run_series) so the enrichment pass can record a
+  // second one without overwriting the first — 1,415 of its rows are dated
+  // zeros and each costs a real literature search to reproduce. So every row is
+  // read and the choice is made HERE, rather than by ORDER BY + .first(): the
+  // rows are needed anyway for the union and the array below, and a `.first()`
+  // without an ORDER BY would let SQLite pick, which makes one gene answer
+  // differently from one request to the next and caches per POP.
+  let geneRows = [];
+  try {
+    const res = await env.DB.prepare(
+      `SELECT gene_symbol, candidate_id, run_series, prompt_sha, prompt_version,
+              searched_at, n_papers, n_sites, other_positions_json, notes
+         FROM tag_site_gene_public WHERE gene_symbol = ? COLLATE NOCASE`
+    )
+      .bind(sym)
+      .all();
+    geneRows = res?.results ?? [];
+  } catch {
+    // Table not provisioned yet (Worker deployed before the sync): degrade to
+    // the previous shape rather than 500, exactly as the site query does.
+    geneRows = [];
+  }
+  // Newest first, then by series and member so equal timestamps still give one
+  // fixed order. Total: no two rows share all three.
+  geneRows = geneRows.slice().sort((a, b) =>
+    String(b.searched_at ?? "").localeCompare(String(a.searched_at ?? "")) ||
+    String(b.run_series ?? "").localeCompare(String(a.run_series ?? "")) ||
+    String(a.candidate_id ?? "").localeCompare(String(b.candidate_id ?? ""))
+  );
+  const searches = geneRows.map((r) => ({
+    run_series: r.run_series ?? null,
+    candidate_id: r.candidate_id ?? "",
+    prompt_sha: r.prompt_sha ?? null,
+    prompt_version: r.prompt_version ?? null,
+    searched_at: r.searched_at ?? null,
+    n_papers: r.n_papers ?? null,
+    n_sites: r.n_sites ?? null,
+  }));
+  // The existing top-level fields describe the most recent search, so "was this
+  // searched, and when" stays true and becomes more current.
+  const gene = geneRows[0] ?? null;
+
+  // UNION, not the newest row's list. A published cytoplasm-facing or
+  // function-abrogating insertion is a fact about the protein; it does not stop
+  // being one because a later pass did not re-cite it, and taking only the
+  // newest list would drop the other pass's with nothing on the page to say so.
+  // Deduped on the serialized entry, since both passes citing the same paper is
+  // the expected case rather than the odd one.
+  const seenPositions = new Set();
+  const otherPositions = [];
+  for (const row of geneRows) {
+    if (!row?.other_positions_json) continue;
+    let parsed = [];
+    try {
+      parsed = JSON.parse(row.other_positions_json) || [];
+    } catch {
+      parsed = [];
+    }
+    for (const entry of parsed) {
+      const key = JSON.stringify(entry);
+      if (seenPositions.has(key)) continue;
+      seenPositions.add(key);
+      otherPositions.push(entry);
+    }
+  }
+
   return json({
+    // Unchanged meaning for existing consumers: "are there sites to draw".
     has_data: sites.length > 0,
     gene_symbol: rows[0]?.gene_symbol ?? sym,
     uniprot_acc: rows[0]?.uniprot_acc ?? "",
     sites,
+    // Presence of prompt_sha is the claim "this gene was searched", which is
+    // what lets the viewer say "Literature-validated (0)" instead of nothing.
+    prompt_sha: gene?.prompt_sha ?? null,
+    prompt_version: gene?.prompt_version ?? null,
+    generated_at: gene?.searched_at ?? null,
+    n_papers_searched: gene?.n_papers ?? null,
+    literature_other_positions: otherPositions,
+    literature_notes: gene?.notes ?? null,
+    // Additive: every search this gene has had, newest first, each named by its
+    // series and the library member it describes ('' for a gene-level search).
+    // The only surface on which a per-member answer is visible at all; an older
+    // viewer ignores it.
+    searches,
   });
 }
 
@@ -3407,8 +4768,55 @@ async function handleGeneMarkdown(env, symbol) {
   });
 }
 
+// D1 refuses queries while a database export runs ("Currently processing a
+// long-running export"), and transiently when overloaded. Those used to escape
+// as uncaught exceptions, so every uncached request failed with a 500 for the
+// length of the export (345 such errors across two backups on 2026-10-17/18).
+// Answer 503 + Retry-After instead, never cached, so clients and the viewer
+// can retry and no error page is stored at the edge.
+const D1_BUSY_PATTERNS = [
+  /long-running export/i,
+  /D1 DB is overloaded/i,
+  /overloaded/i,
+  /Network connection lost/i,
+  /storage operation exceeded timeout/i,
+];
+
+function isD1Busy(e) {
+  const msg = String(e?.message ?? e ?? "");
+  return D1_BUSY_PATTERNS.some((re) => re.test(msg));
+}
+
+function databaseBusy() {
+  return new Response(
+    JSON.stringify({ error: "database_busy", retry_after_s: 30 }, null, 2),
+    {
+      status: 503,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store",
+        "Retry-After": "30",
+        ...CORS_HEADERS,
+      },
+    },
+  );
+}
+
 export default {
   async fetch(request, env, ctx) {
+    try {
+      return await routeRequest(request, env, ctx);
+    } catch (e) {
+      if (isD1Busy(e)) {
+        console.warn("d1_busy", e?.message);
+        return databaseBusy();
+      }
+      throw e;
+    }
+  },
+};
+
+async function routeRequest(request, env, ctx) {
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -3469,11 +4877,37 @@ export default {
     // params are cache-busting noise the zone Cache Rule already strips).
     if (path === "/v1/triage/export.tsv") return withEdgeCache(request, env, ctx, () => handleTriageExport(env, url), { includeQuery: true });
     if (path === "/v1/meta/sizes") return withEdgeCache(request, env, ctx, () => handleMetaSizes(env));
+    if (path === "/v1/releases") return withEdgeCache(request, env, ctx, () => handleReleaseList(env));
+    if (path === "/v1/replicates") return withEdgeCache(request, env, ctx, () => handleReplicateIndex(env));
     // Feedback endpoints are user-specific / write-adjacent — never cache.
     if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 
     let m;
+    // Reproducibility replicates (API-only) — more specific than /v1/genes/{sym}.
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/replicates$/))) return withEdgeCache(request, env, ctx, () => handleGeneReplicates(env, m[1]));
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/replicates\/([^/]+)\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleGeneReplicate(env, m[1], m[2], m[3]));
+    // Record history — more specific than every /v1/genes/{sym}… route below.
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions$/))) return withEdgeCache(request, env, ctx, () => handleRevisionList(env, m[1]));
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)\.md$/))) return handleRevisionBody(env, m[1], m[2], "md");
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)\/evidence$/))) return handleRevisionBody(env, m[1], m[2], "evidence");
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/revisions\/([^/]+)$/))) return handleRevisionBody(env, m[1], m[2], "record");
+    // Each /v1/releases/{version}... match checks bareVersionRedirect first
+    // (301 to the bare form on a `v`-prefixed version) before dispatching —
+    // see bareVersionRedirect's comment for why that has to happen BEFORE
+    // withEdgeCache/handler, not inside the handler.
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\.md$/))) {
+      return bareVersionRedirect(m[1], `/genes/${m[2]}.md`) || handleReleaseGene(env, m[1], m[2], "md");
+    }
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)\/evidence$/))) {
+      return bareVersionRedirect(m[1], `/genes/${m[2]}/evidence`) || handleReleaseGene(env, m[1], m[2], "evidence");
+    }
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)\/genes\/([^/]+)$/))) {
+      return bareVersionRedirect(m[1], `/genes/${m[2]}`) || handleReleaseGene(env, m[1], m[2], "record");
+    }
+    if ((m = path.match(/^\/v1\/releases\/([^/]+)$/))) {
+      return bareVersionRedirect(m[1]) || withEdgeCache(request, env, ctx, () => handleRelease(env, m[1]));
+    }
     // `.md` must be tested before the bare record route: `([^/]+)` would
     // otherwise swallow the `.md` suffix and route to handleGene.
     if ((m = path.match(/^\/v1\/genes\/([^/]+)\.md$/))) return withEdgeCache(request, env, ctx, () => handleGeneMarkdown(env, m[1]));
@@ -3491,13 +4925,12 @@ export default {
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleOrthologs(env, m[1]));
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
-    // /v1/triage/:symbol route). model = claude-<name>-<n>-<n>; variant
-    // = naive|ncbi|web_ncbi|pubmed_ncbi.
+    // /v1/triage/:symbol route). model = claude-<name>-<n>[-<n>]; variant
+    // = naive|ncbi|web_ncbi|pubmed_ncbi|ncbi_effort_low.
     if ((m = path.match(/^\/v1\/triage\/([^/]+)\/([A-Za-z0-9._-]+)\/([a-z_]+)$/))) {
       return withEdgeCache(request, env, ctx, () => handleTriageCell(env, m[1], m[2], m[3]));
     }
     if ((m = path.match(/^\/v1\/triage\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleTriage(env, m[1]));
 
     return notFound("route_not_found");
-  },
-};
+}

@@ -43,11 +43,60 @@ def _signal_peptide_end(topo: dict[int, str], length: int) -> int:
     return i - 1  # last 'S' position
 
 
+def _c_terminus_cleaved(
+    signals: dict[str, Any], length: int
+) -> tuple[int, int] | None:
+    """The C-terminal propeptide covering residue ``length``, if any.
+
+    A GPI-anchored protein's C-terminal propeptide is cleaved at the omega site
+    and replaced by the anchor, so the precursor C-terminus is not a position on
+    the mature protein. The topology string cannot see this: it ends
+    extracellular either way.
+
+    The mechanism is worth stating correctly, because the obvious guess is wrong.
+    A tag appended there is not simply carried off with the propeptide -- the GPI
+    signal has to BE the C-terminus to be recognised, so appending past it
+    prevents anchoring instead. Either way the result is not a surface-anchored
+    tagged protein, which is what this lane claims to propose. The literature
+    does it the other way round: IgSF21's HA tag went in "4 aa residues upstream
+    of the putative C-terminal GPI anchor signal sequence" (Tanabe et al. 2017,
+    PMID 28864826) and CA-IV's HA tag REPLACED the anchor rather than following
+    it (Lin et al. 2025, PMID 41175373).
+
+    Only a propeptide COVERING the C-terminus counts. An N-terminal or internal
+    propeptide says nothing about that end, and refusing on the mere presence of
+    a Propeptide feature would be the over-broad version of this.
+    """
+    span = signals.get("propeptide")
+    if not span:
+        return None
+    start, end = int(span[0]), int(span[1])
+    return (start, end) if start <= length <= end else None
+
+
 def terminal_candidates(
-    signals: dict[str, Any], *, gene_symbol: str, uniprot_acc: str
+    signals: dict[str, Any],
+    *,
+    gene_symbol: str,
+    uniprot_acc: str,
+    rejected_sink: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Emit the applicable terminal tag sites (ecto N-term, ecto C-term) plus a
-    C-terminal snorkel fallback when the C-terminus is not extracellular."""
+    C-terminal snorkel fallback when the C-terminus is not extracellular.
+
+    A C-terminus inside a cleaved propeptide is REFUSED — categorically, not
+    ranked down. Cohort-wide, 115 of the 981 deterministic ``terminal_c`` rows in
+    ``tag_site_public`` are on genes NetGPI calls anchored, and every one sits
+    past its omega site at the full precursor length: the one position guaranteed
+    absent from the mature chain. That is the same
+    category as a glycosylation sequon ("this residue has a job"), not the
+    threshold category where this repo has learned to rank instead of veto.
+
+    ``rejected_sink`` receives each refusal, because a veto whose false
+    negatives leave no trace is how three bad gates survived here until audits
+    went looking. Without it a reader cannot tell "no C-terminal site because it
+    is cleaved" from "no C-terminal site because the terminus is intracellular".
+    """
     seq: str = signals["sequence"]
     topo: dict[int, str] = signals["topology"]
     plddt: dict[int, float] = signals.get("plddt") or {}
@@ -114,6 +163,30 @@ def terminal_candidates(
 
     # Extracellular C-terminus -> direct C-terminal tag (junction AFTER residue L).
     c_term_ec = _extracellular(c_state)
+    cleaved = _c_terminus_cleaved(signals, length)
+    if cleaved and (c_term_ec or c_state in ("I", "M")):
+        # Refused for BOTH the direct tag and the snorkel below: a snorkel
+        # presents a C-terminal tag through a TM-snorkeling linker, so it needs
+        # a C-terminus to attach to. Emitting it here would relabel the same
+        # dead position rather than offer an alternative.
+        if rejected_sink is not None:
+            rejected_sink.append(
+                {
+                    "gene_symbol": gene_symbol,
+                    "uniprot_acc": uniprot_acc,
+                    "site_kind": "terminal_c",
+                    "insert_after_residue": length,
+                    "gate": "propeptide_cleaved",
+                    "reason": (
+                        f"residue {length} lies in the cleaved C-terminal "
+                        f"propeptide {cleaved[0]}-{cleaved[1]}; the terminus is "
+                        "removed and replaced (GPI anchor) before the protein "
+                        "reaches the surface"
+                    ),
+                }
+            )
+        c_term_ec = False
+        c_state = "cleaved"
     if c_term_ec:
         out.append(
             tagged_site(
