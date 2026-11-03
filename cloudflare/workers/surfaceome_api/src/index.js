@@ -4742,12 +4742,19 @@ function isD1Busy(e) {
 // Anonymous usage events: POST /v1/events
 //
 // The viewer beacons one event per click on a link or button so we can see
-// which pages and controls people use. Each event becomes one Workers
+// which pages and controls people use. Each click becomes one Workers
 // Analytics Engine data point of (page kind, gene, element kind, label) and
 // nothing else: no IP, user agent, country, cookie or visitor id is written,
-// so events can't be joined into a visitor or a session. The IP is used only
-// by the in-memory per-IP rate limiter, as on every other route. The viewer's
-// /privacy page describes this; keep the two in step.
+// so clicks can't be joined into a visitor or a session.
+//
+// It also beacons one "pageview" per page, for a daily unique-visitor count.
+// That data point carries a visitor hash in place of a label: SHA-256 of a
+// random per-day salt, the IP and the user agent, truncated. The salt lives in
+// KV for 48 hours and is never written anywhere else, so once it expires a
+// hash can't be recomputed from an IP; the same person gets a new hash every
+// day, and the IP and user agent themselves are never stored. Counting
+// distinct hashes per day gives daily unique visitors and nothing finer. The
+// viewer's /privacy page describes all of this; keep the two in step.
 //
 // The endpoint always answers 204, whatever the body, so a beacon never
 // surfaces an error in the visitor's console and a junk payload learns
@@ -4755,7 +4762,12 @@ function isD1Busy(e) {
 // ---------------------------------------------------------------------------
 
 const USAGE_EVENT_MAX_BODY = 2048;
-const USAGE_EVENT_KINDS = new Set(["link", "external", "button"]);
+const USAGE_EVENT_KINDS = new Set(["link", "external", "button", "pageview"]);
+const USAGE_SALT_TTL_S = 48 * 3600;
+// Re-read the salt from KV this often: if two isolates race to create a new
+// day's salt, they converge on KV's winner within a few minutes.
+const USAGE_SALT_MEMO_MS = 5 * 60 * 1000;
+const usageSaltMemo = { day: "", salt: "", at: 0 };
 const USAGE_SECTIONS = new Set([
   "benchmark", "compare", "api", "prompts", "reproducibility", "privacy",
 ]);
@@ -4780,6 +4792,31 @@ export function cleanUsageLabel(label) {
   return s.slice(0, 80);
 }
 
+/** Today's (UTC) visitor-hash salt: created on first use, kept in KV for 48 h. */
+async function usageDailySalt(env, now = Date.now()) {
+  const kv = env.RECORD_CACHE;
+  if (!kv) return "";
+  const day = new Date(now).toISOString().slice(0, 10);
+  if (usageSaltMemo.day === day && now - usageSaltMemo.at < USAGE_SALT_MEMO_MS) return usageSaltMemo.salt;
+  const key = `usage:salt:${day}`;
+  let salt = await kv.get(key);
+  if (!salt) {
+    const bytes = crypto.getRandomValues(new Uint8Array(32));
+    salt = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+    await kv.put(key, salt, { expirationTtl: USAGE_SALT_TTL_S });
+  }
+  Object.assign(usageSaltMemo, { day, salt, at: now });
+  return salt;
+}
+
+/** Truncated SHA-256 of salt, IP and user agent; "" when there is no salt. */
+export async function usageVisitorHash(salt, ip, userAgent) {
+  if (!salt) return "";
+  const data = new TextEncoder().encode(`${salt}|${ip}|${userAgent}`);
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", data));
+  return [...digest.slice(0, 8)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function handleUsageEvent(request, env) {
   const done = () => new Response(null, { status: 204, headers: { ...CORS_HEADERS, "Cache-Control": "no-store" } });
   if (!env.USAGE_EVENTS) return done();
@@ -4794,9 +4831,23 @@ async function handleUsageEvent(request, env) {
   }
   if (!ev || typeof ev !== "object" || typeof ev.path !== "string" || !ev.path.startsWith("/")) return done();
   if (!USAGE_EVENT_KINDS.has(ev.kind)) return done();
+  const { page, gene } = classifyUsagePage(ev.path.slice(0, 120));
+  if (ev.kind === "pageview") {
+    const visitor = await usageVisitorHash(
+      await usageDailySalt(env),
+      request.headers.get("CF-Connecting-IP") || "",
+      request.headers.get("User-Agent") || "",
+    );
+    if (!visitor) return done();
+    env.USAGE_EVENTS.writeDataPoint({
+      indexes: [page],
+      blobs: [page, gene, "pageview", visitor],
+      doubles: [1],
+    });
+    return done();
+  }
   const label = cleanUsageLabel(ev.label ?? "");
   if (!label) return done();
-  const { page, gene } = classifyUsagePage(ev.path.slice(0, 120));
   env.USAGE_EVENTS.writeDataPoint({
     indexes: [page],
     blobs: [page, gene, ev.kind, label],
