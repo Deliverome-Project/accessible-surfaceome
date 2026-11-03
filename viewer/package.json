@@ -14,11 +14,11 @@
     "safe-add": "npm install --before=\"$(date -u -v -7d +%Y-%m-%d)\""
   },
   "dependencies": {
-    "@tanstack/react-virtual": "^3.14.13",
+    "@tanstack/react-virtual": "^3.14.22",
     "3dmol": "^2.5.5",
-    "next": "16.3.8",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1"
   },
@@ -26,7 +26,7 @@
     "postcss": "^8.5.23",
     "sharp": ">=0.35.4",
     "nanoid": "^3.3.18",
-    "undici": "^7.29.0"
+    "undici": "^7.30.1"
   },
   "engines": {
     "node": "^24"
@@ -36,6 +36,6 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "typescript": "^5.8.2",
-    "wrangler": "^4.102.0"
+    "wrangler": "^4.152.0"
   }
 }
