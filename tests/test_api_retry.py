@@ -20,7 +20,7 @@ from typing import Any
 from unittest.mock import MagicMock, patch
 
 import anthropic
-import httpx
+import httpx2
 import pytest
 
 from accessible_surfaceome.agents._support.api_retry import (
@@ -28,16 +28,16 @@ from accessible_surfaceome.agents._support.api_retry import (
 )
 
 
-def _make_response(status: int) -> httpx.Response:
-    """Synthetic httpx.Response for ``APIStatusError(response=...)``.
+def _make_response(status: int) -> httpx2.Response:
+    """Synthetic httpx2.Response for ``APIStatusError(response=...)``.
 
     ``APIStatusError`` requires a non-None ``response`` because it
     pulls ``status_code`` off it (and our retry predicate reads the
     same attribute). ``request`` is supplied because httpx requires
     it on a manually-constructed Response.
     """
-    req = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
-    return httpx.Response(status_code=status, request=req)
+    req = httpx2.Request("POST", "https://api.anthropic.com/v1/messages")
+    return httpx2.Response(status_code=status, request=req)
 
 
 def _rate_limit_error() -> anthropic.RateLimitError:
