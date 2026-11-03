@@ -532,6 +532,13 @@ def download_main(argv: list[str] | None = None) -> None:
             "compara_version": args.compara_version,
             "n_input_records": len(records),
             "n_unique_query_genes": len(all_query_ids),
+            # The ENSGs this pull ASKED about, not just the ones that came
+            # back with a hit. A gene with no paralogs produces no output row,
+            # so a consumer comparing its wanted-set against the output CSV
+            # cannot tell "never queried" from "queried, genuinely has none".
+            # run_topology_sweep's cache-validity check made exactly that
+            # mistake and wiped a complete cache over 25 paralog-free genes.
+            "queried_ensembl_gene_ids": sorted(all_query_ids),
             "n_raw_paralog_rows": len(rows),
             "n_top_n_rows": len(kept),
             "top_n_per_gene": args.top_n_per_gene,

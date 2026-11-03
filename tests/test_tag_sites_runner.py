@@ -1,10 +1,24 @@
-from accessible_surfaceome.agents.tag_site import runner as R
 import types
 
-from accessible_surfaceome.agents.tag_site.schema import TagSiteProposal, TagSiteResult
+from pydantic import ValidationError
 from typing import cast
+
+import pytest
 from anthropic import Anthropic
+
+from accessible_surfaceome.agents.tag_site import runner as R
+from accessible_surfaceome.agents.tag_site.schema import TagSiteProposal, TagSiteResult
 from accessible_surfaceome.tools._shared.http import CachedHTTP
+
+
+@pytest.fixture(autouse=True)
+def _isolate_discovery_cache(tmp_path, monkeypatch):
+    """Keep every run in this module off the repo's real cache directory.
+
+    ``run_tag_site_agent`` loads and SAVES a per-gene discovery cache, so tests
+    driving it with a stub gene wrote ``data/external/tag_site_discovery/X.json``
+    into the working tree."""
+    monkeypatch.setattr(R, "DISCOVERY_CACHE_DIR", tmp_path / "discovery")
 
 
 def _paper(*, pmid=None, doi=None, pmc_id=None, title="", abstract="", year=None, is_preprint=False):
@@ -27,11 +41,12 @@ def _site(rank, *, ev="published tag insertion at this exact site",
           val="not_measured", tier="paper", res=100):
     return TagSiteProposal(
         rank=rank, site_type="internal", insert_after_residue=res,
-        residue_before="A", residue_after="B", topology_state="extracellular",
+        residue_before="A", residue_after="A", topology_state="extracellular",
         tag_type="ALFA", evidence_type=ev, position_evidence="validated",
         cited_tag_residue=res, evidence_detail="d",
         functional_or_expression_impact_measured="x",
         validation_level=val, source_tier=tier, supporting_pmid=123,
+        supporting_quote="ALFA inserted in the ectodomain after G101.",
         rationale="r", confidence="high",
     )
 
@@ -51,16 +66,26 @@ def test_function_perturbed_ranks_below_surface_only():
     assert [s.insert_after_residue for s in out.sites] == [20, 10]  # surface_only first
 
 
-def test_rank_sites_drops_unvalidated_and_orders_by_validation_then_tier():
+def test_rank_sites_orders_by_validation_then_tier():
     a = _site(1, val="not_measured", tier="paper", res=10)
     b = _site(2, val="surface_and_function", tier="vendor", res=20)
-    c = _site(3, ev="structural inference", res=30)          # dropped (not validated)
     d = _site(4, val="surface_and_function", tier="paper", res=40)
-    out = R.rank_sites(_result([a, b, c, d]))
+    out = R.rank_sites(_result([a, b, d]))
     residues = [s.insert_after_residue for s in out.sites]
     assert residues == [40, 20, 10]          # D (val+paper), B (val+vendor), A (not_measured)
     assert [s.rank for s in out.sites] == [1, 2, 3]   # renumbered
-    assert 30 not in residues                # the structural-inference site is gone
+
+
+def test_a_structural_inference_site_cannot_be_constructed_at_all():
+    """This used to be filtered out by `keep_validated_sites` AFTER parsing, which
+    meant the prompt banned the value while the schema accepted it. The Literal
+    moves the rejection to parse time, where the repair loop reports it back to
+    the model instead of the site being silently dropped."""
+    import pytest
+    with pytest.raises(ValidationError):
+        _site(3, ev="structural inference", res=30)
+    with pytest.raises(ValidationError):
+        _site(3, ev="topology inference only", res=30)
 
 
 def test_format_evidence_ledger():
@@ -110,6 +135,7 @@ def test_run_tag_site_agent_composes_pipeline_and_synthesis(monkeypatch):
         aliases=["x protein"], sequence="A" * 300, topology="O" * 300,
         client=cast(Anthropic, object()), http=cast(CachedHTTP, object()),
     )
+
     assert captured["label"] == "tag_site:X"
     assert "EVIDENCE LEDGER" in captured["prompt"]
     assert "PMID 55501" in captured["prompt"]       # the span-verified clip's source
@@ -170,12 +196,19 @@ def test_run_returns_empty_on_builder_failure(monkeypatch):
 
 
 def test_to_viewer_sites_shape():
-    out = R.to_viewer_sites(_result([_site(1, val="surface_and_function")]), uniprot_acc="Q0")
+    # No quote on this one: the source still carries the PMID, with claim=None.
+    bare = _site(1, val="surface_and_function")
+    bare.supporting_quote = None
+    out = R.to_viewer_sites(_result([bare]), uniprot_acc="Q0")
     s = out[0]
     assert s["provenance"] == "literature_retrieved"
     assert s["site_id"].endswith("-lit") and s["det_path"] is None
     assert s["topology_state"] == "O" and s["extracellular"] is True
-    assert "validation: surface_and_function" in s["rationale"]
+    # Fields, not a bracket concatenated onto the prose: the old shape put raw
+    # field names and a Python True in front of the reader and left the viewer
+    # nothing to sort or filter on.
+    assert s["validation_level"] == "surface_and_function"
+    assert "[validation:" not in (s["rationale"] or "")
     assert s["sources"] == [{"pmid": 123, "citation": "PMID 123", "claim": None}]
     # supporting_quote rides in the source's claim (drives the drawer quote)
     q = _site(1, val="surface_and_function")
@@ -227,3 +260,325 @@ def test_verify_entailment_tiebreak_in_ranking():
     b.entailment_verified = True
     out = R.rank_sites(_result([a, b]))
     assert [s.insert_after_residue for s in out.sites] == [20, 10]
+
+
+# --- geometry + grounding gates in the production path -----------------------
+
+_SEQ = "M" + "A" * 99 + "K" + "G" + "A" * 198   # K at 101, G at 102
+_TOPO = "O" * 300
+
+
+def _wire(monkeypatch, result, *, quote="ALFA inserted after K101."):
+    monkeypatch.setattr(R, "discover_tag_site_papers",
+                        lambda **k: {"PMID:1": _paper(pmid=1, title="t")})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+    monkeypatch.setattr(R, "triage_abstracts", lambda *a, **k: [])
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
+    monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
+    monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [_evi(quote, source_id="PMID:1")])
+    monkeypatch.setattr(R, "call_builder", lambda client, **k: result)
+    captured = {}
+    orig = R.build_user_prompt
+    monkeypatch.setattr(R, "build_user_prompt",
+                        lambda *a, **kw: captured.setdefault("p", orig(*a, **kw)))
+    return captured
+
+
+def _run(**kw):
+    return R.run_tag_site_agent(
+        gene_symbol="X", protein_name="X protein", uniprot_accession="Q0",
+        aliases=["x"], sequence=_SEQ, topology=_TOPO,
+        client=cast(Anthropic, object()), http=cast(CachedHTTP, object()), **kw)
+
+
+def test_run_drops_a_site_whose_residues_contradict_the_sequence(monkeypatch):
+    """The ERBB2 V643 class: a position the model never read off the sequence."""
+    bad = _site(1, res=101)
+    bad.residue_before, bad.residue_after = "V", "V"   # real: K101 / G102
+    bad.supporting_quote = "ALFA inserted after K101."
+    _wire(monkeypatch, _result([bad]))
+    assert _run().sites == []
+
+
+def test_run_repairs_a_site_the_model_mis_numbered(monkeypatch):
+    """The TMEM123 K155 class: right window in the prose, wrong integer."""
+    s = _site(1, res=55)
+    s.residue_before, s.residue_after = "K", "G"
+    s.rationale = "chosen in the linker (AAK|GAAA) region"
+    s.supporting_quote = "ALFA inserted after K101."
+    _wire(monkeypatch, _result([s]))
+    out = _run()
+    assert len(out.sites) == 1
+    assert out.sites[0].insert_after_residue == 101
+    assert out.sites[0].position_repaired is True
+
+
+def test_run_drops_a_site_whose_quote_is_not_in_the_ledger(monkeypatch):
+    """The TMEM123 I208 class: entailment_verified=False used to only down-rank."""
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    s.supporting_quote = "A sentence that appears in no clip."
+    _wire(monkeypatch, _result([s]))
+    assert _run().sites == []
+
+
+def test_run_passes_an_authoritative_sp_end_into_the_prompt(monkeypatch):
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    s.supporting_quote = "ALFA inserted after K101."
+    cap = _wire(monkeypatch, _result([s]))
+    _run(sp_end=17)
+    assert "SIGNAL PEPTIDE: 1-17" in cap["p"]
+    assert "MATURE N-TERMINUS: 18" in cap["p"]
+
+
+def test_viewer_record_says_that_a_position_was_repaired():
+    """A moved junction must be visible in the shipped record, not silent."""
+    s = _site(1)
+    assert R.to_viewer_sites(_result([s]), uniprot_acc="Q0")[0]["position_repaired"] is False
+    s.position_repaired = True
+    out = R.to_viewer_sites(_result([s]), uniprot_acc="Q0")[0]
+    assert out["position_repaired"] is True
+    # and it no longer leaks into the prose a reader sees
+    assert "position_repaired" not in (out["rationale"] or "")
+
+
+# --- citation quality --------------------------------------------------------
+
+def test_run_upgrades_a_non_probative_quote_from_the_ledger(monkeypatch):
+    """The GLUT4 class: right site, right paper, quote that mentions no tag.
+    Swap in a ledger quote that actually describes the insertion."""
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    s.supporting_quote = "Glucose transport is the main physiological effect of insulin."
+    _wire(monkeypatch, _result([s]),
+          quote="Glucose transport is the main physiological effect of insulin.")
+    # Ledger carries both the weak sentence and a probative one naming the residue.
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [
+        _evi("Glucose transport is the main physiological effect of insulin.",
+             source_id="PMID:1"),
+        _evi("An HA epitope was inserted after K101 of the transporter.",
+             source_id="PMID:1"),
+    ])
+    out = _run()
+    assert len(out.sites) == 1
+    assert out.sites[0].supporting_quote == (
+        "An HA epitope was inserted after K101 of the transporter.")
+    assert out.sites[0].quote_probative is True
+
+
+def test_run_keeps_a_site_whose_ledger_has_no_probative_quote(monkeypatch):
+    """Do NOT drop it — GLUT4 showed the site itself can be correct. Flag it."""
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    weak = "Glucose transport is the main physiological effect of insulin."
+    s.supporting_quote = weak
+    _wire(monkeypatch, _result([s]), quote=weak)
+    out = _run()
+    assert len(out.sites) == 1
+    assert out.sites[0].supporting_quote == weak
+    assert out.sites[0].quote_probative is False
+
+
+def test_a_probative_citation_outranks_a_bare_one_at_equal_validation():
+    a = _site(1, val="surface_only", res=10)
+    a.quote_probative = False
+    b = _site(2, val="surface_only", res=20)
+    b.quote_probative = True
+    out = R.rank_sites(_result([a, b]))
+    assert [s.insert_after_residue for s in out.sites] == [20, 10]
+
+
+def test_run_boosts_residue_bearing_clips_before_selection(monkeypatch):
+    """A clip naming an extracellular residue must outrank a higher-scoring one
+    BEFORE select_clips truncates the menu, or it is never shown to the model."""
+    import types
+    lo = types.SimpleNamespace(quote="tag inserted at residue 101",
+                               context_excerpt=None, score=0.1)
+    hi = types.SimpleNamespace(quote="general background on the receptor",
+                               context_excerpt=None, score=9.9)
+    pool = {"lo": lo, "hi": hi}
+
+    s = _site(1, res=101)
+    s.residue_before, s.residue_after = "K", "G"
+    s.supporting_quote = "ALFA inserted after K101."
+    _wire(monkeypatch, _result([s]))
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: (pool, []))
+    seen = {}
+    monkeypatch.setattr(R, "select_clips",
+                        lambda c, **k: seen.setdefault("pool", dict(k["pool"])) and None)
+    _run()
+    assert seen["pool"]["lo"].score > seen["pool"]["hi"].score
+
+
+def test_run_accumulates_discovery_across_runs(tmp_path, monkeypatch):
+    """A paper an earlier run found must still be in the pool when this run's
+    search misses it — the EndoNB failure mode."""
+    from accessible_surfaceome.agents.tag_site import literature_discovery as LD
+    from accessible_surfaceome.tools._shared.models import Paper
+
+    remembered = Paper(pmid=None, doi="10.1101/2025.06.08.658482", pmc_id=None,
+                       title="EndoNB", abstract="", year=2025, is_preprint=True)
+    LD.save_discovery_cache("X", {"DOI:10.1101/2025.06.08.658482": remembered},
+                            cache_dir=tmp_path)
+    monkeypatch.setattr(R, "DISCOVERY_CACHE_DIR", tmp_path)
+
+    seen = {}
+    # This run's own search finds nothing.
+    monkeypatch.setattr(R, "discover_tag_site_papers",
+                        lambda **k: dict(k.get("cached") or {}))
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+    monkeypatch.setattr(R, "triage_abstracts",
+                        lambda c, *, papers, gene: seen.setdefault("papers", papers) and [])
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
+    monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
+    monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [])
+    _run()
+
+    assert any(getattr(p, "doi", None) == "10.1101/2025.06.08.658482"
+               for p in seen.get("papers", []))
+    # and the merged set is written back for the next run
+    assert "DOI:10.1101/2025.06.08.658482" in LD.load_discovery_cache("X", cache_dir=tmp_path)
+
+
+# --- one site per junction, however many papers support it --------------------
+
+def test_two_proposals_at_one_junction_become_one_site_with_both_sources():
+    """EGFR emitted 'EGFR-terminal_n-24-lit' twice — two papers independently
+    putting a tag at the N-terminus. That is ONE site with two citations, not
+    two sites with a colliding id."""
+    a = _site(1, res=24, val="surface_and_function")
+    a.site_type, a.residue_before = "terminal_n", "A"
+    a.supporting_pmid, a.supporting_quote = 111, "we fused a Flag tag on the N terminus"
+    b = _site(2, res=24, val="surface_only")
+    b.site_type, b.residue_before = "terminal_n", "A"
+    b.supporting_pmid, b.supporting_quote = 222, "FAP was inserted at the amino-terminus"
+
+    out = R.to_viewer_sites(_result([a, b]), uniprot_acc="Q0")
+    assert len(out) == 1, [s["site_id"] for s in out]
+    assert len({s["site_id"] for s in out}) == 1
+    pmids = sorted(src["pmid"] for src in out[0]["sources"])
+    assert pmids == [111, 222]
+
+
+def test_the_better_validated_proposal_supplies_the_merged_fields():
+    """Rank is already sorted best-first, so the first one wins the body."""
+    a = _site(1, res=24, val="surface_and_function")
+    a.site_type, a.residue_before, a.supporting_pmid = "terminal_n", "A", 111
+    b = _site(2, res=24, val="not_measured")
+    b.site_type, b.residue_before, b.supporting_pmid = "terminal_n", "A", 222
+    out = R.to_viewer_sites(R.rank_sites(_result([a, b])), uniprot_acc="Q0")
+    assert len(out) == 1
+    assert out[0]["validation_level"] == "surface_and_function"
+
+
+def test_distinct_junctions_are_not_merged():
+    a = _site(1, res=24)
+    a.site_type, a.residue_before = "terminal_n", "A"
+    b = _site(2, res=99)
+    b.site_type, b.residue_before = "internal", "A"
+    assert len(R.to_viewer_sites(_result([a, b]), uniprot_acc="Q0")) == 2
+
+
+def test_a_run_never_writes_its_discovery_cache_into_the_repo():
+    """Unit tests writing to data/ is how `data/external/tag_site_discovery/X.json`
+    turned up in a working tree. The autouse fixture redirects the cache; this
+    pins that it stays redirected for every test in this module."""
+    from accessible_surfaceome.agents.tag_site import literature_discovery as LD
+    assert R.DISCOVERY_CACHE_DIR != LD.DISCOVERY_CACHE_DIR, (
+        f"runner would write to the repo cache: {R.DISCOVERY_CACHE_DIR}")
+
+
+# --- every return path records what the run did -----------------------------
+#
+# The stamping used to live only at the END of run_tag_site_agent, so all three
+# early returns skipped it. A gene that legitimately found nothing wrote an
+# intermediates dict holding nothing — not even its own symbol. The first
+# library sweep produced 759 such rows out of 1,825, $344 of spend that could
+# not be attributed to a gene, and the sha-aware resume keys on gene_symbol, so
+# every one of them would have been paid for twice.
+#
+# These assert the ARCHIVE for each early return, which the three tests above
+# leave untested because they only look at the returned result.
+
+def _stub_no_papers(monkeypatch):
+    monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+
+
+def _stub_no_evidence(monkeypatch):
+    monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {"PMID:1": _paper(pmid=1)})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
+    monkeypatch.setattr(R, "triage_abstracts", lambda *a, **k: [])
+    monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
+    monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
+    monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())
+    monkeypatch.setattr(R, "promote", lambda *a, **k: [])
+
+
+def _stub_builder_failed(monkeypatch):
+    _stub_no_evidence(monkeypatch)
+    monkeypatch.setattr(
+        R, "promote", lambda *a, **k: [_evi("ALFA after G101.", source_id="PMID:1")]
+    )
+    monkeypatch.setattr(R, "call_builder", lambda client, **k: None)
+
+
+@pytest.mark.parametrize(
+    "stub", [_stub_no_papers, _stub_no_evidence, _stub_builder_failed],
+    ids=["no_papers", "no_evidence", "builder_failed"],
+)
+def test_every_early_return_still_records_the_run(monkeypatch, stub):
+    stub(monkeypatch)
+    inter: dict = {}
+    out = R.run_tag_site_agent(
+        gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],
+        sequence="AAA", topology="OOO", client=cast(Anthropic, object()),
+        http=cast(CachedHTTP, object()), intermediates=inter,
+    )
+    assert out.sites == []
+    # The one that makes the row attributable at all.
+    assert inter.get("gene_symbol") == "X"
+    # The archive's schema, so a zero-site row is a real measurement rather
+    # than a hole: every count present and an int, because 0 is a different
+    # claim from absent. n_papers is NOT asserted to be 0 — two of these three
+    # paths do discover papers, and that is exactly the distinction the archive
+    # has to keep.
+    for key in ("n_papers", "n_clips", "n_boosted", "n_sites"):
+        assert isinstance(inter.get(key), int), key
+    assert inter["n_sites"] == 0
+    for key in ("ledger", "rejected", "other_positions"):
+        assert inter.get(key) == [], key
+
+
+def test_early_return_records_the_papers_it_did_discover(monkeypatch):
+    """A gene with papers but no usable evidence is not the same as a gene with
+    no papers, and the archive has to be able to tell them apart."""
+    _stub_no_evidence(monkeypatch)
+    inter: dict = {}
+    R.run_tag_site_agent(
+        gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],
+        sequence="AAA", topology="OOO", client=cast(Anthropic, object()),
+        http=cast(CachedHTTP, object()), intermediates=inter,
+    )
+    assert inter["n_papers"] == 1
+    assert inter["n_clips"] == 0
+
+
+def test_no_return_path_skips_the_stamp():
+    """A new early return must not reopen the hole.
+
+    Structural, because the cost of finding this the other way was a 1,825-gene
+    sweep: every `return` in the body either goes through `_empty()` (which
+    stamps) or is the final one (which stamps)."""
+    import inspect
+    import re
+
+    src = inspect.getsource(R.run_tag_site_agent)
+    returns = re.findall(r"^    return (.+)$", src, flags=re.M)
+    assert returns, "expected to find top-level returns"
+    assert all(
+        r.startswith("_empty()") or r.startswith("rank_sites(") for r in returns
+    ), returns

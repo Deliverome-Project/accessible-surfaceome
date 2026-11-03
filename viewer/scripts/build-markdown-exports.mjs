@@ -23,6 +23,15 @@
 import { readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  createLimiter,
+  defaultSleep,
+  fetchJsonWithRetry,
+  parseGeneListEnv,
+  resolveBuildFetchTuning,
+  resolveMaxFailFrac,
+  shouldAbortEarly,
+} from "./lib/build-fetch.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const VIEWER_ROOT = path.resolve(__dirname, "..");
@@ -39,8 +48,14 @@ const SITE_BASE = "https://surfaceome.deliverome.org";
 // into the in-tree snapshots with SURFACEOME_MD_SOURCE=snapshots (offline
 // local dev only). SURFACEOME_API_BASE=local (or empty) skips the export
 // entirely (CI offline smoke) rather than falling back to committed JSONs.
-// SURFACEOME_MD_LIMIT caps the count (testing / incremental builds).
+// SURFACEOME_MD_LIMIT caps the count (testing / incremental builds) — takes
+// the first N genes off the (possibly SURFACEOME_MD_GENES-filtered) list.
+// SURFACEOME_MD_GENES=A,B,C restricts the run to exactly those gene
+// symbols (comma-separated) — for an operator re-exporting a handful of
+// genes (e.g. backfilling the 56 genes a prior run's record-fetch failure
+// silently skipped) without re-running the full ~5.3k-gene cohort.
 const MD_SOURCE = (process.env.SURFACEOME_MD_SOURCE || "api").toLowerCase();
+const MD_GENES_FILTER = parseGeneListEnv(process.env.SURFACEOME_MD_GENES);
 // Worker base, normalized to EXCLUDE a trailing /v1 (the loader convention)
 // so /v1 is appended uniformly below. Accepts both ".../surfaceome" (the
 // Pages value) and ".../surfaceome/v1" (legacy) without doubling /v1.
@@ -66,32 +81,71 @@ const BYPASS_HEADER = BUILD_BYPASS ? { "X-Build-Bypass": BUILD_BYPASS } : {};
 //     node scripts/build-markdown-exports.mjs
 // Uses the Cloudflare R2 REST object API with the account API token (the
 // same credential wrangler uses; needs R2 edit scope) — no S3 keys, no deps.
-// NOTE: no local test harness for the upload path — smoke-test it live once
-// (a handful of genes via SURFACEOME_MD_LIMIT) before a full run.
 const MD_TARGET = (process.env.MD_TARGET || "public").toLowerCase();
 const R2_BUCKET = process.env.MD_R2_BUCKET || "surfaceome-gene-md";
 const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || "";
 const CF_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
 
-// PUT one Markdown object to R2 via the REST object API. Throws on non-2xx
-// so the caller surfaces a partial-upload rather than silently dropping a
-// gene's download.
-async function uploadMarkdownToR2(key, body) {
-  const url =
-    `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}` +
-    `/r2/buckets/${R2_BUCKET}/objects/${encodeURIComponent(key)}`;
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${CF_API_TOKEN}`,
-      "Content-Type": "text/markdown",
-    },
-    body,
-  });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`R2 PUT ${key} → ${res.status} ${detail.slice(0, 300)}`);
+// Pacing shared with every other bulk per-gene fetcher (build-data-snapshot
+// .mjs) — see viewer/scripts/lib/build-fetch.mjs for the incident this
+// guards against. Overridable via SURFACEOME_BUILD_FETCH_CONCURRENCY /
+// SURFACEOME_BUILD_FETCH_RPS (defaults 4 / 8 req/s). One shared limiter
+// instance paces BOTH the record fetch and the evidence-ledger fetch below
+// (two Worker requests per gene in "api" mode).
+const { concurrency: MD_FETCH_CONCURRENCY, rps: MD_FETCH_RPS } = resolveBuildFetchTuning();
+const mdFetchLimiter = createLimiter({ concurrency: MD_FETCH_CONCURRENCY, rps: MD_FETCH_RPS });
+// Fraction of genes allowed to fail/skip (record fetch, evidence fetch, or
+// R2 upload) before the script exits non-zero — env
+// SURFACEOME_BUILD_MAX_FAILED_FRAC, default 1%. A handful of bad genes
+// shouldn't break an ops run; a D1 outage (most genes failing) must.
+const MD_MAX_FAIL_FRAC = resolveMaxFailFrac();
+
+// PUT one Markdown object to R2 via the REST object API, retrying
+// transient failures (429 / 5xx / network) with backoff — mirrors the
+// record/evidence fetch retry so a blip mid-upload doesn't burn the whole
+// gene (or the whole run, previously: this used to throw straight out of
+// main()). Returns `true` on success, `false` after retries are exhausted
+// (never throws) so the caller can count it and continue. `attempts` /
+// `backoff` / `sleep` are overridable for tests (production always uses
+// the defaults).
+async function uploadMarkdownToR2(
+  key,
+  body,
+  { attempts = 5, backoff = [1000, 2000, 4000, 8000], sleep = defaultSleep } = {},
+) {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const url =
+      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}` +
+      `/r2/buckets/${R2_BUCKET}/objects/${encodeURIComponent(key)}`;
+    let res = null;
+    try {
+      res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${CF_API_TOKEN}`,
+          "Content-Type": "text/markdown",
+        },
+        body,
+      });
+    } catch (err) {
+      console.warn(`  ! R2 PUT ${key}: network error — ${err.message}`);
+      res = null;
+    }
+    if (res) {
+      if (res.ok) return true;
+      const detail = await res.text().catch(() => "");
+      if (res.status === 404 || (res.status !== 429 && res.status < 500)) {
+        console.warn(`  ! R2 PUT ${key} → ${res.status} ${detail.slice(0, 300)} (not retrying)`);
+        return false;
+      }
+      console.warn(`  ! R2 PUT ${key} → ${res.status} ${detail.slice(0, 300)}`);
+    }
+    if (attempt < attempts - 1) {
+      await sleep(backoff[attempt] ?? 8000);
+    }
   }
+  console.warn(`  ! R2 PUT ${key}: retries exhausted, skipping`);
+  return false;
 }
 
 // --------------------------------------------------------------
@@ -395,11 +449,24 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push(`| UniProt | [${g.uniprot_acc}](https://www.uniprot.org/uniprotkb/${g.uniprot_acc}) |`);
   lines.push(`| NCBI Gene | [${g.ncbi_gene_id}](https://www.ncbi.nlm.nih.gov/gene/${g.ncbi_gene_id}) |`);
   lines.push(`| Ensembl | [${g.ensembl_gene}](https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${g.ensembl_gene}) |`);
+  if (g.ensembl_canonical_protein) {
+    lines.push(`| Ensembl canonical protein | [${g.ensembl_canonical_protein}](https://www.ensembl.org/Homo_sapiens/Transcript/ProteinSummary?p=${g.ensembl_canonical_protein}) |`);
+  }
   lines.push(`| Subcategory | ${prettyEnum(e.subcategory)} |`);
   lines.push(`| Surface accessibility | ${prettyEnum(e.surface_accessibility)} |`);
   lines.push(`| Confidence | ${prettyEnum(e.confidence)} |`);
   lines.push(`| Evidence grade | ${prettyEnum(e.evidence_grade_summary)} |`);
-  lines.push(`| Triage signal | ${prettyEnum(rec.triage_signal)} |`);
+  // Triage verdict AND its own reason code, on one row. Keeping the two
+  // together matters: the deep-dive `surface_call_reason` further down is
+  // a DIFFERENT agent's call and disagrees with triage for roughly a third
+  // of deep-dived genes. Showing a bare "Triage signal: Yes" here and an
+  // unlabelled "reason=..." below reads as a self-contradiction (reported
+  // on OR11H6: triage yes + deep-dive tissue_restricted_surface).
+  lines.push(
+    `| Triage signal | ${prettyEnum(rec.triage_signal)}${
+      rec.triage_reason ? ` · reason=${prettyEnum(rec.triage_reason)}` : ""
+    } |`,
+  );
   if (e.headline_risks.length > 0) {
     lines.push(
       `| Headline risks | ${e.headline_risks.map(prettyEnum).join(", ")} |`,
@@ -443,7 +510,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     `| Accessibility | overall=${prettyEnum(f.surface_accessibility)} · conf=${prettyEnum(f.confidence)} · subcategory=${prettyEnum(f.subcategory)} · ecd=${prettyEnum(f.ecd_accessibility_class)} |`,
   );
   lines.push(
-    `| Classification | reason=${prettyEnum(f.surface_call_reason)} · family=${prettyEnum(f.llm_family)} · state-dependence=${prettyEnum(f.state_dependence)} · induction-trigger=${prettyEnum(f.induction_trigger)} |`,
+    `| Classification | deep-dive reason=${prettyEnum(f.surface_call_reason)} · family=${prettyEnum(f.llm_family)} · state-dependence=${prettyEnum(f.state_dependence)} · induction-trigger=${prettyEnum(f.induction_trigger)} |`,
   );
   lines.push(
     `| Expression | level=${prettyEnum(f.expression_level)} · breadth=${prettyEnum(f.expression_breadth)} · specificity=${prettyEnum(f.surface_specificity)} · low-endogenous=${f.low_endogenous_expression} · tumor-associated=${f.tumor_associated ?? "—"} · orphan-receptor=${f.has_known_ligand === false} · OE-precedent=${f.overexpression_surface_localization_observed} |`,
@@ -778,6 +845,22 @@ function md(rec, structureData, sequences, afdbEntry) {
     );
   }
   lines.push("");
+  if (ct && ct.predicted_surface_membrane != null) {
+    const call = ct.predicted_surface_membrane
+      ? "membrane / surface"
+      : ct.predicted_secreted
+        ? "secreted — signal peptide, no TM helix"
+        : "neither a TM helix nor a signal peptide";
+    const extras = [];
+    if (ct.protein_length != null) extras.push(`${ct.protein_length} aa`);
+    if (ct.beta_strand_count) {
+      extras.push(`${ct.beta_strand_count} β-strand${ct.beta_strand_count === 1 ? "" : "s"}`);
+    }
+    lines.push(
+      `**DeepTMHMM call** — ${call}${extras.length ? ` (${extras.join(" · ")})` : ""}. The tool's own classification, not an inference from the ECD/ICD lengths above.`,
+    );
+  }
+  lines.push("");
   lines.push(
     "**Tier cutoffs.** *Ortholog conservation* (higher = better — cross-species evidence can stand in for human): ≥85% high · 60–85% moderate · <60% low. *Paralog cross-reactivity* (higher = worse — a binder may also engage the paralog): >80% high-risk · 60–80% caution · <60% low-risk ([PMID 30297845](https://pubmed.ncbi.nlm.nih.gov/30297845/)).",
   );
@@ -910,16 +993,16 @@ function md(rec, structureData, sequences, afdbEntry) {
     );
     lines.push("");
     lines.push(
-      "**Reading the scores.** BSA vs the average antibody–antigen interface ≈ 1103 ± 244 Å² ([PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)): ≥1500 Å² comfortable · 850–1500 workable · <850 thin. Seed pool: ≥1000 comfortable design margin · ≥100 workable · <100 thin/specialized. SURFACE-Bind excludes transmembrane regions but not necessarily intracellular domains — cross-check the anchor residue against the topology string in §5/appendix (`O` = extracellular/antibody-accessible, `I` = intracellular).",
+      "**Reading the scores.** BSA vs the average antibody–antigen interface ≈ 1103 ± 244 Å² ([PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)): ≥1500 Å² comfortable · 850–1500 workable · <850 thin. Seed pool: ≥1000 comfortable design margin · ≥100 workable · <100 thin/specialized. SURFACE-Bind excludes transmembrane regions but not necessarily intracellular domains, so the **Anchor side** column reports which face each patch sits on (from the DeepTMHMM topology string in §5/appendix). Only `extracellular` patches are antibody-accessible; `signal peptide` is ambiguous because the peptide is cleaved, and a blank means the topology prediction was unavailable.",
     );
     lines.push("");
     lines.push(
-      "| Site | Anchor residue | BSA (Å²) | α-helix seeds | β-strand seeds | Hydrophobicity |",
+      "| Site | Anchor residue | Anchor side | BSA (Å²) | α-helix seeds | β-strand seeds | Hydrophobicity |",
     );
-    lines.push("|---|---|---|---|---|---|");
+    lines.push("|---|---|---|---|---|---|---|");
     for (const site of sb.sites) {
       lines.push(
-        `| ${site.site_id} | ${site.anchor_residue} | ${fmtNum(site.area_a2)} | ${fmtInt(site.n_seeds_alpha)} | ${fmtInt(site.n_seeds_beta)} | ${fmtNum(site.hydrophobicity)} |`,
+        `| ${site.site_id} | ${site.anchor_residue} | ${site.anchor_topology ? site.anchor_topology.replace("_", " ") : "—"} | ${fmtNum(site.area_a2)} | ${fmtInt(site.n_seeds_alpha)} | ${fmtInt(site.n_seeds_beta)} | ${fmtNum(site.hydrophobicity)} |`,
       );
     }
     lines.push("");
@@ -1324,16 +1407,22 @@ function md(rec, structureData, sequences, afdbEntry) {
 // the render loop below is source-agnostic.
 // --------------------------------------------------------------
 
+const FETCH_UA_HEADERS = {
+  "User-Agent": "accessible-surfaceome-viewer/1.0 (build-markdown-exports.mjs)",
+};
+
+// Single-shot fetch (the /v1/genes list itself — not a bulk per-gene
+// fetcher, so it isn't routed through the shared limiter) with the same
+// retry/backoff/degraded semantics as everything else.
 async function fetchJson(url) {
-  const resp = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "accessible-surfaceome-viewer/1.0 (build-markdown-exports.mjs)",
-      ...BYPASS_HEADER,
-    },
-  });
-  if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
-  return resp.json();
+  const r = await fetchJsonWithRetry(url, { maxAttempts: 5, headers: FETCH_UA_HEADERS });
+  if (!r.ok) {
+    throw new Error(
+      `gene list fetch failed for ${url} (status=${r.status ?? "network"}` +
+        `${r.degraded ? `, degraded=${r.degraded}` : ""})`,
+    );
+  }
+  return r.body;
 }
 
 function loadRecordsFromSnapshots() {
@@ -1354,6 +1443,16 @@ function loadRecordsFromSnapshots() {
 // back to `loadRecordsFromApi`.
 const BUILD_CACHE_RECORDS_DIR = path.join(VIEWER_ROOT, "build-cache", "records");
 
+// NOTE (PR #275 review, C1): `main()` now SKIPS this function entirely
+// whenever `MD_GENES_FILTER` is set (or `MD_TARGET === "r2"`) — see the
+// `skipBuildCache` branch in `main()` — so the `MD_GENES_FILTER` filtering
+// below is dead in practice for those runs. It stays here as a defensive
+// no-op (and so a directly-called/tested invocation of this function
+// still behaves correctly) rather than because main() relies on it: a
+// PARTIAL local cache filtered down to a subset would otherwise silently
+// under-deliver a targeted `SURFACEOME_MD_GENES` re-export instead of
+// fetching the missing genes live, which is exactly the bug C1 closes by
+// bypassing this path altogether for that case.
 function loadRecordsFromBuildCache() {
   if (!existsSync(BUILD_CACHE_RECORDS_DIR)) return [];
   const jsonFiles = readdirSync(BUILD_CACHE_RECORDS_DIR).filter((n) =>
@@ -1366,7 +1465,9 @@ function loadRecordsFromBuildCache() {
       const rec = JSON.parse(
         readFileSync(path.join(BUILD_CACHE_RECORDS_DIR, name), "utf-8"),
       );
-      out.push({ name: `${rec.gene?.hgnc_symbol ?? name.replace(/\.json$/, "")}.json`, rec });
+      const sym = rec.gene?.hgnc_symbol ?? name.replace(/\.json$/, "");
+      if (MD_GENES_FILTER && !MD_GENES_FILTER.has(sym)) continue;
+      out.push({ name: `${sym}.json`, rec });
     } catch (err) {
       console.warn(`  ! build-cache ${name}: parse failed — ${err.message}`);
     }
@@ -1374,79 +1475,167 @@ function loadRecordsFromBuildCache() {
   return out;
 }
 
-// Concurrent fetch pool for the API fallback path. Matches
-// build-data-snapshot.mjs's RECORD_CONCURRENCY=8 — sized to sit under
-// the Worker's per-IP rate limiter with retry headroom, and fits the
-// Pages build's ~35-min wall clock even under D1 latency spikes (5,130
-// records ÷ 8 in-flight ≈ 640 batches × ~300-800ms per fetch → 3-9 min
-// vs the serial 25-135 min the previous for-loop cost, which was the
-// timeout culprit).
-const RECORD_FETCH_CONCURRENCY = 8;
-const RECORD_FETCH_ATTEMPTS = 4;
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-function backoffMs(attempt) {
-  return [500, 1500, 3000, 6000][attempt] ?? 6000;
-}
-
-async function fetchRecordWithRetry(url) {
-  for (let attempt = 0; attempt < RECORD_FETCH_ATTEMPTS; attempt += 1) {
-    let res = null;
-    try {
-      res = await fetch(url, {
-        headers: {
-          "User-Agent":
-            "accessible-surfaceome-viewer/1.0 (build-markdown-exports.mjs)",
-          ...BYPASS_HEADER,
-        },
-      });
-    } catch {
-      res = null;
-    }
-    if (res) {
-      if (res.ok) return await res.json();
-      if (res.status === 404 || (res.status !== 429 && res.status < 500)) {
-        return null; // hard 4xx — deterministic miss, don't retry
-      }
-    }
-    if (attempt < RECORD_FETCH_ATTEMPTS - 1) await sleep(backoffMs(attempt));
-  }
-  throw new Error(`retries exhausted for ${url}`);
-}
-
-// Fetch EVERY published record from the public Worker (the D1-served
-// model). Returns them in memory; main() materializes each {SYMBOL}.json
-// next to its {SYMBOL}.md so the static build + fs-fallback resolve.
+// Bulk per-gene fetch pool for the API fallback path (record fetch below)
+// and the evidence-ledger fetch (`fetchEvidenceLedger`, used by both this
+// path and the build-cache evidence backfill in main()). Both route
+// through the single module-level `mdFetchLimiter` declared near the top
+// of the file, so the two Worker requests per gene stay within the
+// configured concurrency/rate cap — see viewer/scripts/lib/build-fetch.mjs
+// for the incident this guards against (an unpaced burst against the
+// Worker during every Pages build drove 500s on the shared public D1).
 //
 // Fallback path only — under the normal package.json build order,
 // `build:snapshot` runs first and `loadRecordsFromBuildCache` picks up
 // the pre-fetched records from disk without hitting the Worker. This
 // path fires when the build-cache is missing / empty (e.g. dev running
 // `build:exports` in isolation) or when we need a live re-fetch.
-async function loadRecordsFromApi() {
+
+/**
+ * Fetch one gene's evidence ledger from `/v1/genes/{sym}/evidence`, paced
+ * + retried through the shared limiter (429/5xx/network/degraded, with
+ * backoff). Returns a discriminated result so the caller can tell a
+ * GENUINE empty ledger (`{ ok: true, evidence: [] }` — a real "no rows"
+ * answer from a healthy 200) apart from a failure (`{ ok: false, reason }`
+ * — fetch/parse never succeeded even after retries). A failure must SKIP
+ * the gene's whole export, never silently substitute `[]` — the earlier
+ * behavior here is exactly what let a D1-outage-degraded evidence fetch
+ * ship a Markdown brief with a falsely-empty Evidence section.
+ *
+ * `retryOpts` overrides fetchJsonWithRetry's tuning (e.g. `sleep`) — used
+ * only by tests; production callers always use the defaults.
+ */
+async function fetchEvidenceLedger(sym, { retryOpts } = {}) {
+  const url = `${API_BASE}/v1/genes/${encodeURIComponent(sym)}/evidence`;
+  const r = await mdFetchLimiter(() =>
+    fetchJsonWithRetry(url, { maxAttempts: 5, headers: FETCH_UA_HEADERS, ...retryOpts }),
+  );
+  if (!r.ok) {
+    const reason = r.hardFailure
+      ? `HTTP ${r.status}`
+      : r.degraded
+        ? `degraded (${r.degraded}) after retries`
+        : r.error
+          ? `network error (${r.error.message})`
+          : `HTTP ${r.status ?? "?"} after retries`;
+    return { ok: false, reason };
+  }
+  const ev = r.body?.evidence;
+  if (!Array.isArray(ev)) {
+    return { ok: false, reason: "evidence payload not an array" };
+  }
+  return { ok: true, evidence: ev };
+}
+
+/**
+ * Fetch every published record from the public Worker (the D1-served
+ * model), paced through the shared limiter, retrying 429/5xx/network/
+ * degraded with backoff. Each gene also needs its evidence ledger (a
+ * second Worker call, `/v1/genes/{sym}` does NOT carry it — it is served
+ * separately by `/v1/genes/{sym}/evidence`, which also joins in
+ * `paper_metadata`); a gene is only included if BOTH calls eventually
+ * succeed. Returns `{ records, totalAttempted, skippedRecord, skippedEvidence }`
+ * so `main()` can print an accurate summary and apply the failure-fraction
+ * exit gate. `retryOpts` overrides fetchJsonWithRetry's tuning for both
+ * the record and evidence calls — used only by tests.
+ */
+async function loadRecordsFromApi({ retryOpts } = {}) {
   const listUrl = `${API_BASE}/v1/genes`;
   const list = await fetchJson(listUrl);
-  let genes = list?.genes ?? [];
+  const genes = list?.genes ?? [];
+  const allSymbols = genes.map((g) => g.gene_symbol).filter(Boolean);
+  // M2: an empty published-gene list is fatal, exactly like
+  // build-data-snapshot.mjs's snapshotRecords() guard — never silently
+  // export nothing.
+  if (allSymbols.length === 0) {
+    throw new Error(
+      `[md-exports] ${listUrl} returned 0 genes — refusing to run with an empty gene list`,
+    );
+  }
+  let symbols = allSymbols;
+  if (MD_GENES_FILTER) {
+    // M1: a requested symbol that isn't in the published set is very
+    // likely a typo or a case mismatch — warn AND fail loud (rather than
+    // silently exporting fewer genes than asked for), suggesting the
+    // case-insensitive match if one exists. The filter itself stays
+    // exact-case (gene symbols are case-sensitive HGNC identifiers); only
+    // the SUGGESTION is case-insensitive.
+    const allSymbolSet = new Set(allSymbols);
+    const lowerToActual = new Map(allSymbols.map((s) => [s.toLowerCase(), s]));
+    const missing = [...MD_GENES_FILTER].filter((s) => !allSymbolSet.has(s));
+    if (missing.length > 0) {
+      const detail = missing
+        .map((m) => {
+          const suggestion = lowerToActual.get(m.toLowerCase());
+          return suggestion && suggestion !== m ? `${m} (did you mean ${suggestion}?)` : m;
+        })
+        .join(", ");
+      console.error(
+        `[md-exports] SURFACEOME_MD_GENES contains symbol(s) not in ${listUrl}: ${detail}`,
+      );
+      throw new Error(`SURFACEOME_MD_GENES: symbol(s) not found — ${detail}`);
+    }
+    symbols = allSymbols.filter((s) => MD_GENES_FILTER.has(s));
+  }
   const limit = parseInt(process.env.SURFACEOME_MD_LIMIT || "0", 10);
-  if (limit > 0) genes = genes.slice(0, limit);
+  if (limit > 0) symbols = symbols.slice(0, limit);
   console.log(
-    `  api: ${genes.length} published genes from ${listUrl}` +
+    `  api: ${symbols.length} published genes from ${listUrl}` +
+      (MD_GENES_FILTER ? " (filtered by SURFACEOME_MD_GENES)" : "") +
       (limit > 0 ? ` (limited to ${limit})` : "") +
-      ` (concurrency ${RECORD_FETCH_CONCURRENCY})`,
+      ` (concurrency ${MD_FETCH_CONCURRENCY}, ${MD_FETCH_RPS} req/s)`,
   );
-  const symbols = genes.map((g) => g.gene_symbol).filter(Boolean);
   const out = [];
+  const skippedRecord = [];
+  const skippedEvidence = [];
   let cursor = 0;
   let done = 0;
+  // Early-abort circuit breaker (PR #275 review, I1): once
+  // skippedRecord+skippedEvidence exceeds floor(MD_MAX_FAIL_FRAC ×
+  // symbols.length), stop pulling new work and THROW — the caller
+  // (main()) awaits this function BEFORE it ever enters the per-gene
+  // write/upload loop, so an outage is caught, and the run aborted,
+  // strictly before any R2 PUT happens.
+  let aborted = false;
+  const abortSample = [];
+  function noteFailure(sym, reason) {
+    if (abortSample.length < 10) abortSample.push(`${sym}: ${reason}`);
+    if (!aborted && shouldAbortEarly(skippedRecord.length + skippedEvidence.length, symbols.length, MD_MAX_FAIL_FRAC)) {
+      aborted = true;
+    }
+  }
   async function worker() {
-    while (cursor < symbols.length) {
+    while (cursor < symbols.length && !aborted) {
       const sym = symbols[cursor++];
-      try {
-        const rec = await fetchRecordWithRetry(
-          `${API_BASE}/v1/genes/${encodeURIComponent(sym)}`,
-        );
-        if (rec) out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
-      } catch (err) {
-        console.warn(`  ! ${sym}: record fetch failed — ${err.message}`);
+      const recUrl = `${API_BASE}/v1/genes/${encodeURIComponent(sym)}`;
+      const r = await mdFetchLimiter(() =>
+        fetchJsonWithRetry(recUrl, { maxAttempts: 5, headers: FETCH_UA_HEADERS, ...retryOpts }),
+      );
+      if (!r.ok) {
+        // A genuine 404 (gene delisted between the /v1/genes read and
+        // this fetch) is tolerated silently; anything else — persistent
+        // 4xx, or retries exhausted on a transient/degraded response — is
+        // logged and counted against the failure-fraction gate.
+        if (r.status !== 404) {
+          const reason = r.hardFailure
+            ? `HTTP ${r.status}`
+            : r.degraded
+              ? `degraded (${r.degraded}) after retries`
+              : `HTTP ${r.status ?? "?"} after retries`;
+          skippedRecord.push(sym);
+          console.warn(`  ! ${sym}: record fetch failed — ${reason}`);
+          noteFailure(sym, reason);
+        }
+      } else {
+        const rec = r.body;
+        const evResult = await fetchEvidenceLedger(sym, { retryOpts });
+        if (!evResult.ok) {
+          skippedEvidence.push(sym);
+          console.warn(`  ! ${sym}: evidence fetch failed — ${evResult.reason} (skipping gene)`);
+          noteFailure(sym, `evidence: ${evResult.reason}`);
+        } else {
+          rec.evidence = evResult.evidence;
+          out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
+        }
       }
       done += 1;
       if (done % 500 === 0) console.log(`  … ${done}/${symbols.length}`);
@@ -1454,11 +1643,95 @@ async function loadRecordsFromApi() {
   }
   await Promise.all(
     Array.from(
-      { length: Math.min(RECORD_FETCH_CONCURRENCY, symbols.length) },
+      { length: Math.min(MD_FETCH_CONCURRENCY, symbols.length) },
       worker,
     ),
   );
-  return out;
+  if (aborted) {
+    const msg =
+      `[md-exports] OUTAGE DETECTED — aborted early after ${done}/${symbols.length} genes ` +
+      `attempted (${skippedRecord.length} record failure(s), ${skippedEvidence.length} evidence ` +
+      `failure(s)). The Worker/D1 is rate-limiting/blocking/unhealthy; refusing to keep hammering ` +
+      `it or proceed to any upload. Sample: ${abortSample.join("; ")}`;
+    console.error(msg);
+    throw new Error(msg);
+  }
+  return { records: out, totalAttempted: symbols.length, skippedRecord, skippedEvidence };
+}
+
+/**
+ * Pure decision function (PR #275 review, C1): true whenever `main()`
+ * must bypass `viewer/build-cache/records` entirely and always fetch
+ * live from the Worker. `MD_TARGET === "r2"` and/or `SURFACEOME_MD_GENES`
+ * both mean this run is an ops job re-publishing to a LIVE surface
+ * (public R2, or a targeted subset) — it must never read the build-cache,
+ * which can be a STALE local cache from before this incident's fix
+ * (concurrent worktrees on this repo can each have their own build-cache
+ * from an earlier, unpaced snapshot run). Pulled out as a pure function
+ * (no filesystem/network) so the decision itself is directly unit-tested
+ * without needing to fabricate a build-cache directory or a full
+ * `main()` run.
+ */
+function shouldSkipBuildCache(mdTarget, mdGenesFilter) {
+  return mdTarget === "r2" || mdGenesFilter != null;
+}
+
+/** Human-readable reason string for `shouldSkipBuildCache`'s decision — used in the source-selection log line. */
+function skipBuildCacheReason(mdTarget, mdGenesFilter) {
+  return [
+    mdTarget === "r2" ? "MD_TARGET=r2" : null,
+    mdGenesFilter ? "SURFACEOME_MD_GENES set" : null,
+  ]
+    .filter(Boolean)
+    .join(" + ");
+}
+
+/**
+ * Pure decision function for the end-of-run failure-fraction exit gate —
+ * pulled out of `main()` so it can be pinned directly by a unit test
+ * without exercising the rest of the (network-heavy, filesystem-writing)
+ * driver. `stats` is the same shape `main()` accumulates: `totalAttempted`
+ * + the three skip/failure arrays.
+ */
+function computeFailFraction(stats) {
+  const totalFailed =
+    stats.skippedRecord.length + stats.skippedEvidence.length + stats.failedUpload.length;
+  const denom = Math.max(stats.totalAttempted, 1);
+  return { totalFailed, failFrac: totalFailed / denom };
+}
+
+// Prints the end-of-run summary and sets a non-zero exit code when the
+// failure fraction is over the cap. Called both from the normal end of
+// `main()` AND from the "zero records survived" early-out below — a total
+// wipeout (every gene's record/evidence fetch failed) is exactly the
+// signal this gate exists to catch, so it must not slip out through a
+// silent `return` before the gate ever runs.
+function reportSummaryAndMaybeFail(stats) {
+  const { totalFailed, failFrac } = computeFailFraction(stats);
+  console.log(
+    `[md-exports] summary: attempted=${stats.totalAttempted} ` +
+      `uploaded=${stats.uploaded} written=${stats.written} ` +
+      `skipped(record)=${stats.skippedRecord.length} ` +
+      `skipped(evidence)=${stats.skippedEvidence.length} ` +
+      `failed(upload)=${stats.failedUpload.length}`,
+  );
+  if (stats.skippedRecord.length > 0) {
+    console.warn(`  skipped(record): ${stats.skippedRecord.slice(0, 20).join(", ")}`);
+  }
+  if (stats.skippedEvidence.length > 0) {
+    console.warn(`  skipped(evidence): ${stats.skippedEvidence.slice(0, 20).join(", ")}`);
+  }
+  if (stats.failedUpload.length > 0) {
+    console.warn(`  failed(upload): ${stats.failedUpload.slice(0, 20).join(", ")}`);
+  }
+  if (totalFailed > 0 && failFrac > MD_MAX_FAIL_FRAC) {
+    console.error(
+      `[md-exports] ${totalFailed}/${stats.totalAttempted} genes failed/skipped ` +
+        `(${(failFrac * 100).toFixed(1)}% > ${(MD_MAX_FAIL_FRAC * 100).toFixed(1)}% cap). ` +
+        `Treating this as a Worker/D1 availability problem, not per-gene noise.`,
+    );
+    process.exitCode = 1;
+  }
 }
 
 async function main() {
@@ -1492,24 +1765,108 @@ async function main() {
   // build:exports in isolation, or a schedule where build:snapshot was
   // skipped).
   let records = [];
+  // Running tally for the end-of-run summary + failure-fraction exit gate.
+  // `totalAttempted` is the denominator: every gene the record source
+  // considered viable to export (post SURFACEOME_MD_GENES / _LIMIT
+  // filtering). `skippedRecord`/`skippedEvidence` are genes dropped
+  // because a Worker call never succeeded even after retries (the
+  // availability signal this hardening exists to catch); `failedUpload`
+  // is populated later, per-gene, if MD_TARGET=r2's PUT never lands.
+  const stats = {
+    totalAttempted: 0,
+    skippedRecord: [],
+    skippedEvidence: [],
+    failedUpload: [],
+    uploaded: 0,
+    written: 0,
+  };
   if (MD_SOURCE === "api") {
-    records = loadRecordsFromBuildCache();
-    if (records.length > 0) {
-      console.log(
-        `  build-cache: ${records.length} records from ${BUILD_CACHE_RECORDS_DIR}`,
-      );
+    if (shouldSkipBuildCache(MD_TARGET, MD_GENES_FILTER)) {
+      console.log(`  source: api (live Worker fetch — build-cache bypassed: ${skipBuildCacheReason(MD_TARGET, MD_GENES_FILTER)})`);
+      const apiResult = await loadRecordsFromApi();
+      records = apiResult.records;
+      stats.totalAttempted = apiResult.totalAttempted;
+      stats.skippedRecord.push(...apiResult.skippedRecord);
+      stats.skippedEvidence.push(...apiResult.skippedEvidence);
     } else {
-      console.log(
-        `  build-cache empty at ${BUILD_CACHE_RECORDS_DIR} — falling back to Worker fetch`,
-      );
-      records = await loadRecordsFromApi();
+      records = loadRecordsFromBuildCache();
+      if (records.length > 0) {
+        console.log(
+          `  source: build-cache (${records.length} records from ${BUILD_CACHE_RECORDS_DIR})`,
+        );
+        stats.totalAttempted = records.length;
+      } else {
+        console.log(
+          `  build-cache empty at ${BUILD_CACHE_RECORDS_DIR} — falling back to Worker fetch`,
+        );
+        const apiResult = await loadRecordsFromApi();
+        records = apiResult.records;
+        stats.totalAttempted = apiResult.totalAttempted;
+        stats.skippedRecord.push(...apiResult.skippedRecord);
+        stats.skippedEvidence.push(...apiResult.skippedEvidence);
+        console.log(`  source: api (live Worker fetch — build-cache was empty)`);
+      }
     }
   } else {
     records = loadRecordsFromSnapshots();
+    stats.totalAttempted = records.length;
+    console.log(`  source: snapshots (${records.length} committed JSON records)`);
   }
   if (records.length === 0) {
     console.warn(`No records to export (source=${MD_SOURCE}).`);
+    // Still run the failure-fraction gate: a total wipeout (every gene's
+    // record/evidence fetch failed — a real Worker/D1 outage) must exit
+    // non-zero, not slip out silently just because nothing was left to
+    // loop over.
+    reportSummaryAndMaybeFail(stats);
     return;
+  }
+  // Evidence backfill. `/v1/genes/{sym}` never returns the ledger (it is
+  // served by `/v1/genes/{sym}/evidence`), so records reaching here from
+  // EITHER api path — a live fetch or the build-cache that `build:snapshot`
+  // wrote from the same endpoint — can arrive without `evidence` and blow up
+  // `md()` with "rec.evidence is not iterable". `loadRecordsFromApi` already
+  // attaches it; this catches the build-cache path and any future source.
+  // A genuinely-failing/degraded evidence fetch here must drop the gene
+  // from `records` entirely — never write a Markdown brief with a falsely
+  // empty Evidence section.
+  const needEvidence = records.filter((r) => !Array.isArray(r.rec?.evidence));
+  if (needEvidence.length > 0) {
+    console.log(
+      `  backfilling evidence ledgers for ${needEvidence.length} record(s)`,
+    );
+    const failedSyms = new Set();
+    let i = 0;
+    await Promise.all(
+      Array.from(
+        { length: Math.min(MD_FETCH_CONCURRENCY, needEvidence.length) },
+        async () => {
+          while (i < needEvidence.length) {
+            const entry = needEvidence[i++];
+            const sym = entry.rec?.gene?.hgnc_symbol ?? entry.name.replace(/\.json$/, "");
+            const evResult = await fetchEvidenceLedger(sym);
+            if (!evResult.ok) {
+              console.warn(
+                `  ! ${sym}: evidence backfill failed — ${evResult.reason} (skipping gene)`,
+              );
+              failedSyms.add(sym);
+            } else {
+              entry.rec.evidence = evResult.evidence;
+            }
+          }
+        },
+      ),
+    );
+    if (failedSyms.size > 0) {
+      records = records.filter((r) => {
+        const sym = r.rec?.gene?.hgnc_symbol ?? r.name.replace(/\.json$/, "");
+        if (failedSyms.has(sym)) {
+          stats.skippedEvidence.push(sym);
+          return false;
+        }
+        return true;
+      });
+    }
   }
   console.log(`Exporting ${records.length} records (source=${MD_SOURCE}).`);
   for (const { name, rec } of records) {
@@ -1518,6 +1875,9 @@ async function main() {
     // which is what blanked the .md downloads (no file written → 404).
     // Gate on known-compatible MAJOR versions so minor bumps can't
     // re-break it while a true future breaking change still skips loudly.
+    // Not counted against the failure-fraction gate — an unsupported
+    // schema is a deliberate compatibility skip, not a Worker/D1
+    // availability problem.
     const schemaMajor = String(rec.schema_version ?? "").split(".")[0];
     if (!["1", "2"].includes(schemaMajor)) {
       console.warn(
@@ -1591,17 +1951,54 @@ async function main() {
     const mdBody = md(rec, structureData, sequences, afdbEntry);
     const key = name.replace(/\.json$/, ".md");
     if (MD_TARGET === "r2") {
-      await uploadMarkdownToR2(key, mdBody);
-      console.log(`  put r2://${R2_BUCKET}/${key}`);
+      const sym = rec.gene?.hgnc_symbol ?? name.replace(/\.json$/, "");
+      const ok = await uploadMarkdownToR2(key, mdBody);
+      if (ok) {
+        stats.uploaded += 1;
+        console.log(`  put r2://${R2_BUCKET}/${key}`);
+      } else {
+        // uploadMarkdownToR2 already logged the failure detail; the
+        // existing R2 object (if any) is left untouched — never partial.
+        stats.failedUpload.push(sym);
+      }
     } else {
       const outPath = path.join(DATA_DIR, key);
       writeFileSync(outPath, mdBody, "utf-8");
+      stats.written += 1;
       console.log(`  wrote ${path.relative(VIEWER_ROOT, outPath)}`);
     }
   }
+
+  // --- Summary + failure-fraction exit gate -----------------------
+  // Mirrors build-data-snapshot.mjs's guard: skipping a handful of bad
+  // genes must not break an ops run or the site deploy, but a real D1/
+  // Worker outage (most genes failing) must fail LOUD rather than
+  // silently ship a near-empty export.
+  reportSummaryAndMaybeFail(stats);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Exported for unit tests (viewer/tests/build_markdown_exports_driver.test.mjs)
+// — the underlying pacing/retry machinery is covered by
+// build-fetch.test.mjs; these are the script-local pieces worth pinning
+// directly (evidence-empty-vs-failure discrimination, the R2 retry/backoff
+// wrapper, the failure-fraction exit decision).
+export {
+  fetchEvidenceLedger,
+  loadRecordsFromApi,
+  uploadMarkdownToR2,
+  computeFailFraction,
+  reportSummaryAndMaybeFail,
+  shouldSkipBuildCache,
+  main,
+};
+
+// Only auto-run when executed directly (`node build-markdown-exports.mjs`),
+// not when imported by a test. `import.meta.main` (Node 24, M4) replaces
+// the previous manual `import.meta.url === pathToFileURL(argv[1]).href`
+// comparison.
+if (import.meta.main) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

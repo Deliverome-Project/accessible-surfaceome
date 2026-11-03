@@ -1,0 +1,85 @@
+name: structure audit
+
+# Weekly check that every published deep-dive gene's 3D structure loads.
+# The gene page picks its experimental structure live from PDBe
+# `best_structures`, so a newly deposited PDB entry changes what the page
+# loads without any commit or rebuild — and nothing else exercises it.
+# SLC6A8's 9V8W shipped a 404 that way (RCSB publishes no .pdb for it),
+# one of 168 genes in the same state. viewer/scripts/audit-structures.ts
+# runs the viewer's own selection + loading code (lib/experimental-
+# structure.ts) against PDBe, RCSB and AlphaFold DB for all genes and
+# fails on any gene that wouldn't render. The run summary also lists the
+# genes that gained or switched structure since the previous run.
+#
+# Wednesday 12:00 UTC: the wwPDB weekly release goes public Wednesday
+# 00:00 UTC, so each run sees that week's new entries.
+#
+# The gene list comes from the workers.dev hostname because the zone's
+# bot protection 403s GitHub-runner IPs on api.deliverome.org (see
+# ttfb-check.yml).
+
+# Scheduled and on-demand only. It used to run on every PR touching the
+# structure code, which meant a cohort-wide sweep of PDBe, RCSB and AFDB
+# — thousands of requests and up to 90 minutes — for a one-line change,
+# and it told us nothing a PR could act on: the failures it catches come
+# from new wwPDB releases, not from the diff. The weekly run is the point
+# of it. Run it against a branch by hand with `workflow_dispatch` when a
+# change really does alter structure selection or loading.
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "0 12 * * 3"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: viewer
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: "viewer/.nvmrc"
+
+      - name: fetch previous audit
+        # The last finished main-branch run's TSV (pass or fail), for the
+        # "since the previous run" diff. Missing on the first run — the
+        # audit just skips the diff.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id=$(gh run list --repo "$GITHUB_REPOSITORY" \
+            --workflow structure-audit.yml --branch main --status completed --limit 1 \
+            --json databaseId -q '.[0].databaseId')
+          if [ -n "$run_id" ]; then
+            gh run download "$run_id" --repo "$GITHUB_REPOSITORY" \
+              --name structure-audit --dir previous || true
+          fi
+
+      - name: audit
+        env:
+          SURFACEOME_API_BASE: https://surfaceome-api.beccajcarlson.workers.dev
+        run: |
+          prev=()
+          if [ -f previous/structure_audit.tsv ]; then
+            prev=(--previous previous/structure_audit.tsv)
+          fi
+          npx --yes tsx scripts/audit-structures.ts --out structure-audit "${prev[@]}"
+
+      - name: summary
+        if: always()
+        run: cat structure-audit/structure_audit_summary.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: structure-audit
+          path: viewer/structure-audit/
+          retention-days: 90

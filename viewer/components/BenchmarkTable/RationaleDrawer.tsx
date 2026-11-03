@@ -6,6 +6,13 @@ import type {
   BenchmarkMatrix,
   BenchmarkVariantResult,
 } from "../../lib/surfaceome-types";
+import { prettyEnum } from "../../lib/enums";
+import {
+  cellStatus,
+  fallbackModelLabel,
+  fallbackVariantLabel,
+  type LabelDef,
+} from "./benchmarkLabels";
 import styles from "./BenchmarkTable.module.css";
 
 // Public Worker base (client-side fetch — same origin the SSG loader uses
@@ -18,7 +25,8 @@ export interface SelectedCell {
   variant: string;
 }
 
-/** One replicate from /v1/triage/:symbol/:model/:variant. */
+/** One replicate from /v1/triage/:symbol/:model/:variant. `error` is
+ *  "refusal" when the model's safety classifier declined the call. */
 interface RepRow {
   replicate: number;
   predicted_verdict: string | null;
@@ -41,7 +49,7 @@ interface CellDetail {
 
 /** Lazy-fetch all replicates for the open (gene, model, variant) cell.
  *  Returns null while loading / on error so the drawer falls back to the
- *  single-rep matrix data it already has. */
+ *  matrix cell it already has (the same majority, minus the per-rep list). */
 function useCellReplicates(sel: SelectedCell | null): CellDetail | null {
   const [detail, setDetail] = useState<CellDetail | null>(null);
   useEffect(() => {
@@ -55,19 +63,13 @@ function useCellReplicates(sel: SelectedCell | null): CellDetail | null {
         if (!cancelled && j) setDetail(j as CellDetail);
       })
       .catch(() => {
-        /* network error — drawer keeps the matrix's single-rep view */
+        /* network error — drawer keeps the matrix cell's majority view */
       });
     return () => {
       cancelled = true;
     };
   }, [sel?.symbol, sel?.model, sel?.variant]);
   return detail;
-}
-
-interface LabelDef {
-  id: string;
-  short: string;
-  long: string;
 }
 
 interface RationaleDrawerProps {
@@ -104,8 +106,11 @@ export function RationaleDrawer({
 }: RationaleDrawerProps) {
   const isOpen = selected != null;
   const data = selected ? lookup(selected, matrix, modelLabels, variantLabels) : null;
+  const status = cellStatus(data?.cell);
+  const noVerdictLabel =
+    status === "refused" ? "refused" : status === "errored" ? "errored" : "—";
   // Lazy-load all replicates for the open cell (per-rep reasons live in
-  // a separate Worker call so the matrix payload stays single-rep + small).
+  // a separate Worker call so the matrix carries one reasoning per cell).
   const detail = useCellReplicates(selected);
 
   return (
@@ -143,10 +148,20 @@ export function RationaleDrawer({
           </h2>
           <div className={styles.drawerVerdicts}>
             <span
-              className={`${styles.drawerVerdict} ${verdictToneClass(data.cell?.verdict)}`}
-              title={`Model verdict: ${data.cell?.verdict ?? "—"}`}
+              className={`${styles.drawerVerdict} ${
+                status === "refused"
+                  ? styles.verdictRefused
+                  : status === "errored"
+                    ? styles.verdictErrored
+                    : verdictToneClass(data.cell?.verdict)
+              }`}
+              title={
+                status === "refused"
+                  ? "Model verdict: none — the model's safety classifier declined the call"
+                  : `Model verdict: ${data.cell?.verdict ?? noVerdictLabel}`
+              }
             >
-              {data.cell?.verdict ?? "—"}
+              {data.cell?.verdict ?? noVerdictLabel}
               <span className={styles.drawerVerdictLabel}> · model</span>
             </span>
             <span
@@ -162,7 +177,11 @@ export function RationaleDrawer({
               }
             >
               {data.correct === null
-                ? "no verdict"
+                ? status === "refused"
+                  ? "refused · not scored"
+                  : status === "errored"
+                    ? "errored · not scored"
+                    : "no run on file"
                 : data.correct
                   ? "agrees with truth"
                   : "disagrees with truth"}
@@ -192,7 +211,7 @@ export function RationaleDrawer({
               {data.truth_reason ? (
                 <p className={styles.drawerTruthLine}>
                   <span className="label-mono">Reason · </span>
-                  {data.truth_reason.replace(/_/g, " ")}
+                  {prettyEnum(data.truth_reason)}
                 </p>
               ) : null}
               {data.rationale ? (
@@ -201,12 +220,23 @@ export function RationaleDrawer({
             </div>
           ) : null}
           {/* Majority-vote reason FIRST, then the OTHER replicates below
-              (the majority rep itself isn't repeated). Prefer the
-              lazy-loaded cell detail's computed majority over the matrix's
-              single latest-rep view; fall back to the matrix cell while the
-              fetch is in flight. */}
+              (the majority rep itself isn't repeated). The matrix cell and
+              the lazy-loaded cell detail carry the same majority (the
+              Worker computes both with one function); the matrix cell
+              covers the drawer while the per-rep fetch is in flight. */}
           {(() => {
-            const maj = detail?.majority;
+            const maj =
+              detail?.majority ??
+              (data.cell?.verdict && data.cell.n_reps != null
+                ? {
+                    verdict: data.cell.verdict,
+                    reason: data.cell.reason,
+                    reasoning: data.cell.reasoning,
+                    confidence: data.cell.confidence,
+                    n_reps: data.cell.n_reps,
+                    agreement: data.cell.majority_agreement ?? 1,
+                  }
+                : null);
             const reason = maj?.reason ?? data.cell?.reason ?? null;
             const reasoning = maj?.reasoning ?? data.cell?.reasoning ?? null;
             // Dedupe replicates by replicate number (defensive — a cell
@@ -249,10 +279,16 @@ export function RationaleDrawer({
                 {reason ? (
                   <p className={styles.drawerReason}>
                     <span className="label-mono">Model reason code · </span>
-                    {reason.replace(/_/g, " ")}
+                    {prettyEnum(reason)}
                   </p>
                 ) : null}
-                {reasoning ? (
+                {status === "refused" && !maj ? (
+                  <p className={styles.drawerReasoningEmpty}>
+                    Refused — the model&apos;s safety classifier declined
+                    this call, so it returned no verdict or reasoning. Any
+                    replicates on file are listed below.
+                  </p>
+                ) : reasoning ? (
                   <p className={styles.drawerReasoning}>{reasoning}</p>
                 ) : (
                   <p className={styles.drawerReasoningEmpty}>
@@ -261,12 +297,13 @@ export function RationaleDrawer({
                 )}
                 {/* Other replicates — the per-rep spread minus the one
                     already shown as the majority. Scroll to reveal.
-                    Errored reps (null verdict — the model failed to emit a
-                    valid verdict/reason combo even after a retry) are shown
-                    as ERRORED and their stale pre-null reasoning is
-                    SUPPRESSED, so they don't masquerade as a real vote. The
-                    majority's "N/M reps agree" counts only valid reps, so
-                    this keeps the two consistent. */}
+                    Reps with a null verdict are shown as REFUSED (error
+                    "refusal": the safety classifier declined the call) or
+                    ERRORED (the model failed to emit a valid verdict/reason
+                    combo even after a retry), and their stale pre-null
+                    reasoning is SUPPRESSED, so they don't masquerade as a
+                    real vote. The majority's "N/M reps agree" counts only
+                    valid reps, so this keeps the two consistent. */}
                 {otherReps.length > 0 ? (
                   <details className={styles.drawerReps} open>
                     <summary className="label-mono">
@@ -276,18 +313,27 @@ export function RationaleDrawer({
                     </summary>
                     {otherReps.map((rep) => {
                       const errored = rep.predicted_verdict == null;
+                      const refused = errored && rep.error === "refusal";
                       return (
                         <div key={rep.replicate} className={styles.drawerRep}>
                           <p className={`label-mono ${styles.drawerRepHead}`}>
                             Rep {rep.replicate} ·{" "}
-                            {errored
-                              ? "errored (no valid verdict)"
-                              : rep.predicted_verdict!.replace(/_/g, " ")}
+                            {refused
+                              ? "refused (safety classifier declined)"
+                              : errored
+                                ? "errored (no valid verdict)"
+                                : rep.predicted_verdict!.replace(/_/g, " ")}
                             {!errored && rep.predicted_reason
-                              ? ` · ${rep.predicted_reason.replace(/_/g, " ")}`
+                              ? ` · ${prettyEnum(rep.predicted_reason)}`
                               : ""}
                           </p>
-                          {errored ? (
+                          {refused ? (
+                            <p className={styles.drawerReasoningEmpty}>
+                              Excluded from the majority — the model&apos;s
+                              safety classifier declined this replicate, so it
+                              returned no verdict.
+                            </p>
+                          ) : errored ? (
                             <p className={styles.drawerReasoningEmpty}>
                               Excluded from the majority — the model didn&apos;t
                               return a schema-valid verdict on this replicate.
@@ -314,13 +360,17 @@ export function RationaleDrawer({
             ) : null}
             {data.cell?.latency_s != null ? (
               <div className={styles.drawerMetaItem}>
-                <dt className="label-mono">Latency</dt>
+                <dt className="label-mono">
+                  Latency{data.cell.replicate != null ? ` · rep ${data.cell.replicate}` : ""}
+                </dt>
                 <dd>{data.cell.latency_s.toFixed(1)} s</dd>
               </div>
             ) : null}
             {data.cell?.cost_usd != null ? (
               <div className={styles.drawerMetaItem}>
-                <dt className="label-mono">Cost</dt>
+                <dt className="label-mono">
+                  Cost{data.cell.replicate != null ? ` · rep ${data.cell.replicate}` : ""}
+                </dt>
                 <dd>${data.cell.cost_usd.toFixed(3)}</dd>
               </div>
             ) : null}
@@ -362,9 +412,12 @@ function lookup(
 ): LookupResult | null {
   const row = matrix.rows.find((r) => r.gene_symbol === sel.symbol);
   if (!row) return null;
-  const model = modelLabels.find((m) => m.id === sel.model);
-  const variant = variantLabels.find((v) => v.id === sel.variant);
-  if (!model || !variant) return null;
+  // Unknown ids still open the drawer under a label derived from the id.
+  const model =
+    modelLabels.find((m) => m.id === sel.model) ?? fallbackModelLabel(sel.model);
+  const variant =
+    variantLabels.find((v) => v.id === sel.variant) ??
+    fallbackVariantLabel(sel.variant);
   const cell = row.verdicts?.[sel.model]?.[sel.variant] ?? null;
   const correct =
     cell?.verdict == null

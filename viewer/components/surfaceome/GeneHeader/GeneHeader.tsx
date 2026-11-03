@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { ReactNode } from "react";
 import type { CatalogRow, DeepDiveFilters } from "../../../lib/surfaceome";
 import {
@@ -15,6 +16,10 @@ import type {
   TriageSignal,
 } from "../../../lib/surfaceome-types";
 import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
+import {
+  libraryMembersByAccession,
+  libraryStructureVariants,
+} from "../../../lib/structure-viewer-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import { renderableTagSites } from "../../../lib/tag-sites-overlay";
@@ -26,7 +31,10 @@ import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceS
 import { linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
-import { StructureViewer } from "../StructureViewerCard/StructureViewer";
+import {
+  StructureViewer,
+  type ActiveTopology,
+} from "../StructureViewerCard/StructureViewer";
 import { TopologyBar } from "../IsoformsCard/TopologyBar";
 import styles from "./GeneHeader.module.css";
 
@@ -36,6 +44,22 @@ import styles from "./GeneHeader.module.css";
 function _isoformLabel(isoformId: string): string {
   const m = /-(\d+)$/.exec(isoformId);
   return m ? `Isoform ${m[1]}` : isoformId;
+}
+
+/**
+ * UniProt isoform number out of an accession, for ordering. Infinity when there is no
+ * suffix to parse, so an unparseable id sorts last rather than silently first.
+ *
+ * Needed because the suffix must be compared as a NUMBER. The API returns
+ * `isoform_topologies` ordered by `uniprot_acc_full ASC`, which is a text sort, so
+ * `P15941-10` sorts before `P15941-2`. For a gene with ten or more isoforms the 3D tab
+ * cap below therefore kept 10, 11, 12 rather than 2, 3, 4 — the opposite of the "major
+ * isoforms first" it claims. MUC1 is the case that surfaced it: its tabs showed isoforms
+ * 10-12 and not Isoform 8, which is the proteoform the library actually orders.
+ */
+export function isoformNumber(isoformId: string): number {
+  const m = /-(\d+)$/.exec(isoformId);
+  return m ? Number(m[1]) : Number.POSITIVE_INFINITY;
 }
 
 /** Best-effort DeepTMHMM type inference from a per-residue topology
@@ -309,12 +333,20 @@ export function GeneHeader({
   // 5-DB strip (catalogRow.db.uniprot) — absent → no badge (graceful, like the
   // strip). UniProt (not SURFY) because it captures the understudied
   // olfactory/taste GPCR class SURFY structurally misses.
+  // Prefer the Worker's own verdict: it evaluates the badge against the
+  // SurfaceBench-OPTIMIZED UniProt cutoff, and `db.uniprot` here is the
+  // NATIVE 5-DB strip flag, which cannot express that rule. Recomputing
+  // locally from the native flag is exactly why this page used to show no
+  // badge for genes the catalog badged (LY6L: native 0, optimized 1).
+  // The local predicate stays as the fallback for rows served before the
+  // field shipped, or from the fs snapshot.
   const lowLitSurface =
     !!catalogRow &&
-    isLowLiteratureSurface(
-      rec.filters as unknown as DeepDiveFilters,
-      catalogRow.db.uniprot === 1,
-    );
+    (catalogRow.low_lit_uniprot ??
+      isLowLiteratureSurface(
+        rec.filters as unknown as DeepDiveFilters,
+        catalogRow.db.uniprot === 1,
+      ));
   // Deep-dive tier callout — the same five-tier classification the catalog +
   // Figure 5 use, so the reader sees which shortlist this gene lands in
   // (Canonical / Likely / …) plus its Cell-state-induced / Cell-type-restricted
@@ -325,10 +357,39 @@ export function GeneHeader({
   // a residue + left-percent along the canonical topology). Shared by the 3D
   // spheres and the linear-bar pins so both overlays agree exactly. Empty when
   // no asset / no data / no structure to place them on.
+  // Residue selection shared by the 3D viewer's "Highlight residue" box
+  // and the topology strip under it: a strip click is sent to the viewer
+  // as a request, and the viewer reports back what it highlighted so the
+  // strip can draw the pink marker.
+  const [residueRequest, setResidueRequest] = useState<
+    { resi: number; nonce: number } | null
+  >(null);
+  const [highlightedResidue, setHighlightedResidue] = useState<number | null>(null);
+  // The viewer's active tab, so the strip under it draws that tab's sequence
+  // rather than always the canonical one. Null until the viewer reports in.
+  const [activeTopology, setActiveTopology] = useState<ActiveTopology | null>(null);
   const tagSiteRows =
     taggedSites?.has_data && structureData
       ? renderableTagSites(taggedSites.sites, structureData.topology.length)
       : [];
+  // Tag sites are canonical-keyed, so they only belong on a canonical-numbered
+  // tab, and only on the residues that tab's structure contains.
+  const covered = activeTopology?.coveredRange ?? null;
+  const stripTagSites =
+    activeTopology?.canonicalNumbering === false
+      ? []
+      : covered
+        ? tagSiteRows.filter((r) => r.residue >= covered.start && r.residue <= covered.end)
+        : tagSiteRows;
+  // Canonical-frame string for a partial structure: residues outside the
+  // covered range become TopologyBar's "-" gap, drawn as blank space that
+  // keeps its width, so the covered stretch stays at its canonical position.
+  const stripTopology = activeTopology?.topology ?? structureData?.topology ?? "";
+  const stripCoverageFrame = covered
+    ? Array.from(stripTopology, (ch, i) =>
+        i + 1 >= covered.start && i + 1 <= covered.end ? ch : "-",
+      ).join("")
+    : null;
   // The fetcher signals what kind of pLDDT the number is via the
   // ``source`` string (see :func:`tools.afdb_plddt.fetch_afdb_plddt`).
   //   * "placeholder" — fetcher hasn't run, the 0.0 isn't a measurement.
@@ -762,6 +823,12 @@ export function GeneHeader({
             <StructureViewer
               data={structureData}
               geneSymbol={g.hgnc_symbol}
+              residueRequest={residueRequest}
+              onHighlightChange={setHighlightedResidue}
+              onActiveTopologyChange={setActiveTopology}
+              // Marks every tab whose sequence a library member orders, and
+              // says under the strip whether the open tab is one of them.
+              libraryMembers={libraryMembersByAccession(rec)}
               // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
               // model when this gene is in the manifest. Renders as a
               // "Homo-oligomer" tab right after Canonical and before
@@ -891,11 +958,54 @@ export function GeneHeader({
               // ortholog isoforms aren't structurally interesting here),
               // and only when it actually carries a topology string.
               variants={[
-                // Cap the 3D tab strip at the first 3 isoforms.
-                // isoform_topologies is in UniProt isoform-number order
-                // (Isoform 2, 3, 4, …) — major isoforms first — so the
-                // slice keeps the MAJOR ones rather than picking by
-                // topology divergence. A gene with many isoforms would
+                // LIBRARY MEMBERS COME FIRST, before the isoform and ortholog tabs.
+                // These are the proteins we are actually ordering, so they are the ones a
+                // reader opening this card is deciding about; an isoform we are not building
+                // is context for them rather than the other way round. The canonical tab is
+                // rendered separately ahead of this list and is unchanged.
+                // A member's ORF is its designed CDS translated, and for a substantial
+                // minority that is not the gene's canonical sequence -- which is what the
+                // canonical tab and the isoform tabs below are about. The label names the
+                // proteoform (Canonical / Isoform N / Cyno / Mouse / Designed ORF) and the
+                // L1/L2 badge says it is a construct, rather than the label carrying
+                // "Ordered" and the identity going unsaid.
+                // Each tab carries the member's own v1 topology and the structure
+                // chosen for it (ours from R2, or AFDB's where its model is genuinely the
+                // ordered protein), so the overlay and the coordinates describe one
+                // protein. Members with no chosen structure, or no topology for their
+                // exact sequence, get no tab rather than a canonical stand-in.
+                // Pass the accessions already on screen so a member whose chosen
+                // structure IS one of those models does not get a second, identical tab.
+                // SLC6A8 is that case: its library construct is AFDB's AF-P48029-F1 and
+                // P48029 is the gene's canonical accession. The card marks the existing
+                // tab instead (libraryMembersByAccession), which also reads better --
+                // "Canonical is the library construct" rather than two tabs that are the
+                // same coordinates.
+                ...libraryStructureVariants(rec, [
+                  rec.gene.uniprot_acc,
+                  ...rec.deterministic_features.isoform_topologies.map(
+                    (iso) => iso.uniprot_acc,
+                  ),
+                  ...rec.deterministic_features.isoform_topologies.map(
+                    (iso) => iso.isoform_id,
+                  ),
+                  ...(
+                    ["mouse", "cynomolgus"] as const
+                  ).flatMap((sp) =>
+                    rec.deterministic_features.orthologs[sp].map(
+                      (o) => o.ortholog_uniprot_acc,
+                    ),
+                  ),
+                ]),
+                // Cap the 3D tab strip at the 3 LOWEST-NUMBERED isoforms —
+                // the major ones — sorting the suffix as a number rather
+                // than relying on the order the API returns. That order is
+                // `uniprot_acc_full ASC`, a TEXT sort, so `-10` precedes
+                // `-2` and a gene with ten or more isoforms had the cap
+                // keep 10, 11, 12 instead (MUC1 showed isoforms 10-12 and
+                // not Isoform 8, the proteoform the library orders).
+                // Lowest-numbered first picks the MAJOR ones rather than
+                // picking by topology divergence. A gene with many isoforms would
                 // otherwise overflow the tab strip (and add dead 404 tabs
                 // for isoforms AFDB doesn't model). The §Isoforms table
                 // below still lists EVERY isoform; this cap is 3D-only.
@@ -908,6 +1018,11 @@ export function GeneHeader({
                 // as in IsoformsCard; same fix.
                 ...rec.deterministic_features.isoform_topologies
                   .filter((iso) => iso.isoform_id !== rec.gene.uniprot_acc)
+                  .slice()
+                  .sort(
+                    (a, b) =>
+                      isoformNumber(a.isoform_id) - isoformNumber(b.isoform_id),
+                  )
                   .slice(0, 3)
                   .map((iso) => ({
                     source: "afdb" as const,
@@ -955,25 +1070,32 @@ export function GeneHeader({
                 ),
               ]}
             />
-            {/* Linear tag-site overlay — the canonical topology bar with a
-                pin per rendered tag site, colored by provenance to match the
-                3D "Tag sites" spheres. GeneHeader renders no canonical
-                TopologyBar of its own, so this labelled full-width bar is
-                added beneath the viewer (fallback per the overlay plan). Only
-                shown when the gene actually has rendered tag sites. */}
-            {tagSiteRows.length > 0 ? (
-              <TopologyBar
-                topology={structureData.topology}
-                ariaLabel={`${g.hgnc_symbol} canonical topology with tag-insertion sites`}
-                pins={tagSiteRows.map((r) => ({
-                  siteId: r.siteId,
-                  leftPct: r.leftPct,
-                  provenance: r.provenance,
-                  category: r.category,
-                  tagType: r.tagType,
-                }))}
-              />
-            ) : null}
+            {/* Topology strip under the viewer, for the sequence on the
+                active tab (canonical until the viewer reports otherwise).
+                Carries a pin per rendered tag site (colored to match the 3D
+                "Tag sites" spheres) on tabs numbered on the canonical
+                sequence — tag sites are canonical-keyed, so they'd land on
+                the wrong residues of an isoform or ortholog. Doubles as the
+                residue picker: a click highlights that residue (or the tag
+                site under the click) in the 3D view, and the viewer's
+                highlighted residue shows here as a pink line. */}
+            <TopologyBar
+              topology={stripTopology}
+              canonicalFrame={stripCoverageFrame}
+              ariaLabel={`${g.hgnc_symbol} ${(activeTopology?.label ?? "Canonical").toLowerCase()} topology${covered ? ` (structure covers residues ${covered.start}–${covered.end})` : ""}${stripTagSites.length > 0 ? " with tag-insertion sites" : ""}; click to highlight a residue in the 3D view`}
+              pins={stripTagSites.map((r) => ({
+                siteId: r.siteId,
+                leftPct: r.leftPct,
+                provenance: r.provenance,
+                category: r.category,
+                tagType: r.tagType,
+                residue: r.residue,
+              }))}
+              onResidueClick={(resi) =>
+                setResidueRequest((prev) => ({ resi, nonce: (prev?.nonce ?? 0) + 1 }))
+              }
+              markerResidue={highlightedResidue}
+            />
             {/* Legend moved INSIDE <StructureViewer> so it can
                 switch between the M/O/I/S/B topology key and the
                 EC/IC/TM sites key based on the viewer's internal

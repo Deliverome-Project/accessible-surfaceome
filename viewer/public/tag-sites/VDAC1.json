@@ -1,0 +1,20 @@
+{
+  "has_data": false,
+  "gene_symbol": "VDAC1",
+  "uniprot_acc": "P21796",
+  "sites": [],
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "VDAC1-surface_loop-282::iso::Q60932",
+      "isoform_id": "Q60932",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 282,
+      "canonical_residue": 269,
+      "left_pct": 95.27027027027027
+    }
+  ]
+}

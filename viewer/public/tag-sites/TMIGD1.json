@@ -1,0 +1,153 @@
+{
+  "has_data": true,
+  "gene_symbol": "TMIGD1",
+  "uniprot_acc": "Q6UXZ0",
+  "sites": [
+    {
+      "site_id": "TMIGD1-surface_loop-78",
+      "gene_symbol": "TMIGD1",
+      "uniprot_acc": "Q6UXZ0",
+      "provenance": "deterministic_computed",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "insert_after_residue": 78,
+      "residue_before": "S",
+      "residue_after": "G",
+      "residue_label": "S78",
+      "residue_range": "V74-K81",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA, DogTag",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (surface_loop path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "ordered surface loop (8 aa): pLDDT>=70, DSSP loop/turn, exposed junction residue (max RSA), indel-tolerant, 3D-clear of features",
+      "sources": [],
+      "plddt": 75.2,
+      "conservation_rank": null,
+      "median_conservation": 0.5
+    },
+    {
+      "site_id": "TMIGD1-terminal-n",
+      "gene_symbol": "TMIGD1",
+      "uniprot_acc": "Q6UXZ0",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": 28,
+      "residue_before": "S",
+      "residue_after": "S",
+      "residue_label": "S28",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "mature extracellular N-terminus after signal-peptide cleavage (signal 1-28, 'O' at residue 29) \u2014 N-terminal tag placed just after the cleavage site",
+      "sources": [],
+      "plddt": 80.6,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "TMIGD1-surface_loop-29::iso::Q6UXZ0-2",
+      "isoform_id": "Q6UXZ0-2",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 29,
+      "canonical_residue": 29,
+      "left_pct": 13.302752293577983
+    },
+    {
+      "site_id": "TMIGD1-surface_loop-77::iso::Q6UXZ0-2",
+      "isoform_id": "Q6UXZ0-2",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 77,
+      "canonical_residue": 77,
+      "left_pct": 35.321100917431195
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "TMIGD1-disorder-108::iso::A0A2K5W0J8",
+      "isoform_id": "A0A2K5W0J8",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 108,
+      "canonical_residue": 77,
+      "left_pct": 36.86006825938566
+    },
+    {
+      "site_id": "TMIGD1-disorder-91::iso::A0A2K5W0J8",
+      "isoform_id": "A0A2K5W0J8",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 91,
+      "canonical_residue": 60,
+      "left_pct": 31.058020477815703
+    },
+    {
+      "site_id": "TMIGD1-surface_loop-105::iso::A0A2K5W0J8",
+      "isoform_id": "A0A2K5W0J8",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 105,
+      "canonical_residue": 74,
+      "left_pct": 35.83617747440273
+    },
+    {
+      "site_id": "TMIGD1-surface_loop-28::iso::Q9D7L8",
+      "isoform_id": "Q9D7L8",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 28,
+      "canonical_residue": 29,
+      "left_pct": 10.727969348659004
+    },
+    {
+      "site_id": "TMIGD1-surface_loop-60::iso::A0A2K5W0J8",
+      "isoform_id": "A0A2K5W0J8",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 60,
+      "canonical_residue": 29,
+      "left_pct": 20.477815699658702
+    },
+    {
+      "site_id": "TMIGD1-surface_loop-78::iso::Q9D7L8",
+      "isoform_id": "Q9D7L8",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 78,
+      "canonical_residue": 79,
+      "left_pct": 29.88505747126437
+    }
+  ]
+}

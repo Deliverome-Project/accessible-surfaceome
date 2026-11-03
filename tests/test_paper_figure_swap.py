@@ -36,6 +36,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "paper"))
 from figure_swap import (  # noqa: E402  # ty: ignore[unresolved-import]
     FigureSpec,
     _key_from_span_id,
+    compare_figures,
+    format_change_alert,
     format_report,
     load_manifest,
     resolve_asset,
@@ -356,3 +358,134 @@ def test_format_report_handles_empty_report() -> None:
     from figure_swap import SwapReport  # ty: ignore[unresolved-import]
     out = format_report(SwapReport())
     assert "manifest empty" in out or "no figures matched" in out
+
+
+# ── Change alert: .docx figure vs the render swapped in ───────────────
+
+
+def _chart(path: Path, *, label: str = "0.85", size: tuple[int, int] = (1800, 1200),
+           transparent: bool = True) -> Path:
+    """A chart-like test image: axes, bars and a text label, at 600 DPI."""
+    from PIL import Image, ImageDraw
+
+    im = Image.new("RGBA" if transparent else "RGB", size,
+                   (0, 0, 0, 0) if transparent else "white")
+    d = ImageDraw.Draw(im)
+    w, h = size
+    d.line([(100, h - 100), (w - 60, h - 100)], fill="black", width=6)
+    d.line([(100, 60), (100, h - 100)], fill="black", width=6)
+    for i, frac in enumerate((0.3, 0.55, 0.8, 0.45)):
+        x = 200 + i * 360
+        d.rectangle([x, h - 100 - int(frac * (h - 200)), x + 220, h - 100], fill=(188, 60, 76))
+    d.text((w - 380, 80), label, fill="black", font_size=110)
+    im.save(path, dpi=(600, 600))
+    return path
+
+
+def _as_docx_would(src: Path, dest: Path, width: int = 900) -> Path:
+    """What the .docx round-trip does: downscale, flatten, JPEG-compress."""
+    from PIL import Image
+
+    with Image.open(src) as im:
+        rgba = im.convert("RGBA")
+        flat = Image.new("RGBA", rgba.size, "white")
+        flat.alpha_composite(rgba)
+        small = flat.convert("RGB").resize((width, round(width * im.height / im.width)))
+        small.save(dest, "JPEG", quality=70)
+    return dest
+
+
+def test_compare_ignores_docx_reencoding(tmp_path: Path) -> None:
+    new = _chart(tmp_path / "new.png")
+    old = _as_docx_would(new, tmp_path / "old.jpg")
+    changed, n_px, aspect = compare_figures(old, new, out_path=tmp_path / "cmp.png")
+    assert not changed and n_px == 0 and aspect < 0.01
+    assert not (tmp_path / "cmp.png").exists()  # only written for a changed figure
+
+
+def test_compare_flags_one_edited_number(tmp_path: Path) -> None:
+    new = _chart(tmp_path / "new.png", label="0.92")
+    old = _as_docx_would(_chart(tmp_path / "prev.png", label="0.85"), tmp_path / "old.jpg")
+    changed, n_px, _ = compare_figures(old, new, out_path=tmp_path / "cmp.png")
+    assert changed and n_px > 25
+    from PIL import Image
+    with Image.open(tmp_path / "cmp.png") as sheet:  # old | new | difference
+        assert sheet.width > 3 * sheet.height  # three panels side by side
+
+
+def test_compare_flags_a_reshaped_figure(tmp_path: Path) -> None:
+    new = _chart(tmp_path / "new.png", size=(1800, 1500))
+    old = _as_docx_would(_chart(tmp_path / "prev.png", size=(1800, 1200)), tmp_path / "old.jpg")
+    changed, _, aspect = compare_figures(old, new)
+    assert changed and aspect > 0.01
+
+
+def _docx_html(tmp_path: Path, docx_image: Path) -> Path:
+    html = tmp_path / "paper.html"
+    html.write_text(
+        "<!DOCTYPE html><html><body>"
+        f'<p><span id="supplementary-figure-15.-reproducible"></span><img src="{docx_image.name}"/></p>'
+        "<h5>Supplementary Figure 15. Reproducible.</h5></body></html>"
+    )
+    return html
+
+
+def test_swap_alerts_on_a_fresh_figure(tmp_path: Path) -> None:
+    figures = tmp_path / "figures"
+    figures.mkdir()
+    _chart(figures / "s15.png", label="0.92")
+    docx_image = _as_docx_would(_chart(tmp_path / "prev.png", label="0.85"), tmp_path / "image1.jpg")
+    html = _docx_html(tmp_path, docx_image)
+    manifest = {"supplementary-15": FigureSpec(slug="s15", format="png")}
+
+    report = swap_figures(html, manifest, figures, compare_dir=tmp_path / "changes")
+
+    assert [c.status for c in report.changes] == ["changed"]
+    change = report.changes[0]
+    assert change.comparison_image is not None and change.comparison_image.is_file()
+    alert = format_change_alert(report)
+    assert "1 FIGURE(S) DIFFER" in alert and "supplementary-figure-15" in alert
+    assert str(change.comparison_image) in alert
+    assert alert in format_report(report)
+
+
+def test_swap_is_quiet_when_the_figure_is_unchanged(tmp_path: Path) -> None:
+    figures = tmp_path / "figures"
+    figures.mkdir()
+    new = _chart(figures / "s15.png")
+    docx_image = _as_docx_would(new, tmp_path / "image1.jpg")
+    html = _docx_html(tmp_path, docx_image)
+    manifest = {"supplementary-15": FigureSpec(slug="s15", format="png")}
+
+    report = swap_figures(html, manifest, figures, compare_dir=tmp_path / "changes")
+
+    assert [c.status for c in report.changes] == ["unchanged"]
+    assert format_change_alert(report) == ""
+    assert not (tmp_path / "changes").exists()
+
+
+def test_vector_figures_compare_against_their_png_sibling(tmp_path: Path) -> None:
+    figures = tmp_path / "figures"
+    figures.mkdir()
+    (figures / "s15.svg").write_bytes(
+        b'<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"/>'
+    )
+    _chart(figures / "s15.png", label="0.92")
+    docx_image = _as_docx_would(_chart(tmp_path / "prev.png", label="0.85"), tmp_path / "image1.jpg")
+    html = _docx_html(tmp_path, docx_image)
+    report = swap_figures(html, {"supplementary-15": FigureSpec(slug="s15", format="svg")}, figures)
+    assert [c.status for c in report.changes] == ["changed"]
+    assert "s15.svg" in html.read_text()  # the swap itself is unchanged
+
+
+def test_figure_without_a_raster_is_reported_not_compared(tmp_path: Path) -> None:
+    figures = tmp_path / "figures"
+    figures.mkdir()
+    (figures / "s15.svg").write_bytes(
+        b'<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"/>'
+    )
+    docx_image = _as_docx_would(_chart(tmp_path / "prev.png"), tmp_path / "image1.jpg")
+    html = _docx_html(tmp_path, docx_image)
+    report = swap_figures(html, {"supplementary-15": FigureSpec(slug="s15", format="svg")}, figures)
+    assert [c.status for c in report.changes] == ["not_compared"]
+    assert "not compared" in format_report(report)

@@ -6,11 +6,20 @@ name: D1 backup → R2
 # changes touch the data the DBs store or the schema / uploader that
 # defines them.
 #
-# The workflow runs `wrangler d1 export` twice and pushes each dump to
-# the R2 bucket `deliverome-d1-backups` under a timestamped key plus a
-# stable `latest.sql` pointer. Combined with Cloudflare's built-in Time
+# The workflow runs `wrangler d1 export` twice, gzips + splits each dump
+# into 250 MiB parts (wrangler's put limit is 300 MiB; the agents dump is
+# >2 GiB), verifies they reassemble, and pushes parts + manifest to the
+# R2 bucket `deliverome-d1-backups` under a timestamped prefix plus a
+# stable `latest.manifest.json` pointer. Combined with Cloudflare's built-in Time
 # Travel (7-30 day automatic point-in-time recovery), this gives us
 # long-term offsite versioning with grep-able SQL for both DBs.
+#
+# The PUBLIC export runs only on the weekly schedule (a quiet hour) or a
+# manual run with `include_public`. D1 refuses queries while an export
+# runs, so exporting `surfaceome_public` on every qualifying push made
+# every uncached API request fail for the length of the export (345 errors
+# across two backups on 2026-10-17/18). The private agents DB, which no
+# live traffic reads, is still exported on every push.
 #
 # Required repo secrets (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN — scoped to D1:Edit and R2:Edit on the account
@@ -20,16 +29,16 @@ name: D1 backup → R2
 # without needing `wrangler login`.
 
 on:
+  # Weekly floor, so the offsite copy cannot silently go stale during a
+  # quiet stretch. Push-triggered runs still fire on data/schema changes;
+  # this only guarantees a backup exists even if nobody pushes.
+  schedule:
+    - cron: "0 6 * * 1"   # Mondays 06:00 UTC
   push:
     branches: [main]
     paths:
       # Schema / SQL — any change to the D1 schema triggers a fresh dump.
       - "cloudflare/d1_schema.sql"
-      - "cloudflare/d1_public_schema.sql"
-      - "cloudflare/migrations/contact_sites.sql"
-      - "scripts/publish_contact_sites.py"
-      - "scripts/audit/export_contact_release.mjs"
-      - "viewer/public/data/contact-sites/**"
       # Eval data — benchmark TSV + any live run output.
       - "data/eval/triage_benchmark_v1.tsv"
       - "data/eval/triage_haiku_live_run.tsv"
@@ -40,11 +49,16 @@ on:
       - "data/processed/candidate_universe/**"
       # Uploaders / backup / public-sync scripts.
       - "src/accessible_surfaceome/cloud/**"
-      - "scripts/sync_public_d1.py"
-      - "scripts/d1_export_to_r2.sh"
-      - "scripts/d1_triage_backup.sh"
+      - "scripts/cloud/sync_public_d1.py"
+      - "scripts/cloud/d1_export_to_r2.sh"
+      - "scripts/cloud/d1_triage_backup.sh"
       - ".github/workflows/d1-backup.yml"
   workflow_dispatch:  # allow manual triggers from the Actions tab
+    inputs:
+      include_public:
+        description: "Also export surfaceome_public (the live API's DB; blocks API queries while it runs)"
+        type: boolean
+        default: false
 
 concurrency:
   group: d1-backup-${{ github.ref }}
@@ -57,9 +71,9 @@ jobs:
     # forks can't read.
     if: github.repository == 'Deliverome-Project/accessible-surfaceome'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: ".nvmrc"
           cache: "npm"
@@ -79,13 +93,16 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: bash scripts/d1_export_to_r2.sh --db surfaceome_agents
+        run: bash scripts/cloud/d1_export_to_r2.sh --db surfaceome_agents
 
       - name: Export surfaceome_public → R2
+        # Weekly schedule or explicit opt-in only: the export blocks the
+        # live API's queries while it runs (see the header comment).
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.include_public)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: bash scripts/d1_export_to_r2.sh --db surfaceome_public
+        run: bash scripts/cloud/d1_export_to_r2.sh --db surfaceome_public
 
       - name: Summary
         if: always()
@@ -96,5 +113,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Backups uploaded to R2 bucket: \`deliverome-d1-backups\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- \`d1-backups/surfaceome_agents/latest.sql\` (full agent write log)" >> $GITHUB_STEP_SUMMARY
-          echo "- \`d1-backups/surfaceome_public/latest.sql\` (public read-only mirror)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`d1-backups/surfaceome_agents/latest.manifest.json\` (full agent write log)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`d1-backups/surfaceome_public/latest.manifest.json\` (public read-only mirror)" >> $GITHUB_STEP_SUMMARY

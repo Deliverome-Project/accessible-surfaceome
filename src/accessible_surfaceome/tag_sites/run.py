@@ -11,11 +11,13 @@ from pathlib import Path
 from typing import Any
 
 from .disorder import disorder_candidates
+from .disorder_tracks import consensus as disorder_consensus
 from .emit import emit_tag_sites_json
 from .isoform import classify_isoform_sites
-from .features import ca_coords, feature_distances
+from .features import ca_coords, feature_distances, hazard_separations
 from .signals import (
     merge_signals,
+    write_signals,
     ortholog_conservation,
     per_residue_plddt,
     per_residue_rsa,
@@ -32,11 +34,27 @@ def compute_signals(
     sequence: str,
     ortholog_seqs: list[str],
     hazard_res: set[int],
+    disorder_tracks: dict[str, list[float]] | None = None,
+    propeptide: tuple[int, int] | None = None,
 ) -> dict[str, Any]:
     """Build the full per-residue signal dict the gates consume, all from
     source: structural signals off the AF model, ortholog-MSA conservation, and
-    the UniProt-feature 3D-distance veto."""
+    the UniProt-feature 3D-distance veto.
+
+    ``disorder_tracks`` maps predictor name to a per-residue 0-1 disorder score, from
+    ``disorder_public``. Supplying it replaces the disorder lane's pLDDT proxy with the
+    published predictors, which is worth doing: scored against Tedman's 112 validated
+    junctions the predictors land a median 3 aa away and the pLDDT proxy 40 aa."""
+    extra: dict[str, Any] = {}
+    if propeptide:
+        # A cleaved C-terminus cannot carry a tag; the terminal lane refuses one
+        # there. Absent means "not annotated", which is not the same as "no
+        # propeptide" — see `features.c_terminal_propeptide`.
+        extra["propeptide"] = propeptide
+    if disorder_tracks:
+        extra["disorder"] = disorder_consensus(disorder_tracks, len(sequence))
     return merge_signals(
+        extra,
         {
             "plddt": per_residue_plddt(pdb_path),
             "rsa": per_residue_rsa(pdb_path),
@@ -46,6 +64,11 @@ def compute_signals(
             "topology": topology,
             "sequence": sequence,
             "feature_dist": feature_distances(pdb_path, hazard_res),
+            # Sequence separation to the nearest hazard, reported ALONGSIDE the
+            # spatial distance rather than folded into it. "A functional atom
+            # is close in space" and "a functional residue is adjacent in the
+            # chain" are different claims and only the first is a clash.
+            "hazard_sep": hazard_separations(pdb_path, hazard_res),
             "ca": ca_coords(pdb_path),  # for the terminus-proximity filter (3D)
         },
         ortholog_conservation(sequence, ortholog_seqs),  # conservation + gap_freq
@@ -124,9 +147,13 @@ def derive_deterministic_sites(
     surf = surface_loop_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     diso = disorder_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     by_res: dict[int, dict[str, Any]] = {}
-    for s in surf:  # surface_loop first → preferred on collision
-        by_res.setdefault(s["insert_after_residue"], s)
+    # Disorder first, so it wins a residue both lanes name. The ordered-loop lane requires
+    # pLDDT >= 70 for trustworthy RSA/DSSP geometry, but 108 of Tedman's 112 validated
+    # junctions sit below that -- low pLDDT IS the flexibility signal there, not a quality
+    # problem -- so preferring the ordered nomination inverts what the evidence supports.
     for s in diso:
+        by_res.setdefault(s["insert_after_residue"], s)
+    for s in surf:
         by_res.setdefault(s["insert_after_residue"], s)
     internal = sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
     return _with_terminals(internal, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
@@ -164,7 +191,7 @@ def select_deterministic_representatives(
         disorder_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     )
     by_res: dict[int, dict[str, Any]] = {}
-    for s in surf + diso:  # surface_loop first -> preferred on residue collision
+    for s in diso + surf:  # disorder first -> preferred on residue collision (see merge note)
         by_res.setdefault(s["insert_after_residue"], s)
     return sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
 
@@ -179,17 +206,35 @@ def run_gene(
     pdb_path: str,
     hazard_res: set[int],
     out_dir: str | Path,
+    signals_dir: str | Path | None = None,
+    propeptide: tuple[int, int] | None = None,
 ) -> dict[str, Any]:
     """End-to-end for one gene: compute signals → both gates → representative
     selection (so a dense ectodomain doesn't emit hundreds of adjacent sites) →
-    emit merged JSON."""
+    emit merged JSON.
+
+    ``signals_dir`` additionally writes the per-residue arrays the gates consumed.
+    Every gate here is a cutoff on those arrays, and recomputing them means refetching
+    an AlphaFold model and rerunning DSSP, so persisting them is what makes a later
+    re-threshold a local operation rather than a rerun of the expensive half.
+
+    ``propeptide`` is the span maturation removes from the C-terminus, from
+    ``features.cleaved_c_terminus``. The terminal lane refuses a C-terminal tag
+    inside it, so omitting it does not fail loudly — it silently publishes a tag
+    at a residue the cell cuts off, which is what 115 GPI genes currently carry.
+    The caller supplies it because the caller already holds the UniProt features
+    it is read from."""
     signals = compute_signals(
         pdb_path,
         topology=topology,
         sequence=sequence,
         ortholog_seqs=ortholog_seqs,
         hazard_res=hazard_res,
+        propeptide=propeptide,
     )
+    if signals_dir is not None:
+        write_signals(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc,
+                      out_dir=signals_dir)
     surf = select_representatives(
         surface_loop_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     )
@@ -197,7 +242,7 @@ def run_gene(
         disorder_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     )
     by_res: dict[int, dict[str, Any]] = {}
-    for s in surf + diso:  # surface_loop first → preferred on residue collision
+    for s in diso + surf:  # disorder first -> preferred on residue collision (see merge note)
         by_res.setdefault(s["insert_after_residue"], s)
     internal = sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
     sites = _with_terminals(internal, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)

@@ -47,7 +47,19 @@ export async function fetchTaggedSites(
   let worker: TaggedSitesFile | null = null;
   if (apiBase) {
     const fromWorker = await tryFetch(`${apiBase}/v1/tag-sites/${key}`);
-    if (fromWorker?.has_data && fromWorker.sites.length > 0) worker = fromWorker;
+    // Keep the Worker's answer when it has sites OR when it knows the gene was
+    // SEARCHED (prompt_sha set). Requiring sites meant a searched gene that
+    // found nothing — 1,107 of 1,835 — fell through to the static asset and
+    // lost the one thing it had to say, because has_data is false for exactly
+    // those genes and sites.length is 0 either way.
+    if (
+      fromWorker &&
+      (fromWorker.sites.length > 0 ||
+        Boolean(fromWorker.prompt_sha) ||
+        (fromWorker.literature_other_positions?.length ?? 0) > 0)
+    ) {
+      worker = fromWorker;
+    }
   }
   // No Worker data -> the static asset carries everything (sites + isoform_pins).
   if (!worker) return tryFetch(`/tag-sites/${key}.json`);

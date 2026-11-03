@@ -13,6 +13,13 @@ import {
   type EnrichRow,
 } from "../../lib/compare-stats";
 import { DD_BOOL_FIELDS, DD_ENUM_FIELDS } from "../../lib/deep-dive-fields";
+
+/** Export text for a deep-dive facet value; multi-valued facets (surface
+ *  methods) join with "; " so a CSV cell stays one field. */
+function ddValueText(v: unknown): string {
+  if (Array.isArray(v)) return v.join("; ");
+  return typeof v === "string" ? v : "";
+}
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import { InfoTip } from "../InfoTip/InfoTip";
 import styles from "./CompareTool.module.css";
@@ -648,7 +655,7 @@ function buildCompareTsv(entries: ResolvedEntry[]): string {
       triage?.reason ?? "",
       r ? (r.deep_dive ? 1 : 0) : "",
       ...DD_ENUM_FIELDS.map((f) =>
-        ddf ? ((ddf[f.key] as string | undefined) ?? "") : "",
+        ddf ? ddValueText(ddf[f.key]) : "",
       ),
       ...DD_BOOL_FIELDS.map((f) => {
         if (!ddf) return "";
@@ -710,7 +717,7 @@ function buildFullCatalogTsv(
       triage?.reason ?? "",
       yn(r.deep_dive),
       ...DD_ENUM_FIELDS.map((f) =>
-        ddf ? ((ddf[f.key] as string | undefined) ?? "") : "",
+        ddf ? ddValueText(ddf[f.key]) : "",
       ),
       ...DD_BOOL_FIELDS.map((f) => {
         if (!ddf) return "";

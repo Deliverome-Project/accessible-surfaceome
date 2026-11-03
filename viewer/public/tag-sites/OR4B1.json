@@ -4,6 +4,33 @@
   "uniprot_acc": "Q8NGF8",
   "sites": [
     {
+      "site_id": "OR4B1-disorder-259",
+      "gene_symbol": "OR4B1",
+      "uniprot_acc": "Q8NGF8",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 259,
+      "residue_before": "P",
+      "residue_after": "S",
+      "residue_label": "P259",
+      "residue_range": "P259-T262",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 69.3,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    },
+    {
       "site_id": "OR4B1-nterm-tedman",
       "gene_symbol": "OR4B1",
       "uniprot_acc": "Q8NGF8",
@@ -37,7 +64,80 @@
       "plddt": null,
       "conservation_rank": null,
       "median_conservation": null
+    },
+    {
+      "site_id": "OR4B1-terminal-n",
+      "gene_symbol": "OR4B1",
+      "uniprot_acc": "Q8NGF8",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_n",
+      "insert_after_residue": null,
+      "residue_before": null,
+      "residue_after": "M",
+      "residue_label": null,
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular N-terminus (topology 'O' at residue 1) \u2014 direct N-terminal tag",
+      "sources": [],
+      "plddt": 35.4,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
-  "isoform_pins": []
+  "isoform_pins": [],
+  "ortholog_pins": [
+    {
+      "site_id": "OR4B1-disorder-1::iso::A0A7N9CWP4",
+      "isoform_id": "A0A7N9CWP4",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 1,
+      "canonical_residue": 1,
+      "left_pct": 0.3236245954692557
+    },
+    {
+      "site_id": "OR4B1-disorder-264::iso::A0A7N9CWP4",
+      "isoform_id": "A0A7N9CWP4",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 264,
+      "canonical_residue": 264,
+      "left_pct": 85.43689320388349
+    },
+    {
+      "site_id": "OR4B1-surface_loop-258::iso::A0A7N9CWP4",
+      "isoform_id": "A0A7N9CWP4",
+      "classification": "shared",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 258,
+      "canonical_residue": 258,
+      "left_pct": 83.49514563106796
+    },
+    {
+      "site_id": "OR4B1-surface_loop-8::iso::A0A7N9CWP4",
+      "isoform_id": "A0A7N9CWP4",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 8,
+      "canonical_residue": 8,
+      "left_pct": 2.5889967637540456
+    }
+  ]
 }

@@ -307,6 +307,14 @@ export interface DeepDiveFilters {
    *  `TmCountBand`. Derived from the same `tm_helix_count` scalar as
    *  `has_tm`; the band is the finer axis the filter UI keys off. */
   tm_count_band?: TmCountBand;
+  /** Method categories with a DIRECT surface-evidence row in
+   *  `surface_evidence.methods` (catalog row_schema 10+). Sorted. */
+  surface_method_direct?: string[];
+  /** Method categories with only SUPPORTING rows (a method with a direct row
+   *  is not repeated here). Sorted. */
+  surface_method_supporting?: string[];
+  /** A direct surface method in an endogenous / mixed / knock-in system. */
+  has_native_direct_surface_evidence?: boolean;
 }
 
 // Internalization grade type + ordered list live in the client-safe
@@ -366,13 +374,24 @@ export interface CatalogRow {
    *  surface-protein library (`public/data/fg-library.json`). Baked at
    *  build time by an overlay step (`enrichRowsWithFgLibrary`) modeled on
    *  `enrichRowsWithNames`; a TOP-LEVEL catalog facet, independent of
-   *  deep-dive coverage. Always present (defaults to `false`). The public
-   *  Worker does NOT serve this flag — it's a viewer-side overlay. */
-  in_fg_library: boolean;
+   *  deep-dive coverage. Present (`true`) only on members — absent means
+   *  not in the library, so the 17k non-member rows don't each ship a
+   *  `false` in the homepage payload. The public Worker does NOT serve this
+   *  flag — it's a viewer-side overlay. */
+  in_fg_library?: boolean;
   /** Per-gene tag-site category counts (deterministic lanes + termini +
    *  literature), overlaid at build time from public/data/tag-site-counts.json
-   *  (enrichRowsWithTagSiteCounts). Null when the gene has no tag sites. */
-  tag_site_counts: TagSiteCounts | null;
+   *  (enrichRowsWithTagSiteCounts). Absent (or null) when the gene has no
+   *  tag sites. */
+  tag_site_counts?: TagSiteCounts | null;
+  /** Worker-computed low-literature badge. Authoritative: the Worker
+   *  evaluates it against the SurfaceBench-OPTIMIZED UniProt cutoff,
+   *  which `db.uniprot` (the native 5-DB strip flag) cannot express.
+   *  Recomputing it client-side from `db.uniprot` is what made the
+   *  gene page disagree with the catalog — prefer this field and fall
+   *  back to the local predicate only when the Worker hasn't shipped
+   *  it (pre-deploy interim / fs snapshot). */
+  low_lit_uniprot?: boolean;
 }
 
 export interface Catalog {
@@ -584,9 +603,8 @@ function loadFgLibrarySymbols(): Set<string> {
 
 /** Set the top-level `in_fg_library` flag on every row from the committed
  *  membership snapshot. Modeled on `enrichRowsWithNames` — a build-time
- *  overlay step keyed by symbol. Every row already carries `in_fg_library`
- *  from `inflateCatalogRow` (default false); this flips it to true for
- *  library members. */
+ *  overlay step keyed by symbol. Rows arrive without the key (absent =
+ *  not a member); this sets it to true for library members. */
 function enrichRowsWithFgLibrary(
   rows: CatalogRow[],
   symbols: Set<string>,
@@ -613,7 +631,7 @@ function loadTagSiteCounts(): TagSiteCountsMap {
 
 /** Overlay per-gene tag-site category counts onto rows, keyed by symbol. Build-
  *  time step modeled on enrichRowsWithFgLibrary; rows for genes with no tag
- *  sites keep the inflate default (null). */
+ *  sites stay without the key. */
 function enrichRowsWithTagSiteCounts(
   rows: CatalogRow[],
   counts: TagSiteCountsMap,
@@ -679,7 +697,7 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
   const internLit = (r.intern_lit_grade ?? r.internalization_lit) as
     | InternalizationLitGrade
     | undefined;
-  return {
+  const row: CatalogRow = {
     symbol: r.symbol as string,
     uniprot: (r.uniprot as string | undefined) ?? "",
     name: r.name as string | undefined,
@@ -694,13 +712,28 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
       Boolean(r.intern_lit ?? r.internalization_has_lit) || undefined,
     internalization_lit: internLit,
     deep_dive_filters: ddf,
-    // Default false — the build-time `enrichRowsWithFgLibrary` overlay flips
-    // it true for library members (the Worker doesn't ship this facet). A
+    // Absent unless true — the build-time `enrichRowsWithFgLibrary` overlay
+    // sets it for library members (the Worker doesn't ship this facet). A
     // snapshot fallback carrying `in_fg_library` is honored if present.
-    in_fg_library: Boolean(r.in_fg_library),
-    // Default null — the build-time enrichRowsWithTagSiteCounts overlay fills it.
-    tag_site_counts: null,
+    in_fg_library: r.in_fg_library ? true : undefined,
+    // tag_site_counts is left absent; enrichRowsWithTagSiteCounts fills it.
+    low_lit_uniprot:
+      typeof r.low_lit_uniprot === "boolean" ? r.low_lit_uniprot : undefined,
   };
+  return omitUndefined(row);
+}
+
+/** Drop keys whose value is `undefined`. The home page hands all ~19k rows
+ *  to a client component, and React's flight serializer writes an
+ *  undefined-valued key as the literal `"$undefined"` rather than omitting
+ *  it — on the internalization fields alone that was ~2 MB of the home
+ *  page's HTML. Every reader treats an absent key and an undefined one the
+ *  same, so omitting them changes nothing but the payload size. */
+function omitUndefined<T extends object>(obj: T): T {
+  for (const k of Object.keys(obj) as (keyof T)[]) {
+    if (obj[k] === undefined) delete obj[k];
+  }
+  return obj;
 }
 
 /** Look up the descriptive gene name for a symbol. Used by the gene
@@ -895,9 +928,11 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
       universe_version: null,
       sources: ["uniprot", "go", "surfy", "cspa", "hpa"],
       models: [
-        "claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5",
+        "claude-haiku-4-5", "claude-haiku-5-5",
+        "claude-sonnet-4-6", "claude-sonnet-5", "claude-sonnet-5-5",
+        "claude-opus-4-8", "claude-opus-5", "claude-opus-5-5",
       ],
-      variants: ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"],
+      variants: ["naive", "ncbi", "ncbi_effort_low", "web_ncbi", "pubmed_ncbi"],
       headline_variant: "ncbi",
       n_genes: 0,
       rows: [],
@@ -1151,34 +1186,86 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
     }));
 }
 
+// Header the Worker sets on a 200 whose serve-time enrichment failed
+// (also carries `Cache-Control: no-store`). Never bake those bytes into a
+// static page — treat exactly like a transient failure and retry, same as
+// the build's bulk fetchers (viewer/scripts/lib/build-fetch.mjs).
+const DEGRADED_HEADER = "X-Surfaceome-Degraded";
+
+// Upper bound on an honoured `Retry-After` wait here (PR #275 review, I2).
+// The Worker's 429 response sends `Retry-After: 60`, but this fetch sits
+// inside a single Next.js `generateStaticParams`/page-render call during
+// `next build`, and `staticPageGenerationTimeout` defaults to 60s for the
+// WHOLE page — a single 60s wait (let alone across up to 3 attempts) would
+// by itself blow that budget and time out the page. 5s keeps the retry
+// responsive to a real rate-limit signal without risking the page timeout;
+// the shared build-fetch.mjs limiter (used by the bulk pre-fetch this is
+// only a fallback for) has no such per-page deadline and doesn't cap it.
+const RETRY_AFTER_CAP_MS = 5_000;
+
+/**
+ * Honour `Retry-After` (seconds, or an HTTP-date) when the Worker sends
+ * one, capped at `RETRY_AFTER_CAP_MS`. A past/now HTTP-date returns
+ * `null` (falls back to the computed backoff) rather than a 0ms wait —
+ * mirrors `parseRetryAfterMs` in `scripts/lib/build-fetch.mjs`.
+ */
+function _parseRetryAfterMs(res: Response | null): number | null {
+  const raw = res?.headers?.get?.("Retry-After");
+  if (raw == null) return null;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds)) return Math.min(Math.max(0, seconds * 1000), RETRY_AFTER_CAP_MS);
+  const dateMs = Date.parse(raw);
+  if (!Number.isNaN(dateMs)) {
+    const delta = dateMs - Date.now();
+    return delta > 0 ? Math.min(delta, RETRY_AFTER_CAP_MS) : null;
+  }
+  return null;
+}
+
 /**
  * Worker fetch for one gene's full SurfaceomeRecord. Returns `null` on a
- * genuine 404 (unpublished gene) or a persistent error; retries transient
- * failures (429 rate-limit, 5xx cold-D1, network) with backoff, mirroring
- * `loadCatalog`.
+ * genuine 404 (unpublished gene) or a persistent error/degraded response;
+ * retries transient failures (429 rate-limit, 5xx cold-D1, network) AND a
+ * 200 response carrying `X-Surfaceome-Degraded` (serve-time enrichment
+ * failed) with backoff, honouring `Retry-After` when present — mirroring
+ * `loadCatalog` and the build's bulk fetchers. On a persistently-degraded
+ * response this still falls back to `null` exactly as a persistent error
+ * does — same behavior the caller (and the page's `notFound()`) already
+ * handles today; a degraded record is simply never returned.
  *
  * This is the LIVE-fetch fallback for `next dev` and any build that
- * skipped the record snapshot. Production SSG never reaches here:
- * `loadSurfaceomeRecord` reads the per-gene record from `build-cache/
- * records/{SYMBOL}.json` (written by `build-data-snapshot.mjs`) first.
- * The retry matters because a naive `next build` fires ~1.2k concurrent
- * per-gene fetches; before the snapshot + retry existed, the resulting
- * 429s were swallowed as `null` → `notFound()` baked a not-found page for
- * every rate-limited gene while the build still succeeded (every gene
- * page 404'd in production). Cache mode is `RECORD_FETCH_CACHE`
+ * skipped the record snapshot (or whose snapshot skipped this specific
+ * gene because it was persistently degraded there — see
+ * `build-data-snapshot.mjs`). Production SSG never reaches here for a
+ * healthy gene: `loadSurfaceomeRecord` reads the per-gene record from
+ * `build-cache/records/{SYMBOL}.json` (written by `build-data-snapshot.mjs`)
+ * first. The retry matters because a naive `next build` fires ~1.2k
+ * concurrent per-gene fetches; before the snapshot + retry existed, the
+ * resulting 429s were swallowed as `null` → `notFound()` baked a not-found
+ * page for every rate-limited gene while the build still succeeded (every
+ * gene page 404'd in production). Cache mode is `RECORD_FETCH_CACHE`
  * (force-cache in prod for SSG, no-store in dev for always-fresh).
  */
 async function _fetchRecordFromWorker(
   symbol: string,
   base: string,
 ): Promise<SurfaceomeRecord | null> {
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  const attempts = 3;
+  const backoffMs = [750, 2000];
+  // Once ANY attempt saw a degraded response, every subsequent attempt
+  // uses `no-store` regardless of `RECORD_FETCH_CACHE` (PR #275 review,
+  // M6) — `force-cache` in production opts this fetch into Next's Data
+  // Cache, and a retry's whole point is to reach the Worker again, not
+  // risk a cache layer handing back the very degraded response being
+  // retried away from.
+  let sawDegraded = false;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     let res: Response | null = null;
     try {
       res = await fetch(`${base}/v1/genes/${symbol}`, {
-        cache: RECORD_FETCH_CACHE,
+        cache: sawDegraded ? "no-store" : RECORD_FETCH_CACHE,
         signal: controller.signal,
       });
     } catch {
@@ -1186,20 +1273,30 @@ async function _fetchRecordFromWorker(
     } finally {
       clearTimeout(timer);
     }
+    let degraded = false;
     if (res) {
-      if (res.ok) {
+      const degradedHeader = res.headers.get(DEGRADED_HEADER);
+      if (res.ok && !degradedHeader) {
         try {
           return (await res.json()) as SurfaceomeRecord;
         } catch {
           return null; // malformed JSON — deterministic, don't retry
         }
       }
-      if (res.status === 404) return null; // unpublished — deterministic
-      if (res.status !== 429 && res.status < 500) return null; // hard 4xx
+      if (res.ok && degradedHeader) {
+        degraded = true;
+        sawDegraded = true;
+        await res.text().catch(() => undefined); // drain; never use degraded bytes
+      } else {
+        if (res.status === 404) return null; // unpublished — deterministic
+        if (res.status !== 429 && res.status < 500) return null; // hard 4xx
+      }
     }
-    // transient (network error, 429, or 5xx) — back off and retry
-    if (attempt < 2) {
-      await new Promise((r) => setTimeout(r, [750, 2000][attempt] ?? 2000));
+    // transient (network error, 429, 5xx, or degraded 200) — back off and retry
+    if (attempt < attempts - 1) {
+      const retryAfterMs = degraded ? null : _parseRetryAfterMs(res);
+      const delay = retryAfterMs ?? backoffMs[attempt] ?? 2000;
+      await new Promise((r) => setTimeout(r, delay));
     }
   }
   return null;
@@ -1423,6 +1520,7 @@ export async function withDeepDiveFilters(
         rec?.biological_context as Record<string, unknown> | undefined,
         rec?.accessibility_risks as Record<string, unknown> | undefined,
         rec?.deterministic_features as Record<string, unknown> | undefined,
+        rec?.surface_evidence as Record<string, unknown> | undefined,
       );
       // Partial DeepDiveFilters (older records omit newer fields); every
       // reader accesses fields optionally, so route the cast via unknown.

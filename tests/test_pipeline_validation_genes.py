@@ -7,15 +7,23 @@ asserts one record property that traces to a specific prompt rule.
 When a re-annotation produces a different call, the failure message
 names the responsible prompt section so triage is fast.
 
-The harness AUTO-SKIPS when CLOUDFLARE_API_TOKEN is absent — CI smoke
-runs without API access aren't blocked. When the Worker is reachable,
-all 7 records are fetched once per session and cached in a
+The harness is marked ``network`` and only runs with ``--run-network``:
+it grades the LIVE published records, so a failure means production data
+drifted, not that the code under test broke. Running it on every PR made CI
+fail on record drift no code change could fix (TGOLN2's live record reads
+``surface_accessibility=moderate`` against an expected ``{no, low}``). Run it
+deliberately after re-annotating these genes:
+
+    uv run pytest -q --run-network tests/test_pipeline_validation_genes.py
+
+It also skips when CLOUDFLARE_API_TOKEN is absent. When the Worker is
+reachable, all 7 records are fetched once per session and cached in a
 module-scoped fixture.
 
 **Discipline:** prompt edits don't auto-re-annotate. After bumping
 ``PROMPT_CORPUS_VERSION`` (or editing any prompt that could affect
 these 7 archetypes), re-run them via
-``scripts/surfaceome_v2_annotate.py <SYMBOL>`` (~$2-3/gene) before
+``scripts/annotate_gene.py <SYMBOL>`` (~$2-3/gene) before
 running these tests. Otherwise the tests run against the pre-edit
 records and can't see new drift.
 
@@ -30,6 +38,8 @@ from typing import Any
 
 import httpx
 import pytest
+
+pytestmark = pytest.mark.network
 
 
 _PUBLIC_API = "https://api.deliverome.org/surfaceome/v1/genes"
@@ -459,7 +469,7 @@ def test_all_validation_genes_published(
     missing = [g for g in _VALIDATION_GENES if g not in records]
     assert not missing, (
         f"validation genes missing from /v1/genes: {missing}. "
-        f"Re-annotate via scripts/surfaceome_v2_annotate.py <SYMBOL>."
+        f"Re-annotate via scripts/annotate_gene.py <SYMBOL>."
     )
 
 

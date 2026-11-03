@@ -52,6 +52,38 @@ from accessible_surfaceome.tools._shared.models import (
 
 logger = logging.getLogger(__name__)
 
+# ``tool_version`` markers meaning "these numbers were NOT measured".
+#
+# A placeholder topology reports ``tm_helix_count=0``,
+# ``signal_peptide_length=0`` and ``ecd_length_residues=0`` — values
+# indistinguishable from a real measurement of a soluble protein. That is not
+# a cosmetic gap: the deterministic block is interpolated into the agent's
+# prompt, so the model reads the fabricated zeros as fact and writes them into
+# its executive summary. Observed in the intracellular-rescue cohort, where
+# BLCAP's summary asserts "zero annotated transmembrane helices, no
+# extracellular domain, and no signal peptide" and C1orf115's asserts "no
+# transmembrane helix, signal peptide, or extracellular domain" — both genes
+# carry a UniProt transmembrane annotation. The verdicts rest on a false
+# premise the pipeline handed them.
+#
+# Use :func:`topology_is_measured` to gate on this rather than comparing
+# strings at call sites.
+PLACEHOLDER_TOPOLOGY_TOOL_VERSION = "placeholder-no-d1-row"
+STUB_TOPOLOGY_TOOL_VERSION = "stub-no-fetchers-v1.0.0"
+UNMEASURED_TOPOLOGY_TOOL_VERSIONS = frozenset(
+    {PLACEHOLDER_TOPOLOGY_TOOL_VERSION, STUB_TOPOLOGY_TOOL_VERSION}
+)
+
+
+def topology_is_measured(topology: Any) -> bool:
+    """True when ``topology`` carries a real DeepTMHMM measurement.
+
+    False for both the "gene not in this sweep's cohort" placeholder and the
+    "D1 unreachable" stub — the two ways a record can end up reporting
+    zeros it never measured.
+    """
+    return getattr(topology, "tool_version", None) not in UNMEASURED_TOPOLOGY_TOOL_VERSIONS
+
 # Cap how many paralogs we materialize per gene — Compara families like
 # IG / olfactory receptors have hundreds; the agent doesn't need them all
 # and the rendered record would explode. Matches the per-gene cap in
@@ -190,12 +222,42 @@ def _latest_topology_version_for_cohort(cohort: str) -> str:
 
 
 def _latest_paralog_version() -> str:
-    rows = _query_public(
-        "SELECT paralog_version FROM compara_paralog_release "
-        "ORDER BY fetched_at DESC LIMIT 1",
+    """Paralog version with the WIDEST actual coverage, not merely the newest.
+
+    Same hazard as :func:`_latest_ortholog_ecd_version`, and it fired in
+    production: a 123-gene cohort backfill (``paralog_2026_09_20_rescue``)
+    landed with a newer ``fetched_at`` than the 5,790-gene global release, so
+    the previous ``ORDER BY fetched_at DESC LIMIT 1`` selected it and every
+    deep dive saw paralogs for 2% of the cohort. A gene with no paralog row
+    reads as "this protein has no paralogs" — a fabricated negative
+    indistinguishable from the real thing, the same failure class as the
+    placeholder-topology zeros.
+
+    Counting the genes actually present per version makes a cohort-scoped
+    release unable to shadow the global one. It does NOT make such a release
+    reachable, so a backfill must still be merged into the dominant release
+    rather than uploaded beside it.
+    """
+    counts = _query_public(
+        "SELECT paralog_version AS v, "
+        "COUNT(DISTINCT human_ensembl_gene) AS n "
+        "FROM compara_paralog GROUP BY paralog_version",
         [],
     )
-    return rows[0]["paralog_version"] if rows else ""
+    if not counts:
+        return ""
+    fetched_at = {
+        r["paralog_version"]: (r.get("fetched_at") or "")
+        for r in _query_public(
+            "SELECT paralog_version, fetched_at FROM compara_paralog_release",
+            [],
+        )
+    }
+    counts.sort(
+        key=lambda r: (int(r["n"] or 0), fetched_at.get(r["v"], "")),
+        reverse=True,
+    )
+    return counts[0]["v"]
 
 
 def _latest_ortholog_ecd_version() -> str:
@@ -716,7 +778,7 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
             ecd_length_residues=0,
             icd_length_residues=0,
             per_residue_topology="",
-            tool_version="placeholder-no-d1-row",
+            tool_version=PLACEHOLDER_TOPOLOGY_TOOL_VERSION,
             retrieved_at=datetime.now(UTC),
         )
     # Per-cohort version threading — see the comment block above where

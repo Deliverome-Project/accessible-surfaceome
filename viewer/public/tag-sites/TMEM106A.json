@@ -1,0 +1,153 @@
+{
+  "has_data": true,
+  "gene_symbol": "TMEM106A",
+  "uniprot_acc": "Q96A25",
+  "sites": [
+    {
+      "site_id": "TMEM106A-disorder-252",
+      "gene_symbol": "TMEM106A",
+      "uniprot_acc": "Q96A25",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 252,
+      "residue_before": "S",
+      "residue_after": "V",
+      "residue_label": "S252",
+      "residue_range": "S252-P262",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 66.2,
+      "conservation_rank": null,
+      "median_conservation": 1.0
+    },
+    {
+      "site_id": "TMEM106A-terminal-c",
+      "gene_symbol": "TMEM106A",
+      "uniprot_acc": "Q96A25",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 262,
+      "residue_before": "P",
+      "residue_after": null,
+      "residue_label": "P262",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular C-terminus (topology 'O' at residue L) \u2014 direct C-terminal tag",
+      "sources": [],
+      "plddt": 45.4,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "TMEM106A-disorder-206::iso::Q96A25-2",
+      "isoform_id": "Q96A25-2",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 206,
+      "canonical_residue": 254,
+      "left_pct": 96.26168224299066
+    },
+    {
+      "site_id": "TMEM106A-disorder-214::iso::Q96A25-2",
+      "isoform_id": "Q96A25-2",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 214,
+      "canonical_residue": 262,
+      "left_pct": 100.0
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "TMEM106A-disorder-249::iso::Q8VC04",
+      "isoform_id": "Q8VC04",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 249,
+      "canonical_residue": 250,
+      "left_pct": 95.40229885057471
+    },
+    {
+      "site_id": "TMEM106A-disorder-253::iso::G7PUX6",
+      "isoform_id": "G7PUX6",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 253,
+      "canonical_residue": 253,
+      "left_pct": 96.56488549618321
+    },
+    {
+      "site_id": "TMEM106A-disorder-261::iso::Q8VC04",
+      "isoform_id": "Q8VC04",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 261,
+      "canonical_residue": 262,
+      "left_pct": 100.0
+    },
+    {
+      "site_id": "TMEM106A-disorder-262::iso::G7PUX6",
+      "isoform_id": "G7PUX6",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 262,
+      "canonical_residue": 262,
+      "left_pct": 100.0
+    },
+    {
+      "site_id": "TMEM106A-surface_loop-247::iso::Q8VC04",
+      "isoform_id": "Q8VC04",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 247,
+      "canonical_residue": 248,
+      "left_pct": 94.6360153256705
+    },
+    {
+      "site_id": "TMEM106A-surface_loop-248::iso::G7PUX6",
+      "isoform_id": "G7PUX6",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 248,
+      "canonical_residue": 248,
+      "left_pct": 94.65648854961832
+    }
+  ]
+}

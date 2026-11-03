@@ -123,9 +123,14 @@ def is_low_literature_surface(f: dict[str, Any], db_surface_positive: bool) -> b
     well-studied gene simply won't carry it). That orthogonality is why it's a
     standalone badge, not a member of the ``(filters) -> bool`` preset family.
 
-    The DB flag is passed via ``db_surface_positive``; the viewer wires it to
-    **UniProt** (``catalogRow.db.uniprot``), which outperformed the other
-    surface databases on our gold-standard positive controls. It's a
+    The DB flag is passed via ``db_surface_positive``; the Worker wires it to
+    UniProt under the **SurfaceBench-optimized cutoff** (TM>0 OR signal
+    peptide OR strict subcellular term), which is the rule under which UniProt
+    outperformed the other surface databases on our gold-standard positive
+    controls — and the rule every figure and the paper score membership on.
+    It previously read UniProt's NATIVE flag, so the live badge disagreed with
+    the published numbers; 37 genes gain the badge under the optimized rule
+    and none lose it, since the optimized UniProt set is strictly broader. It's a
     candidate-universe flag, not part of the deep-dive ``filters``, hence the
     extra argument. ``n_papers_found`` missing → not flagged."""
     n = f.get("n_papers_found")

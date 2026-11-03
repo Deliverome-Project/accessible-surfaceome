@@ -33,6 +33,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
+from typing import Any
 
 
 def _patch_cffi_for_macos_brew() -> None:
@@ -118,6 +119,11 @@ REFS_DOIS_FILTER = REPO_ROOT / "paper" / "filters" / "refs_dois.lua"
 FIGURES_FILTER = REPO_ROOT / "paper" / "filters" / "figures.lua"
 SECTIONS_FILTER = REPO_ROOT / "paper" / "filters" / "sections.lua"
 CITATIONS_FILTER = REPO_ROOT / "paper" / "filters" / "citations.lua"
+BREAKABLE_IDS_FILTER = REPO_ROOT / "paper" / "filters" / "breakable_identifiers.lua"
+# Declared language. WeasyPrint only hyphenates (`hyphens: auto`) text whose
+# language is known, and pandoc emits a bare <html> without it, so the
+# justified print columns stretched into wide word gaps instead.
+LANG_ARG = "--metadata=lang:en-US"
 # Brand marks (GitHub / Zenodo) set beside the front-matter resource
 # links. Exported to the environment because a Lua filter has no way
 # to learn the repo root, and WeasyPrint resolves <img src> against
@@ -131,6 +137,17 @@ CANONICAL_FIGURES_DIR = REPO_ROOT / "data" / "analysis" / "figures"
 # without mutating data/analysis/figures/.
 PAPER_FIGURES_DIR = REPO_ROOT / "paper" / "figures"
 FIGURE_SEARCH_PATH = [PAPER_FIGURES_DIR, CANONICAL_FIGURES_DIR]
+
+# Reader comment form (web build only). Posts to the same public feedback
+# Worker the viewer uses (Resend-backed, with maintainer moderation). It is
+# scoped to a paper-only "gene" sentinel so a comment on the paper can NEVER
+# surface on a surfaceome gene page — the viewer only ever queries real HGNC
+# symbols, never this token — while still being eligible for public display
+# on the paper itself once approved.
+FEEDBACK_API_BASE = "https://api.deliverome.org/surfaceome"
+PAPER_COMMENT_GENE = "PAPER-SURFACEOME"
+# Public Turnstile site key (same widget the viewer's feedback modal uses).
+TURNSTILE_SITE_KEY = "0x4AAAAAADWMXfjX7seRgQLJ"
 
 
 def _stem_for(src: Path) -> str:
@@ -158,7 +175,8 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     if the manifest entry was missing).
 
     Returns the three output paths so callers can wire them straight
-    into a publish/upload step.
+    into a publish/upload step, plus ``figure_alert``: the list of figures
+    whose swapped-in render differs from the .docx (empty if none).
     """
     if not src.is_file():
         raise FileNotFoundError(f"source manuscript not found: {src}")
@@ -175,7 +193,10 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
 
     html_path = out_dir / f"{stem}.html"
     pdf_path = out_dir / f"{stem}.pdf"
-    xml_path = out_dir / f"{stem}.xml"
+    # The JATS and the figure files it names live together in their own
+    # folder, with the figures referenced by bare filename: a Zenodo
+    # record has a flat file list, so this folder can be uploaded as is.
+    xml_path = out_dir / "jats" / f"{stem}.xml"
 
     # 1. pandoc → standalone HTML5 with the deliverome stylesheet linked.
     #    --extract-media pulls embedded .docx images out to disk so
@@ -190,6 +211,7 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
         outputfile=str(html_path),
         extra_args=[
             "--standalone",
+            LANG_ARG,
             # NOTE: NOT passing --section-divs. With it, pandoc wraps
             # each heading + its content in a <section class="levelN">,
             # which makes the body's headings and figures grandchildren
@@ -223,6 +245,8 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
             # text. MUST come after refs_dois.lua, which unwraps the
             # Zotero link around each reference entry.
             f"--lua-filter={CITATIONS_FILTER}",
+            # Let snake_case identifiers wrap at their underscores.
+            f"--lua-filter={BREAKABLE_IDS_FILTER}",
         ],
     )
 
@@ -235,14 +259,21 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     #    Static checkers (ty) walk from the repo root and can't see
     #    the sibling — silence the unresolved-import diagnostic.
     from figure_swap import (  # ty: ignore[unresolved-import]
+        format_change_alert,
         format_report,
         load_manifest,
         swap_figures,
     )
     manifest = load_manifest(FIGURE_MANIFEST)
+    figure_alert = ""
     if manifest:
         print(f"→ figure-swap   ({len(manifest)} manifest entries)")
-        report = swap_figures(html_path, manifest, FIGURE_SEARCH_PATH)
+        # Each figure the .docx embedded is compared with the render that
+        # replaces it; a changed one gets old | new | difference images here.
+        report = swap_figures(
+            html_path, manifest, FIGURE_SEARCH_PATH, compare_dir=out_dir / "figure-changes"
+        )
+        figure_alert = format_change_alert(report)
         formatted = format_report(report)
         if formatted:
             print(formatted)
@@ -251,6 +282,28 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
                 f"--strict figure-swap: {len(report.issues)} unresolved issue(s); "
                 f"fix or relax the manifest, then re-run."
             )
+
+    from html_polish import polish_print_html  # ty: ignore[unresolved-import]
+
+    polish_print_html(html_path)
+
+    # Panel markers, applied to the rendered HTML so the PDF and the web
+    # edition get the identical treatment from one implementation.
+    from caption_panels import bold_panel_labels  # ty: ignore[unresolved-import]
+    from figure_alt import add_figure_alt_text  # ty: ignore[unresolved-import]
+    from lxml import html as _lx  # ty: ignore[unresolved-import]
+
+    _tree = _lx.parse(str(html_path))
+    _n = bold_panel_labels(_tree.getroot())
+    _alt = add_figure_alt_text(_tree.getroot())
+    if _n or _alt:
+        _tree.write(str(html_path), method="html", encoding="utf-8")
+    if _n:
+        print(f"  emboldened {_n} panel marker(s) in figure legends")
+    if _alt:
+        print(f"  set alt text on {_alt} figure image(s)")
+
+    _check_figure_links(str(html_path), "PDF build")
 
     # 3. WeasyPrint → PDF. The `base_url` anchors relative paths (the
     #    CSS @import of `../viewer/app/design-tokens.css` and the
@@ -263,18 +316,28 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
         stylesheets=[CSS(filename=str(CSS_PATH))],
     )
 
-    # 4. pandoc → JATS XML. Same source, different writer; machine-
-    #    readable references + figure metadata for the Zenodo deposit.
+    # 4. pandoc → JATS XML, through the same filters as the HTML so the
+    #    citations resolve to reference entries and each figure is wrapped
+    #    with its legend, then jats_polish moves what they found into the
+    #    elements JATS has for it (front matter, <fig>, <ref-list>, <xref>).
+    #    Converted without them the file is well-formed and empty of
+    #    structure: no title, authors or abstract, no figures, no reference
+    #    list, and every citation a link to zotero.org.
     print(f"→ pandoc {src.name} → {xml_path.name}")
-    pypandoc.convert_file(
-        str(src),
-        to="jats",
-        format="docx",
-        outputfile=str(xml_path),
-        extra_args=["--standalone"],
-    )
+    from jats_build import build_jats  # ty: ignore[unresolved-import]
 
-    return {"html": html_path, "pdf": pdf_path, "xml": xml_path}
+    # Shared with scripts/release/publish-archive.py, so the XML that is
+    # deposited is the XML built here. Each figure's canonical asset is
+    # copied beside it and named in the XML.
+    jats_report, _ = build_jats(
+        src, xml_path,
+        pandoc=pypandoc.get_pandoc_path(),
+        figures_out=xml_path.parent,
+        href_prefix="",
+    )
+    print(jats_report.summary())
+
+    return {"html": html_path, "pdf": pdf_path, "xml": xml_path, "figure_alert": figure_alert}
 
 
 def _downsample_raster(src: Path, dest: Path, max_width: int) -> Path | None:
@@ -319,13 +382,102 @@ def _downsample_raster(src: Path, dest: Path, max_width: int) -> Path | None:
         return None
 
 
+def _comments_section(api_base: str, gene: str, turnstile_key: str) -> str:
+    """HTML for the reader comment form appended to the bottom of the web
+    build.
+
+    A progressive-enhancement island: with JS off it's an inert form.
+    ``deliverome-web.js`` wires the Turnstile widget, fetches + renders the
+    already-approved public comments, and POSTs new ones to the shared
+    feedback Worker. All config travels on ``data-*`` so the script stays
+    generic. The ``gene`` sentinel keeps these comments off every surfaceome
+    gene page (the viewer only ever queries real HGNC symbols).
+    """
+    return (
+        '<section class="paper-comments" id="comments"'
+        f' data-api-base="{api_base}" data-gene="{gene}"'
+        f' data-turnstile-key="{turnstile_key}">'
+        '<h2 class="paper-comments__title">Comments</h2>'
+        '<p class="paper-comments__intro">Questions, corrections, or feedback on'
+        ' the paper. Tick the box to have your comment considered for public'
+        ' posting on this page after review.</p>'
+        '<ol class="paper-comments__list" aria-live="polite"></ol>'
+        '<form class="paper-comments__form" novalidate>'
+        '<div class="paper-comments__grid">'
+        '<label class="paper-comments__field"><span>Name</span>'
+        '<input name="name" type="text" autocomplete="name" maxlength="80" required/>'
+        '</label>'
+        '<label class="paper-comments__field">'
+        '<span>E-mail <em>(never published)</em></span>'
+        '<input name="email" type="email" autocomplete="email" required/></label>'
+        '</div>'
+        '<label class="paper-comments__field"><span>Comment</span>'
+        '<textarea name="comment" rows="5" maxlength="4000" required></textarea>'
+        '</label>'
+        '<label class="paper-comments__check">'
+        '<input name="public" type="checkbox"/>'
+        '<span>Post my comment publicly on this page after the authors review'
+        ' it.</span></label>'
+        '<div class="paper-comments__turnstile"></div>'
+        '<p class="paper-comments__status" role="status" aria-live="polite"></p>'
+        '<button class="paper-comments__submit" type="submit">Post comment</button>'
+        '</form>'
+        '</section>'
+    )
+
+
+def _append_fragment(parent: Any, fragment: str) -> None:
+    """Append an HTML fragment to `parent` without a stray document wrapper.
+
+    ``lxml.html.fromstring()`` on a head-only element — ``<link>``,
+    ``<meta>``, ``<script>`` — returns a whole
+    ``<html><head>…</head></html>`` document rather than the element, so
+    appending its result nests a second document inside the page.
+    Browsers untangle that and the paper shipped that way for a while,
+    but it is invalid, and the reveal bootstrap now depends on running
+    before first paint — not a thing to leave resting on parser error
+    recovery.
+    """
+    from lxml import html as lxml_html  # ty: ignore[unresolved-import]
+
+    parent.append(lxml_html.fragment_fromstring(fragment, create_parent=False))
+
+
+def _check_figure_links(doc_or_path: Any, label: str) -> None:
+    """Stop the build on a figure cross-reference that never linked.
+
+    The Lua filter already warns, but pandoc warnings scroll past in a
+    long build and the exit status stays 0 — which is how
+    "(Figure S4)Two of five changed" shipped as plain text in both the
+    PDF and the web edition for several builds. Checking the rendered
+    HTML covers both outputs and does not depend on reading stderr.
+    """
+    from figure_links import find_unlinked_figure_refs  # ty: ignore[unresolved-import]
+
+    broken, panels = find_unlinked_figure_refs(doc_or_path)
+    # Panel-suffixed references ("Figure 4a") link to their figure too,
+    # so an unlinked one is now a defect rather than a design choice.
+    # They stay a separate bucket because the cause differs and the
+    # message should say which.
+    dead = broken + panels
+    if dead:
+        detail = "\n".join(f"    {entry}" for entry in dead)
+        raise RuntimeError(
+            f"{len(dead)} figure reference(s) did not become links "
+            f"({label}):\n{detail}\n"
+            "  Either the reference is malformed in the .docx (a missing "
+            "space after a bracket will do it) or figures.lua needs to "
+            "learn the shape."
+        )
+
+
 def build_web(
     src: Path,
     out_dir: Path,
     asset_prefix: str = "assets",
     max_raster_width: int = 2400,
     biorxiv_url: str | None = None,
-) -> Path:
+) -> tuple[Path, str]:
     """Render the manuscript as a self-contained web page.
 
     Same pandoc pass and same filters as the PDF build — so the
@@ -344,14 +496,26 @@ def build_web(
         absolute local paths that mean nothing on a web server.
       * deliverome-web.css replaces the print sheet.
 
-    Returns the written index.html.
+    Returns the written index.html and the figure-change alert (the
+    figures whose swapped-in render differs from the .docx; empty if none).
     """
     from figure_swap import (  # ty: ignore[unresolved-import]
+        format_change_alert,
         format_report,
         load_manifest,
         swap_figures,
     )
     from lxml import html as lxml_html
+    from caption_panels import bold_panel_labels  # ty: ignore[unresolved-import]
+    from figure_alt import add_figure_alt_text  # ty: ignore[unresolved-import]
+    from web_assets import (  # ty: ignore[unresolved-import]
+        FONT_HEAD_LINKS,
+        REVEAL_BOOTSTRAP_SCRIPT,
+        apply_image_hints,
+        apply_reveal_markup,
+    )
+
+    append_fragment = _append_fragment
 
     out_dir.mkdir(parents=True, exist_ok=True)
     assets_dir = out_dir / "assets"
@@ -374,6 +538,7 @@ def build_web(
         outputfile=str(work),
         extra_args=[
             "--standalone",
+            LANG_ARG,
             "--toc",
             # Depth 2 = the <h1> title plus the <h2> section headings
             # (Introduction, Results, Discussion, Methods…). Depth 3
@@ -386,13 +551,21 @@ def build_web(
             f"--lua-filter={FIGURES_FILTER}",
             f"--lua-filter={SECTIONS_FILTER}",
             f"--lua-filter={CITATIONS_FILTER}",
+            f"--lua-filter={BREAKABLE_IDS_FILTER}",
         ],
     )
 
     manifest = load_manifest(FIGURE_MANIFEST)
+    figure_alert = ""
     if manifest:
         print(f"→ figure-swap   ({len(manifest)} manifest entries)")
-        report = swap_figures(work, manifest, FIGURE_SEARCH_PATH)
+        # Comparison images go next to the source, never into out_dir,
+        # which is shipped as-is to the static site.
+        report = swap_figures(
+            work, manifest, FIGURE_SEARCH_PATH,
+            compare_dir=src.parent / "build" / "figure-changes",
+        )
+        figure_alert = format_change_alert(report)
         formatted = format_report(report)
         if formatted:
             print(formatted)
@@ -402,6 +575,8 @@ def build_web(
     # sources with the same basename can't collide.
     doc = lxml_html.parse(str(work)).getroot()
     copied: dict[str, str] = {}
+    copied_files: dict[str, Path] = {}
+    hint_targets: list[tuple[Any, Path]] = []
     for i, img in enumerate(doc.xpath("//img")):
         raw = img.get("src") or ""
         if raw.startswith(("http://", "https://", "data:")) or raw.startswith(asset_prefix + "/"):
@@ -422,7 +597,30 @@ def build_web(
             else:
                 name = written.name
             copied[key] = f"{asset_prefix}/{name}"
+            copied_files[key] = assets_dir / name
         img.set("src", copied[key])
+        # Hints are applied further down rather than here: they depend on
+        # knowing whether an image sits in the title band, and the
+        # <header> that marks it hasn't been built yet at this point.
+        hint_targets.append((img, copied_files[key]))
+
+    # Open every off-site link (gist, DOI, bioRxiv, GitHub, Zenodo …) in
+    # a new tab so following a citation or reproduction link never navigates
+    # the reader away from the paper. Same-page anchors (#…) and the
+    # relative PDF download stay in-tab.
+    ext_links = 0
+    for a in doc.xpath(
+        "//a[starts-with(@href, 'http://') or starts-with(@href, 'https://')]"
+    ):
+        a.set("target", "_blank")
+        rel = (a.get("rel") or "").split()
+        for token in ("noopener", "noreferrer"):
+            if token not in rel:
+                rel.append(token)
+        a.set("rel", " ".join(rel))
+        ext_links += 1
+    if ext_links:
+        print(f"  set target=_blank on {ext_links} external link(s)")
 
     # Prune supplementary sub-entries from the contents rail. The
     # supplement's own "Supplementary Note N" / "Supplementary
@@ -452,6 +650,17 @@ def build_web(
     # stylesheet has something to anchor the banner on.
     body = doc.find("body")
     if body is not None:
+        from html_polish import (  # ty: ignore[unresolved-import]
+            captions_above_tables,
+            demote_extra_header_rows,
+            unnest_wbr,
+        )
+
+        unnest_wbr(body)
+        demote_extra_header_rows(body)
+        captions_above_tables(body)
+
+    if body is not None:
         first_h2 = body.find("h2")
         if first_h2 is not None:
             header = lxml_html.Element("header")
@@ -464,6 +673,22 @@ def build_web(
                 body.remove(node)
                 header.append(node)
             body.insert(0, header)
+
+    # Give the browser tab the paper's real title, not the .docx filename.
+    # Pandoc falls back to the filename because the .docx carries no title
+    # metadata, so the tab read "2026 Anthropic Surfaceome Draft" instead of
+    # the actual title. Use the first <h1> (the title band's heading).
+    if body is not None:
+        h1 = body.find(".//h1")
+        head_el = doc.find("head")
+        if h1 is not None and head_el is not None:
+            title_text = " ".join((h1.text_content() or "").split())
+            if title_text:
+                title_el = head_el.find("title")
+                if title_el is None:
+                    title_el = lxml_html.Element("title")
+                    head_el.insert(0, title_el)
+                title_el.text = title_text
 
     # Point the stylesheet at the copied web CSS.
     shutil.copy2(WEB_CSS_PATH, assets_dir / "paper.css")
@@ -478,24 +703,67 @@ def build_web(
         style.getparent().remove(style)
     head = doc.find("head")
     if head is not None:
-        head.append(lxml_html.fromstring(
-            f'<link rel="stylesheet" href="{asset_prefix}/paper.css"/>'
-        ))
-        head.append(lxml_html.fromstring(
-            '<meta name="viewport" content="width=device-width, initial-scale=1"/>'
-        ))
+        # Fonts first, and before our own stylesheet: the preload scanner
+        # finds them while the HTML is still parsing, and the two
+        # preconnects open both TLS connections in parallel with it.
+        # These used to be an @import inside paper.css, which cost three
+        # serial round trips and reflowed the page on every cold load.
+        for fragment in FONT_HEAD_LINKS:
+            append_fragment(head, fragment)
+        append_fragment(
+            head, f'<link rel="stylesheet" href="{asset_prefix}/paper.css"/>'
+        )
+        append_fragment(
+            head,
+            '<meta name="viewport" content="width=device-width, initial-scale=1"/>',
+        )
+        # Inline, and in <head>, so the reveal gate is set before first
+        # paint. paper.js is deferred; a gate set there would let the
+        # page paint visible and then blank out.
+        append_fragment(head, REVEAL_BOOTSTRAP_SCRIPT)
     if body is not None:
+        # Reader comment form at the very bottom of the paper.
+        body.append(lxml_html.fromstring(
+            _comments_section(
+                FEEDBACK_API_BASE, PAPER_COMMENT_GENE, TURNSTILE_SITE_KEY
+            )
+        ))
         # `defer` so the parser is never blocked; the script only
         # enhances links that already work without it.
-        body.append(lxml_html.fromstring(
-            f'<script src="{asset_prefix}/paper.js" defer></script>'
-        ))
+        append_fragment(
+            body, f'<script src="{asset_prefix}/paper.js" defer></script>'
+        )
 
     # Standalone pages need the scope class the stylesheet keys off;
     # embedded pages get it from the wrapper div instead.
     if body is not None:
         existing = body.get("class", "")
         body.set("class", (existing + " paper-root").strip())
+
+    # Intrinsic size + decode hints, so a figure reserves its box before
+    # the bytes land instead of shoving the prose below it down the page.
+    # Here rather than in the loop above for two orderings: after
+    # swap_figures, which strips width/height off every <img> it
+    # rewrites, and after the title band has been grouped into <header>,
+    # which is how an above-the-fold image is recognised.
+    for img, img_path in hint_targets:
+        apply_image_hints(img, img_path)
+
+    panels = bold_panel_labels(doc)
+    if panels:
+        print(f"  emboldened {panels} panel marker(s) in figure legends")
+    alts = add_figure_alt_text(doc)
+    if alts:
+        print(f"  set alt text on {alts} figure image(s)")
+
+    _check_figure_links(doc, "web build")
+
+    # Scroll-reveal markers. Last, so the title band has already been
+    # grouped into <header> (and is therefore skipped) and the TOC has
+    # already been pruned. Inert without the <head> gate above.
+    revealed = apply_reveal_markup(doc)
+    if revealed:
+        print(f"  marked {revealed} block(s) for scroll reveal")
 
     index = out_dir / "index.html"
     # Trailing newline: lxml's tostring doesn't emit one, and when this
@@ -514,7 +782,7 @@ def build_web(
     work.unlink(missing_ok=True)
     shutil.rmtree(media_dir, ignore_errors=True)
     print(f"  copied {len(copied)} image(s) → {assets_dir}")
-    return index
+    return index, figure_alert
 
 
 def main() -> int:
@@ -537,6 +805,15 @@ def main() -> int:
             "fails (missing canonical asset, PNG DPI below the manifest "
             "minimum, SVG that wraps a raster, etc.). Default: warn and "
             "continue."
+        ),
+    )
+    parser.add_argument(
+        "--strict-citations",
+        action="store_true",
+        help=(
+            "Fail the build if any in-text citation has no reference "
+            "entry, or any reference entry is never cited. Default: "
+            "report both on stderr and continue."
         ),
     )
     parser.add_argument(
@@ -581,10 +858,15 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+    # Read by filters/citations.lua, which has no other way to take a flag.
+    if args.strict_citations:
+        os.environ["PAPER_STRICT_CITATIONS"] = "1"
+    else:
+        os.environ.pop("PAPER_STRICT_CITATIONS", None)
 
     if args.web is not None:
         try:
-            index = build_web(
+            index, figure_alert = build_web(
                 args.source.resolve(),
                 args.web.resolve(),
                 args.asset_prefix,
@@ -600,6 +882,9 @@ def main() -> int:
         print()
         print(f"✓ Wrote {index}")
         print(f"  open {index} in a browser to check it.")
+        # Last, so the list of fresh figures can't scroll past unseen.
+        if figure_alert:
+            print(figure_alert)
         return 0
 
     try:
@@ -621,6 +906,9 @@ def main() -> int:
     print("  Rendering → 'Emulate CSS media type: print' shows exactly")
     print("  what WeasyPrint sees. Tweak paper/deliverome-print.css and")
     print("  re-run.")
+    # Last, so the list of fresh figures can't scroll past unseen.
+    if outputs.get("figure_alert"):
+        print(outputs["figure_alert"])
     return 0
 
 

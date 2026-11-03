@@ -22,7 +22,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCRIPT_PATH = REPO_ROOT / "scripts" / "run_topology_sweep.py"
+SCRIPT_PATH = REPO_ROOT / "scripts" / "build" / "run_topology_sweep.py"
 
 
 @pytest.fixture(scope="module")

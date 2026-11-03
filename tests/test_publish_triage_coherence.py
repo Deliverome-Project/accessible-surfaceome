@@ -37,6 +37,15 @@ from accessible_surfaceome.cloud.surface_annotation import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _no_archive_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep these tests hermetic — a stray ``ARCHIVE_BYPASS_TOKEN`` in the
+    environment would make a successful publish attempt a real
+    ``_maybe_archive`` call (network) instead of the no-op these tests
+    assume."""
+    monkeypatch.delenv("ARCHIVE_BYPASS_TOKEN", raising=False)
+
+
 def _mock_client(handler) -> httpx.Client:
     transport = httpx.MockTransport(handler)
     return httpx.Client(transport=transport)

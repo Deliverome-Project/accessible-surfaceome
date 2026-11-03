@@ -1,0 +1,153 @@
+{
+  "has_data": true,
+  "gene_symbol": "KLRG1",
+  "uniprot_acc": "Q96E93",
+  "sites": [
+    {
+      "site_id": "KLRG1-disorder-70",
+      "gene_symbol": "KLRG1",
+      "uniprot_acc": "Q96E93",
+      "provenance": "deterministic_computed",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "insert_after_residue": 70,
+      "residue_before": "A",
+      "residue_after": "S",
+      "residue_label": "A70",
+      "residue_range": "C61-P73",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (disorder path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "exposed, 3D-clear insertion point within a low-pLDDT disordered extracellular run (>=4 aa)",
+      "sources": [],
+      "plddt": 50.7,
+      "conservation_rank": null,
+      "median_conservation": 0.5
+    },
+    {
+      "site_id": "KLRG1-terminal-c",
+      "gene_symbol": "KLRG1",
+      "uniprot_acc": "Q96E93",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 195,
+      "residue_before": "F",
+      "residue_after": null,
+      "residue_label": "F195",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular C-terminus (topology 'O' at residue L) \u2014 direct C-terminal tag",
+      "sources": [],
+      "plddt": 37.2,
+      "conservation_rank": null,
+      "median_conservation": null
+    }
+  ],
+  "isoform_pins": [
+    {
+      "site_id": "KLRG1-disorder-61::iso::Q96E93-2",
+      "isoform_id": "Q96E93-2",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 61,
+      "canonical_residue": 61,
+      "left_pct": 32.27513227513227
+    },
+    {
+      "site_id": "KLRG1-disorder-70::iso::Q96E93-2",
+      "isoform_id": "Q96E93-2",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 70,
+      "canonical_residue": 70,
+      "left_pct": 37.03703703703704
+    },
+    {
+      "site_id": "KLRG1-surface_loop-78::iso::Q96E93-2",
+      "isoform_id": "Q96E93-2",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 78,
+      "canonical_residue": 78,
+      "left_pct": 41.269841269841265
+    }
+  ],
+  "ortholog_pins": [
+    {
+      "site_id": "KLRG1-disorder-65::iso::O88713",
+      "isoform_id": "O88713",
+      "classification": "unique",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 65,
+      "canonical_residue": 65,
+      "left_pct": 34.57446808510639
+    },
+    {
+      "site_id": "KLRG1-disorder-68::iso::A0A2K5WAP9",
+      "isoform_id": "A0A2K5WAP9",
+      "classification": "shared",
+      "det_path": "disorder",
+      "site_kind": "internal",
+      "tag_type": "ALFA",
+      "isoform_residue": 68,
+      "canonical_residue": 68,
+      "left_pct": 35.978835978835974
+    },
+    {
+      "site_id": "KLRG1-surface_loop-117::iso::O88713",
+      "isoform_id": "O88713",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 117,
+      "canonical_residue": 117,
+      "left_pct": 62.23404255319149
+    },
+    {
+      "site_id": "KLRG1-surface_loop-77::iso::O88713",
+      "isoform_id": "O88713",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 77,
+      "canonical_residue": 77,
+      "left_pct": 40.95744680851064
+    },
+    {
+      "site_id": "KLRG1-surface_loop-78::iso::A0A2K5WAP9",
+      "isoform_id": "A0A2K5WAP9",
+      "classification": "unique",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "tag_type": "ALFA, DogTag",
+      "isoform_residue": 78,
+      "canonical_residue": 78,
+      "left_pct": 41.269841269841265
+    }
+  ]
+}

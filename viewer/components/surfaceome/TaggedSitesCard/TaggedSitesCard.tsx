@@ -6,12 +6,14 @@ import { SectionCard } from "../SectionCard/SectionCard";
 import type {
   EvidenceSource,
   IsoformTagPin,
+  OtherPosition,
   TaggedSite,
   TaggedSitesFile,
 } from "../../../lib/tag-sites-types";
 import {
   CATEGORY_HEX,
   CATEGORY_LABEL,
+  isLiteratureProvenance,
   tagSiteCategory,
 } from "../../../lib/tag-sites-types";
 import styles from "./TaggedSitesCard.module.css";
@@ -23,6 +25,21 @@ const KIND_LABEL: Record<TaggedSite["site_kind"], string> = {
 };
 
 const CONF_RANK: Record<string, number> = { high: 3, medium: 2, low: 1 };
+
+/** Sort strongest-evidence-first, which is the order a reader wants. */
+const VALIDATION_RANK: Record<string, number> = {
+  surface_and_function: 5,
+  surface_only: 4,
+  function_only: 3,
+  detected_only: 2,
+  expressed_only: 1,
+  not_measured: 0,
+};
+const POSITION_RANK: Record<string, number> = {
+  validated: 3,
+  topology_derived: 2,
+  inferred: 1,
+};
 
 /** Display token for the junction: prefer the canonical residue_label
  *  ("G101"), else derive a readable fallback from site_kind. */
@@ -190,6 +207,108 @@ function Sources({ sources }: { sources: EvidenceSource[] }) {
 /** Expandable evidence drawer for one literature site — mirrors the main
  *  sections' ReasoningDrawer. Shows the exact entailment-checked quote(s)
  *  (from sources[].claim), the agent rationale, and the linked sources. */
+/** How far the cited study went. The agent's six levels collapse to four
+ *  readable ones, because "did they show it on the surface" and "did they show
+ *  it still works" are the two questions a reader is actually asking. */
+const VALIDATION_LABEL: Record<string, { text: string; cls: string; title: string }> = {
+  surface_and_function: {
+    text: "Surface + function",
+    cls: "badgeBoth",
+    title: "The paper showed the tag on the cell surface AND that the tagged protein still works.",
+  },
+  surface_only: {
+    text: "Surface",
+    cls: "badgeSurface",
+    title: "The paper showed the tag on the cell surface; function was not measured.",
+  },
+  function_only: {
+    text: "Function",
+    cls: "badgeWeak",
+    title: "The paper showed the tagged protein still works; surface display was not measured.",
+  },
+  detected_only: {
+    text: "Detected",
+    cls: "badgeWeak",
+    title: "The tagged protein was detected (e.g. by blot or pull-down), but neither surface display nor function was measured.",
+  },
+  expressed_only: {
+    text: "Expressed",
+    cls: "badgeWeak",
+    title: "The construct was expressed; neither surface display nor function was measured.",
+  },
+  not_measured: {
+    text: "Not measured",
+    cls: "badgeNone",
+    title: "The paper reports the construct but measures neither surface display nor function.",
+  },
+};
+
+/** Where the junction number came from — the difference between a position the
+ *  paper states and one we derived, which a reader has to be able to see. */
+const POSITION_LABEL: Record<string, { text: string; cls: string; title: string }> = {
+  validated: {
+    text: "Stated",
+    cls: "badgeBoth",
+    title: "The paper names this exact insertion position.",
+  },
+  topology_derived: {
+    text: "Topology",
+    cls: "badgeSurface",
+    title: "The paper tags a terminus without naming a residue, and this protein has exactly one extracellular terminus — so the junction follows from the topology.",
+  },
+  inferred: {
+    text: "Inferred",
+    cls: "badgeWeak",
+    title: "Reasoned from a tag the paper places nearby rather than stated outright.",
+  },
+};
+
+/** Readable prose for `position_frame` — which proteoform's numbering the
+ *  paper was using, when it was not this construct's own.
+ *
+ *  Load-bearing rather than decorative. The "Stated" badge claims "the paper
+ *  names this exact insertion position", and for a frame-mapped site that is
+ *  true only in ANOTHER protein's coordinates: a library member's ordered form
+ *  is frequently an isoform or a designed ORF, so a paper citing canonical
+ *  residue 246 is naming member residue 458. Without the frame on the page, a
+ *  reader cannot tell a position the paper stated outright from one we mapped,
+ *  and the mapping is the step most likely to be wrong. */
+function frameNote(frame: string | null | undefined): string | undefined {
+  if (!frame) return undefined;
+  const mapped = "and mapped onto this construct's own numbering.";
+  if (frame === "canonical")
+    return `Stated in canonical UniProt numbering, ${mapped}`;
+  if (frame === "mature")
+    return `Stated in mature-protein numbering — counting from the signal-peptide cleavage site — ${mapped}`;
+  if (frame.startsWith("isoform:"))
+    return `Stated in the numbering of isoform ${frame.slice(8)}, ${mapped}`;
+  if (frame.startsWith("ortholog:"))
+    return `Stated in the numbering of the ${frame.slice(9).replace(/:/g, " ")} orthologue, ${mapped}`;
+  return `Stated in the ${frame.replace(/_/g, " ")} frame, ${mapped}`;
+}
+
+function Badge({
+  map,
+  value,
+  extra,
+}: {
+  map: Record<string, { text: string; cls: string; title: string }>;
+  value: string | null | undefined;
+  extra?: string;
+}) {
+  if (!value) return <span className={styles.muted}>—</span>;
+  const spec = map[value];
+  if (!spec) return <span className={styles.muted}>{value.replace(/_/g, " ")}</span>;
+  return (
+    <span
+      className={`${styles.badge} ${styles[spec.cls]}`}
+      title={extra ? `${spec.title} ${extra}` : spec.title}
+    >
+      {spec.text}
+    </span>
+  );
+}
+
 function SiteEvidenceDrawer({ site }: { site: TaggedSite }) {
   const quotes = site.sources
     .map((src) => src.claim)
@@ -336,6 +455,31 @@ const LIT_COLUMNS: Column[] = [
     ),
     cellClass: styles.evidence,
   },
+  {
+    key: "validation",
+    label: "Validation",
+    sortVal: (s) => VALIDATION_RANK[s.validation_level ?? ""] ?? 0,
+    render: (s) => <Badge map={VALIDATION_LABEL} value={s.validation_level} />,
+  },
+  {
+    key: "position",
+    label: "Position",
+    sortVal: (s) => POSITION_RANK[s.position_evidence ?? ""] ?? 0,
+    render: (s) => (
+      <Badge
+        map={POSITION_LABEL}
+        value={s.position_evidence}
+        // An inferred junction is only checkable if the reader can see which
+        // real tag it was reasoned from — and a STATED one is only checkable
+        // if they can see whose numbering the paper stated it in.
+        extra={
+          s.position_evidence === "inferred" && s.cited_tag_residue != null
+            ? `Reasoned from a cited tag at residue ${s.cited_tag_residue}.`
+            : frameNote(s.position_frame)
+        }
+      />
+    ),
+  },
   { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },
   { key: "sources", label: "Sources", sortVal: (s) => s.sources.length, render: (s) => <Sources sources={s.sources} /> },
   { key: "details", label: "Details", render: (s) => <SiteEvidenceDrawer site={s} /> },
@@ -350,6 +494,70 @@ const DET_COLUMNS: Column[] = [
   { key: "plddt", label: "pLDDT", sortVal: (s) => s.plddt ?? -1, render: (s) => (s.plddt != null ? s.plddt.toFixed(1) : "—") },
   { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },
 ];
+
+const OTHER_KIND: Record<string, { text: string; cls: string; title: string }> = {
+  intracellular: {
+    text: "Intracellular",
+    cls: "badgeSurface",
+    title: "A published insertion the protein tolerates, but facing the cytoplasm — usable for an intracellular label or a snorkel, not for surface display.",
+  },
+  abrogates_function: {
+    text: "Abrogates function",
+    cls: "badgeWeak",
+    title: "The paper reports that inserting a tag here destroyed the protein's function. A known-bad position.",
+  },
+  other: {
+    text: "Other",
+    cls: "badgeNone",
+    title: "Published, but neither tolerated-intracellular nor function-abrogating.",
+  },
+};
+
+/** Published insertion points that are NOT surface tag sites.
+ *
+ *  A scanning paper names positions the agent must not propose as surface
+ *  sites, and they used to be dropped on the floor: a tolerated insertion
+ *  facing the cytoplasm is the right answer for a snorkel or an intracellular
+ *  label, and a position a paper reports as abrogating function is evidence
+ *  about a site NOT to use. Both are worth more per character than most of
+ *  what a candidate table carries. */
+function OtherPositionsTable({ positions }: { positions: OtherPosition[] }) {
+  const sorted = [...positions].sort((a, b) => a.residue - b.residue);
+  return (
+    <div className={styles.tableWrap}>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th scope="col">Residue</th>
+            <th scope="col">Finding</th>
+            <th scope="col">What the paper reports</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((o, i) => {
+            const spec = OTHER_KIND[o.kind] ?? OTHER_KIND.other;
+            return (
+              <tr key={`${o.residue}-${o.kind}-${i}`}>
+                <td className={styles.residue}>{o.residue}</td>
+                <td>
+                  <span
+                    className={`${styles.badge} ${styles[spec.cls]}`}
+                    title={spec.title}
+                  >
+                    {spec.text}
+                  </span>
+                </td>
+                <td className={styles.evidence}>
+                  {o.note || <span className={styles.muted}>—</span>}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 /** Compact table for per-isoform CONTROL pins (e.g. Tedman screen): each row is
  *  one alternative isoform that carries the same N-terminal control tag, with its
@@ -399,8 +607,10 @@ export interface TaggedSitesCardProps {
  * protein. Three provenances, matching the structure-viewer overlay legend:
  *   • screen_validated — control tag sites confirmed by a parallel
  *     surface-display screen (e.g. Tedman et al.), with a measured PME;
- *   • literature_retrieved — tags published + validated in the literature
- *     (hybrid lit-search + web_search agent), with linked sources;
+ *   • literature_retrieved / literature_enriched — tags published + validated
+ *     in the literature (hybrid lit-search + web_search agent), with linked
+ *     sources; the enrichment pass publishes BESIDE the first read, not over
+ *     it, and both render in this section;
  *   • deterministic_computed — computed candidate insertion points from the
  *     disorder / surface-loop pipeline (pLDDT + RSA/DSSP, feature-veto).
  * All columns are sortable; tag/compartment/confidence render as chips.
@@ -413,7 +623,7 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   // topology reads "signal").
   const lit = sites.filter(
     (s) =>
-      s.provenance === "literature_retrieved" &&
+      isLiteratureProvenance(s.provenance) &&
       (s.extracellular || s.site_kind === "terminal_n"),
   );
   // One representative row per loop (mirrors the 3D overlay's collapse) so a long
@@ -435,13 +645,32 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   const isoformCtrl = (taggedSites?.isoform_pins ?? []).filter(
     (p) => p.classification === "control",
   );
+  // Published positions that are not surface sites. Per-gene, not per-site —
+  // they are reasons NOT to tag somewhere, so they have no site row.
+  const otherPositions = taggedSites?.literature_other_positions ?? [];
+
+  // The agent stamps prompt_sha on every result INCLUDING an empty one, so its
+  // presence is the claim "this gene was searched" — which is what makes a zero
+  // reportable instead of invisible.
+  const searched = Boolean(taggedSites?.prompt_sha);
+  const searchedOn = taggedSites?.generated_at
+    ? new Date(taggedSites.generated_at).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : null;
+
   const legendCategories = Array.from(
     new Set([...lit, ...det, ...screenSites].map((s) => tagSiteCategory(s))),
   );
 
+  // `has_data` is false for a searched gene with no sites, and bailing on it
+  // threw away the one thing that gene has to say.
   if (
-    !taggedSites?.has_data ||
-    lit.length + det.length + screenSites.length + isoformCtrl.length === 0
+    lit.length + det.length + screenSites.length + isoformCtrl.length === 0 &&
+    otherPositions.length === 0 &&
+    !searched
   ) {
     return (
       <SectionCard n={n} title="Tag sites">
@@ -469,6 +698,30 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
         ))}
       </p>
 
+      {/* Literature first: a published, validated tag site is the strongest
+          thing on this card, and it was sitting below the screen controls. */}
+      {lit.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>Literature-validated ({lit.length})</h3>
+          <SortableTable sites={lit} columns={LIT_COLUMNS} />
+        </>
+      ) : searched ? (
+        /* A searched gene with no published site is a FINDING, and it used to
+           render as nothing at all — identical to a gene nobody had looked at.
+           Saying "0" and when we looked is the whole difference. */
+        <>
+          <h3 className={styles.subhead}>Literature-validated (0)</h3>
+          <p className={styles.zeroState}>
+            <strong>No published tag-insertion site found for this protein.</strong>{" "}
+            The literature agent searched and found no paper that pins a tag to a
+            specific extracellular position
+            {searchedOn ? ` (last searched ${searchedOn})` : null}. This is a
+            result, not a gap — the computed candidates below are the starting
+            point.
+          </p>
+        </>
+      ) : null}
+
       {screenSites.length > 0 ? (
         <>
           <h3 className={styles.subhead}>Screen-validated ({screenSites.length})</h3>
@@ -485,17 +738,25 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
         </>
       ) : null}
 
-      {lit.length > 0 ? (
-        <>
-          <h3 className={styles.subhead}>Literature-validated ({lit.length})</h3>
-          <SortableTable sites={lit} columns={LIT_COLUMNS} />
-        </>
-      ) : null}
-
       {det.length > 0 ? (
         <>
           <h3 className={styles.subhead}>Computed candidates ({det.length})</h3>
           <SortableTable sites={det} columns={DET_COLUMNS} />
+        </>
+      ) : null}
+
+      {otherPositions.length > 0 ? (
+        <>
+          <h3 className={styles.subhead}>
+            Published, not surface sites ({otherPositions.length})
+          </h3>
+          <p className={styles.lede}>
+            Insertion points named in the literature that are not surface tag
+            sites — tolerated but facing the cytoplasm (use these for an
+            intracellular label or a snorkel), or reported to abrogate function
+            (positions to avoid).
+          </p>
+          <OtherPositionsTable positions={otherPositions} />
         </>
       ) : null}
     </SectionCard>

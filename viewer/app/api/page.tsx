@@ -129,7 +129,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/benchmark/export.tsv",
         sizeKey: "/v1/benchmark/export.tsv",
         summary:
-          "Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) for the canonical bench_version. Adds the 5-DB vote vector and truth_verdict / truth_signal / truth_reason to the triage export shape.",
+          "Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) cell for the canonical bench_version. The verdict is the cell's majority over its 3 replicates, as in the paper, with n_reps, majority_agreement, is_match and replicate-summed *_total telemetry. Adds the 5-DB vote vector and truth_verdict / truth_signal / truth_reason to the triage export shape.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv | head -3",
       },
@@ -148,9 +148,9 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         anchor: "benchmark-matrix",
         sizeKey: "/v1/benchmark/matrix",
         summary:
-          "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. Drives the SurfaceBench page's side-drawer.",
+          "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. `models` lists the eight benchmarked Claude models (Haiku 4.5 / 5.5, Sonnet 4.6 / 5 / 5.5, Opus 4.8 / 5 / 5.5) and `variants` the prompt variants (naive, ncbi, ncbi_effort_low — the ncbi prompt at low reasoning effort — web_ncbi, pubmed_ncbi); not every model ran every variant, and a missing (model, variant) is null. Each cell is the majority over its 3 replicates (refused replicates excluded) — the same per-cell numbers as the paper — with `n_reps`, `majority_agreement` and replicate-summed `totals`; `reasoning` and per-call telemetry come from the representative `replicate`. A cell whose replicates were all declined by the model's safety classifier has `verdict: null` and `error: \"refusal\"`. Drives the SurfaceBench page's side-drawer.",
         curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .headline_variant, .alt_variants'",
+          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .variants, .headline_variant'",
       },
     ],
   },
@@ -182,7 +182,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/triage/{SYMBOL}/{model}/{variant}",
         summary:
-          "Per-cell replicate detail for one (gene, model, prompt_variant) cell. Returns every replicate's verdict + verdict_reasoning + per-call token usage + latency, plus the agent's overall majority verdict computed across replicates.",
+          "Per-cell replicate detail for one (gene, model, prompt_variant) cell — any benchmarked model id (e.g. claude-opus-5-5) and variant (naive, ncbi, ncbi_effort_low, web_ncbi, pubmed_ncbi). Returns every replicate's verdict + verdict_reasoning + per-call token usage + latency, plus the agent's overall majority verdict computed across replicates. A replicate the model's safety classifier declined has a null verdict and `error: \"refusal\"`, and is excluded from the majority.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2/claude-sonnet-4-6/ncbi | jq '.majority_verdict, .replicates | length'",
       },
@@ -191,20 +191,20 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/triage/export.tsv",
         sizeKey: "/v1/triage/export.tsv",
         summary:
-          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v2 (the bench sweep); pass run_id=genome_full_sonnet_ncbi_v1 for the full ~19k-gene Sonnet sweep. Reasoning columns are omitted by default to keep figure-input exports prose-free — add with_reasoning=1 for the full export below.",
+          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v2 (the bench sweep); pass run_id=genome_full_sonnet_ncbi_v2 for the full ~19k-gene Sonnet sweep. Reasoning columns are omitted by default to keep figure-input exports prose-free — add with_reasoning=1 for the full export below.",
         curl:
-          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1' | head -3",
+          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1' | head -3",
       },
       {
         method: "GET",
-        path: "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1",
+        path: "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&with_reasoning=1",
         anchor: "triage-full-export",
         sizeKey:
-          "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1",
+          "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&with_reasoning=1",
         summary:
           "Full genome-wide triage export WITH agent reasoning: the ~19k-gene Sonnet/NCBI sweep with predicted_key_uncertainty and the agent's free-text verdict_reasoning paragraph appended as the trailing columns. with_reasoning=1 works on any run_id; this is the bulk counterpart to the per-gene /v1/triage/{SYMBOL} reasoning.",
         curl:
-          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1&with_reasoning=1' | head -3",
+          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2&replicate=1&with_reasoning=1' | head -3",
       },
     ],
   },
@@ -277,12 +277,91 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
     ],
   },
   {
+    label: "History",
+    blurb:
+      "Record history + numbered data releases. Every distinct state the API served for a gene (record, evidence ledger, Markdown export) is archived write-once, with one revision per actual change — numbering starts at 1 for a gene's first archived version; there's no revision 0. Revision and release bodies never change; cite them by URL, or by the release's Zenodo version DOI. Release 1.0.0, the 2026-08-15 Zenodo deposit, predates this system and is Zenodo-only: it has no per-gene member records here (see the DOI in its /v1/releases/1.0.0 response instead).",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}/revisions",
+        anchor: "history",
+        summary:
+          "Every archived revision of this gene's served record (newest first), each with a `changed` label (\"first_archived\", or the parts — record/evidence/markdown — that differ from the previous revision) and the releases it belongs to.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions | jq '.current_revision, .revisions[0].changed, .revisions[0]'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}/revisions/{n}",
+        summary:
+          "Revision n of the record, byte-for-byte as served; also /evidence and .md.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2/revisions/1 | jq '.gene.hgnc_symbol'",
+      },
+      {
+        method: "GET",
+        path: "/v1/releases",
+        summary:
+          "Numbered data releases with their GitHub tag and Zenodo version DOI, and `api_members` (false only for 1.0.0, the pre-history Zenodo deposit).",
+        curl: "curl -s https://api.deliverome.org/surfaceome/v1/releases | jq '.releases'",
+      },
+      {
+        method: "GET",
+        path: "/v1/releases/{version}",
+        summary:
+          "One release: metadata + the revision of every gene in it. Release 1.0.0 returns members: [] and an `api_note` pointing at its Zenodo DOI instead — its records were never served through the API.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/releases/1.0.0 | jq '.n_genes, .zenodo_version_doi, .api_members, .api_note'",
+      },
+      {
+        method: "GET",
+        path: "/v1/releases/{version}/genes/{SYMBOL}",
+        summary:
+          "A gene as it was in that release; also /evidence and .md. 404s `release_not_in_api_history` (with the Zenodo DOI) for release 1.0.0, whose records live only in the Zenodo deposit.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/releases/1.0.0/genes/ERBB2 | jq '.error, .zenodo_version_doi'",
+      },
+    ],
+  },
+  {
     label: "Contact sites",
     blurb: "Versioned mapped ligand and antibody contacts from public D1. Coverage is an audit snapshot, not an exhaustive ligand census. Coordinates use canonical UniProt numbering.",
     endpoints: [
       { method: "GET", path: "/v1/contact-sites/releases/current", summary: "Current release, source provenance, coverage and excluded identifiers.", curl: "curl -s https://api.deliverome.org/surfaceome/v1/contact-sites/releases/current" },
       { method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}", summary: "Ligand identities, category metadata and one observed footprint per named ligand. scope=extracellular by default; scope=all includes other compartments. Audited empty results differ from not_audited.", curl: "curl -s 'https://api.deliverome.org/surfaceome/v1/contact-sites/releases/RELEASE_ID/proteins/P00533'" },
       { method: "GET", path: "/v1/contact-sites/releases/{release}/proteins/{uniprot}/ligands/{ligandId}/evidence", summary: "Up to 100 original observations per page; pass next_cursor as cursor. Keep the same release and scope on every request. Omit ligands/{ligandId}/ to retrieve all observations, including unnamed partners.", curl: "curl -s 'https://api.deliverome.org/surfaceome/v1/contact-sites/releases/RELEASE_ID/proteins/P00533/evidence?scope=all'" },
+    ],
+  },
+  {
+    label: "Reproducibility",
+    blurb:
+      "Reproducibility replicates — NOT published records. For the run-to-run reproducibility analysis (Supplementary Figure 16), 50 deep-dive genes drawn at random were re-analysed; each is held three ways: the published record as served when the study ran (published_snapshot), a full from-scratch re-run with the same prompts (full_rerun), and a fixed-evidence replay that re-ran only the section builders and synthesizer on the published evidence (fixed_evidence_replay). Every response carries reproducibility_replicate: true and a link back to the published record, which stays at /v1/genes/{SYMBOL}. The same records are deposited on Zenodo.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/replicates",
+        anchor: "replicates",
+        summary:
+          "Every replicate study with its kinds and genes (metadata only).",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/replicates | jq '.studies[] | {study_id, n_genes, kinds: (.kinds | keys)}'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}/replicates",
+        summary:
+          "The replicates held for one gene, with a link to each; 404 if the gene was not sampled.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates | jq '.replicates[] | {replicate_kind, url}'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}/replicates/{study}/{kind}",
+        summary:
+          "One replicate SurfaceomeRecord in full (evidence included) under .record, wrapped with its study, kind, run ids and the deep-dive tier computed by the same rule as the published record. kind is published_snapshot, full_rerun or fixed_evidence_replay.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/M6PR/replicates/deep_dive_concordance_v1/full_rerun | jq '.reproducibility_replicate, .deep_dive_tier, .record.filters.surface_accessibility'",
+      },
     ],
   },
   {
@@ -517,7 +596,13 @@ export default async function ApiPage() {
             <code className={styles.code}>max-age=86400</code> (one day).
             Build-time consumers should use{" "}
             <code className={styles.code}>cache: &quot;force-cache&quot;</code>{" "}
-            so the response is baked into the static artifact.
+            so the response is baked into the static artifact. If a
+            server-side lookup used to enrich the record hiccups, the
+            response still ships 200 but carries{" "}
+            <code className={styles.code}>X-Surfaceome-Degraded</code> (a
+            comma-separated list of the fields that may be stale/null) and{" "}
+            <code className={styles.code}>Cache-Control: no-store</code> —
+            retry rather than caching it yourself.
           </p>
           <p>
             <span className="label-mono">Schema ·</span> Per-gene records

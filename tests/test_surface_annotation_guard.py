@@ -19,6 +19,15 @@ import pytest
 from accessible_surfaceome.cloud import surface_annotation as sa
 
 
+@pytest.fixture(autouse=True)
+def _no_archive_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep these tests hermetic — a stray ``ARCHIVE_BYPASS_TOKEN`` in the
+    environment would make a successful publish attempt a real
+    ``_maybe_archive`` call (network) instead of the no-op these tests
+    assume."""
+    monkeypatch.delenv("ARCHIVE_BYPASS_TOKEN", raising=False)
+
+
 def _set_public_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct")
     monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "tok")

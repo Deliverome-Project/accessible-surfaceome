@@ -16,6 +16,7 @@ import {
   type FgLibraryData,
 } from "../../../lib/fg-library";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { isoformNumber } from "../GeneHeader/GeneHeader";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { TopologyBar, TopologyLegend } from "./TopologyBar";
@@ -662,6 +663,19 @@ export function IsoformsCard({ rec, n, fgLibrary, taggedSites }: Props) {
                   table honest until it lands. */}
               {df.isoform_topologies
                 .filter((iso) => iso.isoform_id !== rec.gene.uniprot_acc)
+                /* The API returns `isoform_topologies` ordered by
+                   `uniprot_acc_full ASC` — a TEXT sort — so `P15941-10`
+                   precedes `P15941-2` and this table opened on "Isoform
+                   P15941-10 / -11 / -12". MUC1 (17 isoforms) is the case that
+                   surfaced it; it reads as library contamination or a wrong
+                   record rather than a sort. Same numeric comparison the 3D
+                   tab strip uses for its 3-isoform cap, via the shared
+                   `isoformNumber` — see viewer/tests/isoform_cap_order.test.ts.
+                   `.filter()` already copied, so sorting in place is safe. */
+                .sort(
+                  (a, b) =>
+                    isoformNumber(a.isoform_id) - isoformNumber(b.isoform_id),
+                )
                 .map((iso, i) => {
                 const fullId = iso.full_length_pct_identity_to_canonical;
                 const ecdId = iso.ecd_pct_identity_to_canonical;

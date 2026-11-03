@@ -62,6 +62,17 @@ _DETERMINISTIC_FEATURE_DERIVED = {
     "tm_count_band",
 }
 
+# Facets sourced from SurfaceEvidence.methods (not the Filters block): the
+# methods builder's per-experiment direct / supporting judgement, mapped to
+# method categories by SURFACE_METHOD_RULES. Same contract as
+# _BIOLOGY_DERIVED — the viewer's pickDeepDiveFilters and the Worker's
+# projectSurfaceMethods both derive them from the record directly.
+_SURFACE_EVIDENCE_DERIVED = {
+    "surface_method_direct",
+    "surface_method_supporting",
+    "has_native_direct_surface_evidence",
+}
+
 # Facets computed by the catalog Worker post-projection from a raw
 # Filters int field and attached to each ddf-bearing row. Distinct
 # from _ECD_BANDS (which the Worker computes per row from the
@@ -163,6 +174,7 @@ def test_facets_equal_worker_keys_plus_bands() -> None:
             | _BIOLOGY_DERIVED
             | _ACCESSIBILITY_RISK_DERIVED
             | _DETERMINISTIC_FEATURE_DERIVED
+            | _SURFACE_EVIDENCE_DERIVED
         ) - _NUMERIC_DISPLAY_ONLY
     )
 

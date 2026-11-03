@@ -366,6 +366,13 @@ class LiteratureTrack(BaseModel):
     # prompt corpus this track ran under (auto-catches any edit), plus the
     # human-bumpable label. Code sets both; the sweep's resume treats a changed
     # prompt_sha as stale.
+    #: The concrete model id, per the prompt-provenance rule: sha + version say
+    #: WHICH prompt, and the model string says what read it. ModelPriorTrack has
+    #: carried all three since it was written; this track had only two, so a
+    #: literature grade could not be attributed to the model that produced it.
+    cost_usd: float = 0.0
+    n_model_calls: int = 0
+    model: str | None = None
     prompt_sha: str | None = None
     prompt_version: str | None = None
 

@@ -34,3 +34,12 @@
   font-size: 0.74rem;
   letter-spacing: 0.04em;
 }
+
+/* Curated truth said surface; the deep dive agreed but restricted the
+ * call to specific states / lineages. Muted, not amber — see the
+ * matching note in TriageRow.module.css. */
+.benchmarkNarrowed {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}

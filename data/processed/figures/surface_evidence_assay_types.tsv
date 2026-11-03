@@ -1,0 +1,9 @@
+method	family	genes_direct	genes_supporting_only	genes_sole_direct	pct_sole_direct	n_surface_genes	n_genes_any_direct
+functional_surface_assay	functional	1429	462	439	30.72	3035	2203
+flow_cytometry	imaging_cytometry	1186	42	280	23.61	3035	2203
+surface_biotin_pulldown	labeling_capture	592	9	101	17.06	3035	2203
+immunofluorescence	imaging_cytometry	328	1214	60	18.29	3035	2203
+cell_surface_capture_ms	labeling_capture	316	20	44	13.92	3035	2203
+proximity_labeling	labeling_capture	69	64	8	11.59	3035	2203
+other	other	68	243	4	5.88	3035	2203
+immunohistochemistry	imaging_cytometry	2	556	2	100.0	3035	2203

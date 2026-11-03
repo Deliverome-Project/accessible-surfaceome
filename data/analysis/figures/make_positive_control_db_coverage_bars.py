@@ -12,8 +12,13 @@ Three-panel bar chart: per-database coverage of the three positive-control
 target lists (ADC / TCE / ViralZone). One bar per source (Sonnet + 5 DBs),
 canonical performance-ranked axis order and project palette.
 
-Sonnet column = positive in the dual NCBI triage (v1 ∪ v2, verdict yes OR
-contextual). PubMed-augmented variant is NOT part of the combined axis.
+Sonnet column = positive (verdict yes or contextual) in any of the NCBI v1,
+NCBI v2 or PubMed-rescue (``genome_full_sonnet_pubmed_ncbi_v1``) triage
+passes. In panel a each bar is split by ADC source (TheraSAbDab > Open
+Targets > ADCdb); the gene(s) Sonnet misses are written inside its bar.
+
+Reads one bundled TSV, ``positive_control_db_coverage_bars.tsv`` (a copy of
+``data/processed/positive_controls/positive_control_long.tsv``).
 
 Standalone — ``uv run make_positive_control_db_coverage_bars.py``.
 """
@@ -70,12 +75,12 @@ def _apply_brand_style() -> None:
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
-        "font.family": "sans-serif",
+        "font.family": ["Manrope", "DejaVu Sans"],
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.weight": "medium",
-        "font.size": 14,
-        "axes.labelsize": 14,
-        "axes.labelweight": "medium",
+        "font.weight": "semibold",
+        "font.size": 16,
+        "axes.labelsize": 18,
+        "axes.labelweight": "semibold",
         "axes.spines.top": False,
         "axes.spines.right": False,
         "axes.grid": True,
@@ -88,12 +93,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 14,
-        "ytick.labelsize": 14,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 14,
+        "legend.fontsize": 15,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -227,7 +232,7 @@ def build_tidy() -> pd.DataFrame:
 
 def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
     _apply_brand_style()
-    fig, axes = plt.subplots(1, 3, figsize=(17, 6), sharey=False)
+    fig, axes = plt.subplots(1, 3, figsize=(14, 6.2), sharey=False)
 
     long = _fetch_tsv(DATA_TSV)
 
@@ -264,17 +269,16 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
                 order=DB_ORDER, hue="db", palette=bar_colors,
                 legend=False, ax=ax, edgecolor="none",
             )
-        # Three-row stacked text above each bar: spelled-out DB title (in the
-        # bar's color) → count → percentage. Keeps the column identifiable
-        # when the figure is shrunk.
+        # Count + percentage above each bar (the DB name is the x tick label;
+        # at print width a third line would overrun the narrow columns).
         for i, db in enumerate(DB_ORDER):
             n = int(sub[sub["db"] == db]["n"].iloc[0])
             pct = n / n_total * 100
-            label = f"{DB_TITLE[db]}\n{n}\n({pct:.0f}%)"
+            label = f"{n}\n{pct:.0f}%"
             ax.text(
                 i, n + n_total * 0.025, label,
-                ha="center", va="bottom", fontsize=10,
-                color=DB_COLOR[db], weight="semibold", linespacing=1.25,
+                ha="center", va="bottom", fontsize=14,
+                color=DB_COLOR[db], linespacing=1.15,
             )
 
         # Annotate the Sonnet bar with the gene name(s) Sonnet missed.
@@ -288,49 +292,60 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
                 f"missed: {', '.join(missed)}",
                 ha="center", va="top",
                 rotation=90,
-                fontsize=10, style="italic",
-                color="white", weight="semibold",
+                fontsize=14, style="italic",
+                color="white",
             )
 
         ax._panel_title_text = f"{panel_title}\n(n = {n_total} targets)"
-        ax.set_ylabel("Targets\nrepresented", fontsize=13, weight="medium")
+        ax.set_ylabel("Targets\nrepresented" if slug == "ADC" else "", fontsize=18)
         ax.set_xlabel("")
-        # Modest headroom (1.18×) over n_total to fit the per-bar text block.
-        ax.set_ylim(0, n_total * 1.18)
+        # Modest headroom (1.25×) over n_total to fit the per-bar text block.
+        ax.set_ylim(0, n_total * 1.25)
         # Cap y-ticks at n_total so no displayed value exceeds the universe size.
         ax.set_yticks(_smart_yticks(n_total))
         sns.despine(ax=ax, top=True, right=True)
-        ax.set_xticks([])
+        ax.set_xticks(range(len(DB_ORDER)))
+        ax.set_xticklabels([DB_TITLE[db] for db in DB_ORDER], rotation=40,
+                           ha="right", rotation_mode="anchor")
+        for tick, db in zip(ax.get_xticklabels(), DB_ORDER, strict=True):
+            tick.set_color(DB_COLOR[db])
+        ax.tick_params(axis="x", length=0, pad=4)
 
     # Finalize the layout BEFORE reading axes positions — subplots_adjust moves
     # the axes, so doing it after label placement left the titles + a/b/c letters
     # off-center. Panel titles + letters via fig.text (set_title was clipped by
     # save_figure's bbox-tight cropping).
-    plt.subplots_adjust(top=0.78, bottom=0.08, left=0.06, right=0.98, wspace=0.28)
+    plt.subplots_adjust(top=0.80, bottom=0.22, left=0.07, right=0.99, wspace=0.22)
     fig.canvas.draw()
     for ax, letter in zip(axes, "abc"):
         bbox = ax.get_position()
-        fig.text(
+        title = fig.text(
             (bbox.x0 + bbox.x1) / 2, bbox.y1 + 0.04,
             getattr(ax, "_panel_title_text", ""),
-            fontsize=13, weight="bold",
+            fontsize=16,
             ha="center", va="bottom",
         )
+        # Subpanel letter level with the title's first (shortest) line, so
+        # it clears the wider lines below.
+        title_top = fig.transFigure.inverted().transform(
+            (0, title.get_window_extent(fig.canvas.get_renderer()).y1))[1]
         fig.text(
-            bbox.x0 - 0.015, bbox.y1 + 0.04,
-            letter, fontsize=22, fontweight=800, family="Manrope",
-            ha="right", va="bottom",
+            bbox.x0 - 0.03, title_top,
+            letter, fontsize=24, fontweight=800, family="Manrope",
+            ha="right", va="top",
         )
 
-    # ADC panel legend — explain the 3-source teal stacking
+    # ADC panel legend — explain the 3-source teal stacking; below the panel,
+    # since inside it collides with the per-bar labels
     adc_ax = axes[0]
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, color=ADC_SOURCE_COLOR[src], label=src)
         for src in ADC_SOURCE_ORDER
     ]
     adc_ax.legend(
-        handles=legend_handles, loc="upper right", frameon=False,
-        fontsize=10, title="ADC source", title_fontsize=10,
+        handles=legend_handles, loc="upper center", bbox_to_anchor=(0.5, -0.24),
+        ncols=3, frameon=False, handlelength=1.2, columnspacing=1.2,
+        fontsize=15, title="ADC source", title_fontsize=15,
     )
 
     out_dir.mkdir(parents=True, exist_ok=True)

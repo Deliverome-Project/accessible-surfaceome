@@ -29,10 +29,11 @@ from __future__ import annotations
 import json
 import logging
 import os
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote, urlparse
 
 import httpx
@@ -40,6 +41,9 @@ import httpx
 from accessible_surfaceome.cloud.d1_client import D1Config
 from accessible_surfaceome.paths import REPO_ROOT
 from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
+
+if TYPE_CHECKING:
+    from accessible_surfaceome.cloud.record_history.store import CloudRevisionStore
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +101,11 @@ class PublishResult:
     #   True  — purge_cache POST succeeded; new record is live immediately
     #   False — purge attempted but failed; record goes live on TTL instead
     cache_purged: bool | None = None
+    # Record-history archive after the D1 write:
+    #   None       — not attempted (no D1 write, or ARCHIVE_BYPASS_TOKEN unset)
+    #   "created" / "unchanged" / "not_annotated" — archive_gene's status
+    #   "failed"   — archiving raised; the next sweep captures the revision
+    archive_status: str | None = None
 
 
 def _public_config_from_env(symbol: str | None = None) -> D1Config | None:
@@ -279,6 +288,177 @@ def _purge_urls_for(sym: str) -> list[str]:
         f"{_CATALOG_CACHE_BASE}/{epoch}/v1/catalog",
         f"{_EDGE_CACHE_HOST}/{epoch}{_ROUTE_PREFIX}/v1/genes",
     ]
+
+
+# ---------------------------------------------------------------------------
+# Cohort-level cache surfaces (invalidated by a public-D1 SYNC, not a publish)
+# ---------------------------------------------------------------------------
+#
+# ``publish_record`` purges the surfaces ONE gene's record changes. A
+# ``scripts/cloud/sync_public_d1.py`` run is the other writer into public
+# D1 — it rewrites whole tables (``triage_run_public``,
+# ``benchmark_version``) that back cohort-level endpoints, and it had no
+# purge path at all.
+#
+# That gap only bites on the 1-DAY surfaces. The Worker's per-gene and
+# index endpoints (``/v1/triage/{SYMBOL}``, ``/v1/catalog``, ``/v1/genes``)
+# carry ``CACHE_TTL_SHORT`` (60s), so they self-heal in a minute and are
+# deliberately NOT enumerated here — purging 19k per-gene triage URLs to
+# save 60 seconds would burn purge quota on a shared zone for nothing.
+# The export / matrix endpoints carry ``CACHE_TTL_LONG`` (86400s) plus
+# ``stale-while-revalidate=86400``, and they are exactly the surfaces the
+# "live consumers (notebooks, agents)" arm of the data-flow diagram in
+# CLAUDE.md points at. Those are worth purging.
+_COHORT_SURFACES_BY_TABLE: dict[str, tuple[str, ...]] = {
+    # ``/v1/catalog`` joins triage_run_public, but at 60s TTL — omitted
+    # per the note above. ``export.tsv`` is the 1-day surface.
+    "triage_run": (
+        "/v1/triage/export.tsv",
+        # ``handleTriageExport`` is the ONE route wrapped with
+        # ``includeQuery: true``, so each query string is its own cache
+        # key and the bare path does not cover them. These are the
+        # variants the Worker's own ``/v1/meta/sizes`` examples publish,
+        # i.e. the ones readers actually have URLs for.
+        "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1",
+        "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1",
+    ),
+    "benchmark": (
+        "/v1/benchmark",
+        "/v1/benchmark/matrix",
+        "/v1/benchmark/export.tsv",
+    ),
+    # ``compara`` backs ``/v1/orthologs/{SYMBOL}`` and ``gene_identifier``
+    # backs no cached cohort endpoint. Ortholog URLs are per-gene, so they
+    # need a gene-scoped sweep (``scripts/cloud/purge_gene_cache.py``'s
+    # shape) rather than a fixed list — deliberately out of scope here so
+    # this helper never claims to have purged something it didn't.
+}
+
+
+def cohort_purge_paths(tables: Iterable[str]) -> list[str]:
+    """Cohort endpoint paths invalidated by syncing ``tables``.
+
+    ``tables`` are ``sync_public_d1.py`` group names (``triage_run``,
+    ``benchmark``, ``compara``, ``gene_identifier``). Unknown or
+    no-cached-surface groups contribute nothing.
+    """
+    out: list[str] = []
+    for t in tables:
+        for path in _COHORT_SURFACES_BY_TABLE.get(t, ()):
+            if path not in out:
+                out.append(path)
+    return out
+
+
+def _cohort_cache_key(path: str) -> str:
+    """The Worker's synthetic cache key for a cohort endpoint ``path``.
+
+    Mirrors ``withEdgeCache`` in ``index.js``: the key is the deploy epoch
+    plus the request pathname (plus the query string on the one route that
+    sets ``includeQuery``), hung off the synthetic ``surfaceome-api.cache``
+    host. Both the ``caches.default`` entry and the KV mirror use this same
+    string, so one builder serves both tiers.
+    """
+    return f"{_EDGE_CACHE_HOST}/{_cache_epoch()}{_ROUTE_PREFIX}{path}"
+
+
+def purge_paths(
+    paths: list[str], *, client: httpx.Client | None = None
+) -> bool | None:
+    """Best-effort purge of Worker cache surfaces by API path (edge + KV).
+
+    ``paths`` are route paths like ``/v1/releases`` (no ``/surfaceome``
+    prefix). Soft-skips with a warning when the Cloudflare config is
+    absent (CI / offline dev), never raises, and a failure only means
+    readers see the previous response until its TTL expires. Returns
+    ``True`` on a clean purge of both tiers, ``False`` on a partial /
+    failed purge, and ``None`` when there was nothing to do or the
+    config was missing.
+    """
+    if not paths:
+        return None
+    cfg = _public_config_from_env()
+    if cfg is None:
+        logger.warning(
+            "Cloudflare config missing — skipping cache purge for %s. "
+            "Readers keep the previous copy until the Worker's TTL.",
+            ", ".join(paths),
+        )
+        return None
+    zone = os.environ.get("CLOUDFLARE_ZONE_ID", "").strip()
+    ns_id = os.environ.get("CLOUDFLARE_KV_RECORD_CACHE_ID", "").strip()
+    if not zone and not ns_id:
+        logger.warning(
+            "neither CLOUDFLARE_ZONE_ID nor CLOUDFLARE_KV_RECORD_CACHE_ID is "
+            "set — skipping cache purge for %s.",
+            ", ".join(paths),
+        )
+        return None
+
+    own = client is None
+    c = client or httpx.Client(timeout=30)
+    ok = True
+    try:
+        keys = [_cohort_cache_key(p) for p in paths]
+        if zone:
+            try:
+                # Purge the Worker's SYNTHETIC caches.default keys (see the
+                # long comment above ``_EDGE_CACHE_HOST``), not the public
+                # ``PUBLIC_API_BASE`` URL — Cloudflare accepts a purge of the
+                # public host and reports success, but evicts nothing,
+                # because ``withEdgeCache`` never keys on that host. Reuse
+                # the same ``keys`` list the KV tier below purges so the two
+                # tiers can't drift apart.
+                ok &= _purge_cf_cache(
+                    keys,
+                    zone_id=zone,
+                    token=cfg.api_token,
+                    client=c,
+                )
+            except Exception as exc:  # noqa: BLE001 — best-effort
+                logger.warning("path edge purge failed (%s)", exc)
+                ok = False
+        if ns_id:
+            try:
+                ok &= all(
+                    _delete_kv_key(
+                        key,
+                        account_id=cfg.account_id,
+                        namespace_id=ns_id,
+                        token=cfg.api_token,
+                        client=c,
+                    )
+                    for key in keys
+                )
+            except Exception as exc:  # noqa: BLE001 — best-effort
+                logger.warning("path KV purge failed (%s)", exc)
+                ok = False
+        if ok:
+            logger.info("path cache purged: %s", ", ".join(paths))
+        else:
+            logger.warning(
+                "path cache purge incomplete for %s — stale until TTL",
+                ", ".join(paths),
+            )
+        return ok
+    finally:
+        if own:
+            c.close()
+
+
+def purge_cohort_surfaces(
+    tables: Iterable[str], *, client: httpx.Client | None = None
+) -> bool | None:
+    """Best-effort purge of the cohort surfaces a public-D1 sync invalidated.
+
+    Same posture as :func:`_maybe_purge` — soft-skips with a warning when
+    the Cloudflare config is absent (CI / offline dev), never raises, and
+    a failure only means readers see the previous export until its 1-day
+    TTL expires. Returns ``True`` on a clean purge of both tiers, ``False``
+    on a partial / failed purge, and ``None`` when there was nothing to do
+    or the config was missing.
+    """
+    return purge_paths(cohort_purge_paths(tables), client=client)
 
 
 def _purge_cf_cache(
@@ -465,7 +645,7 @@ def _is_triage_signal_drift(
                 WHERE gene_symbol = ?
                   AND run_id = ?
                   AND prompt_variant = ?
-                  AND model LIKE '%sonnet%'
+                  AND model = 'claude-sonnet-4-6'  -- production triage model; the bench run also holds other Sonnets
                   AND predicted_verdict IS NOT NULL
                 LIMIT 1
                 """,
@@ -706,6 +886,48 @@ def _heal_family_in_place(rec_dict: dict[str, Any]) -> bool:
     return healed
 
 
+def _open_revision_store() -> CloudRevisionStore:  # indirection so tests can stub it
+    from accessible_surfaceome.cloud.record_history.store import CloudRevisionStore
+
+    return CloudRevisionStore.from_env()
+
+
+def _maybe_archive(sym: str, *, client: httpx.Client) -> str | None:
+    """Best-effort record-history archive after a publish.
+
+    Never fails the publish: a miss is backstopped by
+    ``scripts/cloud/sweep_record_history.py``.
+    """
+    token = os.environ.get("ARCHIVE_BYPASS_TOKEN", "").strip()
+    if not token:
+        logger.warning(
+            "ARCHIVE_BYPASS_TOKEN not set — %s not archived to record history; "
+            "run scripts/cloud/sweep_record_history.py to catch up.",
+            sym,
+        )
+        return None
+    try:
+        from accessible_surfaceome.cloud.record_history import archive as arch
+
+        with _open_revision_store() as store:
+            result = arch.archive_gene(
+                sym,
+                source="publish",
+                http=client,
+                store=store,
+                token=token,
+                purge=purge_paths,
+            )
+        return result.status
+    except Exception as exc:  # noqa: BLE001 — archiving is best-effort here
+        logger.warning(
+            "record-history archive failed for %s (%s) — the next sweep captures it",
+            sym,
+            exc,
+        )
+        return "failed"
+
+
 def _publish_dict(
     rec_dict: dict[str, Any],
     *,
@@ -768,6 +990,7 @@ def _publish_dict(
 
     row = _row_from_dict(rec_dict, cohort_run_id=cohort_run_id)
     new_version = row[2]
+    archive_status: str | None = None
     with httpx.Client(timeout=60) as client:
         # Regression guard — never let a publish blank out a populated
         # deterministic block. A record generated with unhydrated data / a
@@ -913,6 +1136,11 @@ def _publish_dict(
         # soft-skips when the RECORD_CACHE namespace id isn't configured.
         _maybe_purge_kv(sym, cfg=cfg, client=client)
 
+        # Archive what the API now serves for this gene into record
+        # history (after the purges, though the archiver bypasses the
+        # caches anyway). Best-effort; see _maybe_archive.
+        archive_status = _maybe_archive(sym, client=client)
+
     return PublishResult(
         gene_symbol=sym,
         snapshot_path=snap_path,
@@ -921,6 +1149,7 @@ def _publish_dict(
         stale_versions_dropped=stale,
         skipped_reason=None,
         cache_purged=cache_purged,
+        archive_status=archive_status,
     )
 
 

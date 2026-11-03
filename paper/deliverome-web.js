@@ -161,13 +161,241 @@
     '<button class="figure-lightbox__nav figure-lightbox__prev" type="button" aria-label="Previous figure">&#8249;</button>' +
     '<button class="figure-lightbox__nav figure-lightbox__next" type="button" aria-label="Next figure">&#8250;</button>' +
     '<figure class="figure-lightbox__inner">' +
-    '<img alt="" />' +
+    '<div class="figure-lightbox__viewport">' +
+    '<img alt="" draggable="false" />' +
+    '<p class="figure-lightbox__hint">Pinch to zoom · drag to pan</p>' +
+    '<button class="figure-lightbox__reset" type="button">Reset zoom</button>' +
+    "</div>" +
     '<figcaption></figcaption>' +
     '<p class="figure-lightbox__counter"></p>' +
     "</figure>";
   document.body.appendChild(overlay);
 
   var imgEl = overlay.querySelector("img");
+  var viewport = overlay.querySelector(".figure-lightbox__viewport");
+  var innerEl = overlay.querySelector(".figure-lightbox__inner");
+
+  /* ── Pan and zoom, inside the figure's window ────────────────────
+   *
+   * The panel never changes shape; the image is scaled and translated
+   * within the fixed window above, so the legend stays where it is and
+   * stays readable. `transform-origin: 0 0` plus an image whose layout
+   * box fills the window means every number below is in one coordinate
+   * space: window pixels from its top-left corner.
+   */
+  var MIN_SCALE = 1;
+  var MAX_SCALE = 8;
+  var scale = 1;
+  var tx = 0;
+  var ty = 0;
+
+  /* Stacked or side-by-side? Measured, not guessed.
+   *
+   * Which layout shows the figure larger depends on the figure's shape
+   * AND on how much height its legend eats AND on the window — and the
+   * three do not line up. Sorting by aspect ratio alone mis-sorts real
+   * figures in this manuscript in both directions: one near-square
+   * figure with a long legend is 71% larger beside, while a slightly
+   * flatter one with a short legend is 6% SMALLER. So lay the figure
+   * out both ways while the overlay is still invisible, keep whichever
+   * renders bigger, and let the threshold take care of itself.
+   *
+   * Below the stylesheet's 48rem breakpoint the side-by-side rules do
+   * not apply at all, so both measurements come back equal and stacked
+   * wins by default — the narrow-screen case needs no special casing. */
+  var naturalRatio = 0;
+
+  /* Give the figure's window the shape of the figure, so it can be
+   * shrunk to fit beside the legend without clipping the image — see
+   * the .figure-lightbox__viewport comment in the stylesheet. */
+  function setViewportRatio(w, h) {
+    w = parseFloat(w);
+    h = parseFloat(h);
+    var known = w > 0 && h > 0;
+    naturalRatio = known ? h / w : 0;
+    viewport.style.aspectRatio = known ? w + " / " + h : "";
+  }
+
+  function visiblePictureArea() {
+    /* The <img> box is the window; `object-fit: contain` letterboxes
+     * the picture inside it, so the box is NOT what the reader sees.
+     * Measuring the box instead of the picture is what made an earlier
+     * pass of this comparison come out backwards. */
+    var b = imgEl.getBoundingClientRect();
+    if (!naturalRatio || !b.width || !b.height) return 0;
+    var h = b.width * naturalRatio;
+    return h <= b.height ? b.width * h : (b.height / naturalRatio) * b.height;
+  }
+
+  function chooseLayout() {
+    innerEl.classList.remove("is-portrait");
+    var stacked = visiblePictureArea();
+    innerEl.classList.add("is-portrait");
+    if (visiblePictureArea() <= stacked) {
+      innerEl.classList.remove("is-portrait");
+    }
+  }
+
+  function clampPan() {
+    /* Keep the scaled image covering the box it occupies unzoomed, so
+     * panning can never strand the reader on empty background. At scale
+     * 1 this pins it to 0,0 — which is also how a zoom-out recentres
+     * itself. Measured on the IMAGE, not the window: the image is
+     * centred inside the window and letterboxed by object-fit, so the
+     * two boxes are not the same rectangle. */
+    var w = imgEl.offsetWidth;
+    var h = imgEl.offsetHeight;
+    tx = Math.min(0, Math.max(w * (1 - scale), tx));
+    ty = Math.min(0, Math.max(h * (1 - scale), ty));
+  }
+
+  function applyTransform() {
+    clampPan();
+    imgEl.style.transform =
+      "translate(" + tx + "px, " + ty + "px) scale(" + scale + ")";
+    viewport.classList.toggle("is-zoomed", scale > MIN_SCALE + 0.001);
+  }
+
+  function resetZoom() {
+    scale = 1;
+    tx = 0;
+    ty = 0;
+    imgEl.style.transform = "";
+    viewport.classList.remove("is-zoomed", "is-panning");
+  }
+
+  /* Zoom about a point, so the pixel under the cursor stays under it —
+   * zooming about the centre instead makes the thing you were looking
+   * at drift off-screen, which is what makes a zoom feel broken. */
+  function zoomAt(px, py, factor) {
+    var next = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * factor));
+    if (next === scale) return;
+    tx = px - ((px - tx) * next) / scale;
+    ty = py - ((py - ty) * next) / scale;
+    scale = next;
+    applyTransform();
+  }
+
+  /* A pointer position in the image's own coordinate space. The window
+   * carries no transform, so its rect is stable to measure against;
+   * offsetLeft/Top then step in to the image's untransformed corner. */
+  function pointIn(e) {
+    var r = viewport.getBoundingClientRect();
+    return [
+      e.clientX - r.left - imgEl.offsetLeft,
+      e.clientY - r.top - imgEl.offsetTop,
+    ];
+  }
+
+  /* A trackpad pinch arrives as a wheel event with ctrlKey set — that
+   * is the only signal browsers give for it.
+   *
+   * A PLAIN wheel means different things depending on what the reader
+   * is looking at. Zoomed in, a two-finger scroll is how anyone expects
+   * to move around a magnified image, so it pans; mapping it to zoom
+   * instead leaves the reader magnified with no way to reach the rest
+   * of the figure. At rest there is nothing to pan, and a reader who
+   * scrolls over a figure means to look closer, so it zooms. */
+  viewport.addEventListener(
+    "wheel",
+    function (e) {
+      e.preventDefault();
+      var p = pointIn(e);
+      if (e.ctrlKey) {
+        zoomAt(p[0], p[1], Math.exp(-e.deltaY * 0.01));
+      } else if (scale > MIN_SCALE) {
+        tx -= e.deltaX;
+        ty -= e.deltaY;
+        applyTransform();
+      } else {
+        zoomAt(p[0], p[1], Math.exp(-e.deltaY * 0.0015));
+      }
+    },
+    { passive: false }
+  );
+
+  /* Pointer events rather than mouse+touch: one code path covers the
+   * trackpad drag, the mouse drag and the two-finger touch pinch. */
+  var points = {};
+  var pinchStart = null;
+  var panned = false;
+
+  /* An explicit way out, because the other two are both invisible:
+   * double-click is a guess, and Escape is a keyboard reader's reflex
+   * that nobody on a trackpad thinks to try. Shown only while zoomed. */
+  var resetBtn = overlay.querySelector(".figure-lightbox__reset");
+  resetBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    resetZoom();
+  });
+
+  viewport.addEventListener("pointerdown", function (e) {
+    /* The reset button lives inside the window, so it would otherwise
+     * be swallowed by the pan gesture below. */
+    if (e.target.closest(".figure-lightbox__reset")) return;
+    /* Without this a drag on an <img> becomes the browser's native
+     * image drag: the pointer stream stops, a ghost thumbnail follows
+     * the cursor, and the pan never happens. `draggable="false"` on the
+     * image covers the same ground; both are cheap and the failure is
+     * silent, so keep them. */
+    e.preventDefault();
+    points[e.pointerId] = { x: e.clientX, y: e.clientY };
+    panned = false;
+    if (Object.keys(points).length === 1 && scale > MIN_SCALE) {
+      viewport.setPointerCapture(e.pointerId);
+      viewport.classList.add("is-panning");
+    }
+  });
+
+  viewport.addEventListener("pointermove", function (e) {
+    var prev = points[e.pointerId];
+    if (!prev) return;
+    var ids = Object.keys(points);
+
+    if (ids.length >= 2) {
+      /* Two fingers: pinch about their midpoint. */
+      points[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var a = points[ids[0]];
+      var b = points[ids[1]];
+      var dist = Math.hypot(a.x - b.x, a.y - b.y);
+      var r = viewport.getBoundingClientRect();
+      var mid = [
+        (a.x + b.x) / 2 - r.left - imgEl.offsetLeft,
+        (a.y + b.y) / 2 - r.top - imgEl.offsetTop,
+      ];
+      if (pinchStart) zoomAt(mid[0], mid[1], dist / pinchStart);
+      pinchStart = dist;
+      panned = true;
+      return;
+    }
+
+    if (scale <= MIN_SCALE) return;
+    tx += e.clientX - prev.x;
+    ty += e.clientY - prev.y;
+    points[e.pointerId] = { x: e.clientX, y: e.clientY };
+    panned = true;
+    applyTransform();
+  });
+
+  function endPointer(e) {
+    delete points[e.pointerId];
+    if (Object.keys(points).length < 2) pinchStart = null;
+    if (!Object.keys(points).length) viewport.classList.remove("is-panning");
+  }
+  viewport.addEventListener("pointerup", endPointer);
+  viewport.addEventListener("pointercancel", endPointer);
+
+  /* Double-click is the keyboard-free way in and out. */
+  viewport.addEventListener("dblclick", function (e) {
+    e.preventDefault();
+    if (scale > MIN_SCALE) {
+      resetZoom();
+    } else {
+      var p = pointIn(e);
+      zoomAt(p[0], p[1], 2.5);
+    }
+  });
+
   var capEl = overlay.querySelector("figcaption");
   var closeBtn = overlay.querySelector(".figure-lightbox__close");
   var prevBtn = overlay.querySelector(".figure-lightbox__prev");
@@ -193,7 +421,24 @@
     if (lastFocused === null) lastFocused = document.activeElement;
     imgEl.setAttribute("src", source.getAttribute("src"));
     imgEl.setAttribute("alt", source.getAttribute("alt") || "");
-    capEl.textContent = caption ? caption.textContent.trim() : "";
+    /* Give the figure's window the shape of the figure, so it can be
+     * shrunk to fit beside the legend without clipping the image — see
+     * the .figure-lightbox__viewport comment in the stylesheet. The
+     * in-flow <img> already carries width/height attributes, so the
+     * ratio is known before this copy has decoded a single byte. */
+    setViewportRatio(
+      source.getAttribute("width") || source.naturalWidth,
+      source.getAttribute("height") || source.naturalHeight
+    );
+    /* Carry the caption's rich markup, not just its text: the run-in
+     * "Figure N. Title." is a <strong> and the caption ends with a
+     * "Figure data and script." link to the figure's gist. Flattening
+     * to textContent dropped both the bold and the (clickable) link;
+     * innerHTML keeps them. The caption never carries an id (figures.lua
+     * moves it to the image anchor) so the copy raises no duplicate id.
+     * The link stays clickable because the click-to-dismiss handler
+     * already excludes anything inside <figcaption>. */
+    capEl.innerHTML = caption ? caption.innerHTML : "";
     overlay.hidden = false;
     /* Force a reflow so the opacity transition has a start state,
      * then flip the class SYNCHRONOUSLY. The obvious
@@ -202,13 +447,20 @@
      * opacity 0 and never become visible — an invisible full-screen
      * layer swallowing every click. */
     void overlay.offsetWidth;
+    /* After un-hiding (so there is a layout to measure) and before
+     * `is-open` (so the reader never sees the trial layouts). */
+    chooseLayout();
     overlay.classList.add("is-open");
+    /* A new figure always starts fitted, never inheriting the previous
+     * one's zoom — stepping through figures should be comparable. */
+    resetZoom();
     document.body.style.overflow = "hidden";
     closeBtn.focus();
   }
 
   function close() {
     overlay.classList.remove("is-open");
+    resetZoom();
     overlay.hidden = true;
     document.body.style.overflow = "";
     imgEl.removeAttribute("src");
@@ -296,13 +548,38 @@
    * caption is excluded so its text stays selectable. */
   overlay.addEventListener("click", function (e) {
     if (e.target.closest(".figure-lightbox__nav")) return;
+    /* Clicking the figure still dismisses — but not when the reader is
+     * working inside it. A drag that ends on the image fires a click
+     * too, so a pan would otherwise close the lightbox the moment you
+     * let go; and once zoomed in, a stray click shouldn't throw away
+     * the view you just framed. */
+    if (e.target === imgEl || e.target.closest(".figure-lightbox__viewport")) {
+      if (panned || scale > MIN_SCALE) return;
+    }
+    /* An in-page caption link (e.g. "Methods", href="#…") has to take the
+     * reader to that section — but the overlay is a fixed layer sitting on
+     * top, so the jump is invisible while it's open. Close first, then let
+     * the anchor navigate. External links (target=_blank) open a new tab
+     * and leave the figure up, so they keep the caption exception below. */
+    if (e.target.closest("figcaption a[href^='#']")) {
+      close();
+      return;
+    }
     if (e.target.closest("figcaption")) return;
     close();
   });
 
   document.addEventListener("keydown", function (e) {
     if (overlay.hidden) return;
-    if (e.key === "Escape") close();
+    if (e.key === "Escape") {
+      /* Step back out of zoom first: Escape should undo the last thing
+       * the reader did, not two things at once. */
+      if (scale > MIN_SCALE) {
+        resetZoom();
+      } else {
+        close();
+      }
+    }
     else if (e.key === "ArrowRight") step(1);
     else if (e.key === "ArrowLeft") step(-1);
   });
@@ -399,4 +676,406 @@
   );
 
   recompute();
+})();
+
+/*
+ * Reader comments — a progressive-enhancement island at the bottom of
+ * the paper (markup emitted by build.py). Posts to the shared feedback
+ * Worker (Resend-backed, author-moderated) under a paper-only "gene"
+ * sentinel, so a comment here can never surface on a surfaceome gene
+ * page. Approved comments are fetched and shown above the form; a reader
+ * can opt in to having theirs posted publicly on this page after review.
+ */
+(function () {
+  "use strict";
+
+  var section = document.querySelector(".paper-comments");
+  if (!section) return;
+
+  var apiBase = (section.getAttribute("data-api-base") || "").replace(/\/+$/, "");
+  var gene = section.getAttribute("data-gene") || "";
+  var siteKey = section.getAttribute("data-turnstile-key") || "";
+  if (!apiBase || !gene) return;
+
+  var form = section.querySelector(".paper-comments__form");
+  var listEl = section.querySelector(".paper-comments__list");
+  var statusEl = section.querySelector(".paper-comments__status");
+  var turnstileSlot = section.querySelector(".paper-comments__turnstile");
+  var submitBtn = section.querySelector(".paper-comments__submit");
+  var token = "";
+  var widgetId = null;
+
+  function setStatus(msg, kind) {
+    statusEl.textContent = msg || "";
+    statusEl.className = "paper-comments__status" + (kind ? " is-" + kind : "");
+  }
+
+  /* Approved public comments. Rendered with textContent throughout — the
+   * bodies are reader-supplied, so never touch innerHTML here. */
+  function renderNotes(notes) {
+    listEl.textContent = "";
+    if (!notes || !notes.length) return;
+    for (var i = 0; i < notes.length; i++) {
+      var n = notes[i];
+      var li = document.createElement("li");
+      li.className = "paper-comments__note";
+      var bodyEl = document.createElement("p");
+      bodyEl.className = "paper-comments__note-body";
+      bodyEl.textContent = n.comment || "";
+      var whoEl = document.createElement("p");
+      whoEl.className = "paper-comments__note-by";
+      whoEl.textContent = "— " + (n.submitter_name || "Anonymous");
+      li.appendChild(bodyEl);
+      li.appendChild(whoEl);
+      listEl.appendChild(li);
+    }
+  }
+
+  /* Approved comments are fetched live on load — never baked into the page.
+   * Two robustness wrinkles the naive one-shot fetch got wrong:
+   *   1. D1 read-replica lag. Right after a comment is approved, the write
+   *      may not have reached every region's read replica, so the first
+   *      fetch can come back empty. Retry a bounded few times WHILE the list
+   *      is still empty, so a freshly-approved note appears without a manual
+   *      reload. A genuinely comment-free page just does a few cheap GETs
+   *      and stops (retries only fire while nothing has rendered yet).
+   *   2. A note approved while the tab sits open won't show until reload —
+   *      so also refetch when the tab regains focus.
+   * A transient empty response (replica lag on a later refetch) must never
+   * blank notes we've already shown: once we've rendered a non-empty list we
+   * only ever replace it with another non-empty list. */
+  var renderedNonEmpty = false;
+
+  function applyNotes(notes) {
+    if (notes && notes.length) {
+      renderNotes(notes);
+      renderedNonEmpty = true;
+    } else if (!renderedNonEmpty) {
+      renderNotes([]);
+    }
+  }
+
+  function loadNotes(retriesOnEmpty) {
+    fetch(apiBase + "/v1/feedback/public?gene=" + encodeURIComponent(gene), {
+      headers: { accept: "application/json" },
+      cache: "no-store"
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        var notes = j && j.notes ? j.notes : [];
+        applyNotes(notes);
+        if (!notes.length && !renderedNonEmpty && retriesOnEmpty > 0) {
+          setTimeout(function () { loadNotes(retriesOnEmpty - 1); }, 2000);
+        }
+      })
+      .catch(function () {});
+  }
+
+  /* Turnstile: load the loader script once, then render explicitly. */
+  function renderTurnstile() {
+    if (!siteKey || !turnstileSlot || !window.turnstile) return;
+    try {
+      widgetId = window.turnstile.render(turnstileSlot, {
+        sitekey: siteKey,
+        callback: function (t) { token = t; },
+        "error-callback": function () { token = ""; },
+        "expired-callback": function () { token = ""; }
+      });
+    } catch (e) {
+      /* widget already rendered / bad key — leave the form usable */
+    }
+  }
+
+  function loadTurnstile() {
+    if (!siteKey) return;
+    if (window.turnstile) { renderTurnstile(); return; }
+    if (!document.getElementById("cf-turnstile-script")) {
+      var s = document.createElement("script");
+      s.id = "cf-turnstile-script";
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+      s.async = true;
+      s.defer = true;
+      document.head.appendChild(s);
+    }
+    var tries = 0;
+    var iv = setInterval(function () {
+      if (window.turnstile) { clearInterval(iv); renderTurnstile(); }
+      else if (++tries > 100) { clearInterval(iv); }
+    }, 100);
+  }
+
+  function resetTurnstile() {
+    token = "";
+    if (widgetId !== null && window.turnstile) {
+      try { window.turnstile.reset(widgetId); } catch (e) {}
+    }
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = form.elements["name"].value.trim();
+    var email = form.elements["email"].value.trim();
+    var comment = form.elements["comment"].value.trim();
+    var isPublic = form.elements["public"].checked;
+    if (!name) return setStatus("Please enter your name.", "error");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return setStatus("Please enter a valid e-mail.", "error");
+    if (!comment) return setStatus("Please write a comment.", "error");
+    if (siteKey && !token)
+      return setStatus("Please complete the verification below.", "error");
+
+    setStatus("Sending…", "pending");
+    submitBtn.disabled = true;
+
+    fetch(apiBase + "/v1/feedback/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        gene: gene,
+        name: name,
+        email: email,
+        subject: "Comment on the accessible human surfaceome paper",
+        comment: comment,
+        public_requested: isPublic,
+        referrer: window.location.href,
+        user_agent: navigator.userAgent,
+        site_version: "paper-web",
+        turnstile_token: token
+      })
+    })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          return { ok: r.ok, status: r.status, j: j };
+        });
+      })
+      .then(function (res) {
+        submitBtn.disabled = false;
+        if (res.ok) {
+          form.reset();
+          resetTurnstile();
+          setStatus(
+            isPublic
+              ? "Thanks — sent to the authors. It'll appear here once approved."
+              : "Thanks — your comment was sent to the authors.",
+            "ok"
+          );
+          return;
+        }
+        var err = (res.j && res.j.error) || ("Server returned " + res.status + ".");
+        if (err === "rate_limited") {
+          err = "You've sent a few already — please try again later.";
+        } else if (err === "turnstile_failed") {
+          resetTurnstile();
+          err = "Verification failed — please complete the checkbox again.";
+        }
+        setStatus(err, "error");
+      })
+      .catch(function () {
+        submitBtn.disabled = false;
+        setStatus("Network error — please try again.", "error");
+      });
+  });
+
+  loadNotes(3); // initial load + up to 3 empty-retries (~6s replica-lag window)
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") loadNotes(0);
+  });
+  loadTurnstile();
+})();
+
+/*
+ * Scroll reveal.
+ *
+ * The `reveal` classes are stamped into the markup by paper/web_assets.py
+ * and the `js-reveal` gate is set by an inline <head> script, both before
+ * this file runs — see REVEAL_BOOTSTRAP_SCRIPT for why that ordering is
+ * load-bearing. What is left for here is the part that needs a viewport:
+ * deciding what is already on screen, arming the transition afterwards so
+ * the opening screen doesn't animate, and un-hiding the rest on approach.
+ *
+ * If this file never loads, the gate is still set but nothing ever adds
+ * `is-visible` — which is why the gate is conditional on
+ * IntersectionObserver, the same capability this observer needs. A
+ * browser without it never hides anything in the first place.
+ */
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  if (!root.classList.contains("js-reveal")) return;
+
+  var targets = document.querySelectorAll(".paper-root .reveal");
+
+  function show(el) {
+    el.classList.add("is-visible");
+  }
+
+  /* Anything already on screen is shown BEFORE arming, so it transitions
+   * from nothing and simply exists at first paint. Everything after this
+   * point animates. */
+  var i;
+  for (i = 0; i < targets.length; i++) {
+    var box = targets[i].getBoundingClientRect();
+    if (box.top < window.innerHeight && box.bottom > 0) show(targets[i]);
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    /* Can't happen while the gate checks the same thing, but if the gate
+     * ever moves, fail to the readable state rather than a blank page. */
+    for (i = 0; i < targets.length; i++) show(targets[i]);
+    return;
+  }
+
+  /* Commit the values above BEFORE arming, by forcing a style flush.
+   * Reading offsetWidth makes the browser resolve layout now, so the
+   * elements just marked visible settle at opacity 1 with no transition
+   * attached and simply exist at first paint.
+   *
+   * A requestAnimationFrame here is wrong twice over — the same trap the
+   * lightbox hits above. It is paused in a background tab, so a paper
+   * cmd-clicked into one would never arm; and it races the observer
+   * below, which can deliver its first batch before the frame callback
+   * runs, leaving the first block under the fold to snap in unarmed. A
+   * synchronous flush has neither problem. */
+  void document.body.offsetWidth;
+  root.classList.add("reveal-armed");
+
+  /* Find-in-page sees text that is still at opacity 0, so a reader
+   * searching the paper could be scrolled to what looks like a blank
+   * stretch. Rather than keeping prose out of the reveal — which is
+   * what makes the whole effect visible — drop the reveal entirely the
+   * moment anyone starts searching. Best-effort: the browser may claim
+   * the shortcut first in some configurations, and nothing breaks if
+   * it does; this only ever makes MORE text visible. */
+  function revealEverything() {
+    for (var k = 0; k < targets.length; k++) show(targets[k]);
+  }
+  document.addEventListener("keydown", function (e) {
+    if ((e.metaKey || e.ctrlKey) && (e.key === "f" || e.key === "F")) {
+      revealEverything();
+    }
+  });
+  /* Chrome fires this on a hidden element it is about to scroll a
+   * find-in-page match to. Where supported it is exact, and it also
+   * covers "scroll to text fragment" links. */
+  document.addEventListener("beforematch", revealEverything, true);
+
+  var observer = new IntersectionObserver(
+    function (entries) {
+      for (var j = 0; j < entries.length; j++) {
+        if (!entries[j].isIntersecting) continue;
+        show(entries[j].target);
+        /* Once revealed, stay revealed: re-animating on the way back up
+         * turns a page you are scanning into a flickering one. */
+        observer.unobserve(entries[j].target);
+      }
+    },
+    /* Hold the reveal until the block is ~18% of the viewport up from
+     * the bottom edge, rather than firing as it clips the edge.
+     *
+     * This is the difference between motion you see and motion you
+     * only infer. Triggered at the edge, a block has finished arriving
+     * while it is still in the last few percent of the screen — below
+     * where anyone is looking — so the page just seems to have been
+     * that way already. Held slightly, the same animation plays where
+     * the eye actually is. */
+    { rootMargin: "0px 0px -18% 0px", threshold: 0 }
+  );
+
+  for (i = 0; i < targets.length; i++) {
+    if (!targets[i].classList.contains("is-visible")) observer.observe(targets[i]);
+  }
+})();
+
+/*
+ * Contents rail — dock on scroll.
+ *
+ * The rail is fixed-position, so without this it sits beside the title
+ * band offering navigation for a paper the reader hasn't begun. Fade it
+ * in once they're past the header. Purely cosmetic: with this script
+ * absent the stylesheet leaves the rail permanently visible, which is
+ * where it was before.
+ */
+(function () {
+  "use strict";
+
+  var toc = document.getElementById("TOC");
+  var header = document.querySelector(".paper-header");
+  if (!toc || !header || !("IntersectionObserver" in window)) return;
+
+  var observer = new IntersectionObserver(
+    function (entries) {
+      /* Docked once the title band has left the viewport entirely. */
+      toc.classList.toggle("is-docked", !entries[0].isIntersecting);
+    },
+    /* No rootMargin, deliberately. A negative TOP inset shrinks the
+     * observer root down past the header, so at the top of the page —
+     * the one position where the rail must be hidden — the header reads
+     * as "not intersecting" and the rail docks immediately, inverting
+     * the whole behaviour. Plain viewport intersection is both simpler
+     * and correct: visible while any of the title band is on screen. */
+    { threshold: 0 }
+  );
+  observer.observe(header);
+})();
+
+/*
+ * Post-jump highlight.
+ *
+ * After a smooth scroll the page settles a beat before the eye catches
+ * up, and in a wall of near-identical reference lines "which one did I
+ * just land on?" is a real question. Flash the destination.
+ *
+ * Deliberately NOT wired to body-text figure cross-references: those
+ * open the figure in place rather than scrolling (see the lightbox
+ * section above), so there is no destination to point at.
+ */
+(function () {
+  "use strict";
+
+  var FLASH = "is-jump-flash";
+  var DURATION = 1200;
+  var timer = null;
+  var current = null;
+
+  function flash(id) {
+    var target;
+    try {
+      target = document.getElementById(decodeURIComponent(id));
+    } catch (e) {
+      target = document.getElementById(id);
+    }
+    if (!target) return;
+    /* citations.lua anchors a reference with an EMPTY span at its start,
+     * which has no box to highlight — paint the enclosing block. */
+    var box = target.closest("li, p, div, h2, h3, h4, section") || target;
+
+    if (current) current.classList.remove(FLASH);
+    if (timer) window.clearTimeout(timer);
+
+    /* Force a reflow between removal and re-add, or re-clicking the same
+     * link is a no-op: the class never left the computed style, so the
+     * animation is never restarted. */
+    void box.offsetWidth;
+
+    box.classList.add(FLASH);
+    current = box;
+    timer = window.setTimeout(function () {
+      box.classList.remove(FLASH);
+      if (current === box) current = null;
+    }, DURATION);
+  }
+
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    if (!a) return;
+    var href = a.getAttribute("href");
+    if (!href || href === "#") return;
+    /* Let the browser do the scrolling; just mark where it lands. */
+    flash(href.slice(1));
+  });
+
+  window.addEventListener("hashchange", function () {
+    if (location.hash.length > 1) flash(location.hash.slice(1));
+  });
 })();

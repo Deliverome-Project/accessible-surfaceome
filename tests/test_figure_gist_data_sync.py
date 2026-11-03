@@ -62,8 +62,15 @@ TSV_BUNDLE: dict[str, list[str]] = {
     "db_cutoff_tradeoff": [
         "data/processed/triage_bench/db_cutoff_tradeoff_points.tsv",
     ],
-    "db_overlap_venn": [
-        "data/processed/figures/db_overlap_venn.tsv",
+    # Figure 1 (UpSet) and the blog Venn are two figures over the same five
+    # native DB flags, each bundling its own copy of that table. This entry
+    # used to name the retired standalone ``db_overlap_venn`` slug, which left
+    # both live gists unguarded.
+    "db_overlap_upset": [
+        "data/processed/figures/db_overlap_upset.tsv",
+    ],
+    "blog_db_overlap_venn": [
+        "data/processed/figures/blog_db_overlap_venn.tsv",
     ],
     "db_vs_sonnet_whole_proteome": [
         "data/processed/figures/db_vs_sonnet_whole_proteome.tsv",

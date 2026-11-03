@@ -115,6 +115,7 @@ def grade_from_evidence(
     evidence: list[Any],
     synonyms: list[str] | None = None,
     system_prompt: str | None = None,
+    usage_sink: list[Any] | None = None,
 ) -> LiteratureLLMOut:
     if not evidence:
         return LiteratureLLMOut()  # nothing to grade → all modes 'unknown'
@@ -134,5 +135,6 @@ def grade_from_evidence(
         user_prompt=user,
         schema=LiteratureLLMOut,
         max_tokens=_MAX_TOKENS_GRADE,
+        usage_sink=usage_sink,
     )
     return _scrub_unknown_cites(out, known={e.evidence_id for e in evidence})

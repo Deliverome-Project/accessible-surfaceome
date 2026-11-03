@@ -70,6 +70,8 @@ export function BenchmarkRow({ rec, benchmarkRow }: Props) {
       </StatusPill>
       {benchVerdict === "conflict" ? (
         <span className={styles.benchmarkConflict}>conflicts with deep dive</span>
+      ) : benchVerdict === "narrowed" ? (
+        <span className={styles.benchmarkNarrowed}>narrowed by deep dive</span>
       ) : benchVerdict === "agree" ? (
         <span className={styles.benchmarkAgree}>agrees with deep dive</span>
       ) : null}

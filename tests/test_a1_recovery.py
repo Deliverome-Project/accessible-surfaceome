@@ -114,3 +114,28 @@ def test_retag_empty_when_nothing_qualifies():
     out = retag_a2_direct_into_a1(blob)
     assert out["n_moved"] == 0
     assert blob["plan_trim_select"]["a1"]["claims"] == []
+
+
+def test_reconstruct_dual_preserves_n_papers_discovered():
+    """The replay rebuild must carry each side's discovery-corpus size.
+
+    ``Filters.n_papers_found`` is ``max(a1, a2).n_papers_discovered``, and the
+    orchestrator treats 0 as "unknown". Dropping the field here defaulted it to
+    0, so every builders replay published ``n_papers_found = None`` — 19
+    records on 2026-09-21, after a backfill had just repaired ~485 others.
+    """
+    from accessible_surfaceome.agents.surfaceome_v2.a1_recovery import (
+        reconstruct_dual_from_blob,
+    )
+
+    blob = {
+        "gene": "GENEX",
+        "bundle": {"hgnc_symbol": "GENEX", "hgnc_id": "HGNC:1", "uniprot_acc": "P00001"},
+        "plan_trim_select": {
+            "a1": {"claims": [], "n_papers_discovered": 237},
+            "a2": {"claims": [], "n_papers_discovered": 210},
+        },
+    }
+    dual = reconstruct_dual_from_blob(blob)
+    assert dual.a1.n_papers_discovered == 237
+    assert dual.a2.n_papers_discovered == 210

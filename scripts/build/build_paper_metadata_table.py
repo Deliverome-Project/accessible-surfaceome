@@ -110,6 +110,28 @@ def _sweep_source_ids(d1: D1Client, *, total_rows: int) -> list[str]:
             if sid:
                 seen.add(sid)
         offset += SWEEP_CHUNK
+    seen.update(_sweep_tag_site_pmids(d1))
+    return sorted(seen)
+
+
+def _sweep_tag_site_pmids(d1: D1Client) -> list[str]:
+    """Every distinct PMID cited by a tag-site, as a ``PMID:n`` source id.
+
+    The sweep above reads ``surface_annotation`` only, so a paper cited by the
+    tag-site pipeline and by no deep dive had no metadata row — the viewer
+    showed 'PMID 29725305' with no title or author for KCNH2's T436, while
+    GIPR's citation two rows away rendered 'Whitaker et al.' because that paper
+    happened to be in a deep dive too."""
+    seen: set[str] = set()
+    for row in d1.query(
+        "SELECT DISTINCT json_extract(s.value, '$.pmid') AS pmid "
+        "FROM tag_site_public t, json_each(t.sources_json) s "
+        "WHERE t.sources_json IS NOT NULL AND json_valid(t.sources_json);",
+        [],
+    ):
+        pmid = row.get("pmid")
+        if pmid:
+            seen.add(f"PMID:{pmid}")
     return sorted(seen)
 
 

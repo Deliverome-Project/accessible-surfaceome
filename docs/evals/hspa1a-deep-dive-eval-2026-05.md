@@ -1,9 +1,15 @@
 # HSPA1A — first v0.4.0 deep-dive reference record
 
+> **Record schema note.** This eval is from May 2026 and describes the v1
+> record shape, including `surface_biology.surface_status`. The shipping
+> record has no such field; the equivalent signals now live in
+> `executive_summary.surface_call_reason`, `surface_evidence.evidence_grade`
+> and `deep_dive_tier`. See the README for the current field list.
+
 **Date:** 2026-05-11
 **Schema version:** `v0.4.0`
 **Model:** `claude-sonnet-4-6`
-**Record:** [`data/annotations/HSPA1A.json`](../../data/annotations/HSPA1A.json)
+**Record:** `data/annotations/HSPA1A.json` (`data/annotations/HSPA1A.json` — generated locally; the directory is gitignored)
 **Run artifacts:** `.runs/2026-05-12T03-12-22-HSPA1A-sesn_01XvucopXbQBK3oXpsh3mRAZ/` (task.md, events.jsonl, final.md, summary.json)
 
 ## Why HSPA1A
@@ -22,7 +28,7 @@ entries with citations, primary-assay-required surface evidence, a
 - **Schema check:** `SCHEMA_VERSION = "v0.4.0"` in
   [models.py:639](../../src/accessible_surfaceome/tools/_shared/models.py:639);
   system prompt declares `v0.4.0` at
-  [system.md:46](../../src/accessible_surfaceome/agents/surface_annotator/prompts/system.md).
+  `system.md:46` (the v1 agent prompt, removed with v1).
   ✓
 - **SURFY snapshot:** HSPA1A row present —
   `protein_length=641`, `surfy_is_surface=0`, `uniprot_subcellular="Cytoplasm"`,
@@ -122,7 +128,7 @@ The agent's first emission tripped two Pydantic validators:
    `ProteinFeatures` after parsing the agent's JSON, so any
    `protein_features` block the agent emits is silently overwritten.
    Agent is now told (in
-   [system.md](../../src/accessible_surfaceome/agents/surface_annotator/prompts/system.md))
+   `system.md` (the v1 agent prompt, removed with v1))
    to *not* emit `protein_features` at all.
 2. **`rationale` exceeded 1500 chars** — agent emitted 1615 chars on a
    record with this much surface biology to summarize. **Fixed:**
@@ -135,7 +141,7 @@ agent's original JSON with the fixes applied and produced
 
 ## Notes for the next eval
 
-- **Compara refresh first.** Run `bash scripts/refresh_compara.sh` before the next
+- **Compara refresh first.** Run `bash scripts/build/refresh_compara.sh` before the next
   end-to-end so the `orthology` field actually populates.
 - **Audit pass.** Wire `--audit` into the next CLI invocation to get
   `entailment_verified=True` flags. Add ~$0.10 to the cost.

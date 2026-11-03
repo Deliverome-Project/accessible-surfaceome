@@ -1,0 +1,149 @@
+gene_symbol	predicted_verdict	predicted_reason	n_cited	n_verified	n_suspect	n_unresolvable	verified_pmids	suspect_pmids
+ACAA2	contextual	cell_state_induced	1	1	0	0	34083649	
+AGGF1	contextual	dual_localization	1	1	0	0	27522498	
+AGK	contextual	cell_state_induced	1	1	0	0	37078777	
+AK1	contextual	dual_localization	3	3	0	0	12496087,25165006,26431833	
+ALDOC	contextual	cell_state_induced	1	1	0	0	23688545	
+AMPD2	contextual	tissue_restricted_surface	1	1	0	0	34159634	
+ANKRD26	contextual	cell_state_induced	1	1	0	0	38493476	
+APBA1	contextual	cell_state_induced	1	1	0	0	33159991	
+APOL6	contextual	cell_state_induced	2	0	2	0		12198550,28636952
+ARC	contextual	dual_localization	4	4	0	0	29328916,33763452,38025262,38187623	
+ARID3A	contextual	dual_localization	2	2	0	0	28829038,33804610	
+ATP5F1A	contextual	cell_state_induced	0	0	0	0		
+ATP6V1A	contextual	other	2	2	0	0	36715683,38532609	
+BAG6	contextual	cell_state_induced	2	2	0	0	26598275,33671836	
+BAIAP3	yes	multipass_with_exposed_loops	1	1	0	0	25759509	
+BLCAP	yes	classical_surface_receptor	4	0	4	0		11042198,16861262,20116365,24563503
+C1orf115	contextual	dual_localization	1	1	0	0	39847086	
+C1orf56	contextual	tissue_restricted_surface	1	1	0	0	34354992	
+C2CD4A	contextual	dual_localization	1	1	0	0	33492421	
+C2CD4B	contextual	dual_localization	1	1	0	0	33492421	
+C9orf85	contextual	dual_localization	0	0	0	0		
+CBX3	contextual	tissue_restricted_surface	2	2	0	0	38331476,39066568	
+CCDC188	contextual	tissue_restricted_surface	0	0	0	0		
+CCDC54	contextual	cell_state_induced	0	0	0	0		
+CCNY	contextual	dual_localization	4	4	0	0	19524571,22895054,36030931,36576166	
+CCT5	contextual	dual_localization	1	1	0	0	35720129	
+CCT7	contextual	cell_state_induced	0	0	0	0		
+CDC37	contextual	cell_state_induced	2	2	0	0	22912728,41215476	
+CENPF	contextual	cell_state_induced	2	2	0	0	18827011,34676150	
+CHAT	contextual	tissue_restricted_surface	2	2	0	0	37741056,38011942	
+CHMP2B	contextual	cell_state_induced	2	2	0	0	21926173,42349418	
+CHMP5	contextual	cell_state_induced	4	4	0	0	31761326,36872252,40618173,42401932	
+CHMP6	contextual	cell_state_induced	3	3	0	0	15511219,31761326,40467009	
+CIRBP	contextual	cell_state_induced	2	2	0	0	34776788,42650208	
+CKAP5	contextual	dual_localization	1	1	0	0	30647854	
+CRLF3	yes	classical_surface_receptor	0	0	0	0		
+CSE1L	contextual	cell_state_induced	1	1	0	0	22952058	
+CT47A2	contextual	cell_state_induced	0	0	0	0		
+CYB5B	contextual	cell_state_induced	1	1	0	0	20100355	
+CYB5R3	contextual	dual_localization	2	2	0	0	30309019,39069267	
+DARS2	contextual	cell_state_induced	1	1	0	0	41214844	
+DBI	contextual	cell_state_induced	2	2	0	0	36191214,41088998	
+DCLK1	contextual	cell_state_induced	4	4	0	0	25985635,31878090,40109216,41087459	
+DEK	contextual	cell_state_induced	4	4	0	0	28165452,31107244,33253580,35928230	
+DIRAS3	contextual	other	2	2	0	0	23157514,31825828	
+DLST	contextual	tissue_restricted_surface	2	2	0	0	41593675,9405249	
+DPP9	contextual	cell_state_induced	1	1	0	0	25486458	
+DUT	contextual	cell_state_induced	1	1	0	0	21658424	
+EIF3A	contextual	cell_state_induced	2	2	0	0	15979069,30006345	
+EN1	contextual	dual_localization	1	1	0	0	25710467	
+EPM2A	contextual	dual_localization	2	2	0	0	11220751,11483392	
+ESR2	contextual	cell_state_induced	4	4	0	0	17928626,20874728,25429088,26159830	
+FAM149A	contextual	tissue_restricted_surface	0	0	0	0		
+FAM153A	contextual	tissue_restricted_surface	0	0	0	0		
+FEZ1	contextual	dual_localization	2	2	0	0	22451907,9971736	
+FLII	contextual	lysosomal_exocytosis	1	1	0	0	22718342	
+FNDC11	yes	classical_surface_receptor	0	0	0	0		
+FOXR2	contextual	cell_state_induced	1	1	0	0	29943836	
+GCSAM	contextual	tissue_restricted_surface	0	0	0	0		
+GGTLC2	contextual	dual_localization	0	0	0	0		
+GMFB	contextual	cell_state_induced	1	1	0	0	40490177	
+GOT2	contextual	cell_state_induced	1	1	0	0	19596004	
+H2BC12	contextual	cell_state_induced	3	0	3	0		18288695,22848640,27672062
+H2BC26	contextual	cell_state_induced	0	0	0	0		
+H2BC4	contextual	cell_state_induced	0	0	0	0		
+H4C3	contextual	cell_state_induced	0	0	0	0		
+HARS1	contextual	cell_state_induced	0	0	0	0		
+HDAC3	contextual	dual_localization	1	1	0	0	16532030	
+HMGB3	contextual	cell_state_induced	2	2	0	0	27007252,38197217	
+HMGN2	contextual	cell_state_induced	3	3	0	0	16078558,16204630,25156469	
+HSPA1L	contextual	cell_state_induced	1	1	0	0	33742129	
+IDO2	contextual	cell_state_induced	1	1	0	0	38003426	
+JMJD6	contextual	dual_localization	0	0	0	0		
+JOSD1	contextual	dual_localization	2	2	0	0	23625928,39284830	
+KANK2	contextual	dual_localization	1	1	0	0	33253712	
+LAP3	contextual	dual_localization	1	1	0	0	26526349	
+LPXN	contextual	cell_state_induced	2	2	0	0	17640867,42688351	
+LSM4	contextual	cell_state_induced	1	1	0	0	19088440	
+LYSMD2	contextual	dual_localization	0	0	0	0		
+MAP1B	contextual	dual_localization	3	3	0	0	10899930,11733546,7802683	
+MDFIC	contextual	dual_localization	1	1	0	0	33367115	
+MEST	contextual	dual_localization	2	2	0	0	21375506,29058774	
+MGRN1	contextual	dual_localization	4	4	0	0	21460229,27471821,41178558,42089370	
+MPPED1	yes	gpi_anchored	0	0	0	0		
+MTMR6	contextual	dual_localization	1	1	0	0	16914545	
+NCOA4	contextual	cell_state_induced	1	1	0	0	38916095	
+NDRG2	contextual	dual_localization	3	3	0	0	21672576,25338637,26500492	
+NECAB2	contextual	dual_localization	3	3	0	0	17689978,19694902,38934399	
+NET1	contextual	other	2	2	0	0	23184663,33465404	
+NIPSNAP1	contextual	dual_localization	2	2	0	0	18392847,22311985	
+NPM1	contextual	cell_state_induced	2	2	0	0	33335727,40269321	
+NUDCD1	contextual	cell_state_induced	2	0	2	0		16849521,27009967
+PAK6	contextual	other	1	1	0	0	28486133	
+PBOV1	contextual	cell_state_induced	0	0	0	0		
+PCMT1	contextual	cell_state_induced	1	1	0	0	35033172	
+PDCD5	contextual	dual_localization	1	1	0	0	24469044	
+PDZD7	contextual	tissue_restricted_surface	2	2	0	0	33937240,40836926	
+PEPD	contextual	cell_state_induced	3	3	0	0	23212918,24810047,35478031	
+PEX5	contextual	cell_state_induced	1	1	0	0	40319819	
+PFKL	contextual	cell_state_induced	2	2	0	0	28646105,34348486	
+PFKP	contextual	cell_state_induced	1	1	0	0	29677490	
+PHLPP1	contextual	dual_localization	2	2	0	0	33397691,42271149	
+PLCXD2	contextual	tissue_restricted_surface	1	1	0	0	40393451	
+PREP	contextual	cell_state_induced	1	1	0	0	29998529	
+PRR15L	contextual	cell_state_induced	0	0	0	0		
+PRSS33	contextual	cell_state_induced	1	1	0	0	28216055	
+PSMB4	contextual	dual_localization	3	0	3	0		16621801,37060572,38439248
+PTOV1	contextual	dual_localization	2	2	0	0	15713644,21678139	
+PYCARD	contextual	cell_state_induced	1	1	0	0	42702284	
+RGS14	contextual	cell_state_induced	4	4	0	0	16870394,23250758,25666614,28934222	
+RNF11	contextual	dual_localization	2	2	0	0	25195858,27551276	
+RNF144A	contextual	dual_localization	2	2	0	0	24979766,34400221	
+RRM2	contextual	cell_state_induced	3	3	0	0	39243109,41813908,42180553	
+RTL5	contextual	tissue_restricted_surface	1	1	0	0	36162816	
+RTL6	contextual	tissue_restricted_surface	1	1	0	0	36162816	
+RXRB	contextual	cell_state_induced	1	1	0	0	30871996	
+SGSM2	contextual	dual_localization	1	1	0	0	30744493	
+SH3TC2	contextual	dual_localization	3	3	0	0	19744956,19805030,20826437	
+SIRT2	contextual	cell_state_induced	1	1	0	0	36453571	
+SNRNP200	contextual	cell_state_induced	1	1	0	0	42059863	
+SOD2	contextual	cell_state_induced	2	2	0	0	21473702,26137589	
+SPAG1	contextual	tissue_restricted_surface	0	0	0	0		
+SPAG9	contextual	cell_state_induced	1	1	0	0	20138665	
+SPATA31A3	contextual	tissue_restricted_surface	0	0	0	0		
+SPATA31C2	contextual	tissue_restricted_surface	0	0	0	0		
+SPATA31E1	contextual	tissue_restricted_surface	0	0	0	0		
+SPHK2	contextual	dual_localization	2	2	0	0	19490468,40454507	
+SQSTM1	contextual	cell_state_induced	2	2	0	0	33077977,33111608	
+SRRM2	contextual	cell_state_induced	1	1	0	0	39329747	
+SSB	contextual	cell_state_induced	3	3	0	0	25845745,32939030,41223700	
+SYNJ2BP	contextual	dual_localization	1	1	0	0	32303178	
+SYT12	yes	classical_surface_receptor	0	0	0	0		
+TAF15	contextual	cell_state_induced	2	2	0	0	20048082,41620072	
+TAX1BP3	contextual	cell_state_induced	0	0	0	0		
+TBC1D3D	contextual	dual_localization	0	0	0	0		
+TCP11X1	contextual	tissue_restricted_surface	0	0	0	0		
+TFAM	contextual	cell_state_induced	2	2	0	0	29678518,40027624	
+TK1	contextual	cell_state_induced	2	2	0	0	30214377,42546205	
+TNFAIP8	contextual	cell_state_induced	3	3	0	0	25948813,32795319,37451566	
+TOMM40	contextual	cell_state_induced	1	1	0	0	35279298	
+TSPO	contextual	cell_state_induced	1	1	0	0	33205494	
+USP12	contextual	dual_localization	2	2	0	0	22778262,30466959	
+VDAC2	contextual	dual_localization	4	4	0	0	21347391,35469989,42036059,42402267	
+WWOX	contextual	dual_localization	1	1	0	0	31752354	
+XDH	contextual	dual_localization	3	3	0	0	10956613,14728722,28863172	
+XRCC6	contextual	dual_localization	1	1	0	0	30482849	
+YWHAB	contextual	cell_state_induced	0	0	0	0		
+ZZEF1	contextual	tissue_restricted_surface	1	1	0	0	42143230	

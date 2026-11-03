@@ -66,7 +66,9 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
 ## Before you run it
 
 1. **Review `EXTRA_FILES`** in `publish-archive.py`. The default set is
-   three data files plus a generated in-deposit README. All joins
+   the genome-wide triage sweeps (the canonical run plus all four
+   literature-rescue lanes), the benchmark export, the database cutoffs,
+   and a generated in-deposit README. All joins
    happen server-side in the Cloudflare Worker — the publish script
    just fetches pre-joined endpoints, so deposit bytes are atomic
    snapshots:
@@ -78,6 +80,20 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
      Sonnet + Opus × 4 prompt variants × 147 bench genes, with DB
      votes + truth labels joined in by the Worker. From
      `/v1/benchmark/export.tsv`.
+   - `db_optimized_cutoffs.tsv` — one row per UniProt accession with
+     each source's native surface call and its SurfaceBench-recalibrated
+     one. UniProt is expanded (TM > 0, signal peptide, or a strict
+     subcellular term) and CSPA tightened to high-confidence only; GO,
+     SURFY and HPA are unchanged. A positive list of the 4,171
+     accessions passing at least one optimized cutoff — an accession
+     that isn't in the file is 0 under the optimized rule, not its
+     native flag. Read from the repo, not the Worker.
+
+     CLAUDE.md says not to push figure-input TSVs into this deposit.
+     This one is a deliberate exception: since 2026-09 the recalibrated
+     rule decides DB membership on the API, the viewer and the benchmark
+     table, so it is a serving-side reference now rather than a figure
+     input. The rule stands for everything else.
    - `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json`
      per published `SurfaceomeRecord`; built by fetching `/v1/genes`
      for the index, then `/v1/genes/<SYMBOL>` per gene.
@@ -89,8 +105,8 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
    fetch), a path string relative to repo root (local file), or one
    of the special builder shapes: `{"deep_dives_bundle": True, ...}`
    (tarball), `{"deposit_readme": True, ...}` (in-deposit README),
-   `{"manuscript": True, ...}` (pre-built PDF + pandoc-generated
-   JATS XML for the paper — off by default; see below). Comment out
+   `{"manuscript": True, ...}` (pre-built PDF + structured JATS XML
+   and its figure files for the paper — off by default; see below). Comment out
    anything you don't want in this particular deposit.
 
 2. **Deploy the Worker** if you've changed `handleTriageExport` or
@@ -177,9 +193,9 @@ After both records exist:
 2. **Click "Publish"** in the Zenodo UI when you're ready. The reserved
    DOI activates and the record is locked.
 3. **Update `FIGURE_PROVENANCE`** in
-   `scripts/embed_figure_gist_metadata.py`: set `doi` on the
+   `scripts/figures/embed_figure_gist_metadata.py`: set `doi` on the
    top-level entry for each figure that's covered by this deposit.
-4. **Re-run** `scripts/embed_figure_gist_metadata.py` to refresh the
+4. **Re-run** `scripts/figures/embed_figure_gist_metadata.py` to refresh the
    embedded metadata in `data/analysis/figures/*.{png,pdf}`.
 5. **Commit** the metadata bump.
 
@@ -233,8 +249,8 @@ gh release create v1.2.0 --generate-notes
 
 # 6. Update FIGURE_PROVENANCE with the new code-record's concept DOI
 #    so future figure renders pick it up:
-#    edit scripts/embed_figure_gist_metadata.py → set `doi` per figure
-#    → uv run python scripts/embed_figure_gist_metadata.py
+#    edit scripts/figures/embed_figure_gist_metadata.py → set `doi` per figure
+#    → uv run python scripts/figures/embed_figure_gist_metadata.py
 #    → git add data/analysis/figures/ && git commit
 ```
 
@@ -317,7 +333,8 @@ clean split:
 2. **Build the manuscript outputs** via `paper/build.py`:
    ```bash
    uv run python paper/build.py paper/manuscript.docx
-   # produces paper/build/manuscript.{pdf,xml,html}
+   # produces paper/build/manuscript.{pdf,html} and paper/build/jats/
+   # (manuscript.xml plus the figure files it references)
    ```
 3. **Create a new Zenodo deposit** at <https://zenodo.org/uploads/new>.
 4. On the **DOI** field, select **"Yes, I already have a DOI"** and
@@ -326,7 +343,10 @@ clean split:
    DOI and break the Unpaywall route described below.
 5. **Upload the files:**
    - `manuscript.pdf` — primary citable
-   - `manuscript.xml` — pandoc-generated JATS (PMC-compatible)
+   - everything in `paper/build/jats/` — `manuscript.xml` (structured
+     JATS: front matter, `<fig>`, `<ref-list>`, `<xref>`) and the
+     figure files it references by filename. Zenodo's file list is
+     flat, so they must be uploaded alongside it, not in a folder.
    - `manuscript.txt` (optional) — plain-text extracted version
      (some text-miners prefer it; harmless to add)
 6. **Set license** = CC-BY 4.0 (matches the rest of the project).

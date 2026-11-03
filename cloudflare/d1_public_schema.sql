@@ -5,7 +5,7 @@
 -- Worker at e.g. `api.deliverome.org/surfaceome/...` with no auth.
 --
 -- Sync direction: ALWAYS private → public. The sync script
--- (scripts/sync_public_d1.py) is one-way and append-only — historical
+-- (scripts/cloud/sync_public_d1.py) is one-way and append-only — historical
 -- snapshots stay queryable, the public DB is never read by the agent
 -- pipeline.
 --
@@ -22,7 +22,7 @@
 --   wrangler d1 execute surfaceome_public --remote \\
 --     --file=cloudflare/d1_public_schema.sql
 --
--- Or via D1 HTTP API (no wrangler needed) — see scripts/apply_d1_schema.py.
+-- Or via the D1 HTTP API (no wrangler needed) — see scripts/cloud/sync_d1_schema.py.
 
 -- ---------------------------------------------------------------------------
 -- compara_release / compara_ortholog
@@ -230,7 +230,7 @@ CREATE INDEX IF NOT EXISTS idx_surface_annotation_cohort
 --
 -- Loaded from `data/processed/candidate_universe/candidate_universe.tsv`
 -- (a build artifact, NOT in the private agents DB) by
--- scripts/upload_candidate_universe_to_d1.py. Each merge run bumps
+-- scripts/cloud/upload_candidate_universe_to_d1.py. Each merge run bumps
 -- universe_version so historical universes stay queryable; the Worker
 -- always serves the latest.
 -- ---------------------------------------------------------------------------
@@ -277,7 +277,7 @@ CREATE TABLE IF NOT EXISTS candidate_universe_release (
 -- gene_identifier table. Lets the public Worker (and the viewer) look up
 -- canonical stable IDs for any gene without re-resolving from symbol —
 -- which historically was where the resolver bugs entered the pipeline
--- (see scripts/audit_resolver_hgnc_id_v3.py for the failure modes).
+-- (see scripts/audit/audit_resolver_hgnc_id_v3.py for the failure modes).
 --
 -- Synced from `surfaceome_agents.gene_identifier` by the same one-way
 -- script that mirrors candidate_universe + triage_run. Resolver-version
@@ -355,9 +355,30 @@ CREATE TABLE IF NOT EXISTS topology_public (
     per_residue_topology       TEXT NOT NULL,        -- O/M/I/S/B chars; len == protein_length
     predicted_surface_membrane INTEGER NOT NULL,     -- 1 iff label in {TM, SP+TM}
     predicted_secreted         INTEGER NOT NULL,     -- 1 iff label == SP
-    tool_version               TEXT NOT NULL,        -- e.g. 'deeptmhmm-1.0.24'
+    tool_version               TEXT NOT NULL,        -- e.g. 'deeptmhmm-1.0.24', or 'deeptmhmm2_predictor-0.1.0+ckpt.<12 hex>'
     retrieved_at               TEXT NOT NULL,        -- ISO 8601 timestamp
     synced_at                  TEXT NOT NULL DEFAULT (datetime('now')),
+
+    -- DeepTMHMM2 (v2) columns. NULL for every v1 row and populated only under a
+    -- v2 topology_version. Rationale, the v1-alphabet projection rule, and why
+    -- there is no type-code column live in
+    -- cloudflare/migrations/topology_public_dtm2.sql — read that before using
+    -- any of these. Decode dtm2_topology_string through
+    -- accessible_surfaceome.sources.deeptmhmm2, never by hand: its side
+    -- characters mean different things per membrane type.
+    dtm2_structural_type        TEXT,     -- Globular | Globular + SP | Alpha TM | Alpha TM + SP | Beta Barrel | Alpha TM + TP | Globular + TP
+    dtm2_topology_string        TEXT,     -- full v2 alphabet; sides are membrane-specific
+    dtm2_v1_alphabet_lossy      INTEGER,  -- 1 iff the per_residue_topology projection dropped R/F/>
+    dtm2_main_membrane_type     TEXT,     -- highest-probability predicted compartment; NULL for non-TM
+    dtm2_main_membrane_type_idx INTEGER,  -- model index; the key that decodes dtm2_topology_string
+    dtm2_membrane_types         TEXT,     -- JSON array, multi-label, highest probability first
+    dtm2_membrane_type_probs    TEXT,     -- JSON object {type_name: probability} over all 17 supported types
+    dtm2_plasma_membrane        INTEGER,  -- 1 iff 'Eukaryotic plasma membrane' is over threshold
+    dtm2_plasma_membrane_prob   REAL,     -- kept even when the call is 0, so a re-threshold needs no rerun
+    dtm2_reentrant_count        INTEGER,  -- segment counts; the only record of these features
+    dtm2_interfacial_count      INTEGER,
+    dtm2_transit_peptide_length INTEGER,  -- '>' residues; deliberately NOT folded into signal_peptide_length
+
     PRIMARY KEY (topology_version, cohort, uniprot_acc_full)
 );
 
@@ -519,7 +540,7 @@ CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
 --
 -- Two tables: protein-level aggregate (one row per UniProt acc) +
 -- site-level detail (one row per (acc, site_id)). Sync script:
--- scripts/sync_surface_bind_to_d1.py reads from
+-- scripts/cloud/sync_surface_bind_to_d1.py reads from
 -- data/external/surface_bind/surface_bind_summary.json and UPSERTs.
 -- ---------------------------------------------------------------------------
 
@@ -568,6 +589,40 @@ CREATE INDEX IF NOT EXISTS idx_surface_bind_site_beta
     ON surface_bind_site (n_seeds_beta);
 
 -- ---------------------------------------------------------------------------
+-- Bindome binding sites (public mirror)
+-- ---------------------------------------------------------------------------
+-- Bindome (Wenckstern et al. 2026, doi 10.64898/2026.07.30.741542) publishes
+-- 305,806 BindCraft designs but NO target-side site list: its
+-- `InterfaceResidues` column is the binder chain, and every design ran the
+-- `no_hotspot` protocol. A site is therefore recovered from where the designs
+-- land -- target residues contacted across a protein's designs, kept when
+-- >=20% of designs touch them, then single-linkage clustered at 8 A on CA.
+-- Built by scripts/build/build_bindome_sites.py from the concordance run.
+--
+-- `compartment` uses the same DeepTMHMM per-residue string that labels
+-- surface_bind_site anchors, so the viewer can put both sources on one axis.
+CREATE TABLE IF NOT EXISTS bindome_site_public (
+    uniprot_acc           TEXT NOT NULL,
+    gene_symbol           TEXT,                   -- denormalized; NEVER a join key
+    site_id               INTEGER NOT NULL,       -- 0-indexed, largest patch first
+    anchor_residue        INTEGER NOT NULL,       -- residue nearest the cluster centroid
+    compartment           TEXT,                   -- extracellular | intracellular | membrane | signal_peptide | unknown
+    n_residues            INTEGER NOT NULL,
+    n_designs_supporting  INTEGER NOT NULL,       -- designs contacting the most-contacted residue
+    n_designs_total       INTEGER NOT NULL,       -- designs parsed for this protein
+    mean_design_fraction  REAL,                   -- mean share of designs contacting a site residue
+    residues              TEXT NOT NULL,          -- comma-separated residue numbers
+    bindome_release       TEXT NOT NULL,          -- e.g. '2026-05-23'
+    synced_at             TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (uniprot_acc, site_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_bindome_site_compartment
+    ON bindome_site_public (compartment);
+CREATE INDEX IF NOT EXISTS idx_bindome_site_designs
+    ON bindome_site_public (n_designs_supporting);
+
+-- ---------------------------------------------------------------------------
 -- Schweke 2024 homo-oligomer prediction (public mirror)
 -- ---------------------------------------------------------------------------
 -- Schweke et al. 2024 (Cell 187:999, PMID 38325366, DOI
@@ -584,7 +639,7 @@ CREATE INDEX IF NOT EXISTS idx_surface_bind_site_beta
 -- despite being known dimers). Consumers default ``is_homo_oligomer
 -- =False`` for any uniprot_acc with no row.
 --
--- Sync script: ``scripts/build_schweke_d1_table.py`` reads the figshare
+-- Sync script: ``scripts/cloud/build_schweke_d1_table.py`` reads the figshare
 -- deposit (see ``data/external/schweke_homomer_atlas/PROVENANCE.md``)
 -- and UPSERTs per ``(universe_version, uniprot_acc)``. Released here as
 -- a public mirror — CC-BY 4.0 per Schweke's deposit, attribution
@@ -695,7 +750,7 @@ CREATE INDEX IF NOT EXISTS idx_feedback_public_gene
 -- ``Transmembrane`` features + comparing against the PDB's residue
 -- coverage.
 --
--- Build script: scripts/build_schweke_d1_table.py
+-- Build script: scripts/cloud/build_schweke_d1_table.py
 -- Sources: data/external/schweke_homomer_atlas/list_models_refset.csv
 --          + data/external/schweke_homomer_atlas/full_complex_index.tsv
 --          + data/processed/candidate_universe/candidate_universe_v2.tsv
@@ -873,6 +928,27 @@ CREATE TABLE IF NOT EXISTS tag_site_public (
   median_conservation        REAL,
   tag_sites_version          TEXT NOT NULL,
   synced_at                  TEXT NOT NULL,
+  -- Agent metadata. These were added to tag_sites.py::DDL and never mirrored
+  -- here, so the "kept in sync" note above was false for five columns; a Worker
+  -- reviewer reading only this file could not see what the route serves.
+  validation_level           TEXT,
+  position_evidence          TEXT,
+  source_tier                TEXT,
+  cited_tag_residue          INTEGER,
+  entailment_verified        INTEGER,
+  -- The proteoform frame a citation was numbering in when it was not the
+  -- protein's own ("mature", "isoform:P54289-2"); NULL for the ordinary case.
+  position_frame             TEXT,
+  -- Which library MEMBER this site describes, and the sequence its position is
+  -- expressed in. A gene is not a unit: 45 of the 518 internal-site genes have
+  -- more than one member, 7 of those disagree about where the tag can go, and
+  -- 71 of 566 members are not numbered on the human canonical protein.
+  candidate_id               TEXT,
+  library                    TEXT,
+  numbered_against           TEXT,
+  -- inter_tm / n_terminal / c_terminal / no_tm, derived from topology rather
+  -- than read off site_kind, which does not discriminate at low positions.
+  loop_run_position          TEXT,
   PRIMARY KEY (uniprot_acc, site_id)
 );
 CREATE INDEX IF NOT EXISTS idx_tag_site_symbol ON tag_site_public (gene_symbol);
@@ -950,3 +1026,261 @@ CREATE TABLE IF NOT EXISTS paper_metadata (
 
 CREATE INDEX IF NOT EXISTS idx_paper_metadata_pmid ON paper_metadata (pmid);
 CREATE INDEX IF NOT EXISTS idx_paper_metadata_pmc ON paper_metadata (pmc_id);
+
+-- Optimized (SurfaceBench-recalibrated) DB cutoffs, per UniProt accession.
+--
+-- The paper scores DB membership on recalibrated rules everywhere — UniProt
+-- expanded to TM>0 OR signal-peptide>0 OR a strict subcellular term, CSPA
+-- tightened to high-confidence only — but those rules were only ever computed
+-- repo-side from the raw UniProt and CSPA dumps
+-- (scripts/figures/triage_bench_db_barplot.py::_optimized_uniprot_accs /
+-- _optimized_cspa_accs). D1 carried each source's NATIVE flag and nothing
+-- else, so the Worker could not reproduce a single optimized call and the
+-- viewer's low-literature badge silently gated on the un-recalibrated flag
+-- while the figures beside it used the recalibrated one.
+--
+-- POSITIVE LIST: an accession absent from this table is (0, 0) — NOT
+-- "fall back to the native flag". Falling back resurrects exactly the
+-- low-confidence CSPA-only proteins the tightening exists to drop. Loaded by
+-- scripts/cloud/load_db_optimized_cutoffs_to_d1.py; because absence means
+-- zero, the table must be populated BEFORE a Worker that reads it is
+-- deployed, or every gene reads 0 and the badge disappears site-wide.
+CREATE TABLE IF NOT EXISTS db_optimized_cutoff_public (
+  accession          TEXT PRIMARY KEY,
+  uniprot_optimized  INTEGER NOT NULL DEFAULT 0,
+  cspa_optimized     INTEGER NOT NULL DEFAULT 0
+);
+
+-- ---------------------------------------------------------------------------
+-- Record history (2026-09-27; spec docs/superpowers/specs/2026-09-27-record-history-design.md)
+-- One row per ACTUAL change to what the API served for a gene: record,
+-- evidence ledger, Markdown export. Bytes live write-once in R2 bucket
+-- surfaceome-record-history at records/sha256/{hash}.{json|md}. Written
+-- only by accessible_surfaceome.cloud.record_history; the Worker reads.
+-- DDL of record: record_history/store.py::DDL (applied by
+-- scripts/cloud/apply_record_history_ddl.py). Keep the two identical.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS record_revision (
+    gene_symbol           TEXT NOT NULL COLLATE NOCASE,  -- two casings of one gene share a sequence
+    hgnc_id               TEXT,
+    revision              INTEGER NOT NULL,   -- 1, 2, 3 … per gene
+    json_hash             TEXT NOT NULL,      -- sha256 of the served record
+    evidence_hash         TEXT,               -- NULL: evidence inline (seed) or absent
+    md_hash                TEXT,               -- NULL: no .md existed
+    published_at          TEXT NOT NULL,      -- ISO-8601 UTC, when archived
+    source                TEXT NOT NULL,      -- seed:zenodo-1.0.0 | publish | sweep
+    schema_version        TEXT,
+    prompt_corpus_version TEXT,
+    PRIMARY KEY (gene_symbol, revision)
+);
+CREATE INDEX IF NOT EXISTS idx_record_revision_hgnc ON record_revision (hgnc_id);
+
+-- A numbered data release: a fixed pointer per gene to one revision.
+CREATE TABLE IF NOT EXISTS data_release (
+    version            TEXT PRIMARY KEY,   -- '1.3.0'
+    cut_at             TEXT NOT NULL,
+    github_tag         TEXT,               -- 'v1.3.0'; NULL for 1.0.0
+    zenodo_version_doi TEXT,               -- set once the Zenodo version is published
+    n_genes            INTEGER NOT NULL,
+    notes              TEXT,
+    -- 'zenodo_only' for release 1.0.0 (the 2026-08-15 Zenodo deposit): it
+    -- predates per-gene record history, so it has NO data_release_member
+    -- rows — its records live only in the Zenodo deposit tarball, not in
+    -- record_revision/R2. NULL (read as 'api' by convention) for every
+    -- release cut under this system, which does have member rows. A
+    -- pre-existing `data_release` table (created before this column
+    -- existed) needs `ALTER TABLE data_release ADD COLUMN archive_scope
+    -- TEXT` applied once — see scripts/cloud/drop_seed_revisions.py, which
+    -- does this idempotently before setting 1.0.0's value.
+    archive_scope      TEXT
+);
+
+CREATE TABLE IF NOT EXISTS data_release_member (
+    version     TEXT NOT NULL,
+    gene_symbol TEXT NOT NULL COLLATE NOCASE,
+    revision    INTEGER NOT NULL,
+    PRIMARY KEY (version, gene_symbol)
+);
+
+-- ---------------------------------------------------------------------------
+-- Query-cost indexes (2026-09-28). Applied live to public D1 the same day.
+-- * surface_annotation lookups use `gene_symbol = ? COLLATE NOCASE` (the
+--   mixed-case Cxorf class), which the BINARY PK cannot serve: every record
+--   and evidence fetch scanned all rows (~5.3k, ~1 GB of JSON). Rows read per
+--   lookup: 5,332 → 3.
+-- * The Worker's topology release lookups filter topology_public by cohort
+--   first; the existing (topology_version, cohort, …) index cannot serve that.
+-- ---------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_surface_annotation_symbol_nocase
+    ON surface_annotation (gene_symbol COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS idx_topology_public_cohort_version
+    ON topology_public (cohort, topology_version);
+
+-- ---------------------------------------------------------------------------
+-- deep_dive_replicate — reproducibility replicates (public D1 only).
+-- Re-annotations of a random sample of deep-dive genes, kept for the
+-- run-to-run reproducibility analysis (Supplementary Figure 16). These are
+-- NOT the published records: surface_annotation stays the only source of
+-- /v1/genes/{SYMBOL}, and nothing in the catalog or viewer reads this table.
+-- The Worker serves it API-only under /v1/replicates and
+-- /v1/genes/{SYMBOL}/replicates, every response labelled as a replicate.
+--
+-- One row per (study, kind, gene). replicate_kind:
+--   'published_snapshot'     — the published record exactly as served when the
+--                              study ran (the comparator; the live record may
+--                              since have been republished)
+--   'full_rerun'             — the whole pipeline re-run from scratch
+--   'fixed_evidence_replay'  — builders + synthesizer re-run on the published
+--                              record's own evidence ledger
+-- Loaded from the frozen bundle data/processed/deep_dive_concordance_v1/ by
+-- scripts/cloud/upload_deep_dive_replicates_to_d1.py (also deposited on Zenodo).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS deep_dive_replicate (
+    study_id              TEXT NOT NULL,   -- 'deep_dive_concordance_v1'
+    replicate_kind        TEXT NOT NULL,   -- see above
+    gene_symbol           TEXT NOT NULL COLLATE NOCASE,
+    hgnc_id               TEXT,
+    uniprot_acc           TEXT,
+    sample_batch          INTEGER,         -- 1 or 2 (two disjoint random batches of 25)
+    run_id                TEXT NOT NULL,   -- run that produced this record
+    compared_against_run_id TEXT NOT NULL, -- the published run it is compared with
+    schema_version        TEXT,
+    prompt_corpus_version TEXT,
+    record_generated_at   TEXT,
+    annotation_json       TEXT NOT NULL,   -- full SurfaceomeRecord, evidence included
+    loaded_at             TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (study_id, replicate_kind, gene_symbol)
+);
+
+CREATE INDEX IF NOT EXISTS idx_deep_dive_replicate_symbol
+    ON deep_dive_replicate (gene_symbol COLLATE NOCASE);
+
+-- ---------------------------------------------------------------------------
+-- library_structure_public
+--
+-- Which structure the viewer should render for each Deliverome library member,
+-- and which it should not. The viewer's default -- the AlphaFold DB model for a
+-- member's canonical accession -- is the wrong protein for 296 of 2,725 L1
+-- members: 70 have no AFDB model at all, 200 have a model of a different
+-- proteoform (measured residue-exact against the designed CDS), and 26 have one
+-- where the ordered protein is a subsequence and therefore numbered wrong
+-- without an offset.
+--
+-- One row per (member, structure). ``is_chosen = 1`` is the structure to render;
+-- the AFDB model it replaces is still carried with ``is_chosen = 0`` and a note,
+-- so an alternate stays visible and labelled rather than silently disappearing.
+--
+-- Coordinates are NOT here: D1 caps a row at 2 MB. Our predictions live in the
+-- public R2 bucket ``surfaceome-structures`` under ``library-colabfold/``, the
+-- same split ``schweke_homomer_public`` uses.
+CREATE TABLE IF NOT EXISTS library_structure_public (
+    release            TEXT NOT NULL,          -- e.g. 'colabfold-2026-10-14'
+    candidate_id       TEXT NOT NULL,          -- library candidate, e.g. 'l1-p0448'
+    uniprot_acc        TEXT,                   -- accession the member resolves to
+    gene_symbol        TEXT,                   -- denormalized; never a join key
+    species            TEXT,
+    candidate_set      TEXT,                   -- library_reference | isoform | ortholog | expression_rescue
+    source             TEXT NOT NULL,          -- 'colabfold' (ours) | 'alphafold_db'
+    r2_key             TEXT,                   -- object under surfaceome-structures; NULL for AFDB
+    model_url          TEXT,                   -- AFDB URL; NULL for ours
+    proteoform_match   TEXT NOT NULL,          -- identical | contained | different | unknown | no_model | ours_by_construction
+    residue_offset     INTEGER NOT NULL DEFAULT 0,  -- construct residue i == model residue i + offset
+    ordered_length_aa  INTEGER,
+    model_length_aa    INTEGER,
+    is_chosen          INTEGER NOT NULL,       -- 1 = render this one
+    mean_plddt         REAL,
+    note               TEXT,                   -- why an alternate is not chosen
+    synced_at          TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (release, candidate_id, source)
+);
+
+CREATE INDEX IF NOT EXISTS idx_library_structure_public_acc
+    ON library_structure_public (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_library_structure_public_chosen
+    ON library_structure_public (is_chosen);
+CREATE INDEX IF NOT EXISTS idx_library_structure_public_symbol
+    ON library_structure_public (gene_symbol);
+
+-- ---------------------------------------------------------------------------
+-- library_topology_public: which topology row describes the protein each
+-- library member actually encodes.
+--
+-- WHY A POINTER TABLE. The Worker's topology lookups are keyed by uniprot_acc
+-- within human_canonical / human_isoforms. A library member's protein is its
+-- designed CDS translated -- an Ensembl-transcript product, which for a
+-- substantial minority of members corresponds to a UniProt *isoform* record
+-- rather than the canonical one (816 of 5,896 resolved members, and 119 of the
+-- 121 whose AlphaFold model was the wrong protein). Resolving by accession
+-- returns a different protein's topology for those, with a plausible length and
+-- a plausible helix count -- wrong silently, never loudly.
+--
+-- Resolving by sequence is correct but needs a full scan of ~71k long TEXT rows
+-- (topology_public.sequence is not indexed), which is fine offline and wrong in
+-- a request. So the join is resolved offline by exact sequence and stored here
+-- as an explicit (cohort, topology_version, uniprot_acc_full) pointer. The
+-- Worker joins on it and never guesses.
+--
+-- Only members whose EXACT designed sequence has a v1 topology get a row. A
+-- member with no row needs a DeepTMHMM run; it must not be shown the canonical.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS library_topology_public (
+    release           TEXT NOT NULL,          -- e.g. 'topo-2026-10-14'
+    candidate_id      TEXT NOT NULL,          -- library candidate, e.g. 'l1-p0031'
+    library           TEXT NOT NULL,          -- 'l1' | 'l2' (tranche, NOT a tool version)
+    candidate_set     TEXT,                   -- library_reference | isoform | ortholog | ...
+    species           TEXT,
+    gene_symbol       TEXT,                   -- denormalized; the gene-page join key
+    topology_tool     TEXT NOT NULL,          -- 'deeptmhmm_v1' (the topology of record)
+    topology_cohort   TEXT NOT NULL,          -- topology_public.cohort of the matching row
+    topology_version  TEXT NOT NULL,          -- topology_public.topology_version
+    topology_acc      TEXT NOT NULL,          -- topology_public.uniprot_acc_full
+    ordered_length_aa INTEGER,
+    sequence_sha256   TEXT NOT NULL,          -- sha256 of the ordered protein; the real key
+    synced_at         TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (release, candidate_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_library_topology_public_gene
+    ON library_topology_public (gene_symbol);
+
+CREATE INDEX IF NOT EXISTS idx_library_topology_public_target
+    ON library_topology_public (topology_version, topology_cohort, topology_acc);
+
+-- ====================================================================
+-- tag_site_gene_public — per-GENE tag-site search facts (see
+-- src/accessible_surfaceome/cloud/tag_site_genes.py). Presence of a row is the
+-- claim "this gene was searched, under this prompt, on this date", so a gene
+-- ABSENT here is unsearched — which is the distinction the table exists for.
+-- 1,415 of its rows are dated zeros, and a zero that loses its date costs a
+-- real literature search to reproduce.
+-- Keyed on (gene_symbol, candidate_id, run_series) so a second pass over the
+-- same gene, or a second library member of it, is another search rather than
+-- an overwrite.
+-- ====================================================================
+CREATE TABLE IF NOT EXISTS tag_site_gene_public (
+    gene_symbol          TEXT NOT NULL,
+    -- The library MEMBER this search describes, or '' for a gene-level search.
+    -- Empty string rather than NULL: a NULL in a primary key does not compare
+    -- equal to itself, so NULL-keyed rows multiply silently on every UPSERT.
+    candidate_id         TEXT NOT NULL DEFAULT '',
+    -- Which pass this is. The two literature passes are different searches of
+    -- the same gene and both answers are worth keeping, so the series is part
+    -- of the key rather than something one overwrites the other through.
+    run_series           TEXT NOT NULL DEFAULT 'literature_v1',
+    uniprot_acc          TEXT,
+    searched_at          TEXT,
+    prompt_sha           TEXT,
+    prompt_version       TEXT,
+    model                TEXT,
+    schema_version       TEXT,
+    n_papers             INTEGER,
+    n_sites              INTEGER NOT NULL DEFAULT 0,
+    n_other_positions    INTEGER NOT NULL DEFAULT 0,
+    other_positions_json TEXT,
+    notes                TEXT,
+    tag_sites_version    TEXT,
+    synced_at            TEXT,
+    PRIMARY KEY (gene_symbol, candidate_id, run_series)
+);
+CREATE INDEX IF NOT EXISTS idx_tsgp_prompt ON tag_site_gene_public (prompt_sha);
+CREATE INDEX IF NOT EXISTS idx_tsgp_nsites ON tag_site_gene_public (n_sites);
