@@ -8,16 +8,18 @@ no need to pass it manually.
 
 from __future__ import annotations
 
-import httpx
-from anthropic import Anthropic
+from anthropic import Anthropic, Timeout
 
 # The managed-agent session event stream (``sessions.events.stream``) is a
 # long-poll SSE connection that idles between events while the model
 # generates or runs a tool. A short read timeout makes those idle gaps
-# surface as ``httpx.ReadTimeout`` mid-run. Give the stream a generous read
+# surface as a read timeout mid-run. Give the stream a generous read
 # budget; ``connect`` stays short so a genuinely unreachable API still
 # fails fast.
-_AGENT_TIMEOUT = httpx.Timeout(connect=10.0, read=600.0, write=30.0, pool=10.0)
+# ``anthropic.Timeout`` is the SDK's own re-export of its HTTP library's
+# Timeout. anthropic 1.x moved from ``httpx`` to ``httpx2`` and rejects an
+# ``httpx.Timeout`` with a TypeError, so never build this from ``httpx``.
+_AGENT_TIMEOUT = Timeout(connect=10.0, read=600.0, write=30.0, pool=10.0)
 
 # SDK default is 2. Real-world ANT-side TLS / connection blips happen mid-run
 # (observed: APIConnectionError, "SSL: SSLV3_ALERT_BAD_RECORD_MAC") and an
