@@ -74,7 +74,7 @@ NSP3_MOUNT = "/nsp3-model"
 NSP3_PYTHON = "/opt/nsp3-venv/bin/python"
 netsurfp_image = (
     modal.Image.debian_slim(python_version="3.11")
-    .pip_install("uv>=0.5")
+    .pip_install("uv>=0.13.4")
     .env({"UV_PYTHON_DOWNLOADS": "automatic"})
     .run_commands(
         "uv python install 3.8",
@@ -97,6 +97,12 @@ netsurfp_image = (
 )
 if modal.is_local():
     netsurfp_image = netsurfp_image.add_local_dir(NSP3_PKG, "/opt/nsp3", copy=True)
+if modal.is_local():  # the image is built from the laptop; containers only re-import this file
+    from accessible_surfaceome.trust_store import harden
+
+    metapredict_image = harden(metapredict_image)  # drop the compromised eMudhra roots
+    afd_image = harden(afd_image)  # drop the compromised eMudhra roots
+    netsurfp_image = harden(netsurfp_image)  # drop the compromised eMudhra roots
 
 # ESM-1b is a roberta_large with max_positions 1024, and nsp3.py does not chunk or
 # truncate -- it just runs the model, so a longer sequence breaks or silently corrupts.

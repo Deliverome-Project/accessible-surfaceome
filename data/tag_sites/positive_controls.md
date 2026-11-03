@@ -141,6 +141,26 @@ on cassette choice for this project.
 | Mi3 cage | **C-terminus** | worked | — | Ma 2024 |
 | IMX313 | **N-terminus** | worked | — | Sun 2026 |
 
+**IN-HOUSE COUNTEREXAMPLE, and the row this table was missing.** Every system above is a
+soluble enzyme, a capsid or an adenoviral protein — the table says so in its own second
+line — and that caveat is load-bearing. There is an internal SpyTag-ALFA construct at a
+human cell-surface protein in our own reagent inventory:
+
+| Construct | Gene / site | Tag | Status | Source |
+|---|---|---|---|---|
+| **P-0007** `pAG_Lenti_CMV_TFRC_V291_IRES_Puro` | TFRC, V291 (preceding) | SpyTag-ALFA, internal | Received | Reagent Inventory, plasmid tab |
+
+Two things about it. First, `Status: Received` records that the plasmid arrived — it is NOT
+a display or conjugation readout, so this row is construct-identity evidence and nothing
+more until the assay result is attached. Second, V291 is a site THIS pipeline proposes:
+`TFRC-surface_loop-291`, a 14-aa ordered surface loop (M283-S296), for which `tag_fit`
+returns "ALFA, DogTag". So our table recommends DogTag at the exact residue where a
+SpyTag-ALFA plasmid was built and received, and nothing joined the two — the inventory
+records what was BUILT, `tag_site_public` records what was PROPOSED, and there is no link
+in either direction. A reviewer reading only the table above will recommend against
+internal SpyTag003; that recommendation has been made and retracted once already on
+2026-10-18. Get the P-0007 readout before making it again.
+
 Loop-specific, not a general SpyTag problem. SpyTag is a β-strand that must complete a
 β-sheet in SpyCatcher and cannot while tethered at both ends; DogTag's β-hairpin was
 engineered to solve exactly this. In TRPC5 (A17) DogTag was **250× faster than SpyTag003**

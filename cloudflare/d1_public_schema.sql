@@ -589,6 +589,40 @@ CREATE INDEX IF NOT EXISTS idx_surface_bind_site_beta
     ON surface_bind_site (n_seeds_beta);
 
 -- ---------------------------------------------------------------------------
+-- Bindome binding sites (public mirror)
+-- ---------------------------------------------------------------------------
+-- Bindome (Wenckstern et al. 2026, doi 10.64898/2026.07.30.741542) publishes
+-- 305,806 BindCraft designs but NO target-side site list: its
+-- `InterfaceResidues` column is the binder chain, and every design ran the
+-- `no_hotspot` protocol. A site is therefore recovered from where the designs
+-- land -- target residues contacted across a protein's designs, kept when
+-- >=20% of designs touch them, then single-linkage clustered at 8 A on CA.
+-- Built by scripts/build/build_bindome_sites.py from the concordance run.
+--
+-- `compartment` uses the same DeepTMHMM per-residue string that labels
+-- surface_bind_site anchors, so the viewer can put both sources on one axis.
+CREATE TABLE IF NOT EXISTS bindome_site_public (
+    uniprot_acc           TEXT NOT NULL,
+    gene_symbol           TEXT,                   -- denormalized; NEVER a join key
+    site_id               INTEGER NOT NULL,       -- 0-indexed, largest patch first
+    anchor_residue        INTEGER NOT NULL,       -- residue nearest the cluster centroid
+    compartment           TEXT,                   -- extracellular | intracellular | membrane | signal_peptide | unknown
+    n_residues            INTEGER NOT NULL,
+    n_designs_supporting  INTEGER NOT NULL,       -- designs contacting the most-contacted residue
+    n_designs_total       INTEGER NOT NULL,       -- designs parsed for this protein
+    mean_design_fraction  REAL,                   -- mean share of designs contacting a site residue
+    residues              TEXT NOT NULL,          -- comma-separated residue numbers
+    bindome_release       TEXT NOT NULL,          -- e.g. '2026-05-23'
+    synced_at             TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (uniprot_acc, site_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_bindome_site_compartment
+    ON bindome_site_public (compartment);
+CREATE INDEX IF NOT EXISTS idx_bindome_site_designs
+    ON bindome_site_public (n_designs_supporting);
+
+-- ---------------------------------------------------------------------------
 -- Schweke 2024 homo-oligomer prediction (public mirror)
 -- ---------------------------------------------------------------------------
 -- Schweke et al. 2024 (Cell 187:999, PMID 38325366, DOI
@@ -894,6 +928,27 @@ CREATE TABLE IF NOT EXISTS tag_site_public (
   median_conservation        REAL,
   tag_sites_version          TEXT NOT NULL,
   synced_at                  TEXT NOT NULL,
+  -- Agent metadata. These were added to tag_sites.py::DDL and never mirrored
+  -- here, so the "kept in sync" note above was false for five columns; a Worker
+  -- reviewer reading only this file could not see what the route serves.
+  validation_level           TEXT,
+  position_evidence          TEXT,
+  source_tier                TEXT,
+  cited_tag_residue          INTEGER,
+  entailment_verified        INTEGER,
+  -- The proteoform frame a citation was numbering in when it was not the
+  -- protein's own ("mature", "isoform:P54289-2"); NULL for the ordinary case.
+  position_frame             TEXT,
+  -- Which library MEMBER this site describes, and the sequence its position is
+  -- expressed in. A gene is not a unit: 45 of the 518 internal-site genes have
+  -- more than one member, 7 of those disagree about where the tag can go, and
+  -- 71 of 566 members are not numbered on the human canonical protein.
+  candidate_id               TEXT,
+  library                    TEXT,
+  numbered_against           TEXT,
+  -- inter_tm / n_terminal / c_terminal / no_tm, derived from topology rather
+  -- than read off site_kind, which does not discriminate at low positions.
+  loop_run_position          TEXT,
   PRIMARY KEY (uniprot_acc, site_id)
 );
 CREATE INDEX IF NOT EXISTS idx_tag_site_symbol ON tag_site_public (gene_symbol);
@@ -1099,3 +1154,133 @@ CREATE TABLE IF NOT EXISTS deep_dive_replicate (
 
 CREATE INDEX IF NOT EXISTS idx_deep_dive_replicate_symbol
     ON deep_dive_replicate (gene_symbol COLLATE NOCASE);
+
+-- ---------------------------------------------------------------------------
+-- library_structure_public
+--
+-- Which structure the viewer should render for each Deliverome library member,
+-- and which it should not. The viewer's default -- the AlphaFold DB model for a
+-- member's canonical accession -- is the wrong protein for 296 of 2,725 L1
+-- members: 70 have no AFDB model at all, 200 have a model of a different
+-- proteoform (measured residue-exact against the designed CDS), and 26 have one
+-- where the ordered protein is a subsequence and therefore numbered wrong
+-- without an offset.
+--
+-- One row per (member, structure). ``is_chosen = 1`` is the structure to render;
+-- the AFDB model it replaces is still carried with ``is_chosen = 0`` and a note,
+-- so an alternate stays visible and labelled rather than silently disappearing.
+--
+-- Coordinates are NOT here: D1 caps a row at 2 MB. Our predictions live in the
+-- public R2 bucket ``surfaceome-structures`` under ``library-colabfold/``, the
+-- same split ``schweke_homomer_public`` uses.
+CREATE TABLE IF NOT EXISTS library_structure_public (
+    release            TEXT NOT NULL,          -- e.g. 'colabfold-2026-10-14'
+    candidate_id       TEXT NOT NULL,          -- library candidate, e.g. 'l1-p0448'
+    uniprot_acc        TEXT,                   -- accession the member resolves to
+    gene_symbol        TEXT,                   -- denormalized; never a join key
+    species            TEXT,
+    candidate_set      TEXT,                   -- library_reference | isoform | ortholog | expression_rescue
+    source             TEXT NOT NULL,          -- 'colabfold' (ours) | 'alphafold_db'
+    r2_key             TEXT,                   -- object under surfaceome-structures; NULL for AFDB
+    model_url          TEXT,                   -- AFDB URL; NULL for ours
+    proteoform_match   TEXT NOT NULL,          -- identical | contained | different | unknown | no_model | ours_by_construction
+    residue_offset     INTEGER NOT NULL DEFAULT 0,  -- construct residue i == model residue i + offset
+    ordered_length_aa  INTEGER,
+    model_length_aa    INTEGER,
+    is_chosen          INTEGER NOT NULL,       -- 1 = render this one
+    mean_plddt         REAL,
+    note               TEXT,                   -- why an alternate is not chosen
+    synced_at          TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (release, candidate_id, source)
+);
+
+CREATE INDEX IF NOT EXISTS idx_library_structure_public_acc
+    ON library_structure_public (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_library_structure_public_chosen
+    ON library_structure_public (is_chosen);
+CREATE INDEX IF NOT EXISTS idx_library_structure_public_symbol
+    ON library_structure_public (gene_symbol);
+
+-- ---------------------------------------------------------------------------
+-- library_topology_public: which topology row describes the protein each
+-- library member actually encodes.
+--
+-- WHY A POINTER TABLE. The Worker's topology lookups are keyed by uniprot_acc
+-- within human_canonical / human_isoforms. A library member's protein is its
+-- designed CDS translated -- an Ensembl-transcript product, which for a
+-- substantial minority of members corresponds to a UniProt *isoform* record
+-- rather than the canonical one (816 of 5,896 resolved members, and 119 of the
+-- 121 whose AlphaFold model was the wrong protein). Resolving by accession
+-- returns a different protein's topology for those, with a plausible length and
+-- a plausible helix count -- wrong silently, never loudly.
+--
+-- Resolving by sequence is correct but needs a full scan of ~71k long TEXT rows
+-- (topology_public.sequence is not indexed), which is fine offline and wrong in
+-- a request. So the join is resolved offline by exact sequence and stored here
+-- as an explicit (cohort, topology_version, uniprot_acc_full) pointer. The
+-- Worker joins on it and never guesses.
+--
+-- Only members whose EXACT designed sequence has a v1 topology get a row. A
+-- member with no row needs a DeepTMHMM run; it must not be shown the canonical.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS library_topology_public (
+    release           TEXT NOT NULL,          -- e.g. 'topo-2026-10-14'
+    candidate_id      TEXT NOT NULL,          -- library candidate, e.g. 'l1-p0031'
+    library           TEXT NOT NULL,          -- 'l1' | 'l2' (tranche, NOT a tool version)
+    candidate_set     TEXT,                   -- library_reference | isoform | ortholog | ...
+    species           TEXT,
+    gene_symbol       TEXT,                   -- denormalized; the gene-page join key
+    topology_tool     TEXT NOT NULL,          -- 'deeptmhmm_v1' (the topology of record)
+    topology_cohort   TEXT NOT NULL,          -- topology_public.cohort of the matching row
+    topology_version  TEXT NOT NULL,          -- topology_public.topology_version
+    topology_acc      TEXT NOT NULL,          -- topology_public.uniprot_acc_full
+    ordered_length_aa INTEGER,
+    sequence_sha256   TEXT NOT NULL,          -- sha256 of the ordered protein; the real key
+    synced_at         TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (release, candidate_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_library_topology_public_gene
+    ON library_topology_public (gene_symbol);
+
+CREATE INDEX IF NOT EXISTS idx_library_topology_public_target
+    ON library_topology_public (topology_version, topology_cohort, topology_acc);
+
+-- ====================================================================
+-- tag_site_gene_public — per-GENE tag-site search facts (see
+-- src/accessible_surfaceome/cloud/tag_site_genes.py). Presence of a row is the
+-- claim "this gene was searched, under this prompt, on this date", so a gene
+-- ABSENT here is unsearched — which is the distinction the table exists for.
+-- 1,415 of its rows are dated zeros, and a zero that loses its date costs a
+-- real literature search to reproduce.
+-- Keyed on (gene_symbol, candidate_id, run_series) so a second pass over the
+-- same gene, or a second library member of it, is another search rather than
+-- an overwrite.
+-- ====================================================================
+CREATE TABLE IF NOT EXISTS tag_site_gene_public (
+    gene_symbol          TEXT NOT NULL,
+    -- The library MEMBER this search describes, or '' for a gene-level search.
+    -- Empty string rather than NULL: a NULL in a primary key does not compare
+    -- equal to itself, so NULL-keyed rows multiply silently on every UPSERT.
+    candidate_id         TEXT NOT NULL DEFAULT '',
+    -- Which pass this is. The two literature passes are different searches of
+    -- the same gene and both answers are worth keeping, so the series is part
+    -- of the key rather than something one overwrites the other through.
+    run_series           TEXT NOT NULL DEFAULT 'literature_v1',
+    uniprot_acc          TEXT,
+    searched_at          TEXT,
+    prompt_sha           TEXT,
+    prompt_version       TEXT,
+    model                TEXT,
+    schema_version       TEXT,
+    n_papers             INTEGER,
+    n_sites              INTEGER NOT NULL DEFAULT 0,
+    n_other_positions    INTEGER NOT NULL DEFAULT 0,
+    other_positions_json TEXT,
+    notes                TEXT,
+    tag_sites_version    TEXT,
+    synced_at            TEXT,
+    PRIMARY KEY (gene_symbol, candidate_id, run_series)
+);
+CREATE INDEX IF NOT EXISTS idx_tsgp_prompt ON tag_site_gene_public (prompt_sha);
+CREATE INDEX IF NOT EXISTS idx_tsgp_nsites ON tag_site_gene_public (n_sites);

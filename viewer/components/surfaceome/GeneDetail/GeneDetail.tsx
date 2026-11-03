@@ -27,7 +27,7 @@ import { RevisionStrip } from "../RevisionStrip/RevisionStrip";
 // ParalogsCard — three section tabs collapsed to one ("Isoforms ·
 // orthologs · paralogs").
 import { IsoformsCard } from "../IsoformsCard/IsoformsCard";
-import { SurfaceBindCard } from "../SurfaceBindCard/SurfaceBindCard";
+import { BindingSitesCard } from "../BindingSitesCard/BindingSitesCard";
 import { SurfaceEvidenceCard } from "../SurfaceEvidenceCard/SurfaceEvidenceCard";
 import { TriageRow } from "../TriageRow/TriageRow";
 import type { CatalogRow, GeneEntry } from "../../../lib/surfaceome";
@@ -46,6 +46,7 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import type { TriageHeadlinePayload } from "../../../lib/triage-headline";
 import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
+import { isLiteratureProvenance } from "../../../lib/tag-sites-types";
 import type { Revisions } from "../../../lib/revisions";
 import styles from "./GeneDetail.module.css";
 
@@ -257,13 +258,13 @@ export function GeneDetail({
       render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
     // Tag sites — its OWN tab (distinct from Internalization). Shown only
-    // when the gene has at least one RENDERED tag site (literature_retrieved,
+    // when the gene has at least one RENDERED tag site (any literature pass,
     // deterministic_computed, or screen_validated); validated_literature is
     // validation-only and never rendered, matching `renderableTagSites`.
     ...(taggedSites?.has_data &&
     taggedSites.sites.some(
       (s) =>
-        s.provenance === "literature_retrieved" ||
+        isLiteratureProvenance(s.provenance) ||
         s.provenance === "deterministic_computed" ||
         s.provenance === "screen_validated",
     )
@@ -275,19 +276,20 @@ export function GeneDetail({
           },
         ]
       : []),
-    // SURFACE-Bind section only when the protein has at least one
-    // scored patch. Two empty cases are filtered out so the AnchorNav
-    // strip never offers a tab that opens a sites-less section:
-    //   * not in SURFACE-Bind's table (`has_data=false`), and
-    //   * scored but no patch cleared the MaSIF threshold
-    //     (`n_sites=0`, e.g. CLDN18).
-    ...(rec.deterministic_features.surface_bind.has_data &&
-    rec.deterministic_features.surface_bind.n_sites > 0
+    // Binding-sites section when ANY source has a site. Gating on
+    // SURFACE-Bind alone would hide the card for a protein Bindome
+    // designed against but SURFACE-Bind never scored — which is 403
+    // proteins, and exactly the case the second source exists to cover.
+    // Still filtered when every source is empty, so the AnchorNav strip
+    // never offers a tab that opens a sites-less section.
+    ...((rec.deterministic_features.surface_bind.has_data &&
+      rec.deterministic_features.surface_bind.n_sites > 0) ||
+    (rec.deterministic_features.bindome?.n_sites ?? 0) > 0
       ? [
           {
-            kind: "surface-bind",
-            label: "SURFACE-Bind",
-            render: (n: number) => <SurfaceBindCard rec={rec} n={n} />,
+            kind: "binding-sites",
+            label: "Binding sites",
+            render: (n: number) => <BindingSitesCard rec={rec} n={n} />,
           },
         ]
       : []),

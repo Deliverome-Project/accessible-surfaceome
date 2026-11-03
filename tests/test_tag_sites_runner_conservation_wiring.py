@@ -29,7 +29,9 @@ ORTHOLOGS = [(f"{ACC}-mouse", SEQ, "O" * len(SEQ)), (f"{ACC}-cyno", SEQ, "O" * l
 
 def _stub(monkeypatch, seen):
     monkeypatch.setattr(mod, "af_pdb", lambda acc: "/dev/null")
-    monkeypatch.setattr(mod, "_hazard", lambda acc: set())
+    # Takes the model path too: the clearance veto needs the disulfides
+    # UniProt does not annotate, which it can only read from the model.
+    monkeypatch.setattr(mod, "_hazard", lambda acc, pdb_path=None: set())
     monkeypatch.setattr(mod, "isoforms_for", lambda acc, iso_map: [])
     monkeypatch.setattr(mod, "run_ortholog_pins", lambda *a, **k: [])
     monkeypatch.setattr(mod, "_existing_non_deterministic", lambda p: [])

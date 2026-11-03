@@ -49,7 +49,7 @@ interface CellDetail {
 
 /** Lazy-fetch all replicates for the open (gene, model, variant) cell.
  *  Returns null while loading / on error so the drawer falls back to the
- *  single-rep matrix data it already has. */
+ *  matrix cell it already has (the same majority, minus the per-rep list). */
 function useCellReplicates(sel: SelectedCell | null): CellDetail | null {
   const [detail, setDetail] = useState<CellDetail | null>(null);
   useEffect(() => {
@@ -63,7 +63,7 @@ function useCellReplicates(sel: SelectedCell | null): CellDetail | null {
         if (!cancelled && j) setDetail(j as CellDetail);
       })
       .catch(() => {
-        /* network error — drawer keeps the matrix's single-rep view */
+        /* network error — drawer keeps the matrix cell's majority view */
       });
     return () => {
       cancelled = true;
@@ -110,7 +110,7 @@ export function RationaleDrawer({
   const noVerdictLabel =
     status === "refused" ? "refused" : status === "errored" ? "errored" : "—";
   // Lazy-load all replicates for the open cell (per-rep reasons live in
-  // a separate Worker call so the matrix payload stays single-rep + small).
+  // a separate Worker call so the matrix carries one reasoning per cell).
   const detail = useCellReplicates(selected);
 
   return (
@@ -220,12 +220,23 @@ export function RationaleDrawer({
             </div>
           ) : null}
           {/* Majority-vote reason FIRST, then the OTHER replicates below
-              (the majority rep itself isn't repeated). Prefer the
-              lazy-loaded cell detail's computed majority over the matrix's
-              single latest-rep view; fall back to the matrix cell while the
-              fetch is in flight. */}
+              (the majority rep itself isn't repeated). The matrix cell and
+              the lazy-loaded cell detail carry the same majority (the
+              Worker computes both with one function); the matrix cell
+              covers the drawer while the per-rep fetch is in flight. */}
           {(() => {
-            const maj = detail?.majority;
+            const maj =
+              detail?.majority ??
+              (data.cell?.verdict && data.cell.n_reps != null
+                ? {
+                    verdict: data.cell.verdict,
+                    reason: data.cell.reason,
+                    reasoning: data.cell.reasoning,
+                    confidence: data.cell.confidence,
+                    n_reps: data.cell.n_reps,
+                    agreement: data.cell.majority_agreement ?? 1,
+                  }
+                : null);
             const reason = maj?.reason ?? data.cell?.reason ?? null;
             const reasoning = maj?.reasoning ?? data.cell?.reasoning ?? null;
             // Dedupe replicates by replicate number (defensive — a cell
@@ -349,13 +360,17 @@ export function RationaleDrawer({
             ) : null}
             {data.cell?.latency_s != null ? (
               <div className={styles.drawerMetaItem}>
-                <dt className="label-mono">Latency</dt>
+                <dt className="label-mono">
+                  Latency{data.cell.replicate != null ? ` · rep ${data.cell.replicate}` : ""}
+                </dt>
                 <dd>{data.cell.latency_s.toFixed(1)} s</dd>
               </div>
             ) : null}
             {data.cell?.cost_usd != null ? (
               <div className={styles.drawerMetaItem}>
-                <dt className="label-mono">Cost</dt>
+                <dt className="label-mono">
+                  Cost{data.cell.replicate != null ? ` · rep ${data.cell.replicate}` : ""}
+                </dt>
                 <dd>${data.cell.cost_usd.toFixed(3)}</dd>
               </div>
             ) : null}

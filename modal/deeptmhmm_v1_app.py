@@ -58,6 +58,10 @@ image = (
         "torch==2.5.1",
     )
 )
+if modal.is_local():  # the image is built from the laptop; containers only re-import this file
+    from accessible_surfaceome.trust_store import harden
+
+    image = harden(image)  # drop the compromised eMudhra roots
 
 app = modal.App("surfaceome-deeptmhmm-v1")
 package_volume = modal.Volume.from_name("deeptmhmm-v1", create_if_missing=True)

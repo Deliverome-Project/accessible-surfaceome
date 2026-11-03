@@ -52,7 +52,16 @@ from accessible_surfaceome.tools._shared.models import Evidence, Paper, paper_so
 from accessible_surfaceome.tools._shared.retraction_watch import empty as _empty_retraction
 from accessible_surfaceome.tools._shared.retraction_watch import from_http as _retraction_from_http
 
+from .enrichment import (
+    EnrichmentScope,
+    count_new,
+    covered_clip_ids,
+    new_clip_ids,
+)
+from .frames import Frame, resolve
 from .geometry import apply_geometry_pass
+from .member_frames import run_at
+from .prior_ledger import PriorClip, seed_pool
 from .literature_discovery import (
     DISCOVERY_CACHE_DIR,
     SOURCE_TIERS,
@@ -264,7 +273,12 @@ def upgrade_quotes(result: TagSiteResult, *, evidence: list[Evidence]) -> TagSit
 
 
 def enforce_position_claims(
-    result: TagSiteResult, *, sequence: str, client: Any | None = None
+    result: TagSiteResult,
+    *,
+    sequence: str,
+    client: Any | None = None,
+    frames: list[Frame] | None = None,
+    reference_label: str = "member",
 ) -> TagSiteResult:
     """Downgrade ``position_evidence`` to ``inferred`` on any site whose quote
     does not NAME its position.
@@ -303,7 +317,30 @@ def enforce_position_claims(
         named = residue_mentions(s.supporting_quote, sequence=sequence)
         if named & {n - 1, n, n + 1}:
             continue
-        # The matcher found nothing. Before downgrading, ask the blind verifier
+        # Nothing in THIS construct's numbering. Before anything else, ask
+        # whether the citation is numbering in another proteoform — a library
+        # member's ordered form is often an isoform or a designed ORF, and a
+        # paper will essentially never use the designed ORF's coordinates, so
+        # "the reference frame does not confirm it" is the expected state rather
+        # than a problem. This route is deterministic and auditable, so it goes
+        # ahead of the model-based verifier below.
+        if frames:
+            res = resolve(
+                s.supporting_quote,
+                frames=frames,
+                reference_label=reference_label,
+                target=n,
+            )
+            hit = res.validating_hit
+            if hit is not None and hit.frame_label != reference_label:
+                log.info(
+                    "  %s: %s position upheld in the %s frame (frame pos %d)",
+                    result.gene_symbol or "?", s.residue_label,
+                    hit.frame_label, hit.frame_position,
+                )
+                s.position_frame = hit.frame_label
+                continue
+        # Still nothing. Before downgrading, ask the blind verifier
         # — it handles the spellings no pattern list covers, and returns NONE
         # for the numbers that are durations, figures and catalogue ids.
         stated = verify_position_blind(
@@ -453,6 +490,48 @@ def attach_source_pmids(
     return result
 
 
+#: Quote prefix kept per clip in the run artifact. Enough to recognise a clip;
+#: not the draft's `context_excerpt`, which runs to 1500 chars and would make
+#: one well-studied gene's pool (2,175 clips) megabytes on its own.
+_POOL_QUOTE_CHARS = 180
+
+
+def _pool_index(
+    pool: dict[str, Any],
+    *,
+    boosted: dict[str, set[int]],
+    selected: set[str],
+) -> list[dict[str, Any]]:
+    """A bounded, per-clip record of the pool the selector was offered.
+
+    The artifact exists so that "why was this clip not proposed" costs a read
+    rather than a fresh run, and it could not answer that: `pool` was empty in
+    all 26 artifacts of a live sweep while `n_clips` recorded 60-214. Size was
+    persisted; contents were not.
+
+    Each entry carries the clip id, its source and section, whether the
+    residue-boost lifted it above the menu cap, whether the selector took it,
+    and a quote prefix. The boost flag is the load-bearing one: it separates
+    "the model saw this clip and passed on it" from "the cap meant the model
+    never saw it", which is the whole menu-starvation question.
+    """
+    out: list[dict[str, Any]] = []
+    for clip_id, draft in pool.items():
+        quote = str(getattr(draft, "quote", "") or "")
+        out.append(
+            {
+                "clip_id": clip_id,
+                "source_id": getattr(draft, "source_id", None),
+                "section": getattr(draft, "section", None),
+                "quote_chars": len(quote),
+                "quote_head": quote[:_POOL_QUOTE_CHARS],
+                "boosted_residues": sorted(boosted.get(clip_id, ()) or ()),
+                "selected": clip_id in selected,
+            }
+        )
+    return out
+
+
 def run_tag_site_agent(
     *,
     gene_symbol: str,
@@ -467,11 +546,42 @@ def run_tag_site_agent(
     sp_end: int | None = None,
     usage_sink: list[Any] | None = None,
     intermediates: dict[str, Any] | None = None,
+    loop_inventory: str | None = None,
+    prior_clips: list[PriorClip] | None = None,
+    seen_keys: set[str] | None = None,
+    covered_junctions: set[int] | None = None,
+    numbered_against: str | None = None,
+    alternate_frames: list[Frame] | None = None,
+    frame_label: str = "member",
+    select_max_batches: int = 1,
+    faceted_discovery: bool = False,
 ) -> TagSiteResult:
     """Discover papers (+ preprints, retraction-filtered), triage, pool + span-verify
     tag-insertion clips (shared clip pipeline), then synthesize a validated, ranked
     :class:`TagSiteResult` grounded in that evidence ledger. ``aliases`` should
     include the protein name(s).
+
+    The ENRICHMENT parameters are all inert by default, so the single-gene
+    control path behaves exactly as before:
+
+    * ``loop_inventory`` — prompt text naming this construct's extracellular
+      regions in its OWN numbering, and saying terminal sites are out of scope.
+    * ``prior_clips`` — clips an earlier run cited, seeded into the pool so a
+      paper that degraded to abstract-only today cannot take a known site with
+      it (179 papers degraded across one 20-gene sweep).
+    * ``seen_keys`` / ``covered_junctions`` — what an earlier run already
+      examined, and the junctions we already publish. Clips matching either are
+      not new evidence; if nothing new survives, the run returns BEFORE the
+      selector and the synthesizer.
+    * ``numbered_against`` — the sha256 of the sequence these positions are
+      expressed in, stamped on the archive so a published position is never
+      ambiguous about which proteoform it belongs to.
+    * ``alternate_frames`` — the proteoforms a citation might be numbering in
+      (canonical, mature, sibling isoforms). A paper will essentially never use
+      a designed ORF's coordinates, so for those members canonical is the
+      EXPECTED frame and "the construct's own numbering does not confirm it" is
+      the normal state rather than a failure. Each accepted site records which
+      frame proved it in ``position_frame``.
 
     ``sp_end`` is the AUTHORITATIVE signal-peptide end (UniProt's ``Signal``
     feature). Pass it whenever you have it: it beats the DeepTMHMM run encoded in
@@ -507,6 +617,12 @@ def run_tag_site_agent(
         "n_sites": 0,
         "rejected": [],
         "other_positions": [],
+        "n_new_clips": 0,
+        "n_carried": 0,
+        "n_dropped_covered": 0,
+        "numbered_against": numbered_against,
+        "outcome": "incomplete",
+        "sites": [],
     }
 
     def _stamp(**final: Any) -> None:
@@ -549,6 +665,7 @@ def run_tag_site_agent(
         aliases=aliases,
         retraction_index=ri,
         cached=load_discovery_cache(gene_symbol, cache_dir=DISCOVERY_CACHE_DIR),
+        faceted=faceted_discovery,
     )
     for wp in web_discover_papers(
         client,
@@ -563,6 +680,9 @@ def run_tag_site_agent(
     save_discovery_cache(gene_symbol, papers_by_id, cache_dir=DISCOVERY_CACHE_DIR)
     _progress["n_papers"] = len(papers_by_id)
     if not papers_by_id:
+        # Distinct reasons, because "empty" without a reason is what made 10 of
+        # 26 live runs unexplainable from their own record.
+        _progress["outcome"] = "no_papers_discovered"
         return _empty()
 
     # 2. Abstract triage -> 3. body pool + real source store (shared).
@@ -621,11 +741,69 @@ def run_tag_site_agent(
                 log.info("      %s @%s: %s",
                          getattr(clip, "source_id", key), sorted(positions),
                          (getattr(clip, "quote", "") or "")[:110])
+    # Carry forward what an earlier run cited. The pool is not monotonic across
+    # runs — 179 papers degraded to abstract-only across one 20-gene sweep, and
+    # a degraded paper contributes no methods clips — so a clip good enough to
+    # cite once is put back in front of the model regardless of what the
+    # publisher's server is doing today.
+    carried = (
+        seed_pool(pool, prior_clips, store=store) if prior_clips else set()
+    )
+    if carried:
+        log.info("  %s: carried %d previously-cited clip(s) forward",
+                 gene_symbol, len(carried))
+
+    # Drop clips that only restate a junction we already publish. Menu budget
+    # is the scarce resource; corroboration does not need a slot. A clip naming
+    # one covered AND one uncovered residue is kept by `covered_clip_ids`.
+    dropped_covered = (
+        covered_clip_ids(pool, sequence=sequence, covered_junctions=covered_junctions)
+        if covered_junctions
+        else set()
+    )
+    for cid in dropped_covered:
+        pool.pop(cid, None)
+    if dropped_covered:
+        log.info("  %s: dropped %d clip(s) restating an already-published junction",
+                 gene_symbol, len(dropped_covered))
+
+    # Only an enrichment run has anything to subtract, and the bookkeeping reads
+    # each clip's source_id — so on the ordinary path it is skipped entirely
+    # rather than computed and discarded. "Inert by default" has to mean not
+    # running, not running to a no-op.
+    enriching = bool(seen_keys or carried or dropped_covered)
+    if enriching:
+        scope = EnrichmentScope(
+            carried=carried, seen_keys=set(seen_keys or ()), dropped_covered=set()
+        )
+        n_new = count_new(pool, scope)
+        fresh_ids = sorted(new_clip_ids(pool, scope))
+    else:
+        n_new, fresh_ids = len(pool), []
     _progress.update({
         "n_clips": len(pool),
         "n_boosted": len(boosted),
         "boosted": {k: sorted(v) for k, v in boosted.items()},
+        "n_new_clips": n_new,
+        "n_carried": len(carried),
+        "n_dropped_covered": len(dropped_covered),
+        "new_clip_ids": fresh_ids,
     })
+
+    # The pause gate. The selector and the synthesizer are the expensive half of
+    # a run, and a gene whose every clip an earlier run already examined has a
+    # known answer — re-deriving it would pay full price for the same sites.
+    # Inert on the ordinary path: with no seen_keys every fresh clip is new.
+    if enriching and n_new == 0:
+        log.info("  %s: no new evidence in %d clip(s) — stopping before synthesis",
+                 gene_symbol, len(pool))
+        # Set it on _progress, not via _stamp's overrides: _empty() stamps
+        # again on its way out, and `_stamp()` with no overrides re-applies
+        # _progress — so an outcome passed as an override would be wiped by the
+        # very call that records the empty result.
+        _progress["outcome"] = "no_new_evidence"
+        return _empty()
+
     selection = select_clips(
         client,
         pool=pool,
@@ -634,7 +812,23 @@ def run_tag_site_agent(
         system_prompt=load_tag_select_prompt(),
         menu_instruction=_TAG_SELECT_MENU_INSTRUCTION,
         usage_sink=usage_sink,
+        max_batches=select_max_batches,
     )
+    # Persist the pool the selector was OFFERED, with its decision per clip.
+    # Written here rather than earlier because `selected` is only known now, and
+    # written before the evidence filter so it survives every exit below — the
+    # artifact's whole purpose is answering "why was this clip not proposed"
+    # without paying for another run.
+    _progress["pool"] = _pool_index(
+        pool,
+        boosted=boosted,
+        selected={
+            s.clip_id
+            for s in getattr(selection, "selections", []) or []
+            if getattr(s, "clip_id", None)
+        },
+    )
+
     evidence = [
         e
         for e in promote(
@@ -645,6 +839,7 @@ def run_tag_site_agent(
     if not evidence:
         # No span-verified tag-insertion clip -> the correct answer is ZERO sites
         # (never a structural-inference guess); skip the synthesis call entirely.
+        _progress["outcome"] = "no_span_verified_evidence"
         return _empty()
 
     # 6. Synthesis: the geometry/validation/snorkel rules read the span-verified ledger.
@@ -652,6 +847,12 @@ def run_tag_site_agent(
         gene_symbol, protein_name, mode=mode, sequence=sequence, topology=topology,
         sp_end=sp_end,
     )
+    if loop_inventory:
+        # Data, not prompt: this names the protein under study, so it belongs in
+        # the USER prompt. The system prompt stays gene-agnostic, which is what
+        # the prompt-leak tests enforce and why they exist — a worked example
+        # naming a real gene biases every other gene's call.
+        user_prompt = f"{user_prompt}\n\nCONSTRUCT GEOMETRY: {loop_inventory}"
     user_prompt = f"{user_prompt}\n\n{format_evidence_ledger(evidence)}"
 
     # n_repair_attempts + validation_error, as every v2 builder records. Without
@@ -670,6 +871,7 @@ def run_tag_site_agent(
         meta_sink=synth_meta,
     )
     if result is None:
+        _progress["outcome"] = "synthesis_returned_nothing"
         return _empty()
     assert isinstance(result, TagSiteResult)  # expect_array=False -> single instance
     # Anything the model put here is its own editorial judgement, not a gate
@@ -725,7 +927,10 @@ def run_tag_site_agent(
     upgrade_quotes(result, evidence=evidence)
     #   b2) a site may claim a VALIDATED position only if its quote names it;
     #       otherwise the position came from topology, not from the citation.
-    enforce_position_claims(result, sequence=sequence, client=client)
+    enforce_position_claims(
+        result, sequence=sequence, client=client,
+        frames=alternate_frames, reference_label=frame_label,
+    )
     enforce_evidence_type_coupling(result)
     if sequence and topology:
         kept, rejected = apply_geometry_pass(
@@ -765,6 +970,12 @@ def run_tag_site_agent(
         # function-abrogating. Both were visible only as numbers inside a ledger
         # sentence before this.
         other_positions=[x.model_dump() for x in result.other_positions],
+        # The emitted sites themselves. The depth spike kept only n_sites, so
+        # verifying its own junctions afterwards meant reconstructing them from
+        # log prose — and a sweep that cannot be checked afterwards cannot be
+        # trusted afterwards.
+        sites=[x.model_dump() for x in result.sites],
+        outcome="synthesized",
     )
 
     result.prompt_sha = prompt_sha()
@@ -772,6 +983,20 @@ def run_tag_site_agent(
     result.model = SONNET_MODEL
     result.generated_at = datetime.now(UTC).isoformat()
     return rank_sites(result)
+
+
+def _run_position(topology: str, junction: int | None) -> str | None:
+    """Where the junction's extracellular run sits: ``inter_tm`` means a loop.
+
+    Derived rather than taken from ``site_kind``, which cannot tell a loop from
+    an N-terminal tail — the five published literature sites at positions 4-5 are
+    topologically identical and are labelled ``internal`` twice and
+    ``terminal_n`` three times, with both paralogue pairs disagreeing with their
+    own partner."""
+    if junction is None:
+        return None
+    run = run_at(topology, junction)
+    return run.position if run else None
 
 
 def _citation_label(source_id: str) -> str:
@@ -785,7 +1010,16 @@ def _citation_label(source_id: str) -> str:
     return f"{prefix} {rest}" if rest else source_id
 
 
-def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str, Any]]:
+def to_viewer_sites(
+    result: TagSiteResult,
+    *,
+    uniprot_acc: str,
+    provenance: str = "literature_retrieved",
+    candidate_id: str | None = None,
+    library: str | None = None,
+    numbered_against: str | None = None,
+    topology: str | None = None,
+) -> list[dict[str, Any]]:
     """Convert to the viewer's ``literature_retrieved`` TaggedSite shape
     (viewer/lib/tag-sites-types.ts). Agent-only fields (validation_level,
     position_evidence, source_tier, entailment) fold into ``rationale``/``sources``
@@ -821,7 +1055,16 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
                 "claim": s.supporting_quote,
             })
 
-        site_id = f"{result.gene_symbol}-{s.site_type}-{s.insert_after_residue}-lit"
+        if provenance == "literature_enriched":
+            member = candidate_id or "nomember"
+            site_id = (
+                f"{result.gene_symbol}-{member}-{s.site_type}-"
+                f"{s.insert_after_residue}-enr"
+            )
+        else:
+            site_id = (
+                f"{result.gene_symbol}-{s.site_type}-{s.insert_after_residue}-lit"
+            )
         if site_id in by_id:
             kept = by_id[site_id]["sources"]
             seen = {(src.get("pmid"), src.get("claim")) for src in kept}
@@ -834,7 +1077,7 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
             "site_id": site_id,
             "gene_symbol": result.gene_symbol,
             "uniprot_acc": uniprot_acc,
-            "provenance": "literature_retrieved",
+            "provenance": provenance,
             "det_path": None,
             "site_kind": s.site_type,
             "insert_after_residue": s.insert_after_residue,
@@ -875,6 +1118,17 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
             "plddt": None,
             "conservation_rank": None,
             "median_conservation": None,
+            # Which construct, and the sequence the position is expressed in.
+            "candidate_id": candidate_id,
+            "library": library,
+            "numbered_against": numbered_against,
+            # Loop-ness from topology, never from the site_kind label.
+            "loop_run_position": (
+                _run_position(topology, s.insert_after_residue) if topology else None
+            ),
+            # Set by the frame resolver when the citation numbered in another
+            # proteoform; None means the paper used this construct's own frame.
+            "position_frame": getattr(s, "position_frame", None),
         }
         by_id[site_id] = record
         out.append(record)

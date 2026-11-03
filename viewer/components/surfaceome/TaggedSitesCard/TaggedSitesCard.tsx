@@ -13,6 +13,7 @@ import type {
 import {
   CATEGORY_HEX,
   CATEGORY_LABEL,
+  isLiteratureProvenance,
   tagSiteCategory,
 } from "../../../lib/tag-sites-types";
 import styles from "./TaggedSitesCard.module.css";
@@ -262,6 +263,30 @@ const POSITION_LABEL: Record<string, { text: string; cls: string; title: string 
   },
 };
 
+/** Readable prose for `position_frame` — which proteoform's numbering the
+ *  paper was using, when it was not this construct's own.
+ *
+ *  Load-bearing rather than decorative. The "Stated" badge claims "the paper
+ *  names this exact insertion position", and for a frame-mapped site that is
+ *  true only in ANOTHER protein's coordinates: a library member's ordered form
+ *  is frequently an isoform or a designed ORF, so a paper citing canonical
+ *  residue 246 is naming member residue 458. Without the frame on the page, a
+ *  reader cannot tell a position the paper stated outright from one we mapped,
+ *  and the mapping is the step most likely to be wrong. */
+function frameNote(frame: string | null | undefined): string | undefined {
+  if (!frame) return undefined;
+  const mapped = "and mapped onto this construct's own numbering.";
+  if (frame === "canonical")
+    return `Stated in canonical UniProt numbering, ${mapped}`;
+  if (frame === "mature")
+    return `Stated in mature-protein numbering — counting from the signal-peptide cleavage site — ${mapped}`;
+  if (frame.startsWith("isoform:"))
+    return `Stated in the numbering of isoform ${frame.slice(8)}, ${mapped}`;
+  if (frame.startsWith("ortholog:"))
+    return `Stated in the numbering of the ${frame.slice(9).replace(/:/g, " ")} orthologue, ${mapped}`;
+  return `Stated in the ${frame.replace(/_/g, " ")} frame, ${mapped}`;
+}
+
 function Badge({
   map,
   value,
@@ -445,11 +470,12 @@ const LIT_COLUMNS: Column[] = [
         map={POSITION_LABEL}
         value={s.position_evidence}
         // An inferred junction is only checkable if the reader can see which
-        // real tag it was reasoned from.
+        // real tag it was reasoned from — and a STATED one is only checkable
+        // if they can see whose numbering the paper stated it in.
         extra={
           s.position_evidence === "inferred" && s.cited_tag_residue != null
             ? `Reasoned from a cited tag at residue ${s.cited_tag_residue}.`
-            : undefined
+            : frameNote(s.position_frame)
         }
       />
     ),
@@ -581,8 +607,10 @@ export interface TaggedSitesCardProps {
  * protein. Three provenances, matching the structure-viewer overlay legend:
  *   • screen_validated — control tag sites confirmed by a parallel
  *     surface-display screen (e.g. Tedman et al.), with a measured PME;
- *   • literature_retrieved — tags published + validated in the literature
- *     (hybrid lit-search + web_search agent), with linked sources;
+ *   • literature_retrieved / literature_enriched — tags published + validated
+ *     in the literature (hybrid lit-search + web_search agent), with linked
+ *     sources; the enrichment pass publishes BESIDE the first read, not over
+ *     it, and both render in this section;
  *   • deterministic_computed — computed candidate insertion points from the
  *     disorder / surface-loop pipeline (pLDDT + RSA/DSSP, feature-veto).
  * All columns are sortable; tag/compartment/confidence render as chips.
@@ -595,7 +623,7 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   // topology reads "signal").
   const lit = sites.filter(
     (s) =>
-      s.provenance === "literature_retrieved" &&
+      isLiteratureProvenance(s.provenance) &&
       (s.extracellular || s.site_kind === "terminal_n"),
   );
   // One representative row per loop (mirrors the 3D overlay's collapse) so a long

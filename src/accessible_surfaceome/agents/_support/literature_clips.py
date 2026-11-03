@@ -302,13 +302,30 @@ def select_clips(
     model: str = SONNET_MODEL,
     menu_instruction: str = _DEFAULT_MENU_INSTRUCTION,
     usage_sink: list[Any] | None = None,
+    max_batches: int = 1,
 ) -> SelectionResponse:
     """Ask the selector to pick relevant clips by clip_id (never authoring quotes),
     resiliently: cap the menu at the top clips by score, salvage-retry with a
     smaller menu, and last-resort return an empty selection so one clip-dense gene
-    can't crash the run."""
+    can't crash the run.
+
+    ``max_batches`` > 1 shows the selector the pool in SUCCESSIVE menus of
+    ``_MAX_CLIP_MENU`` instead of truncating to the top ``_MAX_CLIP_MENU``, and
+    unions the picks. One menu means a 315-clip pool is two thirds invisible —
+    measured median for the L1 internal-site genes, with 419 of 559 archived
+    runs over the cap — and the clip that pins a real insertion can be cut
+    before the model ever sees it. Default 1 keeps the single-menu behaviour
+    for every existing caller.
+    """
     if not pool:
         return SelectionResponse(selections=[], notes="empty pool")
+    if max_batches > 1 and len(pool) > _MAX_CLIP_MENU:
+        return _select_batched(
+            client, pool=pool, gene=gene, synonyms=synonyms,
+            system_prompt=system_prompt, model=model,
+            menu_instruction=menu_instruction, usage_sink=usage_sink,
+            max_batches=max_batches,
+        )
     for menu_limit, label in ((_MAX_CLIP_MENU, "capped"), (_RETRY_CLIP_MENU, "salvage")):
         if len(pool) > menu_limit:
             logger.info("select %s: clip menu %d -> top %d by score (%s)",
@@ -330,6 +347,77 @@ def select_clips(
             logger.warning("select failed for %s (menu<=%d): %s", gene, menu_limit, str(err)[:140])
     logger.error("select giving up for %s after menu-cap retries — empty selection", gene)
     return SelectionResponse(selections=[], notes="select failed after menu-cap retries")
+
+
+def _select_batched(
+    client: Any,
+    *,
+    pool: dict[str, EvidenceClaimDraft],
+    gene: str,
+    synonyms: list[str] | None,
+    system_prompt: str,
+    model: str,
+    menu_instruction: str,
+    usage_sink: list[Any] | None,
+    max_batches: int,
+) -> SelectionResponse:
+    """Run the selector over successive score-ordered slices and union the picks.
+
+    Each slice is a complete menu in its own right, so a clip competes only
+    against the ~100 others in its slice rather than against the whole pool for
+    a single top-N cut. Picks are deduped by ``clip_id`` — a clip appears in
+    exactly one slice, so a duplicate would mean the model echoed an id from a
+    previous menu, and the first pick wins.
+
+    A failed slice is skipped rather than fatal: a partial union is strictly
+    better than the single truncated menu this replaces.
+    """
+    ordered = sorted(
+        pool.items(), key=lambda kv: getattr(kv[1], "score", 0.0) or 0.0, reverse=True
+    )
+    slices = [
+        dict(ordered[i : i + _MAX_CLIP_MENU])
+        for i in range(0, len(ordered), _MAX_CLIP_MENU)
+    ][:max_batches]
+    logger.info(
+        "select %s: clip menu %d -> %d batch(es) of <=%d (union)",
+        gene, len(pool), len(slices), _MAX_CLIP_MENU,
+    )
+    merged: list[Any] = []
+    seen: set[str] = set()
+    notes: list[str] = []
+    for i, chunk in enumerate(slices, start=1):
+        try:
+            got = call_model_structured(
+                client,
+                model=model,
+                system_prompt=system_prompt,
+                user_prompt=_build_select_prompt(
+                    chunk, gene=gene, synonyms=synonyms, menu_limit=None,
+                    menu_instruction=menu_instruction,
+                ),
+                schema=SelectionResponse,
+                max_tokens=_MAX_TOKENS_SELECT,
+                usage_sink=usage_sink,
+            )
+        except ValueError as err:
+            logger.warning(
+                "select batch %d/%d failed for %s: %s",
+                i, len(slices), gene, str(err)[:140],
+            )
+            notes.append(f"batch{i}: failed")
+            continue
+        for sel in got.selections:
+            cid = getattr(sel, "clip_id", "") or ""
+            if cid and cid not in seen:
+                seen.add(cid)
+                merged.append(sel)
+        if got.notes:
+            notes.append(f"batch{i}: {got.notes}")
+    logger.info(
+        "select %s: %d pick(s) unioned across %d batch(es)", gene, len(merged), len(slices)
+    )
+    return SelectionResponse(selections=merged, notes="; ".join(notes))
 
 
 def promote(

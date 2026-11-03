@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from accessible_surfaceome.cloud.d1_client import D1Client
+from accessible_surfaceome.tag_sites.retracted import drop_retracted
 
 # DDL kept in sync with cloudflare/d1_tag_sites_schema.sql. D1's HTTP API rejects
 # multi-statement batches, so each statement is submitted separately.
@@ -55,6 +56,11 @@ DDL: tuple[str, ...] = (
       source_tier                TEXT,
       cited_tag_residue          INTEGER,
       entailment_verified        INTEGER,
+      position_frame             TEXT,
+      candidate_id               TEXT,
+      library                    TEXT,
+      numbered_against           TEXT,
+      loop_run_position          TEXT,
       PRIMARY KEY (uniprot_acc, site_id)
     );
     """,
@@ -76,12 +82,115 @@ _COLS: tuple[str, ...] = (
     # columns the viewer can render them as badges and filter on them.
     "validation_level", "position_evidence", "source_tier", "cited_tag_residue",
     "entailment_verified",
+    # Which PROTEOFORM frame the citation was numbering in, when it was not the
+    # protein's own: "mature", "isoform:P54289-2". NULL means the position was
+    # read in the reference frame (the ordinary case) or was never validated
+    # from a citation at all. Without it, a position recovered from a foreign
+    # frame is indistinguishable from one the paper stated directly — and the
+    # frame is the only thing that makes the recovery auditable.
+    "position_frame",
+    # Which library MEMBER this site belongs to, and the sequence its position
+    # is expressed in. A gene is not a unit here: 45 of the 518 internal-site
+    # genes have more than one member and 7 of those disagree about where the
+    # tag can go, so a row without candidate_id cannot say which construct it
+    # describes. numbered_against is the sha256 of that construct's sequence —
+    # 71 of 566 members are not numbered on the human canonical protein, and a
+    # position without its sequence is ambiguous between them.
+    "candidate_id",
+    "library",
+    "numbered_against",
+    # Whether the junction's extracellular run has a membrane helix on BOTH
+    # sides, derived from topology rather than read off site_kind — which does
+    # not discriminate: the five published sites at positions 4-5 are
+    # topologically identical yet labelled internal twice and terminal_n thrice.
+    "loop_run_position",
 )
 
 
+#: Column name -> declared SQL type, parsed from the CREATE statement so the
+#: two cannot drift. A column added to the DDL is therefore added to a live
+#: table on the next publish.
+def _declared_columns() -> dict[str, str]:
+    create = next(s for s in DDL if "CREATE TABLE" in s.upper())
+    body = create[create.index("(") + 1 : create.rindex(")")]
+    out: dict[str, str] = {}
+    depth = 0
+    field = ""
+    for ch in body:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        if ch == "," and depth == 0:
+            fields, field = field, ""
+            _collect(fields, out)
+            continue
+        field += ch
+    _collect(field, out)
+    return out
+
+
+def _collect(field: str, out: dict[str, str]) -> None:
+    line = field.strip().split("--")[0].strip()
+    if not line:
+        return
+    head = line.split()[0].upper()
+    if head in {"PRIMARY", "UNIQUE", "FOREIGN", "CHECK", "CONSTRAINT"}:
+        return
+    parts = line.split(None, 1)
+    if len(parts) == 2:
+        out[parts[0]] = parts[1].strip()
+
+
 def ensure_table(client: D1Client) -> None:
-    """Idempotently create the table + indexes (one statement per call)."""
-    for stmt in DDL:
+    """Create the table + indexes, then ADDITIVELY backfill missing columns.
+
+    ``CREATE TABLE IF NOT EXISTS`` is a no-op on a table that exists, so a
+    column added to the DDL never reaches a live database. That drift was real:
+    ``candidate_id``, ``library``, ``numbered_against`` and
+    ``loop_run_position`` were in the DDL and in ``_COLS`` while the live table
+    had 33 of the 37 columns the writer sends, so every enrichment publish
+    would have failed on ``no such column``. It was found only because a
+    publish was about to be run for money.
+
+    Additive ONLY: adds what the DDL declares and the table lacks. Never drops,
+    renames or retypes, so a rollback or another writer's column survives, and
+    existing rows take NULL in the new columns — correct, since a pre-enrichment
+    row has no ``candidate_id``.
+    """
+    # Order matters: table, then the column backfill, then indexes. An index
+    # names columns, so creating it before the backfill fails on exactly the
+    # column the backfill is about to add.
+    creates = [s for s in DDL if "CREATE TABLE" in s.upper()]
+    rest = [s for s in DDL if "CREATE TABLE" not in s.upper()]
+    for stmt in creates:
+        client.query(stmt, [])
+    existing = {
+        row["name"]
+        for row in client.query("PRAGMA table_info(tag_site_public);", [])
+    }
+    for name, sql_type in _declared_columns().items():
+        if name in existing:
+            continue
+        upper = sql_type.upper()
+        if "NOT NULL" in upper and "DEFAULT" not in upper:
+            # SQLite refuses ADD COLUMN for NOT NULL without a default on a
+            # populated table, and it is right to: there is no value to give
+            # the existing rows. That needs a real create-copy-verify-rename,
+            # as `tag_site_genes.migrate_gene_key` does. Raise rather than skip,
+            # because skipping leaves the writer sending a column that does not
+            # exist and the publish fails later with a less legible error.
+            raise RuntimeError(
+                f"tag_site_public lacks NOT NULL column {name!r} ({sql_type}); "
+                "ADD COLUMN cannot supply a value for existing rows. This needs "
+                "a create-copy-verify-rename migration, not a backfill."
+            )
+        # One statement per call: D1's HTTP API rejects multi-statement batches.
+        client.query(
+            f"ALTER TABLE tag_site_public ADD COLUMN {name} {sql_type};", []
+        )
+        log.info("tag_site_public: added missing column %s", name)
+    for stmt in rest:
         client.query(stmt, [])
 
 
@@ -127,16 +236,27 @@ def flat_row(
             None if site.get("entailment_verified") is None
             else (1 if site.get("entailment_verified") else 0)
         ),
+        "position_frame": site.get("position_frame"),
+        "candidate_id": site.get("candidate_id"),
+        "library": site.get("library"),
+        "numbered_against": site.get("numbered_against"),
+        "loop_run_position": site.get("loop_run_position"),
     }
 
 
 def rows_for_file(data: dict[str, Any], *, version: str, synced_at: str) -> list[dict[str, Any]]:
-    """Flatten a TaggedSitesFile dict into per-site rows (pure; used by tests)."""
+    """Flatten a TaggedSitesFile dict into per-site rows (pure; used by tests).
+
+    Retracted sites are dropped here because this is the one place a gene's JSON
+    becomes published rows — the real publish and the ``--dry-run`` count both come
+    through it, so neither can write or report a withdrawn row. See
+    :mod:`accessible_surfaceome.tag_sites.retracted`.
+    """
     gene = data["gene_symbol"]
     acc = data["uniprot_acc"]
     return [
         flat_row(s, gene_symbol=gene, uniprot_acc=acc, version=version, synced_at=synced_at)
-        for s in data.get("sites", [])
+        for s in drop_retracted(data.get("sites", []), uniprot_acc=acc)
     ]
 
 
@@ -246,8 +366,12 @@ def publish_tag_sites(
     passed; otherwise a public client is opened + closed."""
     synced_at = datetime.now(UTC).isoformat()
     rows = rows_for_file(data, version=tag_sites_version, synced_at=synced_at)
+    # Scope is what the FILE speaks for, not what survived retraction. Reading it off
+    # `rows` would make a gene whose every site of a provenance is retracted infer an
+    # empty scope, skip the DELETE, and keep serving the withdrawn row — the exact
+    # failure this is here to end.
     scope = sorted(set(provenances)) if provenances is not None else sorted(
-        {r["provenance"] for r in rows if r.get("provenance")}
+        {s["provenance"] for s in data.get("sites", []) if s.get("provenance")}
     )
 
     owns = client is None

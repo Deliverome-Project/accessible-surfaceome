@@ -2,13 +2,18 @@
 /*
  * Pure overlay derivation shared by the linear TopologyBar pins and the 3D
  * StructureViewer spheres. Browser-safe (no node:fs). Drops the non-rendered
- * validated_literature provenance; resolves each site to a residue and a
+ * validated_literature provenance (and ONLY that one — every literature pass
+ * renders, see isLiteratureProvenance); resolves each site to a residue and a
  * left-percent along a topology of the given length.
  */
 import type { TagSiteCategory, TaggedSite, TaggedSiteProvenance } from "./tag-sites-types";
-import { tagSiteCategory } from "./tag-sites-types";
+import { isLiteratureProvenance, tagSiteCategory } from "./tag-sites-types";
 
-export type RenderedProvenance = "literature_retrieved" | "deterministic_computed" | "screen_validated";
+export type RenderedProvenance =
+  | "literature_retrieved"
+  | "literature_enriched"
+  | "deterministic_computed"
+  | "screen_validated";
 
 export interface RenderableTagSite {
   siteId: string;
@@ -24,7 +29,12 @@ export interface RenderableTagSite {
   spanEnd: number | null;
 }
 
-const RENDERED: TaggedSiteProvenance[] = ["literature_retrieved", "deterministic_computed", "screen_validated"];
+const RENDERED: TaggedSiteProvenance[] = [
+  "literature_retrieved",
+  "literature_enriched",
+  "deterministic_computed",
+  "screen_validated",
+];
 
 /** Parse a residue_range like "H27-K159" / "89-120" -> [27, 159]; null if absent/malformed. */
 function parseSpan(range: string | null | undefined): [number, number] | null {
@@ -61,7 +71,7 @@ export function renderableTagSites(
     // after signal-peptide cleavage (mature extracellular N-term), so its residue
     // topology may read "signal"/non-extracellular while the tag is surface-displayed.
     if (
-      site.provenance === "literature_retrieved" &&
+      isLiteratureProvenance(site.provenance) &&
       !site.extracellular &&
       site.site_kind !== "terminal_n"
     )

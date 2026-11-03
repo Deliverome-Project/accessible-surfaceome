@@ -8,9 +8,31 @@ import type { Compartment } from "./surface-bind";
 
 export type TaggedSiteProvenance =
   | "literature_retrieved"
+  /** The enrichment pass: a second, deeper literature read published BESIDE
+   *  `literature_retrieved` rather than over it. Additive because the clip pool
+   *  is not monotonic across runs — a paper that degrades to abstract-only
+   *  contributes no methods clips, so a rerun legitimately finding less than
+   *  its predecessor is the normal case under transient upstream failure. */
+  | "literature_enriched"
   | "deterministic_computed"
   | "screen_validated"
   | "validated_literature"; // validation-only; never rendered
+
+/** Provenances that are a literature read, whichever pass produced them.
+ *
+ *  Use this instead of `=== "literature_retrieved"`. That equality was written
+ *  in five places, `literature_enriched` was later added to the union above,
+ *  and none of the five learned about it — so the enrichment pass stored and
+ *  served sites that no surface rendered. A predicate here is the one place a
+ *  future provenance has to be classified. */
+export const LITERATURE_PROVENANCES = [
+  "literature_retrieved",
+  "literature_enriched",
+] as const satisfies readonly TaggedSiteProvenance[];
+
+export function isLiteratureProvenance(p: TaggedSiteProvenance): boolean {
+  return (LITERATURE_PROVENANCES as readonly string[]).includes(p);
+}
 
 export type DeterministicPath = "disorder" | "surface_loop" | "terminal" | "snorkel";
 export type TaggedSiteKind = "terminal_n" | "terminal_c" | "internal";
@@ -75,6 +97,28 @@ export interface TaggedSite {
   cited_tag_residue?: number | null;
   /** Pipeline gate: the quote was found verbatim in the cited source. */
   entailment_verified?: boolean | null;
+  /** The proteoform frame the citation was numbering in, when it was not this
+   *  protein's own: "mature" (the paper counts from the signal-peptide
+   *  cleavage site), "isoform:P54289-2". Null is the ordinary case — the
+   *  position was read in the protein's own frame, or never validated from a
+   *  citation. A recovered position is only auditable if the frame travels
+   *  with it, so this is what separates "the paper said residue 39" from "the
+   *  paper said mature residue 4 and we mapped it". */
+  position_frame?: string | null;
+  /** Which library MEMBER this site describes (`l1-p1037`), and the sha256 of
+   *  the sequence its position is expressed in. A gene is not a unit here: 45
+   *  of the 518 internal-site genes have more than one member and 7 of those
+   *  disagree about where the tag can go, and 71 of 566 members are not
+   *  numbered on the human canonical protein — so a position without its
+   *  construct and its sequence is ambiguous between real proteoforms. */
+  candidate_id?: string | null;
+  library?: string | null;
+  numbered_against?: string | null;
+  /** Where the junction's extracellular run sits: `inter_tm` is a genuine loop.
+   *  Derived from topology, never from `site_kind` — which does not
+   *  discriminate at low positions, where topologically identical sites are
+   *  labelled `internal` and `terminal_n` interchangeably. */
+  loop_run_position?: string | null;
   sources: EvidenceSource[];
   // deterministic-only (null for literature_retrieved / validated_literature):
   plddt: number | null;
@@ -90,6 +134,18 @@ export interface OtherPosition {
   note?: string;
 }
 
+export interface TagSiteSearch {
+  /** Which pass: ``literature_v1`` or ``literature_enriched_v1``. */
+  run_series: string | null;
+  /** The library member this search describes, ``""`` for a gene-level search. */
+  candidate_id: string;
+  prompt_sha: string | null;
+  prompt_version: string | null;
+  searched_at: string | null;
+  n_papers: number | null;
+  n_sites: number | null;
+}
+
 export interface TaggedSitesFile {
   has_data: boolean;
   gene_symbol: string;
@@ -103,8 +159,16 @@ export interface TaggedSitesFile {
   prompt_version?: string | null;
   generated_at?: string | null;
   /** Published insertion positions that are NOT surface tag sites: tolerated
-   *  but facing the cytoplasm, or reported to abrogate function. */
+   *  but facing the cytoplasm, or reported to abrogate function. The UNION
+   *  across every search of this gene — a function-abrogating insertion does
+   *  not stop being a fact because a later pass did not re-cite it. */
   literature_other_positions?: OtherPosition[];
+  /** Every search this gene has had, newest first. A gene can carry more than
+   *  one: the first literature pass is gene-level (``candidate_id: ""``) and the
+   *  enrichment pass records one per library member, which is the only place a
+   *  per-member answer is visible. The fields above describe the most recent of
+   *  these. Absent on an older Worker. */
+  searches?: TagSiteSearch[];
   /** Per-isoform deterministic tag pins (computed on each isoform's OWN AFDB
    *  model), classified vs the canonical prediction. Optional — absent until the
    *  pipeline regeneration populates it. Consumed by the IsoformsCard topology

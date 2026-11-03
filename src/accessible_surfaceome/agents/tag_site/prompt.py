@@ -211,6 +211,12 @@ _PIPELINE_SET = (
 #: re-runs — to tell the model something it has no use for.
 _PIPELINE_INTERNAL = (
     "supporting_source_id",
+    # Which proteoform frame the published position was numbered in. Resolved
+    # from the frames AFTER synthesis and written over whatever arrives, so
+    # asking for it pays output rates for a discarded value — and, since the
+    # contract is prompt TEXT, naming it moved `prompt_sha` off the one 2,370
+    # archived genes were written under, marking every one of them stale.
+    "position_frame",
 )
 
 _CODE_SET = (

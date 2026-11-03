@@ -95,12 +95,34 @@ def af_pdb(acc: str) -> str:
     return str(path)
 
 
-def _hazard(acc: str) -> set[int]:
+def _hazard(acc: str, pdb_path: str | None = None) -> set[int]:
     try:
-        return F.hazard_residues(F.fetch_uniprot_features(acc))
+        # Model bonds included: a disulfide UniProt does not annotate is
+        # invisible to the clearance veto otherwise, and that is how ACKR3
+        # P35 published at a reported 12.1 A while sitting 3.8 A from C287.
+        return F.hazard_residues_with_model(F.fetch_uniprot_features(acc), pdb_path)
     except Exception as ex:  # noqa: BLE001 — best-effort veto
         log.warning("  UniProt features unavailable for %s (%s) -> empty veto", acc, type(ex).__name__)
         return set()
+
+
+def _propeptide(acc: str, length: int) -> tuple[int, int] | None:
+    """The span maturation removes from the C-terminus, or None.
+
+    Same cached UniProt entry `_hazard` reads, so this costs no extra request.
+    Without it the terminal lane proposes a C-terminal tag on a GPI-anchored
+    protein at the full precursor length — inside the propeptide the omega-site
+    cleavage removes — which is what all 115 GPI `terminal_c` rows in
+    `tag_site_public` currently are.
+    """
+    try:
+        return F.cleaved_c_terminus(F.fetch_uniprot_features(acc), length)
+    except Exception as ex:  # noqa: BLE001 — best-effort; absent means "not annotated"
+        log.warning(
+            "  UniProt features unavailable for %s (%s) -> no propeptide refusal",
+            acc, type(ex).__name__,
+        )
+        return None
 
 
 def orthologs_for(symbol: str) -> list[tuple[str, str, str]]:
@@ -212,7 +234,7 @@ def regenerate_gene(
     except Exception as ex:  # noqa: BLE001
         log.warning("skip %s (%s): AFDB canonical model unavailable (%s)", symbol, acc, ex)
         return None
-    hazard = _hazard(acc)
+    hazard = _hazard(acc, pdb)
 
     # Orthologs are fetched BEFORE the canonical gate run, not after: the surface_loop
     # ranking is (-own RSA, conservation, -gap_freq), and with no ortholog sequences both
@@ -232,6 +254,7 @@ def regenerate_gene(
             symbol, acc, sequence=seq, topology=topo,
             ortholog_seqs=[o_seq for _o_acc, o_seq, _o_topo in orths],
             pdb_path=pdb, hazard_res=hazard, out_dir=tmp, signals_dir=signals_dir,
+            propeptide=_propeptide(acc, len(seq)),
         )
     det_sites = payload["sites"]
 

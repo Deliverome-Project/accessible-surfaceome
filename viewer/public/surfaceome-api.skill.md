@@ -34,9 +34,9 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 | Method | Path | Returns | TTL |
 |---|---|---|---|
 | `GET` | `/v1/benchmark` | 147 ground-truth labels (JSON) for the current bench_version | 1d |
-| `GET` | `/v1/benchmark/export.tsv` | Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) with truth labels + DB votes joined in (24 cols). Flat version of `/v1/benchmark/matrix`. | 1d |
+| `GET` | `/v1/benchmark/export.tsv` | Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) cell with truth labels + DB votes joined in (34 cols). The verdict is the cell's 3-replicate majority, as in the paper. Flat version of `/v1/benchmark/matrix`. | 1d |
 | `GET` | `/v1/benchmark/{SYMBOL}` | Single gene's truth label | 1d |
-| `GET` | `/v1/benchmark/matrix` | One row per gene: truth + 5 per-DB flags + `verdicts[model][variant]` LLM cells (8 models × up to 5 variants — not every model ran every variant — with reasoning + cost) | 1d |
+| `GET` | `/v1/benchmark/matrix` | One row per gene: truth + 5 per-DB flags + `verdicts[model][variant]` LLM cells (8 models × up to 5 variants — not every model ran every variant — with reasoning + cost). Each cell is the majority over its 3 replicates (refused replicates excluded), matching the paper. | 1d |
 
 ### Genome-wide (~19k human protein-coding genes)
 

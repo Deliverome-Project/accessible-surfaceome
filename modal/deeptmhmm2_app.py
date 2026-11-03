@@ -64,7 +64,7 @@ WEIGHTS_DIR = "/opt/cache/deeptmhmm2"
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .apt_install("git", "ca-certificates")
-    .pip_install("uv>=0.5")
+    .pip_install("uv>=0.13.4")
     .env({"XDG_CACHE_HOME": "/opt/cache"})
     .run_commands(f"uv pip install --system --no-cache '{DTM2_SPEC}'")
     # Warm the caches so every container starts with weights on disk.
@@ -75,6 +75,10 @@ image = (
     )
     .env({"HF_HOME": "/opt/cache/huggingface", "TORCH_HOME": "/opt/cache/torch"})
 )
+if modal.is_local():  # the image is built from the laptop; containers only re-import this file
+    from accessible_surfaceome.trust_store import harden
+
+    image = harden(image)  # drop the compromised eMudhra roots
 
 app = modal.App("surfaceome-deeptmhmm2")
 volume = modal.Volume.from_name("surfaceome-topology2", create_if_missing=True)
@@ -382,6 +386,76 @@ def full_sweep(
     gpu_h = sum(r.get("seconds", 0) for r in ok) / 3600
     print(
         f"\nwall {(time.time() - started) / 60:.1f} min   GPU-hours {gpu_h:.1f}   "
+        f"shards {len(ok)}/{len(results)} ok"
+    )
+    if gpu_h > max_gpu_hours:
+        print(f"WARNING: exceeded the {max_gpu_hours} GPU-hour expectation")
+    for f in failed:
+        print(f"  FAILED {f['shard']} (n={f['n']}): {f.get('error', '')[:300]}")
+    covered = sum(r["n"] for r in ok)
+    print(f"\n{covered:,}/{len(records):,} proteoforms predicted")
+    print(f"pull with: modal volume get surfaceome-topology2 {run_id}")
+    print("nothing was written to D1 — publish as a separate, reviewed step")
+
+
+@app.local_entrypoint()
+def records_sweep(
+    records_json: str,
+    run_id: str,
+    max_gpu_hours: float = 40.0,
+) -> None:
+    """Predict proteoforms supplied as a JSON file rather than read from ``topology_public``.
+
+    ``full_sweep`` deliberately sources its input from the table so that v1 and v2 compare
+    like-for-like. That is exactly wrong for sequences the table does not contain yet --
+    the designed ORFs of library members, whose protein is an Ensembl-transcript product
+    that usually corresponds to a UniProt *isoform* record rather than the canonical one.
+    Those cannot be fetched from the table they are missing from, so they arrive as a file.
+
+    The file is a JSON list of records in ``_fetch_proteoforms`` shape: ``uniprot_acc_full``,
+    ``uniprot_acc``, ``cohort``, ``gene_symbol``, ``hgnc_id``, ``isoform_id``, ``species``,
+    ``is_canonical``, ``sequence``, ``protein_length``. Give such records their own
+    ``cohort`` and publish them under their own ``topology_version``: the primary key is
+    ``(topology_version, cohort, uniprot_acc_full)``, so a fresh pair is a disjoint
+    namespace and existing rows cannot be reached. Like every other entrypoint here this
+    writes to the volume only -- nothing reaches D1 without the separate publish step.
+    """
+    records = json.loads(Path(records_json).read_text())
+    if not records:
+        raise SystemExit(f"no records in {records_json}")
+    missing = [
+        k
+        for k in ("uniprot_acc_full", "cohort", "sequence", "protein_length")
+        if k not in records[0]
+    ]
+    if missing:
+        raise SystemExit(f"records are missing required keys: {missing}")
+    for r in records:
+        if len(r["sequence"]) != r["protein_length"]:
+            raise SystemExit(
+                f"{r['uniprot_acc_full']}: protein_length {r['protein_length']} "
+                f"disagrees with the sequence ({len(r['sequence'])} aa)"
+            )
+
+    cohorts = sorted({r["cohort"] for r in records})
+    a, b, c = _plan(records)
+    print(
+        f"{len(records):,} proteoforms from {records_json} "
+        f"({len(a):,}/{len(b):,}/{len(c):,} by band), "
+        f"{sum(r['protein_length'] for r in records):,} residues\n"
+        f"cohort(s)={','.join(cohorts)}  run_id={run_id}"
+    )
+
+    started = time.time()
+    results = list(predict_shard.map(_payloads(a, run_id, SHARD_SIZE, "s")))
+    results += list(predict_long.map(_payloads(b, run_id, LONG_SHARD_SIZE, "L")))
+    results += list(predict_long.map(_payloads(c, run_id, 1, "H")))
+
+    ok = [r for r in results if r.get("ok")]
+    failed = [r for r in results if not r.get("ok")]
+    gpu_h = sum(r.get("seconds", 0) for r in ok) / 3600
+    print(
+        f"\nwall {(time.time() - started) / 60:.1f} min   GPU-hours {gpu_h:.2f}   "
         f"shards {len(ok)}/{len(results)} ok"
     )
     if gpu_h > max_gpu_hours:

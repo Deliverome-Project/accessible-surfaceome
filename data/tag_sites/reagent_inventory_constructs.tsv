@@ -1,0 +1,39 @@
+construct_id	name	status	gene_symbol	tag_fusion	tag_location
+P-0006	pAG_Lenti_CMV_TFRC_Ctermtag_IRES_Puro	Received	TFRC	Spytag-ALFA-IRES-Puro	C term
+P-0007	pAG_Lenti_CMV_TFRC_V291_IRES_Puro	Received	TFRC	Spytag-ALFA (internal); iRES-puro (C term)	V291 (preceding)
+P-0003	pAG Lenti_236083_Esp3i_domesticated_EFS_TFRC_BC_ALFA_IRESFragmid_WPRE_puro_assembled	Received	TFRC	Spytag-ALFA-barcode-IRESdomesticated-mScarlet3-P2A-puro	C term
+P-0008	pAG Lenti_236083_Esp3i_domesticated_EFS_TFRC_BC_ALFA_SV40_puro_assembled	Received	TFRC	Spytag-ALFA-barcode-SV40-puro	C term
+P-0009	pAG Lenti_236083_Esp3i_domesticated_EFS_TFRC_BC_ALFA_IRESnondomesticated_WPRE_puro_assembled	Received	TFRC	Spytag-ALFA-barcode-IRESnondomesticated-mScarlet3-P2A-puro	C term
+P-0011	pAG Lenti_236083_Esp3i_domesticated_EF1a_TFRC_BC_ALFA_IRESFragmid_WPRE_puro_assembled	Ordered	TFRC	Spytag-ALFA-barcode-IRESdomesticated-mScarlet3-P2A-puro	C term
+P-0012	pAG Lenti_236083_Esp3i_domesticated_PGK_TFRC_BC_ALFA_IRESFragmid_WPRE_puro_assembled	Received	TFRC	Spytag-ALFA-barcode-IRESdomesticated-mScarlet3-P2A-puro	C term
+P-0013	pAG Lenti_236083_Esp3i_domesticated_EFS_TFRC_BC_Halo_IRESFragmid_WPRE_puro_assembled	Received	TFRC	Halo-barcode-IRESdomesticated-mScarlet3-P2A-puro	C term
+P-0016	pAG_Lenti_miRL_iFFL_PGK_intronsplit_PuroR_target	Ordered	TFRC	Spytag-ALFA	C term
+P-0017	pAG_Lenti_miRL_iFFL_PGK_intronsplit_PuroR_notarget	Ordered	TFRC	Spytag-ALFA	C term
+P-0018	pAG_Lenti_miRL_iFFL_EF1a_intronsplit_PuroR_PGKorf_target	Ordered	TFRC	Spytag-ALFA	C term
+P-0019	pAG_Lenti_miRL_iFFL_EF1a_intronsplit_PuroR_PGKorf_notarget	Ordered	TFRC	Spytag-ALFA	C term
+P-0020	pAG_Lenti_miRL_PGK_PuroR_intact_target	Ordered	TFRC	Spytag-ALFA	C term
+P-0021	pAG_Lenti_miRL_PGK_PuroR_intact_notarget	Ordered	TFRC	Spytag-ALFA	C term
+P-0040	pAG_Lenti_miRL_iFFL_PGK_intronsplit_PuroR_target_TACC	Ordered	TFRC	Spytag-ALFA	C term
+P-0022	pAG_Lenti_EFS_HEG1_Nterm_BC_SpyALFA_IRES_Puro	Designed	HEG1	Spytag003-ALFA (51 aa cassette)	N term (cassette after residue 32; native SP 1-28)
+P-0023	pAG_Lenti_EFS_ERBB2_Nterm_BC_SpyALFA_IRES_Puro	Designed	ERBB2	Spytag003-ALFA (51 aa cassette)	N term (cassette after residue 23; native SP 1-21)
+P-0024	pAG_Lenti_EFS_AXL_Nterm_BC_SpyALFA_IRES_Puro	Designed	AXL	Spytag003-ALFA (51 aa cassette)	N term (cassette after residue 33; native SP 1-32)
+P-0025	pAG_Lenti_EFS_SLC9A3_Nterm_BC_SpyALFA_IRES_Puro	Designed	SLC9A3	Spytag003-ALFA (51 aa cassette)	N term (cassette after residue 26; native SP 1-25)
+P-0026	pAG_Lenti_EFS_VSIG10_Nterm_BC_SpyALFA_IRES_Puro	Designed	VSIG10	Spytag003-ALFA (51 aa cassette)	N term (cassette after residue 31; native SP 1-27)
+P-0027	pAG_Lenti_EFS_NECTIN4_Nterm_BC_SpyALFA_IRES_Puro	Designed	NECTIN4	Spytag003-ALFA (51 aa cassette)	N term (cassette after residue 32; native SP 1-31)
+P-0028	pAG_Lenti_EFS_FOLR1_Nterm_BC_SpyALFA_IRES_Puro	Designed	FOLR1	Spytag003-ALFA (51 aa cassette)	N term (cassette after residue 27; native SP 1-22)
+P-0029	pAG_Lenti_EFS_PTPRC_Nterm_BC_SpyALFA_IRES_Puro	Designed	PTPRC	Spytag003-ALFA (51 aa cassette)	N term (cassette after residue 41; native SP 1-25)
+P-0030	pAG_Lenti_EFS_SLC2A4_loop67_BC_SpyALFA_IRES_Puro	Designed	SLC2A4	Spytag003-ALFA (51 aa cassette)	loop, after 67
+P-0031	pAG_Lenti_EFS_SLC2A4_loop319_BC_SpyALFA_IRES_Puro	Designed	SLC2A4	Spytag003-ALFA (51 aa cassette)	loop, after 319
+P-0032	pAG_Lenti_EFS_MS4A1_loop146_BC_SpyALFA_IRES_Puro	Designed	MS4A1	Spytag003-ALFA (51 aa cassette)	loop, after 146
+P-0033	pAG_Lenti_EFS_MS4A1_loop161_BC_SpyALFA_IRES_Puro	Designed	MS4A1	Spytag003-ALFA (51 aa cassette)	loop, after 161
+P-0034	pAG_Lenti_EFS_CCR5_loop263_BC_SpyALFA_IRES_Puro	Designed	CCR5	Spytag003-ALFA (51 aa cassette)	loop, after 263
+P-0035	pAG_Lenti_EFS_AVPR2_loop302_BC_SpyALFA_IRES_Puro	Designed	AVPR2	Spytag003-ALFA (51 aa cassette)	loop, after 302
+P-0037	pAG_Lenti_EFS_TFRC_Cterm_BC_SpyALFA_IRES_Puro	Designed	TFRC	Spytag003-ALFA (51 aa cassette)	C term
+P-0038	pAG_Lenti_EFS_CNR1_leaderfree_Nterm_BC_SpyALFA_IRES_Puro	Designed	CNR1	Spytag003-ALFA (51 aa cassette)	N term (after Met1, leader-free)
+P-0041	pAG_Lenti_EFS_CNR1_igkLeader_Nterm_BC_SpyALFA_IRES_Puro	Designed	CNR1	Spytag003-ALFA (51 aa cassette)	N term (Igk leader added)
+P-0042	pAG_Lenti_EFS_CCR5_leaderfree_Nterm_BC_SpyALFA_IRES_Puro	Designed	CCR5	Spytag003-ALFA (51 aa cassette)	N term (after Met1, leader-free)
+P-0043	pAG_Lenti_EFS_CCR5_igkLeader_Nterm_BC_SpyALFA_IRES_Puro	Designed	CCR5	Spytag003-ALFA (51 aa cassette)	N term (Igk leader added)
+P-0044	pAG_Lenti_EFS_OR51E2_leaderfree_Nterm_BC_SpyALFA_IRES_Puro	Designed	OR51E2	Spytag003-ALFA (51 aa cassette)	N term (after Met1, leader-free)
+P-0045	pAG_Lenti_EFS_OR51E2_igkLeader_Nterm_BC_SpyALFA_IRES_Puro	Designed	OR51E2	Spytag003-ALFA (51 aa cassette)	N term (Igk leader added)
+P-0046	pAG_Lenti_EFS_ACKR3_leaderfree_Nterm_BC_SpyALFA_IRES_Puro	Designed	ACKR3	Spytag003-ALFA (51 aa cassette)	N term (after Met1, leader-free)
+P-0047	pAG_Lenti_EFS_AVPR2_leaderfree_Nterm_BC_SpyALFA_IRES_Puro	Designed	AVPR2	Spytag003-ALFA (51 aa cassette)	N term (after Met1, leader-free)

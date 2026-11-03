@@ -1,6 +1,12 @@
 exclude: ^(data/)
 
 repos:
+  # Pre-push BLOCK: this machine must not trust a compromised CA root (macOS, Homebrew and
+  # .venv certifi bundles) or run a uv older than its fixed release (eMudhra, 2026-10-19).
+  - repo: https://github.com/Deliverome-Project/.github
+    rev: 2689191da0b44c806124cbbf781cf2f39bf3f62c  # security-floors-emudhra
+    hooks:
+      - id: trust-store-check
   # Run the project's own ruff (pinned in uv.lock) so pre-commit and CI can never
   # disagree. The astral-sh/ruff-pre-commit hook pinned a second, older ruff (v0.13.0)
   # that nothing kept up to date.

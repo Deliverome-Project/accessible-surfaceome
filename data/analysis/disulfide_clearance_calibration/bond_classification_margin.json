@@ -1,0 +1,12 @@
+{
+  "sg_sg_bond_max_a": 2.5,
+  "n_bonded_pairs": 592,
+  "bonded_max_a": 2.08,
+  "n_proteins_with_unbonded_cys_pair": 129,
+  "nearest_unbonded_a": 3.13,
+  "n_proteins": 133,
+  "n_formed_bonds_unannotated": 177,
+  "n_proteins_with_an_unannotated_formed_bond": 53,
+  "n_annotated_bonds_not_formed": 17,
+  "n_proteins_with_an_annotated_bond_not_formed": 13
+}

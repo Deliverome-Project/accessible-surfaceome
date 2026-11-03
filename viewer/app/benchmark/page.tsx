@@ -90,7 +90,10 @@ export default async function BenchmarkPage() {
             compact cell per model on the headline{" "}
             <code>{matrix.headline_variant.toUpperCase()}</code> prompt variant,
             ordered Haiku 4.5 · Haiku 5.5 · Sonnet 4.6 · Sonnet 5 · Sonnet
-            5.5 · Opus 4.8 · Opus 5 · Opus 5.5. Each is a verdict pill colored
+            5.5 · Opus 4.8 · Opus 5 · Opus 5.5. Every model ran each prompt
+            three times, and each cell shows the majority verdict across
+            those replicates (refused replicates excluded) — the per-cell
+            numbers the paper reports. Each is a verdict pill colored
             by call (<em>ctx</em> = contextual); pills outlined in maroon
             disagree with truth (collapsing <em>yes</em> ≡{" "}
             <em>contextual</em> when scoring correctness). The tinted
@@ -112,7 +115,9 @@ export default async function BenchmarkPage() {
           <p>
             <span className="label-mono">Refused ·</span> A small number
             of calls were declined by the model&apos;s safety classifier and
-            returned no verdict. They show as <em>refused</em> (<em>ref</em>{" "}
+            returned no verdict. A refused replicate is left out of its
+            cell&apos;s majority; a cell whose replicates all refused shows as{" "}
+            <em>refused</em> (<em>ref</em>{" "}
             in the headline columns, with a dashed outline) — distinct from a
             dash (no run on file) and from <em>errored</em> (a run that
             returned no valid verdict) — and are not counted as agreeing or

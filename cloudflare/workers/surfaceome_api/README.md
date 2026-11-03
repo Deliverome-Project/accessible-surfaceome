@@ -12,8 +12,8 @@ Grouped by scope: **SurfaceBench** (labeled eval) → **genome-wide** sweep → 
 |---|---|---|
 | `GET` | `/v1/benchmark` | Full benchmark truth labels (latest bench_version) |
 | `GET` | `/v1/benchmark/:symbol` | Single gene's truth label |
-| `GET` | `/v1/benchmark/export.tsv` | Long-format TSV: bench-restricted multi-model sweep (gene × model × variant), 24 cols including truth labels + per-source DB votes joined in. Flat shape of `/v1/benchmark/matrix`. |
-| `GET` | `/v1/benchmark/matrix` | Wide nested JSON: per-gene truth + DB votes + per-model verdicts across all prompt variants. Drives the benchmark figures. |
+| `GET` | `/v1/benchmark/export.tsv` | Long-format TSV: bench-restricted multi-model sweep, one row per (gene × model × variant) cell, 34 cols including truth labels + per-source DB votes joined in. Flat shape of `/v1/benchmark/matrix`: the verdict is the cell's 3-replicate majority, plus `n_reps`, `majority_agreement`, `is_match` and replicate-summed `*_total` telemetry. |
+| `GET` | `/v1/benchmark/matrix` | Wide nested JSON: per-gene truth + DB votes + per-model verdicts across all prompt variants. Each cell is the majority over its replicates (refused replicates excluded), the same per-cell numbers as the paper and `mainbench_canonical_v2.tsv`. |
 
 ### Genome-wide (~19k human protein-coding genes)
 

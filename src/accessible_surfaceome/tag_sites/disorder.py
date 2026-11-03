@@ -15,7 +15,7 @@ from __future__ import annotations
 from typing import Any
 
 from .model import residue_range, tagged_site
-from .surface_loop import FEATURE_DIST_MIN, _extracellular
+from .surface_loop import FEATURE_DIST_MIN, LOOP_SS, _extracellular
 
 PLDDT_DISORDER_MAX = 70.0  # fallback proxy when no predictor track is available
 MIN_RUN = 4                # contiguous residues (short loops aren't disorder)
@@ -32,10 +32,14 @@ def _flexible_runs(signals: dict[str, Any], topo: dict[int, str]) -> list[list[i
     """Maximal contiguous extracellular runs that the disorder predictors call flexible.
 
     Prefers the consensus of metapredict, NetSurfP-3.0 and AlphaFold-disorder over raw
-    pLDDT. They are not interchangeable in practice: scoring the predictors by
-    within-protein rank puts the top extracellular site a median 3 aa from Tedman's
-    junction, where a contiguous pLDDT<70 run puts it 40 aa away. pLDDT remains the
-    fallback for genes with no published track.
+    pLDDT -- but note that **nothing supplies ``signals["disorder"]``**, so every
+    published site took the pLDDT branch below. That is deliberate, not an oversight:
+    the 3-aa-vs-40-aa comparison that motivated the consensus is scored on Tedman's
+    junctions, all of which are ``terminal_n``. On the 25 curated *internal* controls
+    the two place indistinguishably (median 2 aa either way, p=0.508), and the consensus
+    threshold admits the top 40% of every protein by rank, which would put a third of
+    this lane's sites above pLDDT 70 under a rationale that says the opposite. The
+    measurement and the reasoning are in ``tests/test_tag_sites_signal_wiring.py``.
     """
     disorder = signals.get("disorder") or {}
     if disorder:
@@ -109,14 +113,49 @@ def disorder_candidates(
     rsa = signals.get("rsa") or {}
     feat = signals["feature_dist"]
     picks: list[dict[str, Any]] = []
+    ss = signals.get("ss") or {}
     for run in _flexible_runs(signals, topo):
         for res in run:
             if feat.get(res, 0.0) < FEATURE_DIST_MIN:
                 continue  # the insertion point itself must clear functional atoms
+            # NOT a veto. A structured anchor is RANKED LAST (see the sort
+            # below) rather than dropped, because the published corpus refuses
+            # the veto: of 185 published internal residue-pinned sites, 31% sit
+            # in a DSSP helix or strand on the model, and 30% of the
+            # function-validated ones do — ATP1A1 119/318, ABCB1 101/320/736/961,
+            # ATP1A3 109, GABRA1 31, ABCC1 4, SCNN1A 168, ADCYAP1R1 24,
+            # KCNQ1 146, all surface_and_function, all H. A hard gate rejects
+            # twenty working sites.
+            #
+            # Those precedents are small tags though — HA 9 aa, FLAG 8, c-Myc
+            # 10 — so they license a small epitope in a helix and say nothing
+            # about a 51-aa cassette. Same shape as the disulfide-span
+            # treatment: the cargo decides, so this ranks and the caller
+            # weighs it rather than the gate deciding for every cassette.
+            #
+            # An ABSENT call is unknown, not structured.
             picks.append(_site(res, run, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc))
     disorder = signals.get("disorder") or {}
+    def _junction_tier(res: int) -> int:
+        """0 = coil both sides, 1 = element boundary, 2 = element interior.
+
+        The insert goes BETWEEN ``res`` and ``res + 1``, so the junction is the
+        unit, not the anchor. Scoring the anchor alone merges two classes the
+        published corpus separates: of 185 published internal sites, 116 sit in
+        coil, 22 at a boundary and 47 mid-element. A boundary is a better bet
+        than an interior, and the anchor test ties them.
+        """
+        flanks = (ss.get(res), ss.get(res + 1))
+        # An absent call is unknown, not structured.
+        structured = sum(1 for c in flanks if c is not None and c not in LOOP_SS)
+        return structured
+
     picks.sort(
         key=lambda p: (
+            # Ranked down, never excluded — 18 function-validated published
+            # sites are mid-helix (H|H), so an interior is survivable for a
+            # small tag and a veto here would reject all of them.
+            _junction_tier(p["insert_after_residue"]),
             # most flexible first. Both experimental sets say the working site is the most
             # flexible one available, not the most exposed: Tedman's junctions sit at the
             # 88th-93rd within-protein disorder percentile and our curated internal

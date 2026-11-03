@@ -128,6 +128,14 @@ Two D1s: `surfaceome_agents` (private, full reasoning + costs) and
 Schemas: [`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql) and
 [`cloudflare/d1_public_schema.sql`](cloudflare/d1_public_schema.sql).
 
+**One trap worth knowing before your first query against
+`topology_public`:** match `uniprot_acc` **OR** `uniprot_acc_full`, and do not
+scope to `cohort='human_canonical'`. Three independent sessions lost rows to
+those two mistakes in a single day — one dropped 362 members, another 71 — and
+the natural reading of "no row" is "no data" rather than "wrong query". The
+full rule, including why the fix has to be additive, is in
+[CLAUDE.md](CLAUDE.md#match-uniprot_acc-or-uniprot_acc_full-and-never-scope-to-one-cohort).
+
 ### Viewer records — never edit a JSON snapshot without syncing D1
 
 **The live viewer reads D1, not the committed JSON.** The Worker serves
@@ -322,7 +330,7 @@ statement:
 
 ## Coding Style & Naming Conventions
 See [docs/coding-style.md](docs/coding-style.md) for the full conventions
-and the rubric we use to assess diffs. Quick summary: Python 3.11+,
+and the rubric we use to assess diffs. Quick summary: Python 3.14+,
 ruff-formatted, names that describe what's there, one way to do common
 things (paths, traceability), validate at boundaries only, no plumbing
 masquerading as algorithm.
@@ -578,6 +586,38 @@ per discovered paper.
   literature-only file erase the deterministic sites. `sync_tag_sites_to_d1.py` refuses a sync
   that would shrink any gene unless `--allow-deletes`; re-derive with
   `scripts/regenerate_tag_sites.py` (it preserves literature sites) instead of overriding.
+- **A withdrawn site is suppressed by a list, on both surfaces.**
+  `tag_sites/retracted.py` keys `(uniprot_acc, site_id)` to the reason it went away, and is
+  applied in `cloud/tag_sites.py::rows_for_file` (D1) AND `tag_sites/emit.py` (the static
+  `/tag-sites/{SYMBOL}.json` the viewer falls back to) — suppressing one surface leaves the
+  site being recommended on the other. Re-deriving a gene cannot resurrect a retracted site,
+  which is the point: the generator still proposes these. Rows already published are removed
+  by `scripts/cloud/delete_retracted_tag_sites.py` (dry-run by default), not by re-syncing the
+  gene — a re-sync restamps every row's `tag_sites_version` to remove one.
+- **The enrichment pass is MEMBER-keyed, and its resume needs its own write.**
+  `enrich_tag_site_lit.py` (swept via `sweep_tag_site_lit.py --members-file`) runs once per
+  library member — 566 across 518 genes, 45 with several — so the skip set is
+  `(gene_symbol, candidate_id)`; a bare symbol strands every sibling of the 518 genes the
+  first pass already searched. And `publish_tag_sites` writes one row per SITE, so the ~80%
+  of members with no published loop insertion leave no trace: `enrich_member` stamps its own
+  `tag_site_gene_public` row at run time, since the first pass's snapshot-scoped
+  `publish_tag_site_genes.py` cannot reach records that live only in D1. `row_for` counts ONE
+  provenance and must be told which — left at the default it counts no `literature_enriched`
+  site and records a false dated zero, which nothing downstream can tell from a real one.
+- **The per-gene endpoint serves ALL of a gene's searches.** `handleTagSites` reads every
+  `tag_site_gene_public` row and chooses in the Worker (total order: `searched_at`, series,
+  `candidate_id`), not with `ORDER BY` + `.first()`: the top-level fields describe the newest
+  search, `literature_other_positions` is the deduped UNION across searches, and `searches[]`
+  names each pass by series and member. `.first()` with no `ORDER BY` was safe only while
+  every gene had one row.
+- **A schema field rendered into the output contract costs a cohort re-run.** `SYSTEM_PROMPT`
+  ends in `format_output_contract()`, generated from the schema, so a new tag-site field can
+  change `prompt_sha` — and both sweeps' resume compares on that, so every archived record
+  reads as stale. `position_frame` did exactly this: 2,370 genes, ~$2,000, to ask the model
+  for a value the pipeline overwrites. Fields the model never supplies go in
+  `_PIPELINE_INTERNAL`; the guard is the `prompt_version -> sha` map `PINNED_PROMPT_SHA` in
+  `tests/test_tag_site_output_contract.py`, because the older guard iterates the declared
+  sets and so cannot see an undeclared field.
 - **The viewer reads the Worker**: `fetchTaggedSites(symbol, API_BASE)`. Without the apiBase
   only the static `/tag-sites/{SYMBOL}.json` is tried, and that asset is not in the Pages
   export.
@@ -622,10 +662,99 @@ based on a freshly fetched `origin/main`:
 3. Compare the live `/v1` index against your source. Its routes and
    `row_schema` must be a subset of what you are about to ship. This catches
    a previous deploy made from some other branch.
-4. `REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py`.
-5. Re-verify after the deploy, because a merge can land during it. If a
-   deploy changed a response's shape, purge the cache with
-   `scripts/cloud/purge_gene_cache.py`.
+4. **Capture the live response SHAPE — steps 1-3 cannot see a dropped field.**
+
+       uv run python scripts/cloud/worker_shape_guard.py --capture
+
+   Steps 1-2 compare the Worker SOURCE across `origin/main` and `origin/dev`;
+   step 3 compares routes and `row_schema`. A field nested in a response body,
+   deployed from an unmerged branch, is in **neither of those two branches and
+   is not a route**, so every one of those steps passes while you delete it.
+   (It is normally on a pushed branch with an open PR, which is exactly why it
+   reads as safe; "unmerged" is the word that matters, not "uncommitted".)
+
+   That is not hypothetical. On 2026-10-15 three sessions deployed this Worker.
+   A deploy at 03:01 UTC added `deterministic_features.bindome`; one at 19:04
+   UTC replaced the script and removed it, with the full checklist run and
+   green. A third deploy at 12:02 UTC carried `libtopo` and `row_schema 11`,
+   and those SURVIVED — because PR #370 had merged to `dev` at 03:40 UTC, so
+   the later dev-based branch contained them.
+
+   **The rule has two halves, and getting the second one wrong is dangerous.**
+
+   *Merged* Worker surface is safe: it rides through any later deploy from a
+   branch that contains it, which is what happened to `libtopo`.
+
+   *Unmerged* Worker surface survives only **until the next deploy by someone
+   who does not know about it**. The mechanism is deploy ORDERING, not merge
+   status — `bindome` died because another deploy followed it, and
+   `position_frame` (this repo's tag-site frame field) is alive at the time of
+   writing only because its deploy happened to be last. Both were unmerged at
+   the time; `bindome` has since merged to `dev` (PR #371, 2026-10-15T21:43Z),
+   so it is now safe surface and `position_frame` is the only unmerged live
+   field. Note what that history does NOT say: `bindome` was committed in
+   97b19aa4c a full day before the deploy that killed it, pushed, with an open
+   PR. Being committed and reviewed buys nothing here — only being merged into
+   the branch the next deployer builds from does.
+
+   So: **land Worker surface on `dev` and deploy from `dev`.** That removes the
+   hazard instead of managing it. An unmerged field that is currently live is
+   not evidence that deploying unmerged is safe; it is a field waiting for the
+   next deploy. When you must deploy an unmerged branch anyway, this guard is
+   what stands between you and someone else's work — and check what a
+   reconciling deploy actually carries before calling it reconciled: one built
+   from `main` + `dev` today contains `bindome` (merged) but NOT
+   `position_frame`, so it would drop that one with every check green.
+
+   Comparing source can never catch this class. The only reliable record of
+   what the API promises is the live response, which is what this guard reads.
+
+   **When you compare refs, prove the path resolves before you trust a zero.**
+   Both the search that produced the account above and the one that corrected it
+   first returned a clean `0` on every branch — one from grepping `index.js`
+   rather than `src/index.js`. A missing path counts to zero exactly like a true
+   absence, and a zero on every ref is the tidiest possible answer, so it does
+   not invite a second look:
+
+       git cat-file -e "$ref:$path" || { echo "PATH MISSING on $ref"; exit 1; }
+5. `REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py`.
+6. **Deploy with attribution**, so the next person investigating can tell whose
+   deploy a version was. Cloudflare's metadata cannot: every version records
+   `Author: becca@deliverome.org`, because all sessions share one API token, and
+   `versions view` exposes no size, diff or source. `Tag` and `Message` were
+   empty on all three of 2026-10-15's deploys, so attributing the 12:02 one took
+   an evening of cross-session archaeology and ended in testimony rather than
+   evidence. Populating them costs nothing:
+
+       npx --yes wrangler deploy --message "<branch>: <what changed>"
+
+   Prefer `wrangler versions upload --message ...` when you want to check the
+   shape of a new version BEFORE it takes traffic: it returns a preview URL, so
+   `worker_shape_guard.py --check --base <preview-url>` turns this from
+   detection into prevention. Promote with `wrangler versions deploy`.
+7. **Verify the shape survived**, and re-run step 1, because a merge can land
+   during a deploy:
+
+       uv run python scripts/cloud/worker_shape_guard.py --check
+
+   A dropped path here is almost always another session's live work. Find who
+   owns it and carry it; do NOT reconcile by merging `main` and `dev` alone,
+   because neither contains a field that was deployed from an unmerged branch
+   and the merge would drop it with every check green.
+8. If a deploy changed a response's shape, purge the cache with
+   `scripts/cloud/purge_gene_cache.py` — unless the shape change rides on a new
+   Worker version, in which case `cacheEpoch(env)` is
+   `CF_VERSION_METADATA.id`, the deploy mints a fresh epoch, and both cache
+   tiers are orphaned automatically.
+
+`cloudflare/workers/surfaceome_api/tests/live_shape_baseline.json` is the
+committed baseline: 10 deliberately heterogeneous probes, ~1,580 key paths.
+Heterogeneous because most of these fields are GATED and one gene proves
+nothing — `deterministic_features.library_designed_*` appear only for library
+members (present on KCNN2, absent on CD63, which is how the first look at this
+incident briefly reached the wrong conclusion), `position_frame` only on a
+frame-mapped tag site. Refresh it deliberately, in the commit that adds the
+field, so a review can see what the API started promising.
 
 Worktrees have no `wrangler.toml`: it is gitignored and only
 `wrangler.toml.example` is committed. Copy it from the canonical checkout,
