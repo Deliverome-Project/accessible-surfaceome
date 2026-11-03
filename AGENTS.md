@@ -513,11 +513,13 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   both invoke it as `npx --yes wrangler ...` so the pinned version
   always wins.
 - **Node version pin lives in `.nvmrc`** (root + `viewer/.nvmrc`),
-  currently `24.14.1`. Workflows read it via `node-version-file:` so
-  CI never drifts from local dev. `engines.node: ^24` in both
+  currently `26.12.1`. Workflows read it via `node-version-file:` so
+  CI never drifts from local dev. `engines.node: ^26` in both
   `package.json`s acts as a floor and is enforced as an error (not a
   warning) via `engine-strict=true` in `viewer/.npmrc`. `viewer/@types/node`
-  tracks the same major. **`NODE_VERSION` build env var on Cloudflare
+  tracks the same major. npm 11.20+ skips dependency install scripts unless
+  approved; `esbuild` and `workerd` work without theirs, so leave them
+  unapproved (the `npm warn install-scripts` line is expected). **`NODE_VERSION` build env var on Cloudflare
   Pages lives outside the repo and must be kept in sync with `.nvmrc`
   (Settings → Environment Variables → Production + Preview). When
   bumping Node anywhere here, always remind the user to bump it on

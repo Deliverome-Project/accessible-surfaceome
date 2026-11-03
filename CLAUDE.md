@@ -853,13 +853,18 @@ a Pages binding.
   `npx --yes wrangler ...` so the pinned version always wins over
   any globally installed wrangler. CI does the same `npm ci`.
 - **Node version pin: `.nvmrc` is the source of truth**
-  (currently `24.14.1`). It's mirrored at `viewer/.nvmrc` because
+  (currently `26.12.1`). It's mirrored at `viewer/.nvmrc` because
   `cd viewer && nvm use` won't walk up the tree. Workflows read it via
   `node-version-file:` so CI never drifts from local dev. The
   `engines.node` field in `package.json` (root) and `viewer/package.json`
-  uses `^24` as a *floor* assertion (`engine-strict=true` in `viewer/.npmrc`
+  uses `^26` as a *floor* assertion (`engine-strict=true` in `viewer/.npmrc`
   promotes the engines mismatch from warn to error). The
   `viewer/@types/node` dep tracks the same major.
+  npm 11.20+ (bundled with Node 26) skips dependency install scripts unless
+  approved; `esbuild` and `workerd` (via wrangler) are the only ones here, and
+  both work without them because their binaries ship as optional
+  dependencies. Leave them unapproved; the `npm warn install-scripts` line
+  is expected.
 - **`NODE_VERSION` on Cloudflare Pages lives outside the repo.** Set it
   to the same value as `.nvmrc` (Settings → Environment Variables →
   Production + Preview). **When bumping Node anywhere here, always
