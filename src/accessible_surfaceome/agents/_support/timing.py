@@ -17,7 +17,7 @@ sites don't have to opt in.
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
@@ -96,7 +96,7 @@ class TimingRecorder:
         phase: str,
         n_items: int | None = None,
         model: str | None = None,
-    ) -> Iterator[_StepHandle]:
+    ) -> Generator[_StepHandle]:
         """Time a block; emit one StepTiming on exit."""
         started = datetime.now(UTC)
         t0 = time.perf_counter()

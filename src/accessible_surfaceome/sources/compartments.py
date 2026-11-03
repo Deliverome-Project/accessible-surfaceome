@@ -105,6 +105,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import cast
 from urllib.request import Request, urlopen
 
 import pandas as pd
@@ -187,9 +188,11 @@ def _per_ensp_surface_terms(df: pd.DataFrame) -> pd.Series:
     """Return a Series keyed on ENSP with comma-joined surface GO IDs seen."""
     if df.empty:
         return pd.Series(dtype=str)
-    return (
-        df.groupby("ensp")["go_id"]
-        .apply(lambda s: ",".join(sorted(set(s))))
+    # The lambda reduces each group to one string, so this is always a Series;
+    # the cast tells the type checker, which infers ``DataFrame | Series``.
+    return cast(
+        pd.Series,
+        df.groupby("ensp")["go_id"].apply(lambda s: ",".join(sorted(set(s)))),
     )
 
 

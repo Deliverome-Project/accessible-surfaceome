@@ -227,7 +227,8 @@ def consistently_missed_accessibles(*, max_db_votes: int = 1) -> list[dict[str, 
                     "in_m1": votes[r.uniprot_acc].in_m1,
                 }
             )
-    out.sort(key=lambda d: (-int(d["in_m1"]), d["gene_symbol"]))
+    # in_m1 rows first, then by symbol (``not True`` sorts before ``not False``).
+    out.sort(key=lambda d: (not d["in_m1"], d["gene_symbol"]))
     return out
 
 
