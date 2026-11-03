@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -21,7 +22,7 @@ _ROOT = Path(__file__).resolve().parents[1]
 
 _HARNESS = r"""
 import { writeFileSync } from "node:fs";
-import worker from "./worker.mjs";
+import worker, { usageVisitorHash } from "./worker.mjs";
 
 const [, , outPath] = process.argv;
 const SITE = "https://surfaceome.deliverome.org";
@@ -33,17 +34,29 @@ const cases = {
   foreign_origin: { origin: "https://evil.example", body: { path: "/", kind: "link", label: "x" } },
   no_origin: { origin: null, body: { path: "/", kind: "link", label: "x" } },
   email_label: { origin: SITE, body: { path: "/", kind: "link", label: "me@example.org" } },
-  bad_kind: { origin: SITE, body: { path: "/", kind: "pageview", label: "x" } },
+  bad_kind: { origin: SITE, body: { path: "/", kind: "scroll", label: "x" } },
   not_json: { origin: SITE, raw: "{nope" },
   oversize: { origin: SITE, raw: JSON.stringify({ path: "/", kind: "link", label: "x".repeat(3000) }) },
   no_binding: { origin: SITE, body: { path: "/", kind: "link", label: "x" }, noBinding: true },
+  pageview: { origin: SITE, body: { path: "/egfr/", kind: "pageview" } },
+  pageview_again: { origin: SITE, body: { path: "/", kind: "pageview" } },
+  pageview_other_ua: { origin: SITE, body: { path: "/", kind: "pageview" }, ua: "UA/2" },
+  pageview_no_kv: { origin: SITE, body: { path: "/", kind: "pageview" }, noKv: true },
+  pageview_foreign: { origin: "https://evil.example", body: { path: "/", kind: "pageview" } },
+};
+const kvStore = new Map();
+const kvPuts = [];
+const kv = {
+  get: async (k) => kvStore.get(k) ?? null,
+  put: async (k, v, opts) => { kvStore.set(k, v); kvPuts.push({ k, ttl: opts?.expirationTtl }); },
 };
 const out = {};
 for (const [name, c] of Object.entries(cases)) {
   const writes = [];
   const env = { CF_VERSION_METADATA: { id: "test" } };
   if (!c.noBinding) env.USAGE_EVENTS = { writeDataPoint: (p) => writes.push(p) };
-  const headers = { "Content-Type": "text/plain", "CF-Connecting-IP": "203.0.113.9", "User-Agent": "UA/1" };
+  if (!c.noKv) env.RECORD_CACHE = kv;
+  const headers = { "Content-Type": "text/plain", "CF-Connecting-IP": "203.0.113.9", "User-Agent": c.ua ?? "UA/1" };
   if (c.origin) headers.Origin = c.origin;
   const r = await worker.fetch(
     new Request("https://api.deliverome.org/surfaceome/v1/events", {
@@ -52,6 +65,13 @@ for (const [name, c] of Object.entries(cases)) {
     env, { waitUntil() {} });
   out[name] = { status: r.status, cors: r.headers.get("Access-Control-Allow-Origin"), writes };
 }
+out.kv_puts = kvPuts;
+out.hash = {
+  same: await usageVisitorHash("s1", "203.0.113.9", "UA/1"),
+  same_again: await usageVisitorHash("s1", "203.0.113.9", "UA/1"),
+  next_day: await usageVisitorHash("s2", "203.0.113.9", "UA/1"),
+  no_salt: await usageVisitorHash("", "203.0.113.9", "UA/1"),
+};
 writeFileSync(outPath, JSON.stringify(out));
 """
 
@@ -85,8 +105,12 @@ def results(tmp_path_factory: pytest.TempPathFactory) -> dict:
     return json.loads((tmp / "out.json").read_text())
 
 
+def _cases(results: dict) -> dict:
+    return {k: v for k, v in results.items() if k not in ("kv_puts", "hash")}
+
+
 def test_every_payload_answers_204_with_cors(results: dict) -> None:
-    for name, r in results.items():
+    for name, r in _cases(results).items():
         assert r["status"] == 204, name
         assert r["cors"] == "*", name
 
@@ -118,7 +142,7 @@ def test_pages_are_classified(results: dict) -> None:
 
 
 def test_nothing_identifying_is_written(results: dict) -> None:
-    for r in results.values():
+    for r in _cases(results).values():
         for w in r["writes"]:
             flat = json.dumps(w)
             assert "203.0.113.9" not in flat
@@ -135,9 +159,34 @@ def test_nothing_identifying_is_written(results: dict) -> None:
         "email_label",
         "bad_kind",
         "not_json",
+        "pageview_no_kv",
+        "pageview_foreign",
         "oversize",
         "no_binding",
     ],
 )
 def test_rejected_payloads_write_nothing(results: dict, case: str) -> None:
     assert results[case]["writes"] == []
+
+
+def test_pageview_writes_a_daily_visitor_hash_not_the_ip(results: dict) -> None:
+    (w,) = results["pageview"]["writes"]
+    assert w["blobs"][:3] == ["gene", "EGFR", "pageview"]
+    assert re.fullmatch(r"[0-9a-f]{16}", w["blobs"][3])
+    # Same IP and browser on the same day → same visitor; another browser → another.
+    assert results["pageview_again"]["writes"][0]["blobs"][3] == w["blobs"][3]
+    assert results["pageview_other_ua"]["writes"][0]["blobs"][3] != w["blobs"][3]
+
+
+def test_salt_is_created_once_with_a_48h_expiry(results: dict) -> None:
+    puts = results["kv_puts"]
+    assert len(puts) == 1
+    assert puts[0]["k"].startswith("usage:salt:")
+    assert puts[0]["ttl"] == 48 * 3600
+
+
+def test_visitor_hash_changes_with_the_salt(results: dict) -> None:
+    h = results["hash"]
+    assert h["same"] == h["same_again"]
+    assert h["next_day"] != h["same"]
+    assert h["no_salt"] == ""

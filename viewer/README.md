@@ -147,8 +147,12 @@ visits. Clicks on links and buttons are counted by `components/UsageBeacon`,
 which beacons `{path, kind, label}` to the Worker's `POST /v1/events`; the
 Worker stores page kind, gene, element kind and label in the
 `surfaceome_viewer_events` Analytics Engine dataset and nothing else (no IP,
-user agent or visitor id). Nothing is sent under Global Privacy Control or Do
-Not Track. A control's label is its `data-track`, else `aria-label`, `title`
+user agent or visitor id). It also beacons one `{path, kind: "pageview"}` per
+page; for those the Worker stores a visitor hash (truncated SHA-256 of a random
+per-UTC-day salt, the IP and the user agent; the salt lives 48 h in the
+`RECORD_CACHE` KV under `usage:salt:`), which gives daily unique visitors and
+nothing longer-lived. Nothing is sent under Global Privacy Control or Do Not
+Track. A control's label is its `data-track`, else `aria-label`, `title`
 or text; set `data-track` on any control whose text or title could carry
 personal data (see the ORCID link), and `data-track-ignore` to skip a subtree.
 Read the counts with `uv run python scripts/cloud/viewer_usage_report.py`.

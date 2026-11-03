@@ -2,9 +2,10 @@
  * Anonymous click events for the viewer (see `UsageBeacon`).
  *
  * One event per click on a link or button: the page path, what kind of
- * control it was and the control's visible label. No cookie, identifier,
- * query string or form value is ever sent, and nothing is sent when the
- * browser asks not to be tracked. The Worker's `POST /v1/events` stores only
+ * control it was and the control's visible label. Plus one "pageview" per
+ * page (path only), which the Worker turns into a daily unique-visitor count.
+ * No cookie, identifier, query string or form value is ever sent, and nothing
+ * is sent when the browser asks not to be tracked. The Worker's `POST /v1/events` stores only
  * the aggregate fields; `/privacy` describes this, so keep the two in step.
  */
 

@@ -5,9 +5,10 @@ import styles from "../reproducibility/page.module.css";
 export const metadata: Metadata = {
   title: "Privacy — Surfaceome",
   description:
-    "What the Surfaceome viewer and API collect: no cookies or tracking, " +
-    "aggregate Cloudflare analytics, anonymous click counts, and the details " +
-    "you choose to send with feedback.",
+    "What the Surfaceome viewer and API collect: no cookies or cross-site " +
+    "tracking, aggregate Cloudflare analytics, anonymous click counts, a " +
+    "daily unique-visitor count, and the details you choose to send with " +
+    "feedback.",
 };
 
 /**
@@ -22,13 +23,14 @@ export default function PrivacyPage() {
       <section className={`${styles.page} page-width`}>
         <header className={styles.head}>
           <h1 className={`h-data ${styles.title}`}>Privacy</h1>
-          <p className={styles.lede}>Last updated 29 October 2026.</p>
+          <p className={styles.lede}>Last updated 3 November 2026.</p>
         </header>
 
         <section className={styles.section}>
           <p className={styles.body}>
             We don&rsquo;t use cookies, ads, or cross-site tracking, we
-            don&rsquo;t fingerprint browsers, and we don&rsquo;t sell data.
+            don&rsquo;t follow you from one day to the next, and we
+            don&rsquo;t sell data.
           </p>
           <p className={styles.body}>
             The site and API run on Cloudflare, which processes standard
@@ -42,9 +44,20 @@ export default function PrivacyPage() {
             click records only the page, the kind of control and its label
             (for example, &ldquo;gene page, JSON download&rdquo;). It carries
             no cookie, identifier, IP address or browser details, so clicks
-            can&rsquo;t be linked to each other or to you. If your browser
-            sends Global Privacy Control or Do Not Track, we don&rsquo;t
-            count your clicks at all.
+            can&rsquo;t be linked to each other or to you.
+          </p>
+          <p className={styles.body}>
+            To count how many different people visit each day, each page
+            view records the page and a one-way hash of your IP address and
+            browser, mixed with a random value that is replaced every day and
+            deleted after two days. We never store the IP address or browser
+            itself, and once that day&rsquo;s value is deleted the hash
+            can&rsquo;t be traced back to you. It also changes every day, so
+            your visits on different days can&rsquo;t be linked.
+          </p>
+          <p className={styles.body}>
+            If your browser sends Global Privacy Control or Do Not Track, we
+            don&rsquo;t record your clicks or page views at all.
           </p>
           <p className={styles.body}>
             If you send feedback, we keep the name, e-mail, and comment you
