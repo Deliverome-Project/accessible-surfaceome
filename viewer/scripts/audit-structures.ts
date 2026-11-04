@@ -59,12 +59,13 @@ import {
   fetchExperimentalPdb,
   isCleanStructure,
   MIN_IDENTITY,
+  MIN_IDENTITY_TESTED,
   observedResSeq,
   pickBestStructure,
   pickPdbChain,
   projectedCoverage,
   projectedIdentity,
-  projectExperimentalChain,
+  resolveExperimentalChain,
   residueOneLetterByResSeq,
   type PDBeBestStructure,
 } from "../lib/experimental-structure";
@@ -95,6 +96,7 @@ const HOST_RATE: Record<string, number> = {
   "files.rcsb.org": 5,
   "data.rcsb.org": 5,
   "models.rcsb.org": 2,
+  "rest.uniprot.org": 5,
 };
 const DEFAULT_RATE = 2;
 const nextSlot = new Map<string, number>();
@@ -142,7 +144,7 @@ const auditFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
 
 /** Below this many comparable residues the identity figure is noise —
  *  a short peptide chain can match by luck. Reported, never judged. */
-const MIN_TESTED = 20;
+const MIN_TESTED = MIN_IDENTITY_TESTED;
 
 interface Gene {
   gene_symbol: string;
@@ -156,7 +158,7 @@ interface Row {
   chain_id: string;
   /** pdb | cif | cif_chain_only — which RCSB path loaded it. */
   source: string;
-  /** ok | fail | misregistered | no_structure | error */
+  /** ok | fail | misregistered | not_modelled | no_structure | error */
   exp_status: string;
   /** Percent of the projected residues that are the right amino acid.
    *  Blank when no canonical sequence was reachable. A structure can
@@ -179,7 +181,33 @@ async function auditExperimental(g: Gene, row: Row): Promise<void> {
     return;
   }
   const j = (await r.json()) as Record<string, PDBeBestStructure[]>;
-  const pick = pickBestStructure(j[g.uniprot_acc] ?? []);
+  const candidates = j[g.uniprot_acc] ?? [];
+  // Same rule as the viewer: an entry with none of this protein's atoms
+  // in any chain is passed over for the next one.
+  const passedOver: string[] = [];
+  const open = () => candidates.filter((c) => !passedOver.includes(c.pdb_id.toUpperCase()));
+  for (;;) {
+    await auditPick(g, row, pickBestStructure(open()));
+    if (row.exp_status !== "not_modelled") break;
+    const failed = row.pdb_id;
+    if (!pickBestStructure(open().filter((c) => c.pdb_id.toUpperCase() !== failed))) return;
+    passedOver.push(failed);
+    row.exp_status = "";
+    row.detail = "";
+  }
+  if (passedOver.length > 0) {
+    row.detail = appendDetail(
+      `passed over ${passedOver.join(", ")}: no chain models this protein`,
+      row.detail,
+    );
+  }
+}
+
+async function auditPick(
+  g: Gene,
+  row: Row,
+  pick: PDBeBestStructure | null,
+): Promise<void> {
   if (!pick) {
     row.exp_status = "no_structure";
     return;
@@ -204,9 +232,10 @@ async function auditExperimental(g: Gene, row: Row): Promise<void> {
       : "file has no atoms";
     return;
   }
-  // The viewer's UniProt→author projection, SIFTS fallback included.
-  const observed = observedResSeq(exp.rawPdb, chain);
-  const segments = await projectExperimentalChain(
+  // The viewer's UniProt→author projection, SIFTS fallback and the
+  // sequence check included, on whichever chain the viewer ends up
+  // drawing.
+  const resolved = await resolveExperimentalChain(
     {
       pdbId: pick.pdb_id,
       uniprotAcc: g.uniprot_acc,
@@ -220,6 +249,18 @@ async function auditExperimental(g: Gene, row: Row): Promise<void> {
     chain,
     auditFetch,
   );
+  const segments = resolved.segments;
+  const drawn = resolved.chainId;
+  const observed = observedResSeq(exp.rawPdb, drawn);
+  if (!resolved.modelled) {
+    row.exp_status = "not_modelled";
+    row.detail = `no chain in ${row.pdb_id} models this protein's sequence; ` +
+      `PDBe maps chain ${pick.chain_id} from its SEQRES, but its atoms are another protein`;
+    return;
+  }
+  if (drawn !== chain) {
+    row.detail = `chain ${chain}'s atoms are not this protein; drawn on chain ${drawn}`;
+  }
   if (projectedCoverage(segments, observed) === 0) {
     row.exp_status = "fail";
     row.detail = "no UniProt-mapped residue lands on an atom";
@@ -234,7 +275,7 @@ async function auditExperimental(g: Gene, row: Row): Promise<void> {
   if (canonicalSeq) {
     const { matches, tested } = projectedIdentity(segments, {
       seq: canonicalSeq,
-      resNames: residueOneLetterByResSeq(exp.rawPdb, chain),
+      resNames: residueOneLetterByResSeq(exp.rawPdb, drawn),
     });
     if (tested >= MIN_TESTED) {
       const frac = matches / tested;
@@ -367,7 +408,12 @@ async function main() {
   rows.sort((a, b) => a.gene_symbol.localeCompare(b.gene_symbol));
 
   const count = (k: keyof Row, v: string) => rows.filter((r) => r[k] === v).length;
-  const failures = rows.filter((r) => r.exp_status === "fail" || r.afdb_status === "fail");
+  // not_modelled: the picked structure contains none of this protein's
+  // atoms, so the tab shows other proteins in gray. A failure: the page
+  // shows a structure of something else.
+  const failures = rows.filter(
+    (r) => r.exp_status === "fail" || r.exp_status === "not_modelled" || r.afdb_status === "fail",
+  );
   const misregistered = rows.filter((r) => r.exp_status === "misregistered");
   const scored = rows.filter((r) => r.identity_pct !== "");
   const errors = rows.filter((r) => r.exp_status === "error" || r.afdb_status === "error");

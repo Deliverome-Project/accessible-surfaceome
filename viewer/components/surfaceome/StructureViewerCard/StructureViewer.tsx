@@ -9,7 +9,7 @@ import {
   isCleanStructure,
   pickBestStructure,
   pickPdbChain,
-  projectExperimentalChain,
+  resolveExperimentalChain,
   type PDBeBestStructure,
   type ProjSegment,
 } from "../../../lib/experimental-structure";
@@ -1229,9 +1229,25 @@ export function StructureViewer({
   //   "loading" — request in flight
   //   PDBeBestStructure — top candidate (we use index 0 of the array)
   //   null — no candidate (gene has no PDB / PDBe API error / 404)
-  const [pdbeCandidate, setPdbeCandidate] = useState<
-    PDBeBestStructure | "loading" | null
+  const [pdbeCandidates, setPdbeCandidates] = useState<
+    PDBeBestStructure[] | "loading" | null
   >("loading");
+  // PDB entries whose file, once loaded, turned out to model none of this
+  // protein in any chain (TAS1R3 9NOX: PDBe maps chain B from a SEQRES
+  // carrying TAS1R3, but only a fused partner is resolved). The pick
+  // moves to the next entry rather than showing a structure of something
+  // else.
+  const [rejectedPdbIds, setRejectedPdbIds] = useState<string[]>([]);
+  const pdbeCandidate: PDBeBestStructure | "loading" | null = useMemo(() => {
+    if (pdbeCandidates === "loading" || pdbeCandidates === null) return pdbeCandidates;
+    return pickBestStructure(
+      pdbeCandidates.filter((c) => !rejectedPdbIds.includes(c.pdb_id)),
+    );
+  }, [pdbeCandidates, rejectedPdbIds]);
+  const pdbeCandidatesRef = useRef<PDBeBestStructure[]>([]);
+  pdbeCandidatesRef.current = Array.isArray(pdbeCandidates) ? pdbeCandidates : [];
+  const rejectedPdbIdsRef = useRef<string[]>([]);
+  rejectedPdbIdsRef.current = rejectedPdbIds;
   // PDB TITLE record parsed out of the most-recently-fetched
   // experimental PDB. Keyed on pdb_id so switching between two
   // experimental structures correctly updates the caption.
@@ -1280,15 +1296,17 @@ export function StructureViewer({
           { cache: "force-cache" },
         );
         if (!r.ok) {
-          if (!cancelled) setPdbeCandidate(null);
+          if (!cancelled) setPdbeCandidates(null);
           return;
         }
         const j = (await r.json()) as Record<string, PDBeBestStructure[]>;
         const candidates = j[data.uniprot_acc] ?? [];
-        const chosen = pickBestStructure(candidates);
-        if (!cancelled) setPdbeCandidate(chosen);
+        if (!cancelled) {
+          setRejectedPdbIds([]);
+          setPdbeCandidates(candidates.length > 0 ? candidates : null);
+        }
       } catch {
-        if (!cancelled) setPdbeCandidate(null);
+        if (!cancelled) setPdbeCandidates(null);
       }
     }
     fetchPDBe();
@@ -1982,7 +2000,9 @@ export function StructureViewer({
       // back to a case-insensitive match, then to the heaviest chain,
       // so the orientation + topology coloring don't silently no-op
       // for entries with mismatched chain ids (GPR75 was the trigger).
-      const effectiveChainId = expVariant
+      // `let`: the projection below can move the drawing to another chain
+      // when this one's atoms turn out not to be this protein.
+      let effectiveChainId = expVariant
         ? pickPdbChain(rawPdb, expChainId) ?? expChainId
         : null;
 
@@ -2006,7 +2026,7 @@ export function StructureViewer({
           },
         ];
       } else if (expVariant) {
-        projSegments = await projectExperimentalChain(
+        const resolved = await resolveExperimentalChain(
           {
             pdbId: expVariant.pdb_id,
             uniprotAcc: data.uniprot_acc,
@@ -2019,6 +2039,21 @@ export function StructureViewer({
           rawPdb,
           effectiveChainId ?? expChainId,
         );
+        if (!resolved.modelled) {
+          // Move to the next entry when there is one; otherwise draw this
+          // one with nothing painted as this protein.
+          const rejected = expVariant.pdb_id;
+          const remaining = pdbeCandidatesRef.current.filter(
+            (c) => c.pdb_id !== rejected && !rejectedPdbIdsRef.current.includes(c.pdb_id),
+          );
+          if (pickBestStructure(remaining)) {
+            if (renderSeq !== renderSeqRef.current) return;
+            setRejectedPdbIds((prev) => (prev.includes(rejected) ? prev : [...prev, rejected]));
+            return;
+          }
+        }
+        projSegments = resolved.segments;
+        effectiveChainId = resolved.chainId;
       }
 
       // A library member needs the same residue map as an experimental chain: its
