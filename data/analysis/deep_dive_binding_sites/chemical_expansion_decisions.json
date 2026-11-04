@@ -1,0 +1,994 @@
+[
+  {
+    "uniprot_acc": "O14638",
+    "hgnc_id": "HGNC:3358",
+    "symbol": "ENPP3",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:3358",
+        "hgnc_symbol": "ENPP3",
+        "uniprot_acc": "O14638",
+        "ensembl_gene": "ENSG00000154269",
+        "ncbi_gene_id": "5169",
+        "source": "PDBe",
+        "binder_id": "CCD:APC",
+        "binder_name": "DIPHOSPHOMETHYLPHOSPHONIC ACID ADENOSYL ESTER",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "167;204;205;206;226;239;275;289;320;329;483",
+        "topology": "extracellular",
+        "pdb_id": "6c02",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/6c02",
+        "details": "{\"chembl_ids\": [\"CHEMBL132722\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"CAWZRIXWFRFUQB-IOSLPCCCSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "hold_construct_specific_contact",
+    "ligand_name": "AMPCPP",
+    "pdb": "6c02",
+    "caveat": "T205A lies within the observed footprint; do not claim complete wild-type residue equivalence or silently discard position205.",
+    "coordinate_validation": {
+      "uniprot_acc": "O14638",
+      "pdb": "6c02",
+      "ccd": "APC",
+      "instances": [
+        {
+          "ligand_instance": [
+            "A",
+            "927"
+          ],
+          "positions": [
+            167,
+            204,
+            206,
+            226,
+            227,
+            239,
+            244,
+            270,
+            271,
+            272,
+            275,
+            289,
+            320,
+            322,
+            325,
+            329,
+            373,
+            482,
+            483
+          ],
+          "mapping_issues": [
+            [
+              "A",
+              "205",
+              "ALA",
+              "canonical 205:T"
+            ]
+          ],
+          "context": "extracellular_explicit"
+        },
+        {
+          "ligand_instance": [
+            "B",
+            "919"
+          ],
+          "positions": [
+            167,
+            204,
+            206,
+            226,
+            227,
+            239,
+            244,
+            270,
+            271,
+            272,
+            275,
+            289,
+            320,
+            322,
+            325,
+            329,
+            373,
+            482,
+            483
+          ],
+          "mapping_issues": [
+            [
+              "B",
+              "205",
+              "ALA",
+              "canonical 205:T"
+            ]
+          ],
+          "context": "extracellular_explicit"
+        }
+      ],
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    }
+  },
+  {
+    "uniprot_acc": "O15394",
+    "hgnc_id": "HGNC:7657",
+    "symbol": "NCAM2",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:7657",
+        "hgnc_symbol": "NCAM2",
+        "uniprot_acc": "O15394",
+        "ensembl_gene": "ENSG00000154654",
+        "ncbi_gene_id": "4685",
+        "source": "PDBe",
+        "binder_id": "CCD:EPE",
+        "binder_name": "4-(2-HYDROXYETHYL)-1-PIPERAZINE ETHANESULFONIC ACID",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "411;493;494;495;496;497",
+        "topology": "extracellular",
+        "pdb_id": "2xyc",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/2xyc",
+        "details": "{\"chembl_ids\": [\"CHEMBL1232545\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"JKMHFZQWWAIEOD-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "reject_as_coverage_gain_from_these_records",
+    "caveat": "Only buffer, PEG or crystallization-additive contacts among the audited extracellular chemical records. This is not evidence that the protein lacks biological ligands."
+  },
+  {
+    "uniprot_acc": "O95477",
+    "hgnc_id": "HGNC:29",
+    "symbol": "ABCA1",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:29",
+        "hgnc_symbol": "ABCA1",
+        "uniprot_acc": "O95477",
+        "ensembl_gene": "ENSG00000165029",
+        "ncbi_gene_id": "19",
+        "source": "PDBe",
+        "binder_id": "CCD:CLR",
+        "binder_name": "CHOLESTEROL",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "67;70;288;409;498;501",
+        "topology": "extracellular",
+        "pdb_id": "7tbz",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/7tbz",
+        "details": "{\"chembl_ids\": [\"CHEMBL112570\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"HVYWMOMLDIMFJA-DPAQBDIFSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:29",
+        "hgnc_symbol": "ABCA1",
+        "uniprot_acc": "O95477",
+        "ensembl_gene": "ENSG00000165029",
+        "ncbi_gene_id": "19",
+        "source": "PDBe",
+        "binder_id": "CCD:CLR",
+        "binder_name": "CHOLESTEROL",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "272;275;278;279;458;487",
+        "topology": "extracellular",
+        "pdb_id": "7tby",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/7tby",
+        "details": "{\"chembl_ids\": [\"CHEMBL112570\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"HVYWMOMLDIMFJA-DPAQBDIFSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:29",
+        "hgnc_symbol": "ABCA1",
+        "uniprot_acc": "O95477",
+        "ensembl_gene": "ENSG00000165029",
+        "ncbi_gene_id": "19",
+        "source": "PDBe",
+        "binder_id": "CCD:CLR",
+        "binder_name": "CHOLESTEROL",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "272;273;278;279;458;466;482;487",
+        "topology": "extracellular",
+        "pdb_id": "7tbw",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/7tbw",
+        "details": "{\"chembl_ids\": [\"CHEMBL112570\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"HVYWMOMLDIMFJA-DPAQBDIFSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "supported_candidate_canonical_footprint",
+    "ligand_name": "Cholesterol / modeled sterol",
+    "pdb": "7tby",
+    "caveat": "Endogenous small molecule; paper describes sterol-like density; prefer wild-type 7TBY over Y482C 7TBZ.",
+    "coordinate_validation": {
+      "uniprot_acc": "O95477",
+      "pdb": "7tby",
+      "ccd": "CLR",
+      "instances": [
+        {
+          "ligand_instance": [
+            "A",
+            "2501"
+          ],
+          "positions": [
+            272,
+            273,
+            275,
+            276,
+            278,
+            279,
+            458,
+            466,
+            484,
+            487,
+            488
+          ],
+          "mapping_issues": [],
+          "context": "extracellular_explicit"
+        }
+      ],
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    }
+  },
+  {
+    "uniprot_acc": "P13591",
+    "hgnc_id": "HGNC:7656",
+    "symbol": "NCAM1",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:7656",
+        "hgnc_symbol": "NCAM1",
+        "uniprot_acc": "P13591",
+        "ensembl_gene": "ENSG00000149294",
+        "ncbi_gene_id": "4684",
+        "source": "PDBe",
+        "binder_id": "CCD:FLC",
+        "binder_name": "CITRATE ANION",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "38;72;74;80;82",
+        "topology": "extracellular",
+        "pdb_id": "5aea",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5aea",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"KRKNYBCHXYNGOX-UHFFFAOYSA-K\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:7656",
+        "hgnc_symbol": "NCAM1",
+        "uniprot_acc": "P13591",
+        "ensembl_gene": "ENSG00000149294",
+        "ncbi_gene_id": "4684",
+        "source": "PDBe",
+        "binder_id": "CCD:BTB",
+        "binder_name": "2-[BIS-(2-HYDROXY-ETHYL)-AMINO]-2-HYDROXYMETHYL-PROPANE-1,3-DIOL",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "517;528;529;531;532;533;534;543;544;546;555;557;566;569",
+        "topology": "extracellular",
+        "pdb_id": "2e3v",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/2e3v",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"OWMVSZAMULFTJU-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "reject_as_coverage_gain_from_these_records",
+    "caveat": "Only buffer, PEG or crystallization-additive contacts among the audited extracellular chemical records. This is not evidence that the protein lacks biological ligands."
+  },
+  {
+    "uniprot_acc": "P42262",
+    "hgnc_id": "HGNC:4572",
+    "symbol": "GRIA2",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:RNN",
+        "binder_name": "N,N'-(benzene-1,4-diyldiethane-2,1-diyl)dipropane-2-sulfonamide",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "502;514;515;751;752;771;772;775",
+        "topology": "extracellular",
+        "pdb_id": "3rnn",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/3rnn",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"FHLGMMYEKXPVSC-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:8SO",
+        "binder_name": "N-[(2R)-2-[4-[4-[2-(methylsulfonylamino)ethyl]phenyl]phenyl]propyl]propane-2-sulfonamide",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "502;514;515;517;750;751;752;771;772;775",
+        "topology": "extracellular",
+        "pdb_id": "5ybg",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5ybg",
+        "details": "{\"chembl_ids\": [\"CHEMBL1277001\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"ULRDYYKSPCRXAJ-KRWDZBQOSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:RN8",
+        "binder_name": "3,3'-benzene-1,4-diylbis(4-cyano-5-ethylthiophene-2-carboxylic acid)",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "514;515;517;518;750;751;771;772;775;780",
+        "topology": "extracellular",
+        "pdb_id": "3rn8",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/3rn8",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"BWTPBGGGXPNPMW-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:5YC",
+        "binder_name": "7-[[ethyl(phenyl)amino]methyl]-2-methyl-[1,3,4]thiadiazolo[3,2-a]pyrimidin-5-one",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "502;514;515;517;518;750;751;752;772;780",
+        "topology": "extracellular",
+        "pdb_id": "5h8s",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5h8s",
+        "details": "{\"chembl_ids\": [\"CHEMBL3797274\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"MAVHHQOKQQPPKJ-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:ZK1",
+        "binder_name": "{[7-morpholin-4-yl-2,3-dioxo-6-(trifluoromethyl)-3,4-dihydroquinoxalin-1(2H)-yl]methyl}phosphonic acid",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "423;471;499;500;501;506;674;675;707;726;729;753",
+        "topology": "extracellular",
+        "pdb_id": "5zg2",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5zg2",
+        "details": "{\"chembl_ids\": [\"CHEMBL19892\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"WZMQMKNCWDCCMT-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:QSN",
+        "binder_name": "N-[6-(1H-imidazol-1-yl)-7-nitro-2,4-dioxo-1,4-dihydroquinazolin-3(2H)-yl]methanesulfonamide",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "423;471;499;500;501;506;707;729;753",
+        "topology": "extracellular",
+        "pdb_id": "3r7x",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/3r7x",
+        "details": "{\"chembl_ids\": [\"CHEMBL1738879\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"CSIKZRHFFDICGQ-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:08W",
+        "binder_name": "N-methyl-1-{3-[(methylsulfonyl)amino]-2,4-dioxo-7-(trifluoromethyl)-1,2,3,4-tetrahydroquinazolin-6-yl}-1H-imidazole-4-carboxamide",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "423;426;471;499;500;501;506;707;726;729;753",
+        "topology": "extracellular",
+        "pdb_id": "3ua8",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/3ua8",
+        "details": "{\"chembl_ids\": [\"CHEMBL1940324\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"HFRCANFHOYZAQE-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:9C3",
+        "binder_name": "9-{4-[(propan-2-yl)oxy]phenyl}-3,4-dihydro-2H-2lambda~6~-pyrido[2,1-c][1,2,4]thiadiazine-2,2-dione",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "502;514;515;751;752;772;775",
+        "topology": "extracellular",
+        "pdb_id": "5zg0",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5zg0",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"FNMSASHKBXSERE-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:9C6",
+        "binder_name": "9-(4-phenoxyphenyl)-3,4-dihydro-2H-2lambda~6~-pyrido[2,1-c][1,2,4]thiadiazine-2,2-dione",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "502;514;515;516;750;751;752;772;775;780",
+        "topology": "extracellular",
+        "pdb_id": "5zg3",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5zg3",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"VKKLOYOLCCDGLD-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:8SR",
+        "binder_name": "2-[2-[5-methyl-3-(trifluoromethyl)pyrazol-1-yl]ethanoylamino]-4,5,6,7-tetrahydro-1-benzothiophene-3-carboxamide",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "502;514;515;517;518;750;751;752;772;775",
+        "topology": "extracellular",
+        "pdb_id": "5ybf",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5ybf",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"PHLXSNIEQIKENK-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:9C0",
+        "binder_name": "9-(4-~{tert}-butylphenyl)-3,4-dihydropyrido[2,1-c][1,2,4]thiadiazine 2,2-dioxide",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "502;515;752",
+        "topology": "extracellular",
+        "pdb_id": "5zg2",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5zg2",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"NFUZLMGYOAJDAK-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:4572",
+        "hgnc_symbol": "GRIA2",
+        "uniprot_acc": "P42262",
+        "ensembl_gene": "ENSG00000120251",
+        "ncbi_gene_id": "2891",
+        "source": "PDBe",
+        "binder_id": "CCD:9C0",
+        "binder_name": "9-(4-~{tert}-butylphenyl)-3,4-dihydropyrido[2,1-c][1,2,4]thiadiazine 2,2-dioxide",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "502;514;515;751;752;772;775",
+        "topology": "extracellular",
+        "pdb_id": "5zg1",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5zg1",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"NFUZLMGYOAJDAK-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "supported_candidate_canonical_footprint",
+    "ligand_name": "ZK200775",
+    "pdb": "5zg2",
+    "caveat": "Antagonist; this footprint passes canonical-residue checks. Alternative GNE3419/5H8S footprint includes S where canonical position775 is N and must retain its construct/isoform qualifier.",
+    "coordinate_validation": {
+      "uniprot_acc": "P42262",
+      "pdb": "5zg2",
+      "ccd": "ZK1",
+      "instances": [
+        {
+          "ligand_instance": [
+            "A",
+            "901"
+          ],
+          "positions": [
+            423,
+            426,
+            471,
+            499,
+            500,
+            501,
+            506,
+            671,
+            673,
+            674,
+            675,
+            676,
+            707,
+            723,
+            725,
+            726,
+            728,
+            729,
+            753
+          ],
+          "mapping_issues": [],
+          "context": "extracellular_explicit"
+        },
+        {
+          "ligand_instance": [
+            "B",
+            "901"
+          ],
+          "positions": [
+            423,
+            426,
+            471,
+            499,
+            500,
+            501,
+            506,
+            671,
+            673,
+            674,
+            675,
+            676,
+            707,
+            723,
+            725,
+            726,
+            728,
+            729,
+            753
+          ],
+          "mapping_issues": [],
+          "context": "extracellular_explicit"
+        }
+      ],
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    }
+  },
+  {
+    "uniprot_acc": "Q05901",
+    "hgnc_id": "HGNC:1963",
+    "symbol": "CHRNB3",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:1963",
+        "hgnc_symbol": "CHRNB3",
+        "uniprot_acc": "Q05901",
+        "ensembl_gene": "ENSG00000147432",
+        "ncbi_gene_id": "1142",
+        "source": "PDBe",
+        "binder_id": "CCD:BCN",
+        "binder_name": "BICINE",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "217;218;219",
+        "topology": "extracellular",
+        "pdb_id": "8a5u",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/8a5u",
+        "details": "{\"chembl_ids\": [\"CHEMBL1231251\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"FSVCELGFZIQNCK-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "reject_as_coverage_gain_from_these_records",
+    "caveat": "Only buffer, PEG or crystallization-additive contacts among the audited extracellular chemical records. This is not evidence that the protein lacks biological ligands."
+  },
+  {
+    "uniprot_acc": "Q06418",
+    "hgnc_id": "HGNC:12446",
+    "symbol": "TYRO3",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:12446",
+        "hgnc_symbol": "TYRO3",
+        "uniprot_acc": "Q06418",
+        "ensembl_gene": "ENSG00000092445",
+        "ncbi_gene_id": "7301",
+        "source": "PDBe",
+        "binder_id": "CCD:EPE",
+        "binder_name": "4-(2-HYDROXYETHYL)-1-PIPERAZINE ETHANESULFONIC ACID",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "116;127;128",
+        "topology": "extracellular",
+        "pdb_id": "1rhf",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/1rhf",
+        "details": "{\"chembl_ids\": [\"CHEMBL1232545\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"JKMHFZQWWAIEOD-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "reject_as_coverage_gain_from_these_records",
+    "caveat": "Only buffer, PEG or crystallization-additive contacts among the audited extracellular chemical records. This is not evidence that the protein lacks biological ligands."
+  },
+  {
+    "uniprot_acc": "Q07075",
+    "hgnc_id": "HGNC:3355",
+    "symbol": "ENPEP",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:3355",
+        "hgnc_symbol": "ENPEP",
+        "uniprot_acc": "Q07075",
+        "ensembl_gene": "ENSG00000138792",
+        "ncbi_gene_id": "2028",
+        "source": "PDBe",
+        "binder_id": "CCD:BES",
+        "binder_name": "2-(3-AMINO-2-HYDROXY-4-PHENYL-BUTYRYLAMINO)-4-METHYL-PENTANOIC ACID",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "223;356;357;358;359;360;390;393;394;397;474;479",
+        "topology": "extracellular",
+        "pdb_id": "4kxb",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/4kxb",
+        "details": "{\"chembl_ids\": [\"CHEMBL29292\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"VGGGPCQERPFHOB-RDBSUJKOSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "supported_candidate_canonical_footprint",
+    "ligand_name": "Bestatin",
+    "pdb": "4kxb",
+    "caveat": "Inhibitor complex; deposited construct has mutations, but the tested contact footprint matches the canonical sequence.",
+    "coordinate_validation": {
+      "uniprot_acc": "Q07075",
+      "pdb": "4kxb",
+      "ccd": "BES",
+      "instances": [
+        {
+          "ligand_instance": [
+            "A",
+            "1017"
+          ],
+          "positions": [
+            223,
+            224,
+            356,
+            357,
+            358,
+            359,
+            360,
+            386,
+            389,
+            390,
+            393,
+            394,
+            397,
+            416,
+            423,
+            471,
+            474,
+            479,
+            887
+          ],
+          "mapping_issues": [],
+          "context": "extracellular_explicit"
+        }
+      ],
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    }
+  },
+  {
+    "uniprot_acc": "Q13332",
+    "hgnc_id": "HGNC:9681",
+    "symbol": "PTPRS",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:9681",
+        "hgnc_symbol": "PTPRS",
+        "uniprot_acc": "Q13332",
+        "ensembl_gene": "ENSG00000105426",
+        "ncbi_gene_id": "5802",
+        "source": "PDBe",
+        "binder_id": "CCD:B3P",
+        "binder_name": "2-[3-(2-HYDROXY-1,1-DIHYDROXYMETHYL-ETHYLAMINO)-PROPYLAMINO]-2-HYDROXYMETHYL-PROPANE-1,3-DIOL",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "156;157;158;163;164;166;188;189",
+        "topology": "extracellular",
+        "pdb_id": "2yd9",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/2yd9",
+        "details": "{\"chembl_ids\": [\"CHEMBL63859\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"HHKZCCWKTZRCCL-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "reject_as_coverage_gain_from_these_records",
+    "caveat": "Only buffer, PEG or crystallization-additive contacts among the audited extracellular chemical records. This is not evidence that the protein lacks biological ligands."
+  },
+  {
+    "uniprot_acc": "Q96LC7",
+    "hgnc_id": "HGNC:15620",
+    "symbol": "SIGLEC10",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:15620",
+        "hgnc_symbol": "SIGLEC10",
+        "uniprot_acc": "Q96LC7",
+        "ensembl_gene": "ENSG00000142512",
+        "ncbi_gene_id": "89790",
+        "source": "PDBe",
+        "binder_id": "CCD:FLC",
+        "binder_name": "CITRATE ANION",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "44;45;47;68;69;119;127",
+        "topology": "extracellular",
+        "pdb_id": "9o6n",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/9o6n",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"KRKNYBCHXYNGOX-UHFFFAOYSA-K\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "reject_as_coverage_gain_from_these_records",
+    "caveat": "Only buffer, PEG or crystallization-additive contacts among the audited extracellular chemical records. This is not evidence that the protein lacks biological ligands."
+  },
+  {
+    "uniprot_acc": "Q9HB14",
+    "hgnc_id": "HGNC:6275",
+    "symbol": "KCNK13",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:6275",
+        "hgnc_symbol": "KCNK13",
+        "uniprot_acc": "Q9HB14",
+        "ensembl_gene": "ENSG00000152315",
+        "ncbi_gene_id": "56659",
+        "source": "PDBe",
+        "binder_id": "CCD:HLT",
+        "binder_name": "2-BROMO-2-CHLORO-1,1,1-TRIFLUOROETHANE",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "91;92;99;102;106;115;116;247",
+        "topology": "extracellular",
+        "pdb_id": "9m9q",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/9m9q",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"BCQZXOMGPXTTIC-SFOWXEAESA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:6275",
+        "hgnc_symbol": "KCNK13",
+        "uniprot_acc": "Q9HB14",
+        "ensembl_gene": "ENSG00000152315",
+        "ncbi_gene_id": "56659",
+        "source": "PDBe",
+        "binder_id": "CCD:R16",
+        "binder_name": "HEXADECANE",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "101;258",
+        "topology": "extracellular",
+        "pdb_id": "9byi",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/9byi",
+        "details": "{\"chembl_ids\": [\"CHEMBL134994\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"DCAYPVUWAIABOU-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "supported_candidate_canonical_footprint",
+    "ligand_name": "Halothane",
+    "pdb": "9m9q",
+    "caveat": "Released experimental deposition, 2.92 A; associated paper remains to be published. Keep deposition-only status explicit.",
+    "coordinate_validation": {
+      "uniprot_acc": "Q9HB14",
+      "pdb": "9m9q",
+      "ccd": "HLT",
+      "instances": [
+        {
+          "ligand_instance": [
+            "A",
+            "501"
+          ],
+          "positions": [
+            50,
+            85,
+            91,
+            92,
+            98,
+            99,
+            100,
+            102,
+            103,
+            106,
+            115,
+            116,
+            246,
+            247
+          ],
+          "mapping_issues": [],
+          "context": "extracellular_explicit"
+        },
+        {
+          "ligand_instance": [
+            "B",
+            "501"
+          ],
+          "positions": [
+            85,
+            91,
+            92,
+            93,
+            94,
+            99,
+            102,
+            103,
+            115,
+            116,
+            246,
+            247
+          ],
+          "mapping_issues": [],
+          "context": "extracellular_explicit"
+        }
+      ],
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    }
+  },
+  {
+    "uniprot_acc": "Q9UBG0",
+    "hgnc_id": "HGNC:16875",
+    "symbol": "MRC2",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:16875",
+        "hgnc_symbol": "MRC2",
+        "uniprot_acc": "Q9UBG0",
+        "ensembl_gene": "ENSG00000011028",
+        "ncbi_gene_id": "9902",
+        "source": "PDBe",
+        "binder_id": "CCD:PE5",
+        "binder_name": "3,6,9,12,15,18,21,24-OCTAOXAHEXACOSAN-1-OL",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "193;205;206;219",
+        "topology": "extracellular",
+        "pdb_id": "5e4k",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5e4k",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"CUDPPTPIUWYGFI-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:16875",
+        "hgnc_symbol": "MRC2",
+        "uniprot_acc": "Q9UBG0",
+        "ensembl_gene": "ENSG00000011028",
+        "ncbi_gene_id": "9902",
+        "source": "PDBe",
+        "binder_id": "CCD:1PE",
+        "binder_name": "PENTAETHYLENE GLYCOL",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "206;212;219;225",
+        "topology": "extracellular",
+        "pdb_id": "5ew6",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5ew6",
+        "details": "{\"chembl_ids\": [\"CHEMBL1229766\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"JLFNLZLINWHATN-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      },
+      {
+        "hgnc_id": "HGNC:16875",
+        "hgnc_symbol": "MRC2",
+        "uniprot_acc": "Q9UBG0",
+        "ensembl_gene": "ENSG00000011028",
+        "ncbi_gene_id": "9902",
+        "source": "PDBe",
+        "binder_id": "CCD:1PE",
+        "binder_name": "PENTAETHYLENE GLYCOL",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "341",
+        "topology": "extracellular",
+        "pdb_id": "5e4k",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5e4k",
+        "details": "{\"chembl_ids\": [\"CHEMBL1229766\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"JLFNLZLINWHATN-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "reject_as_coverage_gain_from_these_records",
+    "caveat": "Only buffer, PEG or crystallization-additive contacts among the audited extracellular chemical records. This is not evidence that the protein lacks biological ligands."
+  },
+  {
+    "uniprot_acc": "Q9ULK0",
+    "hgnc_id": "HGNC:4575",
+    "symbol": "GRID1",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:4575",
+        "hgnc_symbol": "GRID1",
+        "uniprot_acc": "Q9ULK0",
+        "ensembl_gene": "ENSG00000182771",
+        "ncbi_gene_id": "2894",
+        "source": "PDBe",
+        "binder_id": "CCD:ABU",
+        "binder_name": "GAMMA-AMINO-BUTANOIC ACID",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "446;492;519;521;526;539;686;742",
+        "topology": "extracellular",
+        "pdb_id": "8bn5",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/8bn5",
+        "details": "{\"chembl_ids\": [\"CHEMBL96\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"BTCSSZJGUNDROE-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "supported_candidate_canonical_footprint",
+    "ligand_name": "GABA",
+    "pdb": "8bn5",
+    "caveat": "Endogenous neurotransmitter; published biochemical, structural and functional support.",
+    "coordinate_validation": {
+      "uniprot_acc": "Q9ULK0",
+      "pdb": "8bn5",
+      "ccd": "ABU",
+      "instances": [
+        {
+          "ligand_instance": [
+            "A",
+            "904"
+          ],
+          "positions": [
+            446,
+            492,
+            519,
+            520,
+            521,
+            526,
+            539,
+            686,
+            687,
+            741,
+            742,
+            770
+          ],
+          "mapping_issues": [],
+          "context": "extracellular_explicit"
+        },
+        {
+          "ligand_instance": [
+            "B",
+            "904"
+          ],
+          "positions": [
+            446,
+            492,
+            519,
+            520,
+            521,
+            526,
+            539,
+            686,
+            741,
+            742,
+            745,
+            770
+          ],
+          "mapping_issues": [],
+          "context": "extracellular_explicit"
+        }
+      ],
+      "method": "First model, positive occupancy, target-heavy-atom to ligand-heavy-atom distance <=5 A; SIFTS exact accession and canonical residue identity required."
+    }
+  },
+  {
+    "uniprot_acc": "Q9ULY5",
+    "hgnc_id": "HGNC:14555",
+    "symbol": "CLEC4E",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:14555",
+        "hgnc_symbol": "CLEC4E",
+        "uniprot_acc": "Q9ULY5",
+        "ensembl_gene": "ENSG00000166523",
+        "ncbi_gene_id": "26253",
+        "source": "PDBe",
+        "binder_id": "CCD:FLC",
+        "binder_name": "CITRATE ANION",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "169;171;172;183;193;194;195;196",
+        "topology": "extracellular",
+        "pdb_id": "3wh2",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/3wh2",
+        "details": "{\"chembl_ids\": [], \"iuphar_ligand_ids\": [], \"inchi_key\": \"KRKNYBCHXYNGOX-UHFFFAOYSA-K\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "reject_as_coverage_gain_from_these_records",
+    "caveat": "Only buffer, PEG or crystallization-additive contacts among the audited extracellular chemical records. This is not evidence that the protein lacks biological ligands."
+  },
+  {
+    "uniprot_acc": "Q9Y5G1",
+    "hgnc_id": "HGNC:8710",
+    "symbol": "PCDHGB3",
+    "original_candidates": [
+      {
+        "hgnc_id": "HGNC:8710",
+        "hgnc_symbol": "PCDHGB3",
+        "uniprot_acc": "Q9Y5G1",
+        "ensembl_gene": "ENSG00000262209",
+        "ncbi_gene_id": "56102",
+        "source": "PDBe",
+        "binder_id": "CCD:EPE",
+        "binder_name": "4-(2-HYDROXYETHYL)-1-PIPERAZINE ETHANESULFONIC ACID",
+        "evidence": "experimental_chemical_contacts",
+        "residues": "156;185;191;283;330",
+        "topology": "extracellular",
+        "pdb_id": "5k8r",
+        "reference": "https://www.ebi.ac.uk/pdbe/entry/pdb/5k8r",
+        "details": "{\"chembl_ids\": [\"CHEMBL1232545\"], \"iuphar_ligand_ids\": [], \"inchi_key\": \"JKMHFZQWWAIEOD-UHFFFAOYSA-N\", \"specificity_independently_reviewed\": false}"
+      }
+    ],
+    "promoted_to_release": false,
+    "status": "reject_as_coverage_gain_from_these_records",
+    "caveat": "Only buffer, PEG or crystallization-additive contacts among the audited extracellular chemical records. This is not evidence that the protein lacks biological ligands."
+  }
+]
