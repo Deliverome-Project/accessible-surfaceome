@@ -57,7 +57,7 @@ def canonical_creators() -> list[dict]:
 # the InvenioRDM API as the last step before publishing.
 FUNDERS = [
     {"funder": {"id": "056y0v115"}},  # Anthropic
-    {"funder": {"id": "00ydx1s47"}},  # Astera Institute
+    {"funder": {"id": "050rbg919"}},  # Radial
     {"funder": {"name": "Renaissance Philanthropy"}},
 ]
 DATA_LICENSE = "cc0-1.0"
