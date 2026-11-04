@@ -1,0 +1,454 @@
+{
+  "review_date": "2026-09-18",
+  "decision": "Five held scopes resolved for narrow deposited-construct annotations; no physical-sample equivalence asserted across PDB entries.",
+  "rules": [
+    {
+      "original_rule_index": 16,
+      "matching_observation_count": 1,
+      "rule": {
+        "uniprot_acc": "P05067",
+        "names": [
+          "P12821",
+          "ACE"
+        ],
+        "canonical_name": "Engineered ACE N-domain — Aβ fragment complex (5AM8)",
+        "category": "unclassified",
+        "pdb": "5am8",
+        "reference": "https://files.rcsb.org/header/5AM8.pdb",
+        "reason": "Engineered 629-residue ACE N-domain, P12821 residues 30–658, with verified UniProt-numbered deposited substitutions N38Q, N54Q, N111Q, N146Q, N318Q, Q574R, P605L, R658L. Primary paper uses minimally glycosylated Ndom389, but the two deposits differ at P12821 position 160; do not assert identical construct identity. APP target is Aβ(4–10), not intact cell-surface APP; header reports only Asp7–Ser8 visible. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/",
+        "exclude_from_overview": false
+      }
+    },
+    {
+      "original_rule_index": 16,
+      "matching_observation_count": 1,
+      "rule": {
+        "uniprot_acc": "P05067",
+        "names": [
+          "P12821",
+          "ACE"
+        ],
+        "canonical_name": "Engineered ACE N-domain — Aβ fragment complex (5AMB)",
+        "category": "unclassified",
+        "pdb": "5amb",
+        "reference": "https://files.rcsb.org/header/5AMB.pdb",
+        "reason": "Engineered 629-residue ACE N-domain, P12821 residues 30–658, with verified UniProt-numbered deposited substitutions N38Q, N54Q, N111Q, N146Q, N160Q, N318Q, Q574R, P605L, R658L. Primary paper uses minimally glycosylated Ndom389, but the two deposits differ at P12821 position 160; do not assert identical construct identity. APP target is Aβ(35–42), not intact cell-surface APP; header reports only Ile41–Ala42 visible. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/",
+        "exclude_from_overview": false
+      }
+    },
+    {
+      "original_rule_index": 17,
+      "matching_observation_count": 1,
+      "rule": {
+        "uniprot_acc": "P05067",
+        "names": [
+          "P14735",
+          "IDE"
+        ],
+        "canonical_name": "Engineered cysteine-substituted IDE E111Q — Aβ42 complex (2WK3)",
+        "category": "unclassified",
+        "pdb": "2wk3",
+        "reference": "https://files.rcsb.org/header/2WK3.pdb",
+        "reason": "Deposited IDE sequence has 13 cysteine substitutions plus E111Q: C110L, E111Q, C171S, C178A, C257V, C414L, C573N, C590S, C789S, C812A, C819A, C904S, C966N, C974A, in verified P14735 numbering. The 1019-residue deposited polymer still contains C32; avoid claiming this entire deposited polymer literally lacks cysteine. Keep separate from E111Q-only IDE. Target is Aβ(1–42), P05067 residues 672–713, not intact cell-surface APP. Primary citation: https://pmc.ncbi.nlm.nih.gov/articles/PMC2813390/",
+        "exclude_from_overview": false
+      }
+    },
+    {
+      "original_rule_index": 21,
+      "matching_observation_count": 1,
+      "rule": {
+        "uniprot_acc": "P01903",
+        "names": [
+          "P01730",
+          "CD4"
+        ],
+        "canonical_name": "Engineered CD4 D1–D2 Q40Y/T45W (3S4S)",
+        "category": "tool",
+        "pdb": "3s4s",
+        "reference": "https://files.rcsb.org/header/3S4S.pdb",
+        "reason": "Affinity-engineered CD4 D1–D2 double mutant. Deposited Q40Y/T45W explicitly maps to UniProt P01730 Q65Y/T70W. Core residues 26–203 (178 residues) plus DLGS and AAAHHHHHH tags give 191 residues. SEQADV calls these changes CONFLICT despite the missing mutation flag. Preserve HLA-DR1/hemagglutinin-peptide context and distinction from 3S5L four-mutation and 3T0E longer constructs; not wild-type CD4. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC3179091/",
+        "exclude_from_overview": false
+      }
+    },
+    {
+      "original_rule_index": 28,
+      "matching_observation_count": 1,
+      "rule": {
+        "uniprot_acc": "P01911",
+        "names": [
+          "P01730",
+          "CD4"
+        ],
+        "canonical_name": "Engineered CD4 D1–D2 Q40Y/T45W (3S4S)",
+        "category": "tool",
+        "pdb": "3s4s",
+        "reference": "https://files.rcsb.org/header/3S4S.pdb",
+        "reason": "Affinity-engineered CD4 D1–D2 double mutant. Deposited Q40Y/T45W explicitly maps to UniProt P01730 Q65Y/T70W. Core residues 26–203 (178 residues) plus DLGS and AAAHHHHHH tags give 191 residues. SEQADV calls these changes CONFLICT despite the missing mutation flag. Preserve HLA-DR1/hemagglutinin-peptide context and distinction from 3S5L four-mutation and 3T0E longer constructs; not wild-type CD4. Primary study: https://pmc.ncbi.nlm.nih.gov/articles/PMC3179091/",
+        "exclude_from_overview": false
+      }
+    }
+  ],
+  "findings": [
+    {
+      "pdb": "5am8",
+      "partner_uniprot_acc": "P12821",
+      "entity_id": 1,
+      "deposited_length": 629,
+      "uniprot_core_interval": [
+        30,
+        658
+      ],
+      "uniprot_numbered_substitutions": [
+        "N38Q",
+        "N54Q",
+        "N111Q",
+        "N146Q",
+        "N318Q",
+        "Q574R",
+        "P605L",
+        "R658L"
+      ],
+      "sequence_verification": "Position-by-position comparison of equal-length declared core to stable UniProt interval; DBREF/SEQADV independently corroborates positions.",
+      "sequence_sha256": "4dcd3d60729fbf7b6db78d64645f94123de5c5370c203c145344971acf383303",
+      "reference_sha256": "9b90c234c007ae25d011f573a0deccfd96ca908b193a043413120f802384f402",
+      "citations": [
+        "https://files.rcsb.org/header/5AM8.pdb",
+        "https://rest.uniprot.org/uniprotkb/P12821.fasta",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/"
+      ],
+      "header_evidence": [
+        "COMPND    MOL_ID: 1;",
+        "COMPND   2 MOLECULE: ANGIOTENSIN-CONVERTING ENZYME;",
+        "COMPND   3 CHAIN: A, B, C, D;",
+        "COMPND   4 FRAGMENT: N DOMAIN, UNP RESIDUES 30-658;",
+        "COMPND   5 SYNONYM: ACE, DIPEPTIDYL CARBOXYPEPTIDASE I, KININASE II, CD143,",
+        "COMPND   6 ANGIOTENSIN-CONVERTING ENZYME, SOLUBLE FORM;",
+        "COMPND   7 EC: 3.2.1.-, 3.4.15.1;",
+        "COMPND   8 ENGINEERED: YES;",
+        "COMPND   9 MUTATION: YES;",
+        "COMPND  10 OTHER_DETAILS: MINIMALLY GLYCOSYLATED MUTANT;",
+        "COMPND  11 MOL_ID: 2;",
+        "COMPND  12 MOLECULE: BETA-AMYLOID PROTEIN 42;",
+        "COMPND  13 CHAIN: P, Q, R, S;",
+        "COMPND  14 FRAGMENT: FRAGMENT 4-10, UNP RESIDUES 675-681;",
+        "COMPND  15 SYNONYM: BETA-APP42, AMYLOID-BETA;",
+        "COMPND  16 ENGINEERED: YES;",
+        "COMPND  17 OTHER_DETAILS: ONLY DI-PEPTIDE ASP-SER (7-8) VISIBLE IN STRUCTURE",
+        "DBREF  5AM8 A    1   629  UNP    P12821   ACE_HUMAN       30    658",
+        "DBREF  5AM8 B    1   629  UNP    P12821   ACE_HUMAN       30    658",
+        "DBREF  5AM8 C    1   629  UNP    P12821   ACE_HUMAN       30    658",
+        "DBREF  5AM8 D    1   629  UNP    P12821   ACE_HUMAN       30    658",
+        "DBREF  5AM8 P    4    10  UNP    P05067   A4_HUMAN       675    681",
+        "DBREF  5AM8 Q    4    10  UNP    P05067   A4_HUMAN       675    681",
+        "DBREF  5AM8 R    4    10  UNP    P05067   A4_HUMAN       675    681",
+        "DBREF  5AM8 S    4    10  UNP    P05067   A4_HUMAN       675    681",
+        "SEQADV 5AM8 GLN A    9  UNP  P12821    ASN    38 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN A   25  UNP  P12821    ASN    54 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN A   82  UNP  P12821    ASN   111 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN A  117  UNP  P12821    ASN   146 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN A  289  UNP  P12821    ASN   318 ENGINEERED MUTATION",
+        "SEQADV 5AM8 ARG A  545  UNP  P12821    GLN   574 ENGINEERED MUTATION",
+        "SEQADV 5AM8 LEU A  576  UNP  P12821    PRO   605 ENGINEERED MUTATION",
+        "SEQADV 5AM8 LEU A  629  UNP  P12821    ARG   658 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN B    9  UNP  P12821    ASN    38 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN B   25  UNP  P12821    ASN    54 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN B   82  UNP  P12821    ASN   111 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN B  117  UNP  P12821    ASN   146 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN B  289  UNP  P12821    ASN   318 ENGINEERED MUTATION",
+        "SEQADV 5AM8 ARG B  545  UNP  P12821    GLN   574 ENGINEERED MUTATION",
+        "SEQADV 5AM8 LEU B  576  UNP  P12821    PRO   605 ENGINEERED MUTATION",
+        "SEQADV 5AM8 LEU B  629  UNP  P12821    ARG   658 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN C    9  UNP  P12821    ASN    38 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN C   25  UNP  P12821    ASN    54 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN C   82  UNP  P12821    ASN   111 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN C  117  UNP  P12821    ASN   146 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN C  289  UNP  P12821    ASN   318 ENGINEERED MUTATION",
+        "SEQADV 5AM8 ARG C  545  UNP  P12821    GLN   574 ENGINEERED MUTATION",
+        "SEQADV 5AM8 LEU C  576  UNP  P12821    PRO   605 ENGINEERED MUTATION",
+        "SEQADV 5AM8 LEU C  629  UNP  P12821    ARG   658 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN D    9  UNP  P12821    ASN    38 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN D   25  UNP  P12821    ASN    54 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN D   82  UNP  P12821    ASN   111 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN D  117  UNP  P12821    ASN   146 ENGINEERED MUTATION",
+        "SEQADV 5AM8 GLN D  289  UNP  P12821    ASN   318 ENGINEERED MUTATION",
+        "SEQADV 5AM8 ARG D  545  UNP  P12821    GLN   574 ENGINEERED MUTATION",
+        "SEQADV 5AM8 LEU D  576  UNP  P12821    PRO   605 ENGINEERED MUTATION",
+        "SEQADV 5AM8 LEU D  629  UNP  P12821    ARG   658 ENGINEERED MUTATION"
+      ],
+      "caveats": [
+        "5AM8 has N160; 5AMB has Q160. The paper uses Ndom389 for crystallization; preserve deposited discrepancy without inferring different wet-lab preparations.",
+        "5AMB COMPND interval30–657 conflicts with DBREF and629-residue sequence mapping30–658."
+      ]
+    },
+    {
+      "pdb": "5amb",
+      "partner_uniprot_acc": "P12821",
+      "entity_id": 1,
+      "deposited_length": 629,
+      "uniprot_core_interval": [
+        30,
+        658
+      ],
+      "uniprot_numbered_substitutions": [
+        "N38Q",
+        "N54Q",
+        "N111Q",
+        "N146Q",
+        "N160Q",
+        "N318Q",
+        "Q574R",
+        "P605L",
+        "R658L"
+      ],
+      "sequence_verification": "Position-by-position comparison of equal-length declared core to stable UniProt interval; DBREF/SEQADV independently corroborates positions.",
+      "sequence_sha256": "ac7d112082cb0c71444de884b647688213a8df86088fe5ff821c89a9c2df50db",
+      "reference_sha256": "9b90c234c007ae25d011f573a0deccfd96ca908b193a043413120f802384f402",
+      "citations": [
+        "https://files.rcsb.org/header/5AMB.pdb",
+        "https://rest.uniprot.org/uniprotkb/P12821.fasta",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4950319/"
+      ],
+      "header_evidence": [
+        "COMPND    MOL_ID: 1;",
+        "COMPND   2 MOLECULE: ANGIOTENSIN-CONVERTING ENZYME;",
+        "COMPND   3 CHAIN: A, B;",
+        "COMPND   4 FRAGMENT: N DOMAIN, UNP RESIDUES 30-657;",
+        "COMPND   5 SYNONYM: ACE, DIPEPTIDYL CARBOXYPEPTIDASE I, KININASE II;",
+        "COMPND   6 EC: 3.4.15.1;",
+        "COMPND   7 ENGINEERED: YES;",
+        "COMPND   8 MUTATION: YES;",
+        "COMPND   9 OTHER_DETAILS: MINIMALLY GLYCOSYLATED MUTANT;",
+        "COMPND  10 MOL_ID: 2;",
+        "COMPND  11 MOLECULE: AMYLOID BETA A4 PROTEIN;",
+        "COMPND  12 CHAIN: P, Q;",
+        "COMPND  13 FRAGMENT: UNP RESIDUES 706-713;",
+        "COMPND  14 ENGINEERED: YES;",
+        "COMPND  15 OTHER_DETAILS: ONLY DI-PEPTIDE ILE-ALA (41-42) VISIBLE IN STRUCTURE",
+        "DBREF  5AMB A    1   629  UNP    P12821   ACE_HUMAN       30    658",
+        "DBREF  5AMB B    1   629  UNP    P12821   ACE_HUMAN       30    658",
+        "DBREF  5AMB P   35    42  UNP    P05067   A4_HUMAN       706    713",
+        "DBREF  5AMB Q   35    42  UNP    P05067   A4_HUMAN       706    713",
+        "SEQADV 5AMB GLN A    9  UNP  P12821    ASN    38 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN A   25  UNP  P12821    ASN    54 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN A   82  UNP  P12821    ASN   111 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN A  117  UNP  P12821    ASN   146 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN A  131  UNP  P12821    ASN   160 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN A  289  UNP  P12821    ASN   318 ENGINEERED MUTATION",
+        "SEQADV 5AMB ARG A  545  UNP  P12821    GLN   574 ENGINEERED MUTATION",
+        "SEQADV 5AMB LEU A  576  UNP  P12821    PRO   605 ENGINEERED MUTATION",
+        "SEQADV 5AMB LEU A  629  UNP  P12821    ARG   658 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN B    9  UNP  P12821    ASN    38 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN B   25  UNP  P12821    ASN    54 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN B   82  UNP  P12821    ASN   111 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN B  117  UNP  P12821    ASN   146 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN B  131  UNP  P12821    ASN   160 ENGINEERED MUTATION",
+        "SEQADV 5AMB GLN B  289  UNP  P12821    ASN   318 ENGINEERED MUTATION",
+        "SEQADV 5AMB ARG B  545  UNP  P12821    GLN   574 ENGINEERED MUTATION",
+        "SEQADV 5AMB LEU B  576  UNP  P12821    PRO   605 ENGINEERED MUTATION",
+        "SEQADV 5AMB LEU B  629  UNP  P12821    ARG   658 ENGINEERED MUTATION"
+      ],
+      "caveats": [
+        "5AM8 has N160; 5AMB has Q160. The paper uses Ndom389 for crystallization; preserve deposited discrepancy without inferring different wet-lab preparations.",
+        "5AMB COMPND interval30–657 conflicts with DBREF and629-residue sequence mapping30–658."
+      ]
+    },
+    {
+      "pdb": "2wk3",
+      "partner_uniprot_acc": "P14735",
+      "entity_id": 1,
+      "deposited_length": 1019,
+      "uniprot_core_interval": [
+        1,
+        1019
+      ],
+      "uniprot_numbered_substitutions": [
+        "C110L",
+        "E111Q",
+        "C171S",
+        "C178A",
+        "C257V",
+        "C414L",
+        "C573N",
+        "C590S",
+        "C789S",
+        "C812A",
+        "C819A",
+        "C904S",
+        "C966N",
+        "C974A"
+      ],
+      "sequence_verification": "Position-by-position comparison of equal-length declared core to stable UniProt interval; DBREF/SEQADV independently corroborates positions.",
+      "sequence_sha256": "3aff038e90104179a2d65f55b96fb1a000d0c77376338bbc34284ca89eb0b3d1",
+      "reference_sha256": "3ca88f204a4c12657e81ee8531764a3312701f289911b9d44f83a8b9ecdeb476",
+      "citations": [
+        "https://files.rcsb.org/header/2WK3.pdb",
+        "https://rest.uniprot.org/uniprotkb/P14735.fasta",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2813390/"
+      ],
+      "header_evidence": [
+        "COMPND    MOL_ID: 1;",
+        "COMPND   2 MOLECULE: INSULIN DEGRADING ENZYME;",
+        "COMPND   3 CHAIN: A, B;",
+        "COMPND   4 SYNONYM: INSULIN PROTEASE, INSULYSIN, INSULINASE;",
+        "COMPND   5 EC: 3.4.24.56;",
+        "COMPND   6 ENGINEERED: YES;",
+        "COMPND   7 MUTATION: YES;",
+        "COMPND   8 MOL_ID: 2;",
+        "COMPND   9 MOLECULE: BETA-AMYLOID PROTEIN 42;",
+        "COMPND  10 CHAIN: C, D;",
+        "COMPND  11 FRAGMENT: BETA-AMYLOID PROTEIN 42, RESIDUES 672-713;",
+        "COMPND  12 SYNONYM: BETA-APP42, AMYLOID BETA A4 PROTEIN SYNONYM: AMYLOID BETA,",
+        "COMPND  13 ALZHEIMER DISEASE AMYLOID PROTEIN, ABPP, APPI, APP, PREA4, CEREBRAL",
+        "COMPND  14 VASCULAR AMYLOID PEPTIDE, CVAP, PROTEASE NEXIN-II, PN-II SYNONYM:",
+        "COMPND  15 APP, ABPP, ALZHEIMER'S DISEASE AMYLOID PROTEIN, CEREBRAL VASCULAR",
+        "COMPND  16 AMYLOID PEPTIDE, CVAP, PROTEASE NEXIN-II, PN-II, APPI;",
+        "COMPND  17 ENGINEERED: YES",
+        "DBREF  2WK3 A    1  1019  UNP    P14735   IDE_HUMAN        1   1019",
+        "DBREF  2WK3 B    1  1019  UNP    P14735   IDE_HUMAN        1   1019",
+        "DBREF  2WK3 C    1    42  UNP    P05067   A4_HUMAN       672    713",
+        "DBREF  2WK3 D    1    42  UNP    P05067   A4_HUMAN       672    713",
+        "SEQADV 2WK3 LEU A  110  UNP  P14735    CYS   110 ENGINEERED MUTATION",
+        "SEQADV 2WK3 GLN A  111  UNP  P14735    GLU   111 ENGINEERED MUTATION",
+        "SEQADV 2WK3 SER A  171  UNP  P14735    CYS   171 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ALA A  178  UNP  P14735    CYS   178 ENGINEERED MUTATION",
+        "SEQADV 2WK3 VAL A  257  UNP  P14735    CYS   257 ENGINEERED MUTATION",
+        "SEQADV 2WK3 LEU A  414  UNP  P14735    CYS   414 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ASN A  573  UNP  P14735    CYS   573 ENGINEERED MUTATION",
+        "SEQADV 2WK3 SER A  590  UNP  P14735    CYS   590 ENGINEERED MUTATION",
+        "SEQADV 2WK3 SER A  789  UNP  P14735    CYS   789 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ALA A  812  UNP  P14735    CYS   812 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ALA A  819  UNP  P14735    CYS   819 ENGINEERED MUTATION",
+        "SEQADV 2WK3 SER A  904  UNP  P14735    CYS   904 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ASN A  966  UNP  P14735    CYS   966 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ALA A  974  UNP  P14735    CYS   974 ENGINEERED MUTATION",
+        "SEQADV 2WK3 LEU B  110  UNP  P14735    CYS   110 ENGINEERED MUTATION",
+        "SEQADV 2WK3 GLN B  111  UNP  P14735    GLU   111 ENGINEERED MUTATION",
+        "SEQADV 2WK3 SER B  171  UNP  P14735    CYS   171 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ALA B  178  UNP  P14735    CYS   178 ENGINEERED MUTATION",
+        "SEQADV 2WK3 VAL B  257  UNP  P14735    CYS   257 ENGINEERED MUTATION",
+        "SEQADV 2WK3 LEU B  414  UNP  P14735    CYS   414 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ASN B  573  UNP  P14735    CYS   573 ENGINEERED MUTATION",
+        "SEQADV 2WK3 SER B  590  UNP  P14735    CYS   590 ENGINEERED MUTATION",
+        "SEQADV 2WK3 SER B  789  UNP  P14735    CYS   789 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ALA B  812  UNP  P14735    CYS   812 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ALA B  819  UNP  P14735    CYS   819 ENGINEERED MUTATION",
+        "SEQADV 2WK3 SER B  904  UNP  P14735    CYS   904 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ASN B  966  UNP  P14735    CYS   966 ENGINEERED MUTATION",
+        "SEQADV 2WK3 ALA B  974  UNP  P14735    CYS   974 ENGINEERED MUTATION"
+      ],
+      "remaining_cysteines_in_deposited_sequence": [
+        32
+      ],
+      "caveats": [
+        "The experimental cysteine-free nomenclature must not imply zero cysteines in the complete deposited sequence: C32 remains. No expression processing/numbering assumption is needed for the proposed label.",
+        "Primary full-text endpoint intermittently returned a browser challenge; exact substitutions are supported by deposit plus reference sequence."
+      ]
+    },
+    {
+      "pdb": "3s4s",
+      "partner_uniprot_acc": "P01730",
+      "entity_id": 4,
+      "deposited_length": 191,
+      "uniprot_core_interval": [
+        26,
+        203
+      ],
+      "uniprot_numbered_substitutions": [
+        "Q65Y",
+        "T70W"
+      ],
+      "sequence_verification": "Position-by-position comparison of equal-length declared core to stable UniProt interval; DBREF/SEQADV independently corroborates positions.",
+      "sequence_sha256": "da9819de6546b4b2f5558b34cc7006e61d7d88b8ec56c32b2eeac5b8136a7198",
+      "reference_sha256": "b598cecf65abf705dba5812286f09dfd6921c638b3f0c7cbee5a156df090db63",
+      "citations": [
+        "https://files.rcsb.org/header/3S4S.pdb",
+        "https://rest.uniprot.org/uniprotkb/P01730.fasta",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3179091/"
+      ],
+      "header_evidence": [
+        "COMPND    MOL_ID: 1;",
+        "COMPND   2 MOLECULE: HLA CLASS II HISTOCOMPATIBILITY ANTIGEN, DR ALPHA CHAIN;",
+        "COMPND   3 CHAIN: A, D;",
+        "COMPND   4 FRAGMENT: UNP RESIDUES 26-207;",
+        "COMPND   5 SYNONYM: MHC CLASS II ANTIGEN DRA;",
+        "COMPND   6 ENGINEERED: YES;",
+        "COMPND   7 MOL_ID: 2;",
+        "COMPND   8 MOLECULE: HLA CLASS II HISTOCOMPATIBILITY ANTIGEN, DRB1-1 BETA CHAIN;",
+        "COMPND   9 CHAIN: B, E;",
+        "COMPND  10 FRAGMENT: UNP RESIDUES 30-221;",
+        "COMPND  11 SYNONYM: MHC CLASS II ANTIGEN DRB1*1, DR-1, DR1;",
+        "COMPND  12 ENGINEERED: YES;",
+        "COMPND  13 MOL_ID: 3;",
+        "COMPND  14 MOLECULE: HEMAGGLUTININ PEPTIDE;",
+        "COMPND  15 CHAIN: C, F;",
+        "COMPND  16 FRAGMENT: UNP RESIDUES 306-318;",
+        "COMPND  17 ENGINEERED: YES;",
+        "COMPND  18 MOL_ID: 4;",
+        "COMPND  19 MOLECULE: T-CELL SURFACE GLYCOPROTEIN CD4;",
+        "COMPND  20 CHAIN: G, H;",
+        "COMPND  21 FRAGMENT: UNP RESIDUES 26-203;",
+        "COMPND  22 SYNONYM: T-CELL SURFACE ANTIGEN T4/LEU-3;",
+        "COMPND  23 ENGINEERED: YES",
+        "DBREF  3S4S A    1   182  UNP    P01903   DRA_HUMAN       26    207",
+        "DBREF  3S4S B    1   192  UNP    P04229   2B11_HUMAN      30    221",
+        "DBREF  3S4S C    3    15  UNP    Q9YS52   Q9YS52_9INFA   306    318",
+        "DBREF  3S4S G    1   178  UNP    P01730   CD4_HUMAN       26    203",
+        "DBREF  3S4S D    1   182  UNP    P01903   DRA_HUMAN       26    207",
+        "DBREF  3S4S E    1   192  UNP    P04229   2B11_HUMAN      30    221",
+        "DBREF  3S4S F    3    15  UNP    Q9YS52   Q9YS52_9INFA   306    318",
+        "DBREF  3S4S H    1   178  UNP    P01730   CD4_HUMAN       26    203",
+        "SEQADV 3S4S GLN A  177  UNP  P01903    HIS   202 CONFLICT",
+        "SEQADV 3S4S MET B    0  UNP  P04229              EXPRESSION TAG",
+        "SEQADV 3S4S ASP G   -3  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S LEU G   -2  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S GLY G   -1  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S SER G    0  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S TYR G   40  UNP  P01730    GLN    65 CONFLICT",
+        "SEQADV 3S4S TRP G   45  UNP  P01730    THR    70 CONFLICT",
+        "SEQADV 3S4S ALA G  179  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S ALA G  180  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S ALA G  181  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS G  182  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS G  183  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS G  184  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS G  185  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS G  186  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS G  187  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S GLN D  177  UNP  P01903    HIS   202 CONFLICT",
+        "SEQADV 3S4S MET E    0  UNP  P04229              EXPRESSION TAG",
+        "SEQADV 3S4S ASP H   -3  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S LEU H   -2  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S GLY H   -1  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S SER H    0  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S TYR H   40  UNP  P01730    GLN    65 CONFLICT",
+        "SEQADV 3S4S TRP H   45  UNP  P01730    THR    70 CONFLICT",
+        "SEQADV 3S4S ALA H  179  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S ALA H  180  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S ALA H  181  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS H  182  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS H  183  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS H  184  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS H  185  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS H  186  UNP  P01730              EXPRESSION TAG",
+        "SEQADV 3S4S HIS H  187  UNP  P01730              EXPRESSION TAG"
+      ],
+      "deposited_numbering_substitutions": [
+        "Q40Y",
+        "T45W"
+      ],
+      "expression_tags": [
+        "DLGS",
+        "AAAHHHHHH"
+      ],
+      "caveats": [
+        "HLA beta entity maps to allele-specific P04229 in the header while supplied target is P01911; partner annotation does not alter target mapping."
+      ]
+    }
+  ],
+  "validation": {
+    "rules": 5,
+    "matching_observations": 5,
+    "all_pdb_scoped": true,
+    "observations_modified": 0
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "baseline_release": "contacts-2e5ae951b1f791d2f280",
+  "release_id": "contacts-c7126e61a544377fbf0f",
+  "original_observations": 29189,
+  "observations": 29358,
+  "mapped_proteins": 1711,
+  "ec_proteins": 551,
+  "ec_observations": 7962,
+  "preservation": "Every original observation remains with original evidence fields unchanged",
+  "fields": [
+    "source",
+    "partner",
+    "partner_label",
+    "pdb",
+    "positions",
+    "context",
+    "reference",
+    "method"
+  ]
+}
