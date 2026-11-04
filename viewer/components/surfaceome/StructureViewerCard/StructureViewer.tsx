@@ -9,11 +9,12 @@ import {
   isCleanStructure,
   pickBestStructure,
   pickPdbChain,
-  projectExperimentalChain,
+  resolveExperimentalChain,
   type PDBeBestStructure,
   type ProjSegment,
 } from "../../../lib/experimental-structure";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
+import { projectCanonicalResidue } from "../../../lib/canonical-frame";
 import type { RenderedProvenance } from "../../../lib/tag-sites-overlay";
 import {
   MEMBRANE_COLOR,
@@ -107,6 +108,18 @@ export interface StructureVariantAfdb extends StructureVariantBase {
   uniprot_acc: string;
   /** Full UniProt acc including isoform suffix (e.g. "P00533-2"). */
   uniprot_acc_full?: string;
+  /** ``per_residue_topology_canonical_frame`` — this proteoform's
+   *  topology re-indexed onto the canonical axis, ``'-'`` where it does
+   *  not cover a canonical position. Present on isoforms and orthologs;
+   *  absent on pre-backfill records, where a typed residue number is
+   *  read against this proteoform's own numbering as before. */
+  canonical_frame?: string | null;
+  /** This proteoform's own sequence, for naming the mapped residue and
+   *  saying whether it is conserved. */
+  sequence?: string | null;
+  /** Percent identity to the canonical, shown as context. It does NOT
+   *  gate the mapping — coverage at the position does. */
+  pct_identity?: number | null;
 }
 
 /** Schweke et al. 2024 AF2 homo-dimer prediction (Cell 187:999, PMID
@@ -301,6 +314,11 @@ interface StructureViewerProps {
    *  lazy-fetch their own metadata from AFDB's prediction API
    *  client-side when the user clicks them. */
   canonicalStruct: CanonicalStructStats;
+  /** Canonical AA sequence, 1:1 with ``data.topology``. Used to say
+   *  whether a residue a reader asked for is conserved in the isoform or
+   *  ortholog being shown. Optional; without it the mapped residue is
+   *  still named, just not compared. */
+  canonicalSequence?: string | null;
   /** Display name for the gene (e.g. "Epidermal growth factor
    *  receptor"). Shown in the caption when the active variant is
    *  an AlphaFold model — the model has no per-entry title of its
@@ -1083,6 +1101,7 @@ export function StructureViewer({
   data,
   geneSymbol,
   canonicalStruct,
+  canonicalSequence = null,
   proteinName,
   surfaceBindAnchors = [],
   tagSites = [],
@@ -1218,9 +1237,25 @@ export function StructureViewer({
   //   "loading" — request in flight
   //   PDBeBestStructure — top candidate (we use index 0 of the array)
   //   null — no candidate (gene has no PDB / PDBe API error / 404)
-  const [pdbeCandidate, setPdbeCandidate] = useState<
-    PDBeBestStructure | "loading" | null
+  const [pdbeCandidates, setPdbeCandidates] = useState<
+    PDBeBestStructure[] | "loading" | null
   >("loading");
+  // PDB entries whose file, once loaded, turned out to model none of this
+  // protein in any chain (TAS1R3 9NOX: PDBe maps chain B from a SEQRES
+  // carrying TAS1R3, but only a fused partner is resolved). The pick
+  // moves to the next entry rather than showing a structure of something
+  // else.
+  const [rejectedPdbIds, setRejectedPdbIds] = useState<string[]>([]);
+  const pdbeCandidate: PDBeBestStructure | "loading" | null = useMemo(() => {
+    if (pdbeCandidates === "loading" || pdbeCandidates === null) return pdbeCandidates;
+    return pickBestStructure(
+      pdbeCandidates.filter((c) => !rejectedPdbIds.includes(c.pdb_id)),
+    );
+  }, [pdbeCandidates, rejectedPdbIds]);
+  const pdbeCandidatesRef = useRef<PDBeBestStructure[]>([]);
+  pdbeCandidatesRef.current = Array.isArray(pdbeCandidates) ? pdbeCandidates : [];
+  const rejectedPdbIdsRef = useRef<string[]>([]);
+  rejectedPdbIdsRef.current = rejectedPdbIds;
   // PDB TITLE record parsed out of the most-recently-fetched
   // experimental PDB. Keyed on pdb_id so switching between two
   // experimental structures correctly updates the caption.
@@ -1269,15 +1304,17 @@ export function StructureViewer({
           { cache: "force-cache" },
         );
         if (!r.ok) {
-          if (!cancelled) setPdbeCandidate(null);
+          if (!cancelled) setPdbeCandidates(null);
           return;
         }
         const j = (await r.json()) as Record<string, PDBeBestStructure[]>;
         const candidates = j[data.uniprot_acc] ?? [];
-        const chosen = pickBestStructure(candidates);
-        if (!cancelled) setPdbeCandidate(chosen);
+        if (!cancelled) {
+          setRejectedPdbIds([]);
+          setPdbeCandidates(candidates.length > 0 ? candidates : null);
+        }
       } catch {
-        if (!cancelled) setPdbeCandidate(null);
+        if (!cancelled) setPdbeCandidates(null);
       }
     }
     fetchPDBe();
@@ -1971,7 +2008,9 @@ export function StructureViewer({
       // back to a case-insensitive match, then to the heaviest chain,
       // so the orientation + topology coloring don't silently no-op
       // for entries with mismatched chain ids (GPR75 was the trigger).
-      const effectiveChainId = expVariant
+      // `let`: the projection below can move the drawing to another chain
+      // when this one's atoms turn out not to be this protein.
+      let effectiveChainId = expVariant
         ? pickPdbChain(rawPdb, expChainId) ?? expChainId
         : null;
 
@@ -1995,7 +2034,7 @@ export function StructureViewer({
           },
         ];
       } else if (expVariant) {
-        projSegments = await projectExperimentalChain(
+        const resolved = await resolveExperimentalChain(
           {
             pdbId: expVariant.pdb_id,
             uniprotAcc: data.uniprot_acc,
@@ -2008,6 +2047,21 @@ export function StructureViewer({
           rawPdb,
           effectiveChainId ?? expChainId,
         );
+        if (!resolved.modelled) {
+          // Move to the next entry when there is one; otherwise draw this
+          // one with nothing painted as this protein.
+          const rejected = expVariant.pdb_id;
+          const remaining = pdbeCandidatesRef.current.filter(
+            (c) => c.pdb_id !== rejected && !rejectedPdbIdsRef.current.includes(c.pdb_id),
+          );
+          if (pickBestStructure(remaining)) {
+            if (renderSeq !== renderSeqRef.current) return;
+            setRejectedPdbIds((prev) => (prev.includes(rejected) ? prev : [...prev, rejected]));
+            return;
+          }
+        }
+        projSegments = resolved.segments;
+        effectiveChainId = resolved.chainId;
       }
 
       // A library member needs the same residue map as an experimental chain: its
@@ -2681,7 +2735,41 @@ export function StructureViewer({
       return;
     }
     const map = residueMapRef.current;
-    const resi = map ? _unpToAuthorResi(highlightResi, map.segments) : highlightResi;
+    // A residue number means something only against the sequence it was
+    // read off. The reader types a CANONICAL number — it is what the tag
+    // sites, the topology strip and the rest of the page are keyed on —
+    // so on an isoform or ortholog tab it has to be mapped before it can
+    // select anything. Reading it raw would silently highlight that
+    // proteoform's own residue of the same number, which is a different
+    // residue: canonical MS4A1 161 is Tyr, mouse Ms4a1 161 is not the
+    // aligned position at all (154 is, and it is a proline).
+    const proteoform =
+      activeVariant?.source === "afdb" && activeVariant.canonical_frame
+        ? projectCanonicalResidue(
+            highlightResi,
+            activeVariant.canonical_frame,
+            activeVariant.sequence,
+            canonicalSequence,
+          )
+        : null;
+    if (proteoform && proteoform.residue == null) {
+      // Coverage is per position: a proteoform can be highly identical
+      // overall and still not carry this residue.
+      const identity =
+        activeVariant?.source === "afdb" ? activeVariant.pct_identity : null;
+      const pct =
+        typeof identity === "number"
+          ? ` (${Math.round(identity)}% identical overall)`
+          : "";
+      setResidueNote(
+        `Canonical residue ${highlightResi} isn't present in ${
+          activeVariant?.label ?? "this proteoform"
+        }${pct}.`,
+      );
+      return;
+    }
+    const localResi = proteoform?.residue ?? highlightResi;
+    const resi = map ? _unpToAuthorResi(localResi, map.segments) : localResi;
     if (resi == null) {
       setResidueNote(`Residue ${highlightResi} isn't covered by this structure.`);
       return;
@@ -2711,7 +2799,7 @@ export function StructureViewer({
           opacity: 1,
         }));
       }
-      const label = viewer.addLabel?.(`${resn}${highlightResi}`, {
+      const label = viewer.addLabel?.(`${resn}${localResi}`, {
         position: { x: first.x, y: first.y, z: first.z },
         backgroundColor: "#2a2a2a",
         backgroundOpacity: 0.92,
@@ -2734,14 +2822,33 @@ export function StructureViewer({
     highlightOwnerRef.current = viewer;
     // A library map has no chain: its file is a model, not a PDB entry.
     const authorNote =
-      map && resi !== highlightResi
+      map && resi !== localResi
         ? map.chain
           ? ` (PDB author no. ${resi})`
           : ` (model residue ${resi})`
         : "";
     const chainNote = atoms.length > 1 ? ` on ${atoms.length} chains` : "";
-    setResidueNote(`${resn}${highlightResi}${authorNote} highlighted${chainNote}.`);
-  }, [highlightResi, highlightNonce, status]);
+    if (proteoform) {
+      // Say what was asked for and what is being shown, because they are
+      // different numbers — and whether the residue itself survived the
+      // alignment, which identity alone would not tell you.
+      const conserved =
+        proteoform.conserved === null
+          ? ""
+          : proteoform.conserved
+            ? ", conserved"
+            : `, substituted (canonical ${canonicalSequence?.[highlightResi - 1] ?? "?"})`;
+      setResidueNote(
+        `Canonical ${highlightResi} → ${activeVariant?.label ?? "proteoform"} ` +
+          `${resn}${localResi}${conserved}${authorNote}, highlighted${chainNote}.`,
+      );
+    } else {
+      setResidueNote(`${resn}${localResi}${authorNote} highlighted${chainNote}.`);
+    }
+    // activeVariant is rebuilt by the parent on every render, so depend
+    // on its id rather than the object or this re-fires constantly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightResi, highlightNonce, status, activeVariant?.id, canonicalSequence]);
 
   // Strip click → highlight that residue.
   useEffect(() => {

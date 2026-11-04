@@ -33,6 +33,8 @@ import {
   projectedIdentity,
   projectExperimentalChain,
   residueOneLetterByResSeq,
+  resolveExperimentalChain,
+  sequenceSegments,
 } from "../lib/experimental-structure";
 
 const MS4A1 =
@@ -201,4 +203,128 @@ test("a chain the canonical sequence does not describe falls back to counting", 
     ms4a1Hit("Q11838"), pdb, "G", seqFetch({ "Q11838": bogus }),
   );
   assert.equal(segs[0].offset, -37, "a weak signal is not trusted");
+});
+
+// ---- The sequence gets the last word ----------------------------------
+//
+// The first cohort identity audit found 155 genes whose structure loaded
+// and covered its mapping while drawing the wrong residues. The three
+// shapes below are the ones it found; the sequences are synthetic (a
+// non-repeating pseudo-random protein) so each test states only the
+// numbering.
+
+function protein(n: number, seed: number): string {
+  const aa = "ACDEFGHIKLMNPQRSTVWY";
+  let x = seed;
+  let out = "";
+  for (let i = 0; i < n; i += 1) {
+    x = (x * 1103515245 + 12345) % 2147483648;
+    out += aa[x % 20];
+  }
+  return out;
+}
+
+test("AKR1A1 2ALR: a DBREF the file's own atoms contradict is overruled", async () => {
+  // 2ALR states author 1-324 = UniProt 1-324, but author 1 is UniProt 2
+  // (the initiator Met is gone and the chain is numbered from what is
+  // left). Trusting DBREF put 12 of 312 residues on the right amino acid.
+  const seq = protein(325, 1);
+  const pdb = pdbFile({
+    chain: "A", ranges: [[1, 312]], resAt: (r) => seq[r],
+    dbref: { acc: "P14550", seqBegin: 1, dbBegin: 1, dbEnd: 324 },
+  });
+  const hit = {
+    pdbId: "2ALR", uniprotAcc: "P14550", chainId: "A",
+    unpStart: 1, unpEnd: 324, pdbStart: 1, approx: false,
+  };
+  const segs = await projectExperimentalChain(hit, pdb, "A", seqFetch({ P14550: seq }));
+  assert.deepEqual(segs, [{ unpLo: 2, unpHi: 313, offset: -1 }]);
+});
+
+test("BSG 7CKO: an isoform chain projects piecewise around the missing exon", async () => {
+  // The chain is isoform 2, numbered 1..N in its own numbering, which
+  // lacks canonical residues 22-137. No single offset is right anywhere.
+  const seq = protein(385, 2);
+  const iso = seq.slice(0, 21) + seq.slice(137);
+  const pdb = pdbFile({ chain: "B", ranges: [[10, 230]], resAt: (r) => iso[r - 1] });
+  const resNames = residueOneLetterByResSeq(pdb, "B");
+  const segs = sequenceSegments({ seq, resNames });
+  assert.deepEqual(segs, [
+    { unpLo: 10, unpHi: 21, offset: 0 },
+    { unpLo: 138, unpHi: 346, offset: -116 },
+  ]);
+  const id = projectedIdentity(segs, { seq, resNames });
+  assert.equal(id.matches, id.tested);
+});
+
+test("a fusion insert is left uncoloured, not drawn as this protein", () => {
+  // A receptor with a 40-residue foreign domain spliced in after residue
+  // 100, numbered straight through as one chain.
+  const seq = protein(300, 3);
+  const chain = seq.slice(0, 100) + protein(40, 99) + seq.slice(100, 250);
+  const pdb = pdbFile({ chain: "A", ranges: [[1, 290]], resAt: (r) => chain[r - 1] });
+  const resNames = residueOneLetterByResSeq(pdb, "A");
+  const segs = sequenceSegments({ seq, resNames });
+  assert.deepEqual(segs, [
+    { unpLo: 1, unpHi: 100, offset: 0 },
+    { unpLo: 101, unpHi: 250, offset: 40 },
+  ]);
+});
+
+test("substitutions stay on their diagonal (ortholog-level identity)", () => {
+  const seq = protein(200, 4);
+  // every 7th residue substituted: ~86% identity, still one segment
+  const mutant = [...seq].map((c, i) => (i % 7 === 3 ? (c === "W" ? "Y" : "W") : c)).join("");
+  const pdb = pdbFile({ chain: "A", ranges: [[1, 200]], resAt: (r) => mutant[r - 1] });
+  const segs = sequenceSegments({ seq, resNames: residueOneLetterByResSeq(pdb, "A") });
+  assert.deepEqual(segs, [{ unpLo: 1, unpHi: 200, offset: 0 }]);
+});
+
+test("a right projection is never replaced", async () => {
+  // MS4A1 8VGN via DBREF scores 100%; the alignment is not consulted.
+  const pdb = pdbFile({
+    chain: "G", ranges: MS4A1_MODELLED, resAt: (r) => MS4A1[r - 1],
+    dbref: { acc: "Q11839", seqBegin: 41, dbBegin: 41, dbEnd: 297 },
+  });
+  const segs = await projectExperimentalChain(
+    ms4a1Hit("Q11839"), pdb, "G", seqFetch({ Q11839: MS4A1 }),
+  );
+  assert.deepEqual(segs, [{ unpLo: 41, unpHi: 297, offset: 0 }]);
+});
+
+test("IL17RA 9OT1: a chain whose atoms are another protein is swapped for one that is this protein", async () => {
+  // Chain A's SEQRES is an IL17RB–IL17RA fusion, so PDBe maps IL17RA to
+  // it, but only the IL17RB half is resolved. Chain C models IL17RA.
+  const seq = protein(866, 5);
+  const other = protein(500, 6);
+  const pdb =
+    pdbFile({ chain: "A", ranges: [[330, 480]], resAt: (r) => other[r - 1] }) + "\n" +
+    pdbFile({ chain: "C", ranges: [[370, 712]], resAt: (r) => seq[r - 1] });
+  const hit = {
+    pdbId: "9OT1", uniprotAcc: "Q96F46", chainId: "A",
+    unpStart: 361, unpEnd: 866, pdbStart: 501, approx: false,
+  };
+  const got = await resolveExperimentalChain(hit, pdb, "A", seqFetch({ Q96F46: seq }));
+  assert.equal(got.chainId, "C");
+  assert.equal(got.modelled, true);
+  assert.deepEqual(got.segments, [{ unpLo: 370, unpHi: 712, offset: 0 }]);
+});
+
+test("TAS1R3 9NOX: when no chain models the protein, nothing is painted as it", async () => {
+  const seq = protein(852, 7);
+  const pdb = pdbFile({ chain: "B", ranges: [[7, 250]], resAt: (r) => protein(300, 8)[r - 1] });
+  const hit = {
+    pdbId: "9NOX", uniprotAcc: "Q7RTX0", chainId: "B",
+    unpStart: 18, unpEnd: 852, pdbStart: 1, approx: false,
+  };
+  const got = await resolveExperimentalChain(hit, pdb, "B", seqFetch({ Q7RTX0: seq }));
+  assert.deepEqual(got, { chainId: "B", segments: [], modelled: false });
+});
+
+test("a chain that cannot be sequence-checked is drawn as before", async () => {
+  const pdb = pdbFile({ chain: "G", ranges: MS4A1_MODELLED, resAt: (r) => MS4A1[r - 1] });
+  const got = await resolveExperimentalChain(ms4a1Hit("Q11840"), pdb, "G", noNetwork);
+  assert.equal(got.chainId, "G");
+  assert.equal(got.modelled, true);
+  assert.equal(got.segments[0].offset, -37);
 });

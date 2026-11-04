@@ -185,13 +185,18 @@ const HIT = {
   approx: false,
 };
 
-test("projection: a file numbered by UniProt needs no lookups", async () => {
+test("projection: a file numbered by UniProt needs no numbering lookups", async () => {
   const { impl, calls } = stubFetch({});
   const segs = await projectExperimentalChain(
     HIT, atomLines("B", range(195, 213)), "B", impl,
   );
   assert.deepEqual(segs, [{ unpLo: 195, unpHi: 213, offset: 0 }]);
-  assert.deepEqual(calls, []);
+  // Only the canonical-sequence check (AFDB, then UniProt when AFDB has
+  // no canonical model, as this stub does not). No SIFTS.
+  assert.deepEqual(calls, [
+    "https://alphafold.ebi.ac.uk/api/prediction/Q9UQN3",
+    "https://rest.uniprot.org/uniprotkb/Q9UQN3.fasta",
+  ]);
 });
 
 test("projection: SIFTS author numbers rescue a chain numbered by neither UniProt nor SEQRES", async () => {

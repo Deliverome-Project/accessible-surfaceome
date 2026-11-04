@@ -340,9 +340,14 @@ export function projectedIdentity(
   return { matches, tested };
 }
 
-/** Canonical UniProt sequence for one accession, from AFDB's prediction
- *  API (``uniprotSequence``). Memoised; best-effort — ``null`` leaves the
- *  residue-counting rule in charge. */
+/** Canonical UniProt sequence for one accession. AFDB's prediction API
+ *  first (``uniprotSequence``), because the AlphaFold tab makes that same
+ *  request and the browser has usually cached it; UniProt's own FASTA
+ *  when AFDB has no model for the canonical accession. AFDB then lists
+ *  only isoform models (ANK2 Q01484 returns -7, -5 and -2, none of them
+ *  the 3,957-residue canonical), and taking the first entry's sequence
+ *  would judge the structure against a different protein. Memoised;
+ *  best-effort — ``null`` leaves the residue-counting rule in charge. */
 const _seqCache = new Map<string, string | null>();
 
 export async function fetchCanonicalSequence(
@@ -362,11 +367,29 @@ export async function fetchCanonicalSequence(
         uniprotAccession?: string;
         uniprotSequence?: string;
       }>;
-      const entry = j.find((e) => e.uniprotAccession === uniprotAcc) ?? j[0];
-      seq = entry?.uniprotSequence ?? null;
+      seq = j.find((e) => e.uniprotAccession === uniprotAcc)?.uniprotSequence ?? null;
     }
   } catch {
     seq = null;
+  }
+  if (!seq) {
+    try {
+      const r = await fetchImpl(
+        `https://rest.uniprot.org/uniprotkb/${uniprotAcc}.fasta`,
+        { cache: "force-cache" },
+      );
+      if (r.ok) {
+        const fasta = await r.text();
+        const body = fasta
+          .split(/\r?\n/)
+          .filter((l) => !l.startsWith(">"))
+          .join("")
+          .trim();
+        seq = /^[A-Z]+$/.test(body) ? body : null;
+      }
+    } catch {
+      seq = null;
+    }
   }
   // Only a real answer is memoised. Caching a failure would disable the
   // check for the rest of the session after one unreachable fetch.
@@ -519,18 +542,239 @@ export function projectedCoverage(
  *  offsets are validated against ``observed``, the residues actually in
  *  the fetched file, and the best kept. */
 export async function projectExperimentalChain(
-  hit: {
-    pdbId: string;
-    uniprotAcc: string;
-    /** PDBe chain id (what SIFTS is keyed on). */
-    chainId: string;
-    unpStart: number;
-    unpEnd: number;
-    /** `best_structures.start` — a SEQRES index. */
-    pdbStart: number;
-    /** Fusion construct: project piecewise from SIFTS. */
-    approx: boolean;
-  },
+  hit: ProjectionHit,
+  pdbText: string,
+  fileChainId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<ProjSegment[]> {
+  const segs = await projectByNumbering(hit, pdbText, fileChainId, fetchImpl);
+  // Every numbering rule above can be wrong for a real file, and a wrong
+  // one still covers the chain and still renders — it just paints the
+  // wrong residues. The first cohort identity audit found 155 genes in
+  // that state, in three groups:
+  //
+  //   DBREF wrong   old entries whose DBREF disagrees with their own
+  //                 atoms. AKR1A1 2ALR states author 1 = UniProt 1 but
+  //                 numbers from the second residue (initiator Met
+  //                 removed); ANXA5 1AVH states the reverse shift.
+  //   offset wrong  counting picked a candidate that covers the chain
+  //                 at the wrong register.
+  //   non-linear    the chain is an isoform or an engineered construct
+  //                 (BSG 7CKO is isoform 2, which lacks canonical exon
+  //                 2), so no single offset is right anywhere.
+  //
+  // So the amino acids get the last word: when the projection puts the
+  // wrong residues on most positions, align the chain's own sequence to
+  // the canonical one and project through that instead.
+  const seq = await fetchCanonicalSequence(hit.uniprotAcc, fetchImpl);
+  if (!seq) return segs;
+  const check: SequenceCheck = {
+    seq,
+    resNames: residueOneLetterByResSeq(pdbText, fileChainId),
+  };
+  const cur = projectedIdentity(segs, check);
+  if (cur.tested < MIN_IDENTITY_TESTED) return segs;
+  if (cur.matches / cur.tested >= MIN_IDENTITY) return segs;
+  const aligned = sequenceSegments(check);
+  const alt = projectedIdentity(aligned, check);
+  // The alignment may leave a stretch unassigned that the numbering
+  // projection happened to get partly right (CHRM1 9JEA: an engineered
+  // ICL3, 224/230 aligned against 243/359 by SIFTS). Taking it is still
+  // right as long as it keeps most of the residues the old projection
+  // had right; what it drops were mostly being drawn as the wrong ones.
+  if (
+    alt.tested >= MIN_IDENTITY_TESTED &&
+    alt.matches / alt.tested >= MIN_IDENTITY &&
+    alt.matches >= 0.8 * cur.matches
+  ) {
+    return aligned;
+  }
+  return segs;
+}
+
+/** The chain to draw and its projection. ``projectExperimentalChain``
+ *  for the chain PDBe names, unless that chain's atoms are not this
+ *  protein at all: PDBe maps a chain from its SEQRES, and a chain whose
+ *  SEQRES carries the protein can still model none of it. IL17RA 9OT1
+ *  chain A is an IL17RB–IL17RA fusion with only the IL17RB half
+ *  resolved; chain C carries IL17RA. Then the best chain by sequence
+ *  alignment is drawn instead, and when no chain models the protein the
+ *  projection is empty, so nothing is painted as this protein.
+ *  ``modelled: false`` says which of those happened. */
+export async function resolveExperimentalChain(
+  hit: ProjectionHit,
+  pdbText: string,
+  fileChainId: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<{ chainId: string; segments: ProjSegment[]; modelled: boolean }> {
+  const segments = await projectExperimentalChain(hit, pdbText, fileChainId, fetchImpl);
+  const seq = await fetchCanonicalSequence(hit.uniprotAcc, fetchImpl);
+  if (!seq) return { chainId: fileChainId, segments, modelled: true };
+  const own = projectedIdentity(segments, {
+    seq,
+    resNames: residueOneLetterByResSeq(pdbText, fileChainId),
+  });
+  if (own.tested < MIN_IDENTITY_TESTED || own.matches / own.tested >= MIN_IDENTITY) {
+    return { chainId: fileChainId, segments, modelled: true };
+  }
+  let best: { chainId: string; segments: ProjSegment[]; matches: number } | null = null;
+  for (const chainId of fileChainIds(pdbText)) {
+    const resNames = residueOneLetterByResSeq(pdbText, chainId);
+    if (resNames.size < MIN_IDENTITY_TESTED) continue;
+    const segs = sequenceSegments({ seq, resNames });
+    const { matches, tested } = projectedIdentity(segs, { seq, resNames });
+    if (tested < MIN_IDENTITY_TESTED || matches / tested < MIN_IDENTITY) continue;
+    if (!best || matches > best.matches) best = { chainId, segments: segs, matches };
+  }
+  if (best) return { chainId: best.chainId, segments: best.segments, modelled: true };
+  return { chainId: fileChainId, segments: [], modelled: false };
+}
+
+/** Chain ids carrying atoms, in file order. */
+export function fileChainIds(pdbText: string): string[] {
+  const seen = new Set<string>();
+  for (const line of pdbText.split(/\r?\n/)) {
+    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
+    if (line.length < 22) continue;
+    seen.add(line.slice(21, 22));
+  }
+  return [...seen];
+}
+
+/** Below this many comparable residues an identity figure is noise — a
+ *  short peptide can match by luck — so it neither condemns nor rescues
+ *  a projection. */
+export const MIN_IDENTITY_TESTED = 20;
+
+/** The best_structures fields a projection is built from. */
+export interface ProjectionHit {
+  pdbId: string;
+  uniprotAcc: string;
+  /** PDBe chain id (what SIFTS is keyed on). */
+  chainId: string;
+  unpStart: number;
+  unpEnd: number;
+  /** `best_structures.start` — a SEQRES index. */
+  pdbStart: number;
+  /** Fusion construct: project piecewise from SIFTS. */
+  approx: boolean;
+}
+
+/** Project a chain onto UniProt numbering by its own amino acids rather
+ *  than by any stated numbering. Exact k-mer matches between the chain
+ *  and the canonical sequence propose diagonals (author − UniProt
+ *  offsets); a Viterbi pass then assigns each modelled residue to one
+ *  diagonal or to none, paying for mismatches and for every switch. So a
+ *  substitution stays on its diagonal, an isoform splice junction or a
+ *  renumbered domain becomes a switch, and a long foreign insert (a
+ *  fusion partner, a tag) is left unassigned rather than coloured as
+ *  this protein. Returns ``[]`` when the chain shares too little exact
+ *  sequence with the canonical one to propose anything. */
+export function sequenceSegments(check: SequenceCheck, k = 5): ProjSegment[] {
+  const { seq, resNames } = check;
+  const authors = [...resNames.keys()].sort((a, b) => a - b);
+  if (authors.length < k || seq.length < k) return [];
+
+  const index = new Map<string, number[]>();
+  for (let p = 1; p + k - 1 <= seq.length; p += 1) {
+    const w = seq.slice(p - 1, p - 1 + k);
+    const at = index.get(w);
+    if (at) at.push(p);
+    else index.set(w, [p]);
+  }
+
+  // Runs of consecutive author numbers: a k-mer only means something
+  // across residues that are adjacent in the chain.
+  const runs: number[][] = [];
+  for (const a of authors) {
+    const last = runs[runs.length - 1];
+    if (last && last[last.length - 1] === a - 1) last.push(a);
+    else runs.push([a]);
+  }
+
+  const votes = new Map<number, number>();
+  for (const run of runs) {
+    for (let i = 0; i + k <= run.length; i += 1) {
+      let w = "";
+      for (let j = 0; j < k; j += 1) w += resNames.get(run[i + j]);
+      const hits = index.get(w);
+      // A k-mer found all over the protein (a repeat, low complexity)
+      // says nothing about where this one belongs.
+      if (!hits || hits.length > 2) continue;
+      for (const p of hits) {
+        const off = run[i] - p;
+        votes.set(off, (votes.get(off) ?? 0) + 1);
+      }
+    }
+  }
+  const diagonals = [...votes.entries()]
+    .filter(([, n]) => n >= 2)
+    .sort((x, y) => y[1] - x[1] || x[0] - y[0])
+    .slice(0, 16)
+    .map(([off]) => off);
+  if (diagonals.length === 0) return [];
+
+  const MISMATCH = 1;
+  const UNASSIGNED = 0.6;
+  const SWITCH = 4;
+  const NONE = diagonals.length; // the "belongs to no diagonal" state
+  const nStates = diagonals.length + 1;
+  const emit = (a: number, s: number): number => {
+    if (s === NONE) return UNASSIGNED;
+    const u = a - diagonals[s];
+    if (u < 1 || u > seq.length) return Number.POSITIVE_INFINITY;
+    return seq[u - 1] === resNames.get(a) ? 0 : MISMATCH;
+  };
+
+  const out: ProjSegment[] = [];
+  let joinable = false;
+  for (const run of runs) {
+    let cost = Array.from({ length: nStates }, (_, s) => emit(run[0], s));
+    const back: number[][] = [];
+    for (let i = 1; i < run.length; i += 1) {
+      let bestPrev = 0;
+      for (let s = 1; s < nStates; s += 1) if (cost[s] < cost[bestPrev]) bestPrev = s;
+      const next = new Array<number>(nStates);
+      const from = new Array<number>(nStates);
+      for (let s = 0; s < nStates; s += 1) {
+        const stay = cost[s];
+        const jump = cost[bestPrev] + SWITCH;
+        const [c, f] = stay <= jump ? [stay, s] : [jump, bestPrev];
+        next[s] = c + emit(run[i], s);
+        from[s] = f;
+      }
+      back.push(from);
+      cost = next;
+    }
+    let s = 0;
+    for (let t = 1; t < nStates; t += 1) if (cost[t] < cost[s]) s = t;
+    const states = new Array<number>(run.length);
+    for (let i = run.length - 1; i >= 0; i -= 1) {
+      states[i] = s;
+      if (i > 0) s = back[i - 1][s];
+    }
+    for (let i = 0; i < run.length; i += 1) {
+      if (states[i] === NONE) {
+        // Never span residues left unassigned: those are atoms, and a
+        // segment across them would colour them as this protein.
+        joinable = false;
+        continue;
+      }
+      const offset = diagonals[states[i]];
+      const u = run[i] - offset;
+      const prev = out[out.length - 1];
+      // Same diagonal across an unmodelled gap is one segment: the gap's
+      // residues have no atoms, so spanning it costs nothing.
+      if (joinable && prev && prev.offset === offset && u > prev.unpHi) prev.unpHi = u;
+      else out.push({ unpLo: u, unpHi: u, offset });
+      joinable = true;
+    }
+  }
+  return out;
+}
+
+async function projectByNumbering(
+  hit: ProjectionHit,
   pdbText: string,
   fileChainId: string,
   fetchImpl: typeof fetch = fetch,
