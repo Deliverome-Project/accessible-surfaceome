@@ -74,6 +74,7 @@ import json
 import logging
 import re
 import shutil
+import statistics
 import subprocess
 import time
 from collections import defaultdict
@@ -763,6 +764,121 @@ def load_quant(
     return dict(out)
 
 
+# Whole-proteome reference for the surface-preference score: ProCan
+# (Goncalves et al. 2022, PMID 35839778), DIA across 949 cancer cell lines,
+# log2 intensities (comparable across proteins, unlike CCLE's relative TMT).
+PROCAN_KEY = "procan-depmapsanger/goncalves-2022/ProCan-DepMapSanger_protein_matrix_8498_averaged.txt"
+MIN_SURFACE_VALUES = 5
+MIN_MEMBRANE_VALUES = 3
+
+
+def load_procan_percentiles(mapping: dict[str, str]) -> dict[str, float]:
+    """Canonical acc -> percentile (0-100) of mean ProCan intensity across lines."""
+    import os
+
+    text = _read_s3(os.environ["S3_BUCKET_EXTERNAL"], PROCAN_KEY).decode()
+    lines = text.splitlines()
+    header = lines[0].split("\t")[1:]
+    sums = [0.0] * len(header)
+    ns = [0] * len(header)
+    for line in lines[1:]:
+        for j, v in enumerate(line.split("\t")[1:]):
+            x = _num(v) if v else None
+            if x is not None:
+                sums[j] += x
+                ns[j] += 1
+    means: dict[str, float] = {}
+    for j, col in enumerate(header):
+        if not ns[j]:
+            continue
+        acc = base_accession(col.split(";")[0])
+        acc = mapping.get(acc, acc)
+        means[acc] = max(means.get(acc, -1e9), sums[j] / ns[j])
+    ordered = sorted(means.values())
+    n = len(ordered)
+    return {
+        acc: 100
+        * (bisect.bisect_left(ordered, v) + bisect.bisect_right(ordered, v))
+        / (2 * n)
+        for acc, v in means.items()
+    }
+
+
+def surface_preference(
+    quant: dict[str, dict[str, list[float]]],
+    arms: list[dict[str, Any]],
+    procan: dict[str, float],
+) -> dict[str, list[int | None]]:
+    """Per protein: [median percentile in counted surface datasets, median in
+    membrane-fraction datasets, ProCan whole-proteome percentile].
+
+    Only proteins quantified in at least MIN_SURFACE_VALUES counted datasets get
+    a score; the membrane median needs MIN_MEMBRANE_VALUES fraction datasets.
+    Surface minus each reference is the protein's surface preference: positive
+    when it ranks higher in surface preps than in that reference.
+    """
+    counted = {
+        str(i) for i, a in enumerate(arms) if a["admitted"] and a.get("quant_unit")
+    }
+    membrane = {
+        str(i)
+        for i, a in enumerate(arms)
+        if a["method_class"] == "fractionation" and a.get("quant_unit")
+    }
+    out: dict[str, list[int | None]] = {}
+    for acc, q in quant.items():
+        surf = [v[1] for k, v in q.items() if k in counted]
+        if len(surf) < MIN_SURFACE_VALUES:
+            continue
+        frac = [v[1] for k, v in q.items() if k in membrane]
+        out[acc] = [
+            round(statistics.median(surf)),
+            round(statistics.median(frac))
+            if len(frac) >= MIN_MEMBRANE_VALUES
+            else None,
+            round(procan[acc]) if acc in procan else None,
+        ]
+    return out
+
+
+def preference_auroc(
+    pref: dict[str, list[int | None]], tiers: dict[str, str]
+) -> dict[str, float]:
+    """How well each score separates Canonical from Low / Not surface (documentation
+    only; the score itself never reads the tiers)."""
+
+    def auroc(pos: list[float], neg: list[float]) -> float | None:
+        if not pos or not neg:
+            return None
+        allv = sorted(pos + neg)
+        rank = {}
+        for idx, v in enumerate(allv):
+            rank.setdefault(v, []).append(idx + 1)
+        r = {v: sum(x) / len(x) for v, x in rank.items()}
+        return round(
+            (sum(r[v] for v in pos) - len(pos) * (len(pos) + 1) / 2)
+            / (len(pos) * len(neg)),
+            3,
+        )
+
+    scores: dict[str, tuple[list[float], list[float]]] = {
+        "vs_procan": ([], []),
+        "vs_membrane": ([], []),
+    }
+    for acc, (surf, frac, wp) in pref.items():
+        t = tiers.get(acc)
+        if t not in ("canonical", "low", "no") or surf is None:
+            continue
+        side = 0 if t == "canonical" else 1
+        if wp is not None:
+            scores["vs_procan"][side].append(surf - wp)
+        if frac is not None:
+            scores["vs_membrane"][side].append(surf - frac)
+    return {
+        k: a for k, (pos, neg) in scores.items() if (a := auroc(pos, neg)) is not None
+    }
+
+
 def write_downloads(
     out: Path, arms: list[dict[str, Any]], shards: list[dict[str, Any]]
 ) -> None:
@@ -778,6 +894,9 @@ def write_downloads(
                 "surfaceome_tier",
                 "db_votes_of_5",
                 "n_counted_datasets",
+                "surface_pct_median",
+                "membrane_fraction_pct_median",
+                "procan_whole_proteome_pct",
                 *[a["id"] for a in arms],
             ]
         )
@@ -795,6 +914,10 @@ def write_downloads(
                     e.get("t", "not_deep_dived" if not e["d"] else ""),
                     e.get("v", ""),
                     sum(1 for i in counted if i in hit),
+                    *[
+                        ("" if x is None else x)
+                        for x in (e.get("p") or [None, None, None])
+                    ],
                     *["1" if i in hit else "0" for i in range(len(arms))],
                 ]
             )
@@ -1134,6 +1257,7 @@ def main() -> None:
 
     per_line = load_per_line(arms, index, mapping, _read_external_table)
     quant = load_quant(manifest, arms, index, mapping, _read_external_table)
+    pref = surface_preference(quant, arms, load_procan_percentiles(mapping))
 
     shards: list[dict[str, Any]] = [{} for _ in range(N_SHARDS)]
     for acc in sorted(presence):
@@ -1152,6 +1276,8 @@ def main() -> None:
             entry["l"] = per_line[acc]
         if acc in quant:
             entry["q"] = quant[acc]
+        if acc in pref:
+            entry["p"] = pref[acc]
         shards[shard_of(acc)][acc] = entry
 
     admitted = [a for a in arms if a["admitted"]]
@@ -1172,6 +1298,13 @@ def main() -> None:
         # counted_detection_hist[k] = proteins detected in exactly k counted arms
         # (k >= 1), so the viewer can say where one protein's count ranks.
         "counted_detection_hist": counted_hist(presence, arms),
+        "surface_preference": {
+            "reference": "ProCan (Goncalves et al. 2022, PMID 35839778), mean log2 intensity across 949 cancer cell lines",
+            "min_surface_values": MIN_SURFACE_VALUES,
+            "min_membrane_values": MIN_MEMBRANE_VALUES,
+            "n_scored": len(pref),
+            "auroc_canonical_vs_low_or_not": preference_auroc(pref, tiers),
+        },
         # Same, over the deep-dived cohort including proteins no counted arm
         # detected (k = 0), overall and per deep-dive tier.
         "cohort_detection_hist": cohort_hists(presence, arms, deep, tiers),

@@ -26,6 +26,9 @@ import {
   formatQuant,
   ordinalPct,
   type CellGroup,
+  PREF_LABEL,
+  surfacePreference,
+  type PresenceEntry,
 } from "../../lib/surface-proteomics";
 import { ProteinLookup } from "./ProteinLookup";
 import { HoverTip } from "../surfaceome/_shared/HoverTip";
@@ -44,7 +47,7 @@ interface Props {
 
 type Tier = TierCode | "none";
 type StudySort = "study" | "year" | "method" | "family" | "sample" | "n" | "overlap" | "status";
-type ProteinSort = "protein" | "name" | "votes" | "tier" | "counted" | "amount";
+type ProteinSort = "protein" | "name" | "votes" | "tier" | "counted" | "amount" | "pref";
 
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const ALL_CLASSES: MethodClass[] = ["intact_cell", "fractionation"];
@@ -67,6 +70,9 @@ interface Protein {
   nCounted: number;
   /** [value, within-dataset percentile] when exactly one dataset is selected. */
   q: [number, number] | null;
+  /** Surface preference (see surfacePreference). */
+  pref: ReturnType<typeof surfacePreference>;
+  prefRaw: PresenceEntry["p"];
 }
 
 /** Preset views over all counted datasets; each has a short link (?view=…). */
@@ -613,6 +619,8 @@ function SelectionPanel({
         arms: new Set(hit),
         nCounted: e.a.filter((i) => counted.has(i)).length,
         q: selected.length === 1 ? (e.q?.[String(selected[0])] ?? null) : null,
+        pref: surfacePreference(e.p),
+        prefRaw: e.p,
       });
     }
     return out;
@@ -678,7 +686,9 @@ function SelectionPanel({
           votes: (p) => p.votes ?? -1,
           tier: (p) => TIER_ORDER.indexOf(p.tier),
           counted: (p) => p.nCounted,
-          amount: (p) => p.q?.[1] ?? -1,
+          // Missing values sort last in either direction.
+          amount: (p) => p.q?.[1] ?? (sortDir === "asc" ? Infinity : -Infinity),
+          pref: (p) => p.pref.mean ?? (sortDir === "asc" ? Infinity : -Infinity),
         });
   const tierCount = (t: Tier) => preTier.filter((p) => p.tier === t).length;
   const modeLabel =
@@ -702,6 +712,8 @@ function SelectionPanel({
       "db_votes_of_5",
       "surfaceome_tier",
       "n_counted_datasets_detected",
+      "surface_pref_vs_procan",
+      "surface_pref_vs_membrane",
       ...(single && arms[selected[0]].quant_unit
         ? [`amount_${(arms[selected[0]].quant_unit ?? "").replace(/\W+/g, "_")}`, "percentile_in_dataset"]
         : []),
@@ -718,6 +730,8 @@ function SelectionPanel({
           p.votes ?? "",
           p.tier === "none" ? "not_deep_dived" : p.tier,
           p.nCounted,
+          p.pref.vsProcan ?? "",
+          p.pref.vsMembrane ?? "",
           ...(single && arms[selected[0]].quant_unit ? [p.q?.[0] ?? "", p.q?.[1] ?? ""] : []),
           ...selected.map((i) => (p.arms.has(i) ? 1 : 0)),
         ].join(","),
@@ -1019,6 +1033,7 @@ function SelectionPanel({
               {pHeader("votes", "DB votes", true)}
               {pHeader("tier", "Surfaceome tier")}
               {pHeader("counted", `Counted datasets (of ${countedIdx.length})`)}
+              {pHeader("pref", "Surface pref.", true)}
               {single && arms[selected[0]].quant_unit
                 ? pHeader("amount", `Amount here (${arms[selected[0]].quant_unit})`)
                 : null}
@@ -1064,6 +1079,9 @@ function SelectionPanel({
                 <td className={styles.countedCell}>
                   <span className={styles.countedNum}>{p.nCounted}</span>
                   <Bar value={p.nCounted / Math.max(1, countedIdx.length)} />
+                </td>
+                <td className={styles.num}>
+                  <PrefCell pref={p.pref} raw={p.prefRaw} />
                 </td>
                 {single && arms[selected[0]].quant_unit ? (
                   <td className={styles.countedCell}>
@@ -1166,4 +1184,37 @@ function describeCombo(members: Set<number>, selected: number[], label: (i: numb
   if (!out.length) return selected.length === 2 ? "Both" : selected.length === 3 ? "All three" : `All ${selected.length}`;
   if (inn.length === 1) return `Only ${inn[0]}`;
   return `${inn.join(" and ")}, not ${out.join(" or ")}`;
+}
+
+/** Mean surface preference, colored by verdict; both comparisons on hover. */
+function PrefCell({
+  pref,
+  raw,
+}: {
+  pref: ReturnType<typeof surfacePreference>;
+  raw: PresenceEntry["p"];
+}) {
+  if (pref.mean == null || !raw) return <span className={styles.sub}>—</span>;
+  const cls =
+    pref.verdict === "enriched" ? styles.prefPos : pref.verdict === "carryover" ? styles.prefNeg : "";
+  const sign = (x: number) => (x > 0 ? `+${x}` : `${x}`);
+  return (
+    <HoverTip
+      tip={
+        <>
+          {pref.verdict ? <strong>{PREF_LABEL[pref.verdict]}. </strong> : null}
+          Median {ordinalPct(raw[0])} in counted surface datasets
+          {pref.vsProcan != null && raw[2] != null
+            ? `; ${sign(pref.vsProcan)} vs the ProCan whole proteome (${ordinalPct(raw[2])})`
+            : ""}
+          {pref.vsMembrane != null && raw[1] != null
+            ? `; ${sign(pref.vsMembrane)} vs membrane preps (${ordinalPct(raw[1])})`
+            : ""}
+          .
+        </>
+      }
+    >
+      <span className={`${styles.prefNum} ${cls}`}>{sign(pref.mean)}</span>
+    </HoverTip>
+  );
 }

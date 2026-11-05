@@ -12,6 +12,9 @@ import {
   STATUS_LABEL,
   STUDIES_PATH,
   FAMILY_ORDER,
+  PREF_LABEL,
+  surfacePreference,
+  type PresenceEntry,
   formatQuant,
   ordinalPct,
   shareBelow,
@@ -121,6 +124,115 @@ function Amount({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, num
   );
 }
 
+/** Diverging bar: -50 … +50 percentile points around a center line. */
+function DivBar({ value }: { value: number }) {
+  const w = Math.min(50, Math.abs(value));
+  return (
+    <span className={styles.divBar} aria-hidden="true">
+      <span
+        className={value >= 0 ? styles.divPos : styles.divNeg}
+        style={value >= 0 ? { left: "50%", width: `${w}%` } : { right: "50%", width: `${w}%` }}
+      />
+      <span className={styles.divMid} />
+    </span>
+  );
+}
+
+const signed = (x: number) => (x > 0 ? `+${x}` : `${x}`);
+
+/** Whether the protein ranks higher in surface preps than in a whole proteome
+ *  (ProCan) and than in membrane preps: enrichment by intact-cell labeling vs
+ *  carryover from internal membranes. */
+function PreferenceBox({
+  pref,
+  meta,
+}: {
+  pref: PresenceEntry["p"];
+  meta: StudyIndex["surface_preference"];
+}) {
+  const { vsProcan, vsMembrane, verdict } = surfacePreference(pref);
+  const tip = (
+    <>
+      <span className={styles.tipLine}>
+        Compares where this protein ranks in surface preps with where it ranks elsewhere. Each
+        number is the median within-dataset percentile across the counted surface datasets that
+        quantified it, minus its percentile in a reference: the ProCan whole proteome (949 cancer
+        cell lines,{" "}
+        <a href="https://pubmed.ncbi.nlm.nih.gov/35839778/" target="_blank" rel="noreferrer">
+          Gonçalves 2022, PMID 35839778
+        </a>
+        ) and our membrane-fraction datasets.
+      </span>
+      <span className={styles.tipLine}>
+        Intact-cell labeling enriches outward-facing proteins, so true surface proteins rank
+        higher in surface preps. Abundant intracellular proteins that ride along (lysosome and
+        ER membrane proteins, but also cytosolic ones) rank lower. At least +10 reads as surface-enriched, at most −10 as a carryover
+        pattern.
+      </span>
+      {meta?.auroc_canonical_vs_low_or_not.vs_procan ? (
+        <span className={styles.tipLine}>
+          Check: separates Canonical from Low / Not-surface proteins with AUROC{" "}
+          {meta.auroc_canonical_vs_low_or_not.vs_procan} (vs whole proteome) and{" "}
+          {meta.auroc_canonical_vs_low_or_not.vs_membrane} (vs membrane preps).
+        </span>
+      ) : null}
+      <span className={styles.tipLine}>
+        Limits: comparisons across studies and cell types; very abundant proteins sit near the top
+        everywhere, so they score near 0; proteins ProCan misses get no whole-proteome number.
+      </span>
+    </>
+  );
+  return (
+    <div className={styles.prefBox}>
+      <div className={styles.prefHead}>
+        <span className={styles.groupName}>Surface preference</span>
+        <InfoTip wide label="About surface preference">
+          {tip}
+        </InfoTip>
+        {verdict ? (
+          <StatusPill
+            size="sm"
+            tone={verdict === "enriched" ? "success" : verdict === "carryover" ? "amber" : "neutral"}
+          >
+            {PREF_LABEL[verdict]}
+          </StatusPill>
+        ) : null}
+      </div>
+      {!pref ? (
+        <p className={styles.prefLine}>
+          Not enough data: needs a value in at least {meta?.min_surface_values ?? 5} quantified
+          counted datasets.
+        </p>
+      ) : (
+        <>
+          {vsProcan != null ? (
+            <p className={styles.prefLine}>
+              <DivBar value={vsProcan} />
+              <span>
+                <strong>{signed(vsProcan)}</strong> vs whole proteome: {ordinalPct(pref[0])} in
+                surface preps, {ordinalPct(pref[2] ?? 0)} in ProCan
+              </span>
+            </p>
+          ) : (
+            <p className={styles.prefLine}>Not in ProCan, so no whole-proteome comparison.</p>
+          )}
+          {vsMembrane != null ? (
+            <p className={styles.prefLine}>
+              <DivBar value={vsMembrane} />
+              <span>
+                <strong>{signed(vsMembrane)}</strong> vs membrane preps: {ordinalPct(pref[0])} in
+                surface preps, {ordinalPct(pref[1] ?? 0)} in membrane fractions
+              </span>
+            </p>
+          ) : (
+            <p className={styles.prefLine}>Too few membrane-fraction values to compare.</p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function RankLine({ share, text }: { share: number; text: React.ReactNode }) {
   return (
     <p className={styles.rank}>
@@ -153,6 +265,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
     tier: TierCode | "none";
     lines: Record<string, number[]>;
     quant: Record<string, [number, number]>;
+    pref: PresenceEntry["p"];
   } | null>(null);
   const [error, setError] = useState(false);
   const [showOther, setShowOther] = useState(false);
@@ -170,6 +283,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             tier: entry ? tierOf(entry) : "none",
             lines: entry?.l ?? {},
             quant: entry?.q ?? {},
+            pref: entry?.p,
           });
       })
       .catch(() => live && setError(true));
@@ -283,6 +397,8 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           ) : null}
         </div>
       ) : null}
+
+      <PreferenceBox pref={data.pref} meta={data.index.surface_preference} />
 
       <div className={styles.strip} role="list" aria-label="Detection per dataset">
         {GROUPS.map((g) => {

@@ -739,3 +739,19 @@
   font-size: 0.88rem;
   color: var(--ink-soft);
 }
+
+.prefNum {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-medium);
+}
+
+.prefPos { color: var(--teal-dark); }
+.prefNeg { color: var(--amber-dark); }
+
+.prefNum {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-medium);
+}
+
+.prefPos { color: var(--teal-dark); }
+.prefNeg { color: var(--amber-dark); }
