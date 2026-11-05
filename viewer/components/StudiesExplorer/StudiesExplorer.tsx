@@ -83,6 +83,42 @@ function readSelection(aliases: Record<string, string[]>): string[] {
   return [...new Set(ids.flatMap((id) => aliases[id] ?? [id]))];
 }
 
+type Choice = View | "compare" | "lookup";
+
+/** The starting options, shortest label first; the one-line description shows
+ *  for whichever is chosen. */
+const CHOICES: { key: Choice; label: string; desc: (nCounted: number) => string }[] = [
+  {
+    key: "consensus",
+    label: "Consensus list",
+    desc: (n) =>
+      `Every protein any of the ${n} counted datasets detected, ranked by how many found it.`,
+  },
+  {
+    key: "novel",
+    label: "New candidates",
+    desc: () =>
+      `Detected on intact cells by at least ${DISCOVERY_MIN} counted datasets, missing from all five surfaceome databases, and called Canonical or Likely by our deep dive.`,
+  },
+  {
+    key: "review",
+    label: "Not called surface",
+    desc: () =>
+      `Detected by at least ${DISCOVERY_MIN} counted datasets, but our deep dive rates them Low confidence, Uncertain or Not surface: a review list for our own calls.`,
+  },
+  {
+    key: "compare",
+    label: "Compare studies",
+    desc: () =>
+      "Tick one dataset to see its proteins, or several to see which proteins they share.",
+  },
+  {
+    key: "lookup",
+    label: "Look up a protein",
+    desc: () => "Type a symbol, name or accession to see every dataset that detected it.",
+  },
+];
+
 function readView(): View | null {
   if (typeof window === "undefined") return null;
   const v = new URLSearchParams(window.location.search).get("view");
@@ -107,6 +143,8 @@ export function StudiesExplorer({ index }: Props) {
   const [cellGroups, setCellGroups] = useState<Set<CellGroup>>(new Set());
   const [selected, setSelected] = useState<number[]>([]);
   const [view, setView] = useState<View | null>(null);
+  // Hand-picked modes; a preset view takes precedence when set.
+  const [mode, setMode] = useState<"compare" | "lookup" | null>(null);
   const [pickOpen, setPickOpen] = useState(true);
   const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<StudySort>();
   const showResults = () => {
@@ -125,6 +163,7 @@ export function StudiesExplorer({ index }: Props) {
       : ids.map((id) => idxById.get(id)).filter((i): i is number => i !== undefined);
     setView(v);
     setSelected(sel);
+    if (!v && sel.length) setMode("compare");
     // Arriving from a link (a gene page dot, an email): go straight to the results.
     if (sel.length) setPickOpen(false);
   }, [idxById, aliases, countedIdx]);
@@ -142,9 +181,21 @@ export function StudiesExplorer({ index }: Props) {
     [arms],
   );
   const openView = (v: View) => {
+    setMode(null);
     updateSelected(countedIdx, v);
     showResults();
   };
+  const choose = (c: Choice) => {
+    if (c === "compare" || c === "lookup") {
+      setMode(c);
+      updateSelected([]);
+      setPickOpen(true);
+      requestAnimationFrame(() =>
+        document.getElementById(c === "compare" ? "dataset-search" : "protein-lookup")?.focus(),
+      );
+    } else openView(c);
+  };
+  const active: Choice | null = view ?? mode;
   const toggle = (i: number) =>
     updateSelected(selected.includes(i) ? selected.filter((x) => x !== i) : [...selected, i]);
 
@@ -188,55 +239,30 @@ export function StudiesExplorer({ index }: Props) {
   return (
     <div className={styles.wrap}>
       <section className={styles.start} aria-label="Where to start">
-        <h2 className={`h-section ${styles.sectionTitle}`}>Where to start</h2>
-        <div className={styles.startGrid}>
-          <button type="button" className={styles.startCard} onClick={() => openView("consensus")}>
-            <strong>Consensus surface list</strong>
-            <span>
-              Every protein any of the {countedIdx.length} counted datasets detected, ranked by how
-              many found it: what intact-cell experiments agree is on the surface.
-            </span>
-          </button>
-          <button type="button" className={styles.startCard} onClick={() => openView("novel")}>
-            <strong>New surface candidates</strong>
-            <span>
-              Detected on intact cells by at least {DISCOVERY_MIN} counted datasets, missing from
-              all five surfaceome databases, and called Canonical or Likely by our deep dive.
-            </span>
-          </button>
-          <button type="button" className={styles.startCard} onClick={() => openView("review")}>
-            <strong>Detected, but not called surface</strong>
-            <span>
-              Proteins at least {DISCOVERY_MIN} counted datasets detected whose deep-dive tier is
-              Low confidence, Uncertain or Not surface: a review list for our own calls.
-            </span>
-          </button>
-          <button
-            type="button"
-            className={styles.startCard}
-            onClick={() => {
-              setPickOpen(true);
-              requestAnimationFrame(() => document.getElementById("dataset-search")?.focus());
-            }}
-          >
-            <strong>Compare specific studies</strong>
-            <span>
-              Tick one dataset to see its proteins, or several to see which proteins they share
-              and which only one of them found.
-            </span>
-          </button>
-          <button
-            type="button"
-            className={styles.startCard}
-            onClick={() => document.getElementById("protein-lookup")?.focus()}
-          >
-            <strong>Look up one protein</strong>
-            <span>See every dataset that detected a protein, without leaving this page.</span>
-          </button>
+        <div className={styles.startRow} role="group" aria-label="Where to start">
+          <span className={`label-mono ${styles.startLabel}`}>Start with</span>
+          {CHOICES.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              className={styles.startOption}
+              data-on={active === c.key ? "true" : "false"}
+              aria-pressed={active === c.key}
+              onClick={() => choose(c.key)}
+            >
+              {c.label}
+            </button>
+          ))}
         </div>
-        <ProteinLookup />
+        <p className={styles.startDesc}>
+          {active
+            ? CHOICES.find((c) => c.key === active)?.desc(countedIdx.length)
+            : "Pick one to begin."}
+        </p>
+        {active === "lookup" ? <ProteinLookup /> : null}
       </section>
 
+      {active === "compare" ? (
       <details
         className={styles.pickBox}
         open={pickOpen}
@@ -403,8 +429,9 @@ export function StudiesExplorer({ index }: Props) {
       </div>
 
       </details>
+      ) : null}
 
-      {selected.length > 0 && pickOpen ? (
+      {active === "compare" && selected.length > 0 && pickOpen ? (
         <div className={styles.stickyBar} role="region" aria-label="Selection">
           <span>
             <strong>{selected.length}</strong> dataset{selected.length === 1 ? "" : "s"} selected
@@ -418,7 +445,7 @@ export function StudiesExplorer({ index }: Props) {
         </div>
       ) : null}
 
-      {selected.length > 0 ? (
+      {selected.length > 0 && (view || active === "compare") ? (
         <div id="results" className={styles.results}>
           <SelectionPanel
             arms={arms}
@@ -432,12 +459,7 @@ export function StudiesExplorer({ index }: Props) {
             }
           />
         </div>
-      ) : (
-        <p className={styles.hint}>
-          Pick a starting point above, or tick datasets in the list, to see their proteins and
-          where the lists overlap.
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -768,8 +790,12 @@ function SelectionPanel({
             <strong>{proteins.length.toLocaleString("en-US")}</strong> in at least one.
           </>
         )}{" "}
-        Of these, {nCanonical.toLocaleString("en-US")} are Canonical and {nLikely.toLocaleString("en-US")}{" "}
-        Likely Surfaceome proteins.
+        {view === "novel" || view === "review" ? null : (
+          <>
+            Of these, {nCanonical.toLocaleString("en-US")} are Canonical and{" "}
+            {nLikely.toLocaleString("en-US")} Likely Surfaceome proteins.
+          </>
+        )}
       </p>
 
       {!single && wide ? null : !single ? (
