@@ -96,21 +96,21 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       <div className={`label-mono ${styles.subhead}`}>
         Published surface-proteomics studies
         <span className={styles.rollup}>
-          detected in {countedHits.length} of {counted.length} counted arms ({pubHits.size} of{" "}
+          detected in {countedHits.length} of {counted.length} counted datasets ({pubHits.size} of{" "}
           {pubs.size} papers)
-          {otherHits > 0 ? ` · listed in ${otherHits} not-counted arm${otherHits === 1 ? "" : "s"}` : ""}
+          {otherHits > 0 ? ` · listed in ${otherHits} not-counted dataset${otherHits === 1 ? "" : "s"}` : ""}
         </span>
         <InfoTip wide label="About study presence">
           Whether {symbol} ({uniprotAcc}) appears in the protein list of each
-          human cell-surface proteomics study arm we collected and audited
-          ({data.index.n_arms} arms from {data.index.n_publications} papers).
+          human cell-surface proteomics dataset we collected and audited
+          ({data.index.n_arms} datasets from {data.index.n_publications} papers).
           Proteins are matched by UniProt accession, after mapping retired
           accessions to their current entry.
           <br />
           <br />
-          <strong>Counted</strong> arms label proteins on intact cells and
+          <strong>Counted</strong> datasets label proteins on intact cells and
           pass review (core or provisional). <strong>Held</strong> and{" "}
-          <strong>below screen</strong> arms are listed but not counted.{" "}
+          <strong>below screen</strong> datasets are listed but not counted.{" "}
           <strong>Comparators</strong> (membrane fractionation, lysate
           glycoproteomes) show that a protein co-purifies with membranes,
           not that it is reachable from outside the cell.
@@ -122,7 +122,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
         </InfoTip>
       </div>
 
-      <div className={styles.strip} role="list" aria-label="Detection per study arm">
+      <div className={styles.strip} role="list" aria-label="Detection per dataset">
         {GROUPS.map((g) => {
           const items = arms.filter((x) => g.statuses.includes(x.arm.status));
           if (items.length === 0) return null;
@@ -191,18 +191,18 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       ) : (
         <p className={styles.empty}>
           {data.hits.size === 0
-            ? `Not listed in any of the ${arms.length} study arms.`
-            : "Not detected in any counted arm; tick “include not-counted arms” to see where it was listed."}
+            ? `Not listed in any of the ${arms.length} datasets.`
+            : "Not detected in any counted dataset; tick “include not-counted datasets” to see where it was listed."}
         </p>
       )}
       <p className={styles.actions}>
         <label>
           <input type="checkbox" checked={showOther} onChange={(e) => setShowOther(e.target.checked)} />{" "}
-          include not-counted arms
+          include not-counted datasets
         </label>
         <label>
           <input type="checkbox" checked={showMissing} onChange={(e) => setShowMissing(e.target.checked)} />{" "}
-          include arms where it was not detected
+          include datasets where it was not detected
         </label>
         <span aria-hidden="true">·</span>
         <Link href={STUDIES_PATH}>Explore all surface proteomics data →</Link>

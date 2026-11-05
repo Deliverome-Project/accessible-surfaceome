@@ -78,10 +78,9 @@ export default async function SurfaceProteomicsPage() {
           <h1 className={`h-data ${styles.title}`}>Surface proteomics data</h1>
           <p className={styles.lede}>
             Which proteins have published experiments actually found on the
-            outside of human cells? We collected {index.n_arms} datasets
-            (&ldquo;study arms&rdquo;) from {index.n_publications} cell-surface
+            outside of human cells? We collected {index.n_arms} datasets from {index.n_publications} cell-surface
             proteomics papers and matched every reported protein to its UniProt
-            accession. <strong>{counted.length} arms</strong> from{" "}
+            accession. <strong>{counted.length} datasets</strong> from{" "}
             {index.n_admitted_publications} papers label proteins on intact cells
             and pass our quality review; together they detect{" "}
             <strong>{index.n_accessions_admitted.toLocaleString("en-US")} proteins</strong>.
@@ -91,18 +90,22 @@ export default async function SurfaceProteomicsPage() {
             tell the outer surface from internal membranes.
           </p>
           <p className={styles.note}>
-            Select one study to see its proteins, or several to see where their
-            lists intersect. Each protein links to its Surfaceome page where one
-            exists, and carries our deep-dive tier so you can see whether it is a
-            Canonical or Likely surface protein. Snapshot{" "}
+            Each protein links to its Surfaceome page where one exists and
+            carries our deep-dive tier, so you can see whether it is a Canonical
+            or Likely surface protein. Snapshot{" "}
             <code>{index.snapshot}</code>, built {index.generated_at}. Study
             curation is AI-assisted and still under review; report an error to{" "}
             <a href="mailto:surfaceome-viewer@deliverome.org">surfaceome-viewer@deliverome.org</a>.
           </p>
         </header>
 
-        <details className={styles.key} open>
-          <summary className={styles.keySummary}>How to read this page</summary>
+        <details className={styles.key}>
+          <summary className={styles.keySummary}>
+            How to read this page{" "}
+            <span className={styles.keyHint}>
+              methods, review status, scores and Surfaceome tiers
+            </span>
+          </summary>
           <div className={styles.keyGrid}>
             <section>
               <h2 className={styles.keyHead}>Method</h2>
@@ -130,7 +133,7 @@ export default async function SurfaceProteomicsPage() {
                       <span className={s === "core" || s === "provisional" ? styles.yes : styles.no}>
                         {s === "core" || s === "provisional" ? "counted" : "not counted"}
                       </span>{" "}
-                      <span className={styles.n}>{countByStatus(s)} arms</span>
+                      <span className={styles.n}>{countByStatus(s)} datasets</span>
                     </dt>
                     <dd>{sentence(STATUS_HELP[s].replace(/^[^:]+:\s*/, ""))}</dd>
                   </div>
@@ -145,15 +148,15 @@ export default async function SurfaceProteomicsPage() {
                   <dd>
                     The share of a study&apos;s proteins that are already well-established
                     surface proteins. A clean intact-cell experiment scores high; one
-                    swamped by intracellular contamination scores low. Intact-cell arms
+                    swamped by intracellular contamination scores low. Intact-cell datasets
                     need at least {Math.round(OVERLAP_SCREEN * 100)}% (the tick on each
                     bar) to be counted.
                   </dd>
                 </div>
                 <div>
-                  <dt>Counted arms</dt>
+                  <dt>Counted datasets</dt>
                   <dd>
-                    For a protein, how many of the {counted.length} counted arms detected
+                    For a protein, how many of the {counted.length} counted datasets detected
                     it. Many independent detections on intact cells is strong evidence
                     that the protein is surface-exposed in at least some cell types.
                   </dd>
