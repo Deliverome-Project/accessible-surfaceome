@@ -34,6 +34,9 @@ export interface StudyArm {
   intact_cell_verified: boolean;
   sample: string | null;
   status: ArmStatus;
+  /** Why this dataset isn't Core ("author pre-filtered to …", "values are
+   *  imputed …"); null for Core. Derived in the build, not free text. */
+  status_reason?: string | null;
   admitted: boolean;
   n_proteins: number;
   reference_overlap: number | null;

@@ -11,6 +11,7 @@ import {
   STATUS_HELP,
   STATUS_LABEL,
   STUDIES_PATH,
+  FAMILY_ORDER,
   formatQuant,
   ordinalPct,
   shareBelow,
@@ -23,6 +24,7 @@ import {
   type StudyIndex,
 } from "../../../lib/surface-proteomics";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { HoverTip } from "../_shared/HoverTip";
 import tip from "../../InfoTip/InfoTip.module.css";
 import { FamilyChip } from "../../StudiesExplorer/FamilyChip";
 import { SortableHeader } from "../_shared/SortableHeader";
@@ -84,9 +86,9 @@ function Amount({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, num
   if (!hit) return <span className={styles.muted}>—</span>;
   if (!q || !arm.quant_unit) {
     return (
-      <span className={styles.muted} title="This dataset publishes a protein list without a per-protein quantity">
-        list only
-      </span>
+      <HoverTip tip="This dataset publishes a protein list without a per-protein quantity.">
+        <span className={styles.muted}>list only</span>
+      </HoverTip>
     );
   }
   const [value, pct] = q;
@@ -95,12 +97,16 @@ function Amount({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, num
       <div>
         <strong>{formatQuant(value)}</strong> <span className={styles.unit}>{arm.quant_unit}</span>
       </div>
-      <div className={styles.pctLine} title={`${arm.quant_note}; rank among the ${arm.n_quantified?.toLocaleString("en-US")} proteins this dataset quantified`}>
+      <HoverTip
+        tip={`Value: ${arm.quant_note}. Percentile: rank among the ${arm.n_quantified?.toLocaleString("en-US")} proteins this dataset quantified. Values aren't comparable across datasets; percentiles are.`}
+      >
+      <div className={styles.pctLine}>
         <span className={styles.pctBar} aria-hidden="true">
           <span style={{ width: `${Math.max(2, pct)}%` }} />
         </span>
         {ordinalPct(pct)}
       </div>
+      </HoverTip>
     </div>
   );
 }
@@ -282,18 +288,39 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                 </span>
               </span>
               <span className={styles.dots}>
-                {items.map(({ arm, hit, i }) => (
-                  <Dot key={arm.id} arm={arm} hit={hit} q={data.quant[String(i)]} />
-                ))}
+                {/* One cluster per labeling technology, in a fixed order. */}
+                {FAMILY_ORDER.map((fam) => {
+                  const inFam = items
+                    .filter((x) => x.arm.family === fam)
+                    .sort((a, b) => Number(b.hit) - Number(a.hit) || (b.arm.year ?? 0) - (a.arm.year ?? 0));
+                  if (!inFam.length) return null;
+                  return (
+                    <span
+                      key={fam}
+                      className={styles.famCluster}
+                      aria-label={`${inFam[0].arm.family_label}: ${inFam.filter((x) => x.hit).length} of ${inFam.length} detected`}
+                    >
+                      {inFam.map(({ arm, hit, i }) => (
+                        <Dot key={arm.id} arm={arm} hit={hit} q={data.quant[String(i)]} />
+                      ))}
+                    </span>
+                  );
+                })}
               </span>
             </div>
           );
         })}
       </div>
       <p className={styles.legend}>
-        <span className={`${styles.dot} ${styles.intact_cell} ${styles.hit}`} /> intact-cell labeling
-        <span className={`${styles.dot} ${styles.fractionation} ${styles.hit}`} /> membrane fractionation
-        <span className={styles.dot} /> not detected
+        {FAMILY_ORDER.filter((fam) => arms.some((x) => x.arm.family === fam)).map((fam) => (
+          <span key={fam} className={styles.legendItem}>
+            <span className={`${styles.dot} ${styles.hit} ${styles[`fam_${fam.replace(/-/g, "_")}`]}`} />
+            {arms.find((x) => x.arm.family === fam)?.arm.family_label}
+          </span>
+        ))}
+        <span className={styles.legendItem}>
+          <span className={styles.dot} /> not detected
+        </span>
       </p>
 
       <p className={styles.actions}>
@@ -311,7 +338,17 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
 
       {rows.length > 0 ? (
         <div className={styles.tableScroll}>
-        <table className={styles.table}>
+        <table className={`${styles.table} ${styles.fixedTable}`}>
+          {/* Fixed widths, so toggling which rows show never re-flows the columns. */}
+          <colgroup>
+            <col style={{ width: "12rem" }} />
+            <col style={{ width: "6.75rem" }} />
+            <col style={{ width: "10.5rem" }} />
+            <col style={{ width: "9rem" }} />
+            <col style={{ width: "13.75rem" }} />
+            <col />
+            <col style={{ width: "10rem" }} />
+          </colgroup>
           <thead>
             <tr>
               {th("study", "Study")}
@@ -361,6 +398,9 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
                       {STATUS_LABEL[arm.status]}
                     </StatusPill>
+                    {arm.status_reason ? (
+                      <div className={styles.statusReason}>{arm.status_reason}</div>
+                    ) : null}
                   </td>
                 </tr>
               );
@@ -384,7 +424,11 @@ function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number
   const label =
     `${shortCitation(arm)}: ${arm.name}. ${hit ? "Detected" : "Not detected"}; ` +
     `${STATUS_LABEL[arm.status]}${counted ? "" : ", not counted"}`;
-  const cls = [styles.dot, hit ? `${styles[arm.method_class]} ${styles.hit}` : "", counted ? "" : styles.dim]
+  const cls = [
+    styles.dot,
+    hit ? `${styles[`fam_${arm.family.replace(/-/g, "_")}`] ?? ""} ${styles.hit}` : "",
+    counted ? "" : styles.dim,
+  ]
     .filter(Boolean)
     .join(" ");
   // Styled popover (the InfoTip one) rather than the OS title bubble.

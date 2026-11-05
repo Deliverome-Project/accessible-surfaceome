@@ -95,9 +95,16 @@
   flex-wrap: wrap;
 }
 
+/* Scrolls sideways only where the table can't fit: a scroll box would clip
+   the styled (InfoTip) popovers inside it. */
 .tableScroll {
-  overflow-x: auto;
   max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .tableScroll {
+    overflow-x: auto;
+  }
 }
 
 /* Columns size to their content: no stretching to fill the page width. */
@@ -725,4 +732,11 @@
 .amountNum {
   font-variant-numeric: tabular-nums;
   font-weight: var(--fw-medium);
+}
+
+.statusReason {
+  margin-top: 3px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--ink-soft);
 }

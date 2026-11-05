@@ -66,19 +66,11 @@ export default function SurfaceProteomicsPage() {
             outside of human cells? We collected {index.n_arms} datasets from {index.n_publications} cell-surface
             proteomics papers and matched every reported protein to its UniProt
             accession. <strong>{counted.length} datasets</strong> from{" "}
-            {index.n_admitted_publications} papers pass our quality review (below)
+            {index.n_admitted_publications} papers pass our quality review (see &ldquo;How to read this page&rdquo;)
             and count as surface evidence; together they detect{" "}
             <strong>{index.n_accessions_admitted.toLocaleString("en-US")} proteins</strong>.
             The other {index.n_arms - counted.length} are listed for completeness
             and marked as not counted.
-          </p>
-          <p className={styles.note}>
-            Each protein links to its Surfaceome page where one exists and
-            carries our deep-dive tier, so you can see whether it is a Canonical
-            or Likely surface protein. Snapshot{" "}
-            <code>{index.snapshot}</code>, built {index.generated_at}. Study
-            curation is AI-assisted and still under review; report an error to{" "}
-            <a href="mailto:surfaceome-viewer@deliverome.org">surfaceome-viewer@deliverome.org</a>.
           </p>
           <p className={styles.downloads}>
             <strong>Download:</strong>{" "}
@@ -92,14 +84,22 @@ export default function SurfaceProteomicsPage() {
           </p>
         </header>
 
-        <section className={styles.review} aria-labelledby="quality-review">
+        <details className={styles.key}>
+          <summary className={styles.keySummary}>
+            How to read this page{" "}
+            <span className={styles.keyHint}>
+              what counts as surface evidence, methods, scores and Surfaceome tiers
+            </span>
+          </summary>
+          <section className={styles.review} aria-labelledby="quality-review">
           <h2 id="quality-review" className={styles.reviewTitle}>
             What our quality review checks
           </h2>
           <p className={styles.reviewLede}>
             A dataset counts as surface evidence only if it passes all four checks, judged
             from each paper&apos;s methods section and supplementary tables. The reading is
-            AI-assisted and still under review.
+            AI-assisted and still under review; report an error to{" "}
+            <a href="mailto:surfaceome-viewer@deliverome.org">surfaceome-viewer@deliverome.org</a>.
           </p>
           <ol className={styles.checks}>
             <li>
@@ -137,14 +137,9 @@ export default function SurfaceProteomicsPage() {
             bar. Both count.
           </p>
         </section>
-
-        <details className={styles.key}>
-          <summary className={styles.keySummary}>
-            How to read this page{" "}
-            <span className={styles.keyHint}>
-              methods, review status, scores and Surfaceome tiers
-            </span>
-          </summary>
+          <p className={styles.snapshot}>
+            Data snapshot <code>{index.snapshot}</code>, built {index.generated_at}.
+          </p>
           <div className={styles.keyGrid}>
             <section>
               <h2 className={styles.keyHead}>Method</h2>

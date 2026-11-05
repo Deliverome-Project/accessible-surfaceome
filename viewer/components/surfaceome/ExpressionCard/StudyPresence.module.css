@@ -70,7 +70,7 @@
 .dots {
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 6px 0.7rem;
 }
 
 /* One study arm. Hollow = not listed; filled = listed, colored by method
@@ -92,15 +92,7 @@ a.dot:focus-visible {
   outline-offset: 1px;
 }
 
-.hit.intact_cell {
-  background: var(--teal-mid);
-  border-color: var(--teal-mid);
-}
 
-.hit.fractionation {
-  background: var(--amber-mid);
-  border-color: var(--amber-mid);
-}
 
 .dim {
   opacity: 0.55;
@@ -117,7 +109,7 @@ a.dot:focus-visible {
 }
 
 .legend .dot {
-  margin-right: -0.4rem;
+  margin-right: 0;
 }
 
 .table {
@@ -281,10 +273,17 @@ a.dot:focus-visible {
   color: var(--muted);
 }
 
+/* Scrolls sideways only below the table's minimum width, so the styled
+   popovers inside it aren't clipped on desktop. */
 .tableScroll {
-  overflow-x: auto;
   max-width: 100%;
   min-width: 0;
+}
+
+@media (max-width: 1240px) {
+  .tableScroll {
+    overflow-x: auto;
+  }
 }
 
 .lineDetail {
@@ -340,4 +339,51 @@ a.dot:focus-visible {
 .muted {
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+/* Column widths come from the <colgroup>, not the visible rows' content. */
+.fixedTable {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 72rem;
+}
+
+.fixedTable td,
+.fixedTable th {
+  overflow-wrap: anywhere;
+}
+
+/* Dot fill per labeling technology (same hues as the Chemistry pills). */
+.hit.fam_biotin_amine { background: var(--teal-mid); border-color: var(--teal-mid); }
+.hit.fam_glycoprotein_capture { background: var(--lavender-bright); border-color: var(--lavender-bright); }
+.hit.fam_glycopeptide_capture { background: var(--lavender-dark); border-color: var(--lavender-dark); }
+.hit.fam_peroxidase_proximity { background: var(--amber-mid); border-color: var(--amber-mid); }
+.hit.fam_other_chemoproteomic { background: var(--maroon-mid); border-color: var(--maroon-mid); }
+.hit.fam_membrane_fractionation { background: var(--muted); border-color: var(--muted); }
+
+/* Each technology's dots sit together, with a gap between technologies. */
+.famCluster {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding-right: 0.7rem;
+  margin-right: 0.1rem;
+  border-right: 1px solid var(--line-soft);
+}
+
+.famCluster:last-child {
+  border-right: 0;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.statusReason {
+  margin-top: 3px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--ink-soft);
 }
