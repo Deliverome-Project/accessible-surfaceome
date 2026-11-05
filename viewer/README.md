@@ -129,10 +129,13 @@ populate); if the threshold trips, just retry once the Worker is healthy.
 
 ### Linking to a filtered catalogue
 
-Every catalogue filter lives in the query string, so a link can open the
-table already filtered and the address bar always holds a shareable link
-to the current view. `/?nsrc=0&triage=yes`, for example, opens the
-proteins no source database lists that the triage agent calls surface.
+Every catalogue filter, and the sort order, lives in the query string, so a
+link can open the table already filtered and sorted and the address bar
+always holds a shareable link to the current view. `/?nsrc=0&triage=yes`,
+for example, opens the proteins no source database lists that the triage
+agent calls surface. `sort=<column>` (with `dir=asc|desc` when it isn't the
+column's first-click direction) is left out for the default sort, so links
+made before sorting was saved still open the same view.
 The HTML paper's figure captions use this to open the set behind each
 count. The parameter list and its semantics are in
 `lib/catalog-url-state.ts`. Unknown parameters and values are ignored, so
