@@ -11,7 +11,7 @@
  * Joins are on UniProt accession (isoform suffix stripped), never on symbol.
  * Only `core` / `provisional` arms count as surface detections; the rest are
  * shown but labelled (held, below the reference-overlap screen, or a
- * fractionation / lysate comparator).
+ * comparator). Whole-lysate arms are left out of the data entirely.
  */
 
 export type ArmStatus = "core" | "provisional" | "held" | "below_screen" | "comparator";
@@ -52,6 +52,10 @@ export interface StudyIndex {
   n_admitted_publications: number;
   n_accessions: number;
   n_accessions_admitted: number;
+  /** Registry ids the snapshot split into several arms → those arm ids. */
+  aliases?: Record<string, string[]>;
+  /** Whole-lysate arms left out of the published data. */
+  excluded_arms?: string[];
   arms: StudyArm[];
 }
 
@@ -84,7 +88,7 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
   below_screen:
     "Below screen: intact-cell labeling list whose overlap with known surface proteins is under the 20% screen, so it is likely dominated by intracellular background. Listed, not counted.",
   comparator:
-    "Comparator: membrane fractionation, whole-lysate or whole-tissue glycoproteome, or a labeling arm known to reach the inner leaflet. Shown for context; not evidence of extracellular access.",
+    "Comparator: membrane fractionation, or a labeling arm known to reach the inner side of the membrane. Shown for context; not evidence of extracellular access.",
 };
 
 export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {

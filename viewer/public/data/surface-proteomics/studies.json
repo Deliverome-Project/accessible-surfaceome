@@ -4,13 +4,48 @@
  "snapshot": "2026-11-02-sweep-v5",
  "source": "S3E8 cross-method surfaceome compendium, processed snapshot 2026-11-02-sweep-v5",
  "n_shards": 32,
- "n_arms": 108,
- "n_publications": 92,
- "n_admitted_arms": 38,
- "n_admitted_publications": 35,
- "n_accessions": 19244,
- "n_accessions_admitted": 9040,
+ "n_arms": 105,
+ "n_publications": 91,
+ "n_admitted_arms": 39,
+ "n_admitted_publications": 36,
+ "n_accessions": 18699,
+ "n_accessions_admitted": 9145,
+ "aliases": {
+  "vilen-2022": [
+   "vilen-apex-2022",
+   "vilen-sia-2022"
+  ]
+ },
+ "excluded_arms": [
+  "glyco-pdxplorer-2026",
+  "shi-54lines-glyco-2025",
+  "xiao-lines-glyco-2018",
+  "xu-thp1-lysate-2026"
+ ],
  "arms": [
+  {
+   "id": "george-aml-2026",
+   "name": "Acute-leukemia surfaceome atlas (George 2026)",
+   "publication": "george-aml-2026",
+   "first_author": "George BM",
+   "year": 2026,
+   "journal": "bioRxiv",
+   "title": "Unbiased, systematic surfaceome profiling of Acute Leukemia to identify novel immunotherapy targets",
+   "pmid": null,
+   "doi": "10.64898/2026.09.16.752145",
+   "family": "biotin-amine",
+   "family_label": "Amine biotinylation",
+   "method_class": "intact_cell",
+   "intact_cell_labeling": "yes",
+   "intact_cell_verified": true,
+   "sample": "25 acute-leukemia cell lines (lymphoid + myeloid)",
+   "status": "core",
+   "admitted": true,
+   "n_proteins": 2669,
+   "reference_overlap": 0.3016,
+   "repository": "none_deposited",
+   "repository_ids": []
+  },
   {
    "id": "salmela-cscc-2026",
    "name": "Cutaneous SCC UT-SCC-59A sulfo-NHS-SS-biotin surfaceome, control siRNA (Salmela 2026)",
@@ -82,31 +117,6 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD058999"
-   ]
-  },
-  {
-   "id": "glyco-pdxplorer-2026",
-   "name": "Glyco-PDXplorer atlas (Kislinger 2026)",
-   "publication": "41579862",
-   "first_author": "Govindarajan M",
-   "year": 2026,
-   "journal": "Cell Rep Med",
-   "title": "Pan-cancer N-glycoproteomic atlas of patient-derived xenografts uncovers FAT2 as an actionable surface target",
-   "pmid": "41579862",
-   "doi": "10.1016/j.xcrm.2025.102578",
-   "family": "glycopeptide-capture",
-   "family_label": "Glycopeptide capture",
-   "method_class": "lysate",
-   "intact_cell_labeling": "no",
-   "intact_cell_verified": true,
-   "sample": "85 patient-derived tumor models: brain, head/neck, lung, pancreas, colorectal and ovarian cancers; human tumors grown in mice",
-   "status": "comparator",
-   "admitted": false,
-   "n_proteins": 1179,
-   "reference_overlap": 0.55470737913486,
-   "repository": "MassIVE",
-   "repository_ids": [
-    "MSV000096571"
    ]
   },
   {
@@ -575,7 +585,7 @@
    "family_label": "Other chemoproteomic labeling",
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
-   "intact_cell_verified": false,
+   "intact_cell_verified": true,
    "sample": "JHH4 hepatocellular carcinoma cells",
    "status": "below_screen",
    "admitted": false,
@@ -600,7 +610,7 @@
    "family_label": "Glycoprotein capture",
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
-   "intact_cell_verified": false,
+   "intact_cell_verified": true,
    "sample": "JHH4 hepatocellular carcinoma cells",
    "status": "provisional",
    "admitted": true,
@@ -625,7 +635,7 @@
    "family_label": "Amine biotinylation",
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
-   "intact_cell_verified": false,
+   "intact_cell_verified": true,
    "sample": "JHH4 hepatocellular carcinoma cells",
    "status": "below_screen",
    "admitted": false,
@@ -688,32 +698,6 @@
    ]
   },
   {
-   "id": "xu-thp1-lysate-2026",
-   "name": "THP-1 macrophage whole-lysate glycoproteome, boronic acid (Xu 2026)",
-   "publication": "42875461",
-   "first_author": "Xu X",
-   "year": 2026,
-   "journal": "Nat Commun",
-   "title": "Deciphering the mechanisms of macrophage polarization through comprehensive analysis of cellular and cell-surface protein glycosylation",
-   "pmid": "42875461",
-   "doi": "10.1038/s41467-026-77775-8",
-   "family": "glycopeptide-capture",
-   "family_label": "Glycopeptide capture",
-   "method_class": "lysate",
-   "intact_cell_labeling": "no",
-   "intact_cell_verified": true,
-   "sample": "Monocytic leukaemia line, macrophage-differentiated",
-   "status": "comparator",
-   "admitted": false,
-   "n_proteins": 1465,
-   "reference_overlap": 0.46757679180887374,
-   "repository": "PRIDE",
-   "repository_ids": [
-    "PXD053647",
-    "PXD071681"
-   ]
-  },
-  {
    "id": "mazzone-rpe1-2026",
    "name": "hTERT-RPE-1 sulfo-NHS-SS-biotin surfaceome, unstressed vs osmotic/heat stress (Mazzone 2026 preprint)",
    "publication": "10.64898/2026.02.26.708128",
@@ -759,31 +743,6 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD076394"
-   ]
-  },
-  {
-   "id": "shi-54lines-glyco-2025",
-   "name": "54 cancer cell lines whole-lysate intact glycopeptides, IMAC co-enrichment (Shi 2025)",
-   "publication": "41035678",
-   "first_author": "Shi W",
-   "year": 2025,
-   "journal": "iScience",
-   "title": "Integrated multi-dimensional comparison of proteomic profiles across 54 cancer cell lines",
-   "pmid": "41035678",
-   "doi": "10.1016/j.isci.2025.113514",
-   "family": "glycopeptide-capture",
-   "family_label": "Glycopeptide capture",
-   "method_class": "lysate",
-   "intact_cell_labeling": "no",
-   "intact_cell_verified": true,
-   "sample": "Cancer cell lines",
-   "status": "comparator",
-   "admitted": false,
-   "n_proteins": 5960,
-   "reference_overlap": 0.1401006711409396,
-   "repository": "PRIDE",
-   "repository_ids": [
-    "PXD056716"
    ]
   },
   {
@@ -1471,7 +1430,7 @@
    "family_label": "Peroxidase proximity labeling",
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
-   "intact_cell_verified": false,
+   "intact_cell_verified": true,
    "sample": "HPAF-II pancreatic adenocarcinoma (2D and 3D); JEG-3 choriocarcinoma (2D)",
    "status": "provisional",
    "admitted": true,
@@ -1496,7 +1455,7 @@
    "family_label": "Glycoprotein capture",
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
-   "intact_cell_verified": false,
+   "intact_cell_verified": true,
    "sample": "HPAF-II pancreatic adenocarcinoma (2D and 3D); JEG-3 choriocarcinoma (2D)",
    "status": "provisional",
    "admitted": true,
@@ -2269,29 +2228,6 @@
    "repository_ids": [
     "PXD008378"
    ]
-  },
-  {
-   "id": "xiao-lines-glyco-2018",
-   "name": "MCF-7, HEK293T and Jurkat whole-lysate glycoproteome, boronic acid (Xiao 2018)",
-   "publication": "29703890",
-   "first_author": "Xiao H",
-   "year": 2018,
-   "journal": "Nat Commun",
-   "title": "An enrichment method based on synergistic and reversible covalent interactions for large-scale analysis of glycoproteins",
-   "pmid": "29703890",
-   "doi": "10.1038/s41467-018-04081-3",
-   "family": "glycopeptide-capture",
-   "family_label": "Glycopeptide capture",
-   "method_class": "lysate",
-   "intact_cell_labeling": "no",
-   "intact_cell_verified": true,
-   "sample": "Cancer and embryonic kidney lines",
-   "status": "comparator",
-   "admitted": false,
-   "n_proteins": 1898,
-   "reference_overlap": 0.4657534246575342,
-   "repository": "not verified",
-   "repository_ids": []
   },
   {
    "id": "perna-2017",
