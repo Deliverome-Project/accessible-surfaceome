@@ -1,5 +1,5 @@
 /**
- * Catalog filter state ⇄ URL query string.
+ * Catalog filter and sort state ⇄ URL query string.
  *
  * Lets a link open the catalog already filtered — e.g. the HTML paper's
  * figure captions link each count to the exact protein set behind it
@@ -23,6 +23,9 @@
  *   sb       any | ge1 | ge3 | not_in — SURFACE-Bind patches
  *   f.<key>  deep-dive enum filter, e.g. f.surface_method_direct=flow_cytometry
  *   b.<key>  deep-dive boolean filter: yes | no
+ *   sort     sort column (symbol, n_sources, db_<db>, triage, dd_access, …);
+ *            left out for the catalog's default sort
+ *   dir      asc | desc; left out when it is the column's natural direction
  *
  * Unknown parameters and values are dropped rather than erroring, so a
  * link made against an older filter vocabulary degrades to a broader
@@ -45,6 +48,10 @@ export interface CatalogUrlState {
   surfaceBind: SurfaceBindMode | null;
   ddEnum: Record<string, string[]>;
   ddBool: Record<string, "yes" | "no">;
+  /** Sort column, or null for the catalog's default sort. */
+  sort: string | null;
+  /** Sort direction, or null for the column's natural direction. */
+  dir: "asc" | "desc" | null;
 }
 
 /** The values each parameter may take; anything else is ignored. */
@@ -58,6 +65,8 @@ export interface CatalogUrlVocabulary {
   /** Deep-dive enum field key → its allowed values. */
   ddEnum: Readonly<Record<string, readonly string[]>>;
   ddBoolKeys: readonly string[];
+  /** Sortable column keys. */
+  sortKeys: readonly string[];
 }
 
 const SURFACE_BIND_MODES: readonly SurfaceBindMode[] = ["any", "ge1", "ge3", "not_in"];
@@ -78,6 +87,8 @@ export function emptyCatalogUrlState(): CatalogUrlState {
     surfaceBind: null,
     ddEnum: {},
     ddBool: {},
+    sort: null,
+    dir: null,
   };
 }
 
@@ -121,17 +132,23 @@ export function parseCatalogUrl(search: string, vocab: CatalogUrlVocabulary): Ca
     const v = params.get(`b.${key}`);
     if (v === "yes" || v === "no") state.ddBool[key] = v;
   }
+  const sort = params.get("sort");
+  if (sort && vocab.sortKeys.includes(sort)) {
+    state.sort = sort;
+    const dir = params.get("dir");
+    state.dir = dir === "asc" || dir === "desc" ? dir : null;
+  }
   return state;
 }
 
-/** True when the state filters nothing (the default catalog view). */
+/** True when the state is the default catalog view: no filters, default sort. */
 export function isEmptyCatalogUrlState(s: CatalogUrlState): boolean {
   return serializeCatalogUrl(s) === "";
 }
 
 /**
  * Query string (without the leading `?`) for a state; "" for the default
- * view. Keys come out in a fixed order so the same filters always produce
+ * view. Keys come out in a fixed order so the same view always produces
  * the same URL. Commas are left literal — they are legal in a query and
  * keep shared links readable.
  */
@@ -155,5 +172,9 @@ export function serializeCatalogUrl(s: CatalogUrlState): string {
     if (s.ddEnum[key].length) add(`f.${key}`, s.ddEnum[key].join(","));
   }
   for (const key of Object.keys(s.ddBool).sort()) add(`b.${key}`, s.ddBool[key]);
+  if (s.sort) {
+    add("sort", s.sort);
+    if (s.dir) add("dir", s.dir);
+  }
   return parts.join("&");
 }

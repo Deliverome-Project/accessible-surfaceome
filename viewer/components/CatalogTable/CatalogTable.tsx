@@ -145,20 +145,21 @@ const CATALOG_MODELS: { id: string; idx: number; short: string; long: string }[]
   { id: "claude-sonnet-4-6", idx: 1, short: "S", long: "Triage agent" },
 ];
 
-type SortKey =
-  | "symbol"
-  | "n_sources"
-  | "db_uniprot"
-  | "db_go"
-  | "db_surfy"
-  | "db_cspa"
-  | "db_hpa"
-  | "triage"
-  | "dd_access"
-  | "dd_conf"
-  | "dd_evidence"
-  | "dd_state";
+// Every sortable column. The URL accepts exactly these as `sort=`, and the
+// type is derived from the list so the two can't drift apart.
+const SORT_KEYS = [
+  "symbol", "n_sources", "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa",
+  "triage", "dd_access", "dd_conf", "dd_evidence", "dd_state",
+] as const;
+type SortKey = (typeof SORT_KEYS)[number];
 type SortDir = "asc" | "desc";
+// The view a fresh visit opens in. A URL leaves `sort` out for it, so
+// existing links (and the paper's figure links) keep working unchanged.
+const DEFAULT_SORT_KEY: SortKey = "dd_access";
+/** The direction a column sorts in when first clicked. */
+function naturalSortDir(k: SortKey): SortDir {
+  return k === "symbol" ? "asc" : "desc";
+}
 // The Quick-filters row is a two-view toggle over the deep-dive dimension:
 // "All" (the full cohort) vs "Deep dive" (only genes with a deep-dive
 // record — the ~5k rows carrying real content). Both drive the SAME
@@ -355,8 +356,8 @@ export function CatalogTable({
   universe_version,
 }: CatalogTableProps) {
   const [query, setQuery] = useState("");
-  const [sortKey, setSortKey] = useState<SortKey>("dd_access");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [sortKey, setSortKey] = useState<SortKey>(DEFAULT_SORT_KEY);
+  const [sortDir, setSortDir] = useState<SortDir>(naturalSortDir(DEFAULT_SORT_KEY));
   // Advanced filters. `dbFilter` is AND-semantics: a row passes only
   // if every DB in the set voted yes (intersection of `DB ∈ filter`
   // and `row.db[DB] === 1`). `verdictFilter` and `reasonFilter` are
@@ -874,7 +875,7 @@ export function CatalogTable({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // ── Filters ⇄ URL (lib/catalog-url-state.ts) ─────────────────────
+  // ── Filters + sort ⇄ URL (lib/catalog-url-state.ts) ──────────────
   // Read once on mount, so a link like /?nsrc=0&triage=yes opens the
   // catalog already filtered; then mirror every change back into the
   // address bar so the current view is always shareable. `urlHydrated`
@@ -892,9 +893,15 @@ export function CatalogTable({
       reasons: [...REASON_GROUPS.flatMap((g) => g.reasons), REASON_OTHER],
       ddEnum: Object.fromEntries(DD_ENUM_FIELDS.map((f) => [f.key, f.values])),
       ddBoolKeys: DD_BOOL_FIELDS.map((f) => f.key),
+      sortKeys: SORT_KEYS,
     };
     const s = parseCatalogUrl(window.location.search, vocab);
     if (!isEmptyCatalogUrlState(s)) {
+      if (s.sort) {
+        const k = s.sort as SortKey;
+        setSortKey(k);
+        setSortDir(s.dir ?? naturalSortDir(k));
+      }
       setQuery(s.q);
       setPresetKeys(new Set(s.presets as PresetKey[]));
       setInductionSubs(new Set(s.triggers as InductionSubKey[]));
@@ -953,6 +960,10 @@ export function CatalogTable({
       const mode = ddBoolFilters[f.key];
       if (mode !== "any") s.ddBool[f.key] = mode;
     }
+    if (sortKey !== DEFAULT_SORT_KEY || sortDir !== naturalSortDir(DEFAULT_SORT_KEY)) {
+      s.sort = sortKey;
+      s.dir = sortDir === naturalSortDir(sortKey) ? null : sortDir;
+    }
     const qs = serializeCatalogUrl(s);
     const next = `${window.location.pathname}${qs ? `?${qs}` : ""}${window.location.hash}`;
     const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
@@ -972,6 +983,8 @@ export function CatalogTable({
     surfaceBindFilter,
     ddEnumFilters,
     ddBoolFilters,
+    sortKey,
+    sortDir,
   ]);
 
   // The .tableScroll element is the scroll container (overflow-y in
@@ -1210,7 +1223,7 @@ export function CatalogTable({
       setSortDir(sortDir === "asc" ? "desc" : "asc");
     } else {
       setSortKey(k);
-      setSortDir(k === "symbol" ? "asc" : "desc");
+      setSortDir(naturalSortDir(k));
     }
   }
 

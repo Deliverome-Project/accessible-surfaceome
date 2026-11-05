@@ -17,6 +17,7 @@ const VOCAB: CatalogUrlVocabulary = {
   reasons: ["gpi_anchored", "cytoplasmic"],
   ddEnum: { surface_method_direct: ["flow_cytometry", "functional_surface_assay"] },
   ddBoolKeys: ["has_tm"],
+  sortKeys: ["symbol", "n_sources", "dd_access", "dd_conf"],
 };
 
 test("the default view serializes to an empty query", () => {
@@ -49,12 +50,14 @@ test("round-trips every parameter, in a fixed key order", () => {
   s.surfaceBind = "ge1";
   s.ddEnum = { surface_method_direct: ["flow_cytometry"] };
   s.ddBool = { has_tm: "yes" };
+  s.sort = "dd_conf";
+  s.dir = "asc";
   const qs = serializeCatalogUrl(s);
   assert.equal(
     qs,
     "q=cd%203&preset=induced&trigger=cancer,immune&lowlit=1&db=uniprot,hpa&nsrc=0,5" +
       "&tier=low,no&triage=contextual&reason=gpi_anchored&dd=yes&sb=ge1" +
-      "&f.surface_method_direct=flow_cytometry&b.has_tm=yes",
+      "&f.surface_method_direct=flow_cytometry&b.has_tm=yes&sort=dd_conf&dir=asc",
   );
   const back = parseCatalogUrl(qs, VOCAB);
   assert.deepEqual(back, { ...s, nSources: [0, 5] });
@@ -77,4 +80,29 @@ test("unknown values and parameters are dropped, not fatal", () => {
 
 test("duplicate values collapse", () => {
   assert.deepEqual(parseCatalogUrl("?tier=low,low,no", VOCAB).tiers, ["low", "no"]);
+});
+
+test("a sort-only link is not the default view and round-trips", () => {
+  const s = parseCatalogUrl("?sort=n_sources", VOCAB);
+  assert.equal(s.sort, "n_sources");
+  assert.equal(s.dir, null, "no dir means the column's natural direction");
+  assert.ok(!isEmptyCatalogUrlState(s));
+  assert.equal(serializeCatalogUrl(s), "sort=n_sources");
+});
+
+test("filters and sort combine in one link", () => {
+  const s = parseCatalogUrl("?preset=likely&sort=symbol&dir=desc", VOCAB);
+  assert.deepEqual(s.presets, ["likely"]);
+  assert.equal(s.sort, "symbol");
+  assert.equal(s.dir, "desc");
+});
+
+test("an unknown sort column is dropped along with its dir; a bad dir is ignored", () => {
+  const unknown = parseCatalogUrl("?sort=not_a_column&dir=asc", VOCAB);
+  assert.equal(unknown.sort, null);
+  assert.equal(unknown.dir, null);
+  assert.ok(isEmptyCatalogUrlState(unknown));
+  const badDir = parseCatalogUrl("?sort=dd_conf&dir=sideways", VOCAB);
+  assert.equal(badDir.sort, "dd_conf");
+  assert.equal(badDir.dir, null);
 });
