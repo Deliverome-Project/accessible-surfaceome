@@ -58,6 +58,16 @@ const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] 
   },
 ];
 
+/** Short labels shown above each technology's cluster of dots. */
+const FAMILY_SHORT: Record<string, string> = {
+  "biotin-amine": "Amine biotin",
+  "glycoprotein-capture": "Glycoprotein",
+  "glycopeptide-capture": "Glycopeptide",
+  "peroxidase-proximity": "Peroxidase",
+  "other-chemoproteomic": "Other",
+  "membrane-fractionation": "Fractionation",
+};
+
 type RowSort = "study" | "found" | "amount" | "method" | "family" | "sample" | "status";
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const pct = (x: number) => `${Math.floor(x * 100)}%`;
@@ -300,9 +310,14 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                       className={styles.famCluster}
                       aria-label={`${inFam[0].arm.family_label}: ${inFam.filter((x) => x.hit).length} of ${inFam.length} detected`}
                     >
-                      {inFam.map(({ arm, hit, i }) => (
-                        <Dot key={arm.id} arm={arm} hit={hit} q={data.quant[String(i)]} />
-                      ))}
+                      <span className={`${styles.famLabel} ${styles[`famText_${fam.replace(/-/g, "_")}`] ?? ""}`}>
+                        {FAMILY_SHORT[fam] ?? inFam[0].arm.family_label}
+                      </span>
+                      <span className={styles.famDots}>
+                        {inFam.map(({ arm, hit, i }) => (
+                          <Dot key={arm.id} arm={arm} hit={hit} q={data.quant[String(i)]} />
+                        ))}
+                      </span>
                     </span>
                   );
                 })}
@@ -312,14 +327,9 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
         })}
       </div>
       <p className={styles.legend}>
-        {FAMILY_ORDER.filter((fam) => arms.some((x) => x.arm.family === fam)).map((fam) => (
-          <span key={fam} className={styles.legendItem}>
-            <span className={`${styles.dot} ${styles.hit} ${styles[`fam_${fam.replace(/-/g, "_")}`]}`} />
-            {arms.find((x) => x.arm.family === fam)?.arm.family_label}
-          </span>
-        ))}
         <span className={styles.legendItem}>
-          <span className={styles.dot} /> not detected
+          Filled = detected; <span className={styles.dot} /> hollow = not detected; faded = not
+          counted. Hover a dot for the study.
         </span>
       </p>
 

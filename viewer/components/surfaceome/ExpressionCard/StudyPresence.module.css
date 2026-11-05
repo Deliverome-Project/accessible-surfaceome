@@ -348,9 +348,12 @@ a.dot:focus-visible {
   min-width: 72rem;
 }
 
+/* Break between words, never mid-word (globals.css sets overflow-wrap:
+   anywhere); only a token longer than its column may break. */
 .fixedTable td,
 .fixedTable th {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 /* Dot fill per labeling technology (same hues as the Chemistry pills). */
@@ -364,12 +367,34 @@ a.dot:focus-visible {
 /* Each technology's dots sit together, with a gap between technologies. */
 .famCluster {
   display: inline-flex;
-  flex-wrap: wrap;
-  gap: 3px;
+  flex-direction: column;
+  gap: 2px;
   padding-right: 0.7rem;
   margin-right: 0.1rem;
   border-right: 1px solid var(--line-soft);
 }
+
+.famDots {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+/* Technology label sitting right above its dots, in the dots' hue. */
+.famLabel {
+  font-size: 0.75rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.famText_biotin_amine { color: var(--teal-dark); }
+.famText_glycoprotein_capture { color: var(--lavender-dark); }
+.famText_glycopeptide_capture { color: var(--lavender-deepest); }
+.famText_peroxidase_proximity { color: var(--amber-dark); }
+.famText_other_chemoproteomic { color: var(--maroon-mid); }
+.famText_membrane_fractionation { color: var(--ink-soft); }
 
 .famCluster:last-child {
   border-right: 0;

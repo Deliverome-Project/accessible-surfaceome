@@ -34,8 +34,23 @@
 
 .table {
   width: 100%;
+  min-width: 44rem;
   border-collapse: collapse;
   font-size: 0.92rem;
+}
+
+/* globals.css sets overflow-wrap: anywhere, which splits words mid-letter
+   ("macrophag-e") when a column is squeezed. Break only between words here;
+   the table scrolls sideways (min-width) before a column gets that narrow. */
+.table th,
+.table td {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+}
+
+.table th {
+  white-space: nowrap;
 }
 
 .table th,
@@ -87,7 +102,13 @@
 
 /* Scrolls the expression table sideways on narrow screens instead of the page. */
 .tableScroll {
-  overflow-x: auto;
   max-width: 100%;
   min-width: 0;
+}
+
+/* Only where the table can't fit (a scroll box clips the styled popovers). */
+@media (max-width: 900px) {
+  .tableScroll {
+    overflow-x: auto;
+  }
 }
