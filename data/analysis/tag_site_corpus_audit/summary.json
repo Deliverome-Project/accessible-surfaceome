@@ -1,14 +1,27 @@
 {
+ "added": [
+  "GABRA5-internal-35-lit",
+  "GABRG1-internal-39-lit",
+  "GABRG2-internal-43-lit",
+  "GABRG3-internal-21-lit",
+  "KCNK3-internal-214-lit"
+ ],
+ "added_skipped_existing": [
+  "GABRA4-internal-39-lit",
+  "GABRA6-internal-23-lit"
+ ],
  "by_action": {
+  "add": 5,
   "delete": 18,
   "keep": 94,
+  "skip_existing": 2,
   "update": 79
  },
  "by_verdict": {
-  "confirmed_exact": 128,
-  "confirmed_shifted": 26,
+  "confirmed_exact": 129,
+  "confirmed_shifted": 27,
   "not_supported": 8,
-  "region_only": 19,
+  "region_only": 17,
   "terminal_misfiled": 5,
   "wrong_species_numbering": 5
  },
@@ -67,11 +80,13 @@
  "n_audited": 191,
  "tag_sites_version": "2026-11-05-lit-audit",
  "validation_level_changes": {
+  "function_only -> function_perturbed": 1,
   "function_perturbed -> detected_only": 1,
   "surface_and_function -> detected_only": 6,
   "surface_and_function -> function_only": 8,
   "surface_and_function -> surface_only": 11,
-  "surface_only -> detected_only": 17,
-  "surface_only -> function_only": 2
+  "surface_only -> detected_only": 13,
+  "surface_only -> function_only": 2,
+  "surface_only -> function_perturbed": 4
  }
 }

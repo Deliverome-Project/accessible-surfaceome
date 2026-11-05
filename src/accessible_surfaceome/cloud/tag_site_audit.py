@@ -48,6 +48,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -148,16 +149,10 @@ REGION_LABELS: dict[str, tuple[str, tuple[int, int] | None]] = {
         "113|114 not stated)",
         (112, 113),
     ),
-    "MMP14-internal-111-lit": ("between the propeptide and catalytic domain", None),
     "SLC46A2-internal-57-lit": ("first predicted extracellular loop", None),
     "SLC6A3-internal-199-lit": (
         "G199/S201 junction as written (insert after 199 or 200)",
         (199, 200),
-    ),
-    "TMEM123-internal-34-lit": (
-        "N-terminal region following the signal peptide at A34 (junction 33|34 or "
-        "34|35 not stated)",
-        (33, 34),
     ),
 }
 
@@ -170,7 +165,7 @@ class Correction:
     uniprot_acc: str
     gene_symbol: str
     verdict: str
-    action: str  # "keep" | "update" | "delete"
+    action: str  # "keep" | "update" | "delete" | "add" | "skip_existing"
     residue_before_audit: int | None
     residue_after_audit: int | None
     validation_before: str | None
@@ -184,9 +179,13 @@ class Correction:
         return self.residue_after_audit - self.residue_before_audit
 
 
-def read_audit(path: Path) -> list[dict[str, str]]:
+def read_tsv(path: Path) -> list[dict[str, str]]:
     with path.open(newline="", encoding="utf-8") as fh:
-        rows = list(csv.DictReader(fh, delimiter="\t"))
+        return list(csv.DictReader(fh, delimiter="\t"))
+
+
+def read_audit(path: Path) -> list[dict[str, str]]:
+    rows = read_tsv(path)
     ids = [r["site_id"] for r in rows]
     if len(ids) != len(set(ids)):
         raise ValueError("audit.tsv has duplicate site_id values")
@@ -253,22 +252,19 @@ def _frame(basis: str) -> str | None:
     """``position_frame`` for a corrected row: the frame the paper numbered in.
 
     Mirrors the Worker's vocabulary (``mature``, ``isoform:...``) and extends
-    it with ``ortholog:<species>``. A junction re-read from the paper's own
+    it with ``ortholog:<species>``. The audit's ``paper_numbering_basis`` is
+    free text, so only a leading ``ortholog:``/``isoform:`` token or a mature
+    numbering statement maps; a junction re-read from the paper's own
     flanking residues, or already in human canonical numbering, has no
     foreign frame.
     """
     b = basis.strip()
-    if b in (
-        "",
-        "none",
-        "uniprot_canonical_human",
-        "flanking_residues_only",
-        "loop_only",
-    ):
-        return None
-    if b == "mature_protein":
+    m = re.match(r"^(ortholog:[A-Za-z][A-Za-z ]*?|isoform:[^;(]+?)\s*(?:[;(].*)?$", b)
+    if m:
+        return m.group(1).strip()
+    if b.startswith("mature"):
         return "mature"
-    return b
+    return None
 
 
 def _audit_note(a: dict[str, str], *, extra: str) -> str:
@@ -287,6 +283,9 @@ def build_corrections(
     version: str,
     synced_at: str,
     topologies: dict[str, str] | None = None,
+    failed: dict[str, str] | None = None,
+    added: list[dict[str, str]] | None = None,
+    existing_site_ids: set[str] | None = None,
 ) -> list[Correction]:
     """Apply the audit to ``before_rows`` (the rows as served, keyed by site_id).
 
@@ -301,8 +300,21 @@ def build_corrections(
     row was served with ``extracellular = 0`` / ``compartment = 'unknown'``
     (the region shape), and the pinned junction needs the topology state the
     residue rows carry.
+
+    ``failed`` maps site_id -> why the paper shows the construct failed
+    (``failed_sites.tsv``): the position stands, ``validation_level`` becomes
+    ``function_perturbed`` and the failure sentence leads the rationale.
+
+    ``added`` are sites the audit recovered from papers the agent had filed
+    under the wrong gene (``added_sites.tsv``, ``confirmed_*`` rows only).
+    Each is minted as a new ``literature_retrieved`` internal row
+    (``<GENE>-internal-<N>-lit``); two tags at one junction share a row. A
+    minted id that already exists (in the snapshot or ``existing_site_ids``)
+    is skipped and reported through :func:`summarize`.
     """
     topologies = topologies or {}
+    failed = failed or {}
+    existing_site_ids = set(existing_site_ids or ())
     by_id = {r["site_id"]: r for r in before_rows}
     out: list[Correction] = []
     for a in audit_rows:
@@ -438,6 +450,15 @@ def build_corrections(
         elif notes:
             notes.insert(0, "position confirmed at this residue.")
 
+        if sid in failed:
+            row["validation_level"] = "function_perturbed"
+            vl_after = "function_perturbed"
+            notes.insert(
+                0,
+                f"NOT TOLERATED: {failed[sid].strip().rstrip('.')}. validation_level "
+                f"{vl_before} -> function_perturbed.",
+            )
+
         if notes:
             row["rationale"] = (
                 _audit_note(a, extra=" ".join(notes))
@@ -463,6 +484,142 @@ def build_corrections(
                 row=row,
             )
         )
+    out.extend(
+        _mint_added(
+            added or [],
+            sequences,
+            topologies,
+            version=version,
+            synced_at=synced_at,
+            taken={r["site_id"] for r in before_rows} | existing_site_ids,
+        )
+    )
+    return out
+
+
+def _mint_added(
+    added: list[dict[str, str]],
+    sequences: dict[str, str],
+    topologies: dict[str, str],
+    *,
+    version: str,
+    synced_at: str,
+    taken: set[str],
+) -> list[Correction]:
+    by_site: dict[str, list[dict[str, str]]] = {}
+    for a in added:
+        if not a["verdict"].strip().startswith("confirmed"):
+            continue
+        sid = f"{a['gene']}-internal-{int(a['insert_after_residue'])}-lit"
+        by_site.setdefault(sid, []).append(a)
+    out: list[Correction] = []
+    for sid, group in by_site.items():
+        a = group[0]
+        acc, residue = a["uniprot_acc"], int(a["insert_after_residue"])
+        if sid in taken:
+            out.append(
+                Correction(
+                    site_id=sid,
+                    uniprot_acc=acc,
+                    gene_symbol=a["gene"],
+                    verdict=a["verdict"],
+                    action="skip_existing",
+                    residue_before_audit=None,
+                    residue_after_audit=residue,
+                    validation_before=None,
+                    validation_after=None,
+                    row=None,
+                )
+            )
+            continue
+        seq = sequences.get(acc)
+        if not seq:
+            raise KeyError(f"{sid}: no canonical sequence for {acc}")
+        before, after, label = flanks(seq, residue)
+        if (before, after) != (a["residue_before"], a["residue_after"]):
+            raise ValueError(
+                f"{sid}: audit flanks {a['residue_before']}|{a['residue_after']} do not "
+                f"match canonical {before}|{after}"
+            )
+        topo = topologies.get(acc, "")
+        state = topo[residue - 1] if len(topo) >= residue else None
+        vl = lowered_validation_level(
+            "surface_and_function",
+            surface=a["surface_shown"],
+            function=a["function_shown"],
+        )
+        tags = " / ".join(dict.fromkeys(g["tag_type"].strip() for g in group))
+        pmids = sorted({g["pmid"].strip() for g in group})
+        sources = [
+            {
+                "pmid": int(g["pmid"]),
+                "citation": f"PMID {g['pmid']}",
+                "claim": g["paper_quote"],
+            }
+            for g in group[:1]
+        ]
+        recovered = ", ".join(dict.fromkeys(g["recovered_from"] for g in group))
+        rationale = (
+            f"[Literature audit 2026-11-05 ({AUDIT_REF}): site added. The paper (PMID "
+            f"{', '.join(pmids)}) was cited by {recovered}, which filed it under the "
+            f"wrong gene; the audit recovered the real site on {a['gene']} at "
+            f"{label}|{after or '-'} (numbering: {a['paper_numbering_basis']}; construct "
+            f"species: {a['species_of_construct']}; paper reports surface: "
+            f"{a['surface_shown']}, function: {a['function_shown']}). Paper: "
+            f'"{a["paper_quote"].strip()}". Audit note: {a["notes"].strip()}]'
+        )
+        row: dict[str, Any] = {c: None for c in COLUMNS}
+        row.update(
+            gene_symbol=a["gene"],
+            uniprot_acc=acc,
+            site_id=sid,
+            provenance="literature_retrieved",
+            site_kind="internal",
+            insert_after_residue=residue,
+            residue_before=before,
+            residue_after=after,
+            residue_label=label,
+            topology_state=state,
+            extracellular=1 if state == "O" else 0,
+            compartment=(
+                "extracellular"
+                if state == "O"
+                else "intracellular"
+                if state == "I"
+                else "unknown"
+            ),
+            tag_type=tags,
+            evidence_type="published tag insertion at this exact site",
+            functional_impact_measured=(
+                f"Surface display: {a['surface_shown']}; function of the tagged "
+                f"construct: {a['function_shown']} (literature audit)"
+            ),
+            confidence="high"
+            if a["verdict"].strip() == "confirmed_exact"
+            else "medium",
+            rationale=rationale,
+            sources_json=json.dumps(sources),
+            tag_sites_version=version,
+            synced_at=synced_at,
+            validation_level=vl,
+            position_evidence="validated",
+            source_tier="paper",
+            position_frame=_frame(a["paper_numbering_basis"]),
+        )
+        out.append(
+            Correction(
+                site_id=sid,
+                uniprot_acc=acc,
+                gene_symbol=a["gene"],
+                verdict=a["verdict"],
+                action="add",
+                residue_before_audit=None,
+                residue_after_audit=residue,
+                validation_before=None,
+                validation_after=vl,
+                row=row,
+            )
+        )
     return out
 
 
@@ -472,9 +629,11 @@ def summarize(corrections: list[Correction]) -> dict[str, Any]:
     by_action: dict[str, int] = {}
     vl_changes: dict[str, int] = {}
     for c in corrections:
-        by_verdict[c.verdict] = by_verdict.get(c.verdict, 0) + 1
         by_action[c.action] = by_action.get(c.action, 0) + 1
-        if c.action != "delete" and c.validation_after != c.validation_before:
+        if c.action in ("add", "skip_existing"):
+            continue  # recovered sites are not audit verdicts on served rows
+        by_verdict[c.verdict] = by_verdict.get(c.verdict, 0) + 1
+        if c.action in ("update", "keep") and c.validation_after != c.validation_before:
             k = f"{c.validation_before} -> {c.validation_after}"
             vl_changes[k] = vl_changes.get(k, 0) + 1
     shifts = sorted(
@@ -483,7 +642,9 @@ def summarize(corrections: list[Correction]) -> dict[str, Any]:
         reverse=True,
     )
     return {
-        "n_audited": len(corrections),
+        "n_audited": sum(
+            1 for c in corrections if c.action not in ("add", "skip_existing")
+        ),
         "by_verdict": dict(sorted(by_verdict.items())),
         "by_action": dict(sorted(by_action.items())),
         "validation_level_changes": dict(sorted(vl_changes.items())),
@@ -497,6 +658,10 @@ def summarize(corrections: list[Correction]) -> dict[str, Any]:
             for c in shifts[:5]
         ],
         "deleted": sorted(c.site_id for c in corrections if c.action == "delete"),
+        "added": sorted(c.site_id for c in corrections if c.action == "add"),
+        "added_skipped_existing": sorted(
+            c.site_id for c in corrections if c.action == "skip_existing"
+        ),
     }
 
 

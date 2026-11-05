@@ -10,6 +10,10 @@ Inputs, all under ``data/analysis/tag_site_corpus_audit/``:
 
 * ``audit.tsv`` — the audit, keyed by ``site_id`` (committed copy of
   ``processed://scratch/becca/tag-site-corpus-audit/audit.tsv``).
+* ``failed_sites.tsv`` — confirmed sites whose paper shows the construct failed
+  (position stands; ``validation_level`` becomes ``function_perturbed``).
+* ``added_sites.tsv`` — sites recovered from papers the agent had filed under
+  the wrong gene; ``confirmed_*`` rows are minted as new literature rows.
 * ``rows_before.json`` — the 191 audited rows exactly as served before the
   correction, captured by ``--export-before``. The corrections are always
   built from THIS snapshot, never from the live table, so a re-run after a
@@ -57,6 +61,7 @@ from accessible_surfaceome.cloud.tag_site_audit import (
     build_corrections,
     dump_rows,
     read_audit,
+    read_tsv,
     summarize,
 )
 from accessible_surfaceome.env import load_env
@@ -67,6 +72,9 @@ AUDIT_TSV = AUDIT_DIR / "audit.tsv"
 ROWS_BEFORE = AUDIT_DIR / "rows_before.json"
 SEQUENCES = AUDIT_DIR / "canonical_sequences.json"
 TOPOLOGIES = AUDIT_DIR / "per_residue_topology.json"
+FAILED_TSV = AUDIT_DIR / "failed_sites.tsv"
+ADDED_TSV = AUDIT_DIR / "added_sites.tsv"
+LIVE_IDS_ADDED = AUDIT_DIR / "live_site_ids_added_genes.json"
 ROWS_AFTER = AUDIT_DIR / "rows_after.json"
 SUMMARY = AUDIT_DIR / "summary.json"
 
@@ -104,7 +112,29 @@ def export_before(
     dump_rows(rows, ROWS_BEFORE)
     print(f"wrote {len(rows)} rows -> {ROWS_BEFORE.relative_to(REPO_ROOT)}")
 
-    accs = sorted({r["uniprot_acc"] for r in rows})
+    added = read_tsv(ADDED_TSV)
+    added_genes = sorted(
+        {a["gene"] for a in added if a["verdict"].startswith("confirmed")}
+    )
+    live_ids: list[str] = []
+    if added_genes:
+        marks = ", ".join("?" * len(added_genes))
+        live_ids = sorted(
+            r["site_id"]
+            for r in client.query(
+                f"SELECT site_id FROM tag_site_public WHERE gene_symbol IN ({marks});",
+                added_genes,
+            )
+        )
+    LIVE_IDS_ADDED.write_text(json.dumps(live_ids, indent=1) + "\n", encoding="utf-8")
+    print(
+        f"wrote {len(live_ids)} live site_ids for the added genes -> {LIVE_IDS_ADDED.relative_to(REPO_ROOT)}"
+    )
+
+    accs = sorted(
+        {r["uniprot_acc"] for r in rows}
+        | {a["uniprot_acc"] for a in added if a["verdict"].startswith("confirmed")}
+    )
     seqs: dict[str, str] = {}
     topos: dict[str, str] = {}
     for ch in _chunks(accs, 90):
@@ -139,9 +169,15 @@ def export_before(
 
 
 def apply(client: D1Client | None, corrections, *, dry_run: bool) -> None:
-    upserts = [c for c in corrections if c.action in ("update", "keep")]
+    upserts = [c for c in corrections if c.action in ("update", "keep", "add")]
     deletes = [c for c in corrections if c.action == "delete"]
-    genes = sorted({c.gene_symbol for c in corrections if c.action != "keep"})
+    genes = sorted(
+        {
+            c.gene_symbol
+            for c in corrections
+            if c.action not in ("keep", "skip_existing")
+        }
+    )
     if dry_run:
         print(
             f"(dry-run) would upsert {len(upserts)} rows, delete {len(deletes)} rows, "
@@ -201,9 +237,20 @@ def main() -> int:
     before = json.loads(ROWS_BEFORE.read_text(encoding="utf-8"))
     seqs = json.loads(SEQUENCES.read_text(encoding="utf-8"))
     topos = json.loads(TOPOLOGIES.read_text(encoding="utf-8"))
+    failed = {r["site_id"]: r["why_failed"] for r in read_tsv(FAILED_TSV)}
+    added = read_tsv(ADDED_TSV)
+    live_ids = set(json.loads(LIVE_IDS_ADDED.read_text(encoding="utf-8")))
     synced_at = datetime.now(UTC).isoformat()
     corrections = build_corrections(
-        before, audit, seqs, version=args.version, synced_at=synced_at, topologies=topos
+        before,
+        audit,
+        seqs,
+        version=args.version,
+        synced_at=synced_at,
+        topologies=topos,
+        failed=failed,
+        added=added,
+        existing_site_ids=live_ids,
     )
     summary = summarize(corrections)
     summary["tag_sites_version"] = args.version

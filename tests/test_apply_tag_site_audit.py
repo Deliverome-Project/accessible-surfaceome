@@ -9,10 +9,12 @@ import pytest
 from accessible_surfaceome.cloud.tag_site_audit import (
     COLUMNS,
     REGION_LABELS,
+    _frame,
     build_corrections,
     flanks,
     lowered_validation_level,
     read_audit,
+    read_tsv,
     summarize,
 )
 from accessible_surfaceome.paths import REPO_ROOT
@@ -292,6 +294,130 @@ def test_unknown_verdict_is_an_error():
         )
 
 
+@pytest.mark.parametrize(
+    ("basis", "expected"),
+    [
+        ("ortholog:mouse", "ortholog:mouse"),
+        ("ortholog:mouse (KCC2b, NM_020333)", "ortholog:mouse"),
+        ("ortholog:Xenopus laevis", "ortholog:Xenopus laevis"),
+        ("isoform:NRG1 type III (700 aa)", "isoform:NRG1 type III"),
+        ("mature_protein", "mature"),
+        ("mature subunit numbering (after signal peptide cleavage)", "mature"),
+        ("uniprot_canonical_human", None),
+        ("flanking_residues_only", None),
+        ("human TMEM123 (Q8N131) canonical numbering; endogenous knock-in", None),
+        ("", None),
+    ],
+)
+def test_position_frame_keeps_only_the_short_vocabulary(basis, expected):
+    assert _frame(basis) == expected
+
+
+def test_failed_construct_keeps_its_position_but_is_marked_perturbed():
+    before = [_row("GENEX-internal-10-lit", 10, validation_level="surface_only")]
+    audit = [_audit("GENEX-internal-10-lit", "confirmed_exact", 10)]
+    (c,) = build_corrections(
+        before,
+        audit,
+        {"P00001": SEQ},
+        version="v",
+        synced_at="t",
+        failed={"GENEX-internal-10-lit": "construct failed to reach the surface"},
+    )
+    r = _kept(c)
+    assert c.action == "update" and r["insert_after_residue"] == 10
+    assert r["validation_level"] == "function_perturbed"
+    assert r["rationale"].startswith("[Literature audit")
+    assert "NOT TOLERATED: construct failed to reach the surface." in r["rationale"]
+    assert summarize([c])["validation_level_changes"] == {
+        "surface_only -> function_perturbed": 1
+    }
+
+
+def _added(site_id, gene, residue, tag, verdict="confirmed_shifted", **over):
+    a = {
+        "site_id": site_id,
+        "gene": gene,
+        "uniprot_acc": "P00001",
+        "insert_after_residue": str(residue),
+        "residue_before": SEQ[residue - 1],
+        "residue_after": SEQ[residue],
+        "tag_type": tag,
+        "pmid": "7",
+        "paper_quote": "between 4 and 5",
+        "paper_numbering_basis": "mature subunit numbering",
+        "species_of_construct": "human",
+        "verdict": verdict,
+        "surface_shown": "yes",
+        "function_shown": "not_reported",
+        "recovered_from": "OTHER-internal-1-lit",
+        "notes": "n",
+    }
+    a.update(over)
+    return a
+
+
+def test_recovered_sites_are_minted_as_literature_rows_one_per_junction():
+    added = [
+        _added("GENEX-added-12-HA", "GENEX", 12, "HA"),
+        _added("GENEX-added-12-FLAG", "GENEX", 12, "FLAG"),
+        _added("GENEX-added-30-HA", "GENEX", 30, "HA", verdict="not_supported"),
+    ]
+    topo = "I" * 5 + "M" * 5 + "O" * 191
+    (c,) = build_corrections(
+        [],
+        [],
+        {"P00001": SEQ},
+        version="v",
+        synced_at="t",
+        topologies={"P00001": topo},
+        added=added,
+    )
+    r = _kept(c)
+    assert c.action == "add" and r["site_id"] == "GENEX-internal-12-lit"
+    assert r["provenance"] == "literature_retrieved" and r["site_kind"] == "internal"
+    assert (r["residue_before"], r["residue_after"], r["residue_label"]) == flanks(
+        SEQ, 12
+    )
+    assert r["tag_type"] == "HA / FLAG"
+    assert (r["topology_state"], r["extracellular"], r["compartment"]) == (
+        "O",
+        1,
+        "extracellular",
+    )
+    assert r["validation_level"] == "surface_only"  # surface yes, function not reported
+    assert r["position_frame"] == "mature" and r["position_evidence"] == "validated"
+    assert json.loads(r["sources_json"]) == [
+        {"pmid": 7, "citation": "PMID 7", "claim": "between 4 and 5"}
+    ]
+    assert "OTHER-internal-1-lit" in r["rationale"]
+    assert set(r) == set(COLUMNS)
+    assert summarize([c])["added"] == ["GENEX-internal-12-lit"]
+
+
+def test_recovered_site_whose_id_is_already_served_is_skipped():
+    added = [_added("GENEX-added-12-HA", "GENEX", 12, "HA")]
+    (c,) = build_corrections(
+        [],
+        [],
+        {"P00001": SEQ},
+        version="v",
+        synced_at="t",
+        added=added,
+        existing_site_ids={"GENEX-internal-12-lit"},
+    )
+    assert c.action == "skip_existing" and c.row is None
+    assert summarize([c])["added_skipped_existing"] == ["GENEX-internal-12-lit"]
+
+
+def test_recovered_site_with_wrong_flanks_is_an_error():
+    added = [_added("GENEX-added-12-HA", "GENEX", 12, "HA", residue_before="Z")]
+    with pytest.raises(ValueError):
+        build_corrections(
+            [], [], {"P00001": SEQ}, version="v", synced_at="t", added=added
+        )
+
+
 # --- the committed artifacts ------------------------------------------------
 
 
@@ -312,6 +438,13 @@ def test_committed_rows_after_are_what_the_snapshot_plus_audit_produce():
     summary = json.loads((AUDIT_DIR / "summary.json").read_text())
     audit = read_audit(AUDIT_DIR / "audit.tsv")
     topos = json.loads((AUDIT_DIR / "per_residue_topology.json").read_text())
+    failed = {
+        r["site_id"]: r["why_failed"] for r in read_tsv(AUDIT_DIR / "failed_sites.tsv")
+    }
+    added = read_tsv(AUDIT_DIR / "added_sites.tsv")
+    live_ids = set(
+        json.loads((AUDIT_DIR / "live_site_ids_added_genes.json").read_text())
+    )
     corr = build_corrections(
         before,
         audit,
@@ -319,13 +452,18 @@ def test_committed_rows_after_are_what_the_snapshot_plus_audit_produce():
         version=summary["tag_sites_version"],
         synced_at="<set at execute time>",
         topologies=topos,
+        failed=failed,
+        added=added,
+        existing_site_ids=live_ids,
     )
     expected = [c.row for c in corr if c.row is not None]
     committed = json.loads((AUDIT_DIR / "rows_after.json").read_text())
     assert committed == expected
     assert summarize(corr)["by_verdict"] == summary["by_verdict"]
-    assert {c.site_id for c in corr} == {r["site_id"] for r in before}
+    audited = {c.site_id for c in corr if c.action not in ("add", "skip_existing")}
+    assert audited == {r["site_id"] for r in before}
     assert len(before) == 191
+    assert set(failed) <= audited
 
 
 def test_snapshot_flanks_agree_with_the_committed_sequences():
