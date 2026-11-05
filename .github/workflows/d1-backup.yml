@@ -39,6 +39,7 @@ on:
     paths:
       # Schema / SQL — any change to the D1 schema triggers a fresh dump.
       - "cloudflare/d1_schema.sql"
+      - "cloudflare/d1_gpi_schema.sql"
       # Eval data — benchmark TSV + any live run output.
       - "data/eval/triage_benchmark_v1.tsv"
       - "data/eval/triage_haiku_live_run.tsv"
@@ -50,6 +51,7 @@ on:
       # Uploaders / backup / public-sync scripts.
       - "src/accessible_surfaceome/cloud/**"
       - "scripts/cloud/sync_public_d1.py"
+      - "scripts/cloud/upload_gpi_predictions_to_d1.py"
       - "scripts/cloud/d1_export_to_r2.sh"
       - "scripts/cloud/d1_triage_backup.sh"
       - ".github/workflows/d1-backup.yml"
