@@ -60,6 +60,7 @@ export function EvidenceChip({ evidenceId, label, title }: EvidenceChipProps) {
       type="button"
       className={styles.chip}
       data-evidence-id={evidenceId}
+      data-track="Open evidence"
       title={title ?? `Open evidence ${defaultEvidenceLabel(evidenceId)}`}
     >
       {label ?? defaultEvidenceLabel(evidenceId)}

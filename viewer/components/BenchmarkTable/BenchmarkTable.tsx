@@ -743,6 +743,7 @@ function BenchRowView({
       className={styles.symbolButton}
       onClick={() => onToggleRow(row.gene_symbol)}
       aria-expanded={isExpanded}
+      data-track={isExpanded ? "Collapse benchmark row" : "Expand benchmark row"}
       aria-label={
         isExpanded
           ? `Collapse ${row.gene_symbol}`

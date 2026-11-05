@@ -27,6 +27,7 @@ import { InfoTip } from "../../InfoTip/InfoTip";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { tooltips } from "../../../lib/tooltips";
+import { structureVariantTrack } from "../../../lib/usage-events";
 import styles from "./StructureViewerCard.module.css";
 
 /** Per-residue compartment, derived from the DeepTMHMM topology
@@ -1945,6 +1946,7 @@ export function StructureViewer({
             role="tab"
             className={`${styles.variantTab} ${canonAfdbUnavail ? styles.variantTabUnavailable : ""}`.trim()}
             data-active={isCanonicalActive}
+            data-track={structureVariantTrack("canonical", "Canonical")}
             onClick={() => {
               userPickedRef.current = true;
               setVariantIdx(0);
@@ -1971,6 +1973,7 @@ export function StructureViewer({
                 role="tab"
                 className={`${styles.variantTab} ${vUnavail ? styles.variantTabUnavailable : ""}`.trim()}
                 data-active={isActive}
+                data-track={structureVariantTrack(v.source, v.label)}
                 onClick={() => {
                   userPickedRef.current = true;
                   setVariantIdx(i + 1);
@@ -2099,6 +2102,7 @@ export function StructureViewer({
               className={styles.modeButton}
               data-active={viewMode === "topology"}
               onClick={() => setViewMode("topology")}
+              data-track="Structure mode: Topology"
               title="Color the cartoon by DeepTMHMM topology (extracellular / TM / intracellular). All sites render in one purple color; the number label distinguishes them."
             >
               Topology
@@ -2108,6 +2112,7 @@ export function StructureViewer({
               className={styles.modeButton}
               data-active={viewMode === "sites"}
               onClick={() => setViewMode("sites")}
+              data-track="Structure mode: SURFACE-Bind sites"
               title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: purple = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), red = signal peptide, gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
             >
               SURFACE-Bind sites
