@@ -10,7 +10,7 @@
  *
  * Joins are on UniProt accession (isoform suffix stripped), never on symbol.
  * Only `core` / `provisional` arms count as surface detections; the rest are
- * shown but labelled (held, below the reference-overlap screen, or a
+ * shown but labeled (held, below the reference-overlap screen, or a
  * comparator). Whole-lysate arms are left out of the data entirely.
  */
 
@@ -43,6 +43,12 @@ export interface StudyArm {
   cell_group?: CellGroup;
   /** Cell-line names, for atlases whose table has one column per line. */
   lines?: string[];
+  /** The dataset's own quantity measure (e.g. "LFQ intensity"), when it has one. */
+  quant_unit?: string;
+  /** How the per-protein value is summarized ("mean over the samples …"). */
+  quant_note?: string;
+  /** Proteins with a value, the denominator of the percentile. */
+  n_quantified?: number;
 }
 
 export type CellGroup =
@@ -66,7 +72,7 @@ export const CELL_GROUP_ORDER: CellGroup[] = [
 
 export const CELL_GROUP_LABEL: Record<CellGroup, string> = {
   blood_cancer: "Blood cancers",
-  solid_cancer: "Solid tumours",
+  solid_cancer: "Solid tumors",
   immune: "Immune cells",
   neural: "Neural cells",
   stem_stromal: "Stem & stromal",
@@ -111,6 +117,9 @@ export interface PresenceEntry {
   t?: TierCode;
   /** Per-line detection for atlases with `lines`: arm index → line indices. */
   l?: Record<string, number[]>;
+  /** Quantity: arm index → [value in the arm's quant_unit, percentile 0-100
+   *  within that arm]. Values aren't comparable across arms; percentiles are. */
+  q?: Record<string, [number, number]>;
 }
 
 export type PresenceShard = Record<string, PresenceEntry>;
@@ -223,7 +232,7 @@ export function shareBelow(hist: number[] | undefined, k: number): { below: numb
   return { below: hist.slice(0, k).reduce((s, x) => s + x, 0) / total, total };
 }
 
-/** Labeling chemistry families, each with its own chip colour. */
+/** Labeling chemistry families, each with its own chip color. */
 export const FAMILY_ORDER = [
   "biotin-amine",
   "glycoprotein-capture",
@@ -238,6 +247,21 @@ export const DOWNLOADS = {
   matrix: `/data/surface-proteomics/surface_proteomics_matrix.tsv`,
   datasets: `/data/surface-proteomics/surface_proteomics_datasets.tsv`,
 };
+
+/** "11,900" / "0.042" / "23.4": a value at three significant figures, readable. */
+export function formatQuant(v: number): string {
+  const a = Math.abs(v);
+  if (a >= 1e6) return v.toExponential(2).replace("e+", "e");
+  if (a >= 100) return Math.round(v).toLocaleString("en-US");
+  return Number(v.toPrecision(3)).toString();
+}
+
+/** "92nd percentile". */
+export function ordinalPct(p: number): string {
+  const teen = p % 100 >= 11 && p % 100 <= 13;
+  const suffix = teen ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[p % 10] ?? "th";
+  return `${p}${suffix} percentile`;
+}
 
 export function isCounted(arm: StudyArm): boolean {
   return arm.status === "core" || arm.status === "provisional";

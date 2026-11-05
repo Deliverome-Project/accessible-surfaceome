@@ -5,6 +5,8 @@ import { test } from "node:test";
 import {
   baseAccession,
   countedRank,
+  formatQuant,
+  ordinalPct,
   shareBelow,
   isCounted,
   letter,
@@ -98,4 +100,14 @@ test("every dataset has a cell-type group; per-line atlases list their lines", (
       }
     }
   }
+});
+
+test("quantity formatting", () => {
+  assert.equal(ordinalPct(1), "1st percentile");
+  assert.equal(ordinalPct(12), "12th percentile");
+  assert.equal(ordinalPct(92), "92nd percentile");
+  assert.equal(ordinalPct(100), "100th percentile");
+  assert.equal(formatQuant(11864.4), "11,864");
+  assert.equal(formatQuant(23.44), "23.4");
+  assert.equal(formatQuant(2.5e9), "2.50e9");
 });

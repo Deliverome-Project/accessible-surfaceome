@@ -60,18 +60,17 @@ export default function SurfaceProteomicsPage() {
     <Shell>
       <section className={`${styles.page} page-width`}>
         <header className={styles.head}>
-          <p className={`label-mono ${styles.eyebrow}`}>Open data</p>
           <h1 className={`h-data ${styles.title}`}>Surface proteomics data</h1>
           <p className={styles.lede}>
             Which proteins have published experiments actually found on the
             outside of human cells? We collected {index.n_arms} datasets from {index.n_publications} cell-surface
             proteomics papers and matched every reported protein to its UniProt
             accession. <strong>{counted.length} datasets</strong> from{" "}
-            {index.n_admitted_publications} papers label proteins on intact cells
-            and pass our quality review; together they detect{" "}
+            {index.n_admitted_publications} papers pass our quality review (below)
+            and count as surface evidence; together they detect{" "}
             <strong>{index.n_accessions_admitted.toLocaleString("en-US")} proteins</strong>.
-            The rest are listed for completeness and clearly marked as not
-            counted.
+            The other {index.n_arms - counted.length} are listed for completeness
+            and marked as not counted.
           </p>
           <p className={styles.note}>
             Each protein links to its Surfaceome page where one exists and
@@ -92,6 +91,52 @@ export default function SurfaceProteomicsPage() {
             </a>
           </p>
         </header>
+
+        <section className={styles.review} aria-labelledby="quality-review">
+          <h2 id="quality-review" className={styles.reviewTitle}>
+            What our quality review checks
+          </h2>
+          <p className={styles.reviewLede}>
+            A dataset counts as surface evidence only if it passes all four checks, judged
+            from each paper&apos;s methods section and supplementary tables. The reading is
+            AI-assisted and still under review.
+          </p>
+          <ol className={styles.checks}>
+            <li>
+              <strong>Human cells or tissue.</strong> Non-human proteins and samples are
+              excluded before anything else.
+            </li>
+            <li>
+              <strong>Labeled on intact, living cells.</strong> The tag (biotin, glycan
+              capture, proximity label) went on before the cells were broken open, so it
+              could only reach proteins facing outward. Membrane fractionation and labels
+              that reach inside the cell fail this check.{" "}
+              <span className={styles.fails}>{countByStatus("comparator")} datasets → Comparator</span>
+            </li>
+            <li>
+              <strong>Mostly surface proteins, not background.</strong> At least{" "}
+              {Math.round(OVERLAP_SCREEN * 100)}% of the dataset&apos;s proteins must be
+              well-established surface proteins. A list below that is dominated by
+              intracellular contamination. When the authors pre-filtered their list to
+              annotated surface proteins, the bar is raised to match.{" "}
+              <span className={styles.fails}>
+                {countByStatus("below_screen")} datasets → High background
+              </span>
+            </li>
+            <li>
+              <strong>Readable per protein.</strong> The published table has to say which
+              proteins were detected. Tables where every value is imputed, or where the
+              baseline sample can&apos;t be identified, fail.{" "}
+              <span className={styles.fails}>{countByStatus("held")} datasets → Held</span>
+            </li>
+          </ol>
+          <p className={styles.reviewLede}>
+            Datasets that pass are <strong>Core</strong> ({countByStatus("core")}), or{" "}
+            <strong>Provisional</strong> ({countByStatus("provisional")}) when they pass with a
+            caveat, such as sitting within two points of the {Math.round(OVERLAP_SCREEN * 100)}%
+            bar. Both count.
+          </p>
+        </section>
 
         <details className={styles.key}>
           <summary className={styles.keySummary}>

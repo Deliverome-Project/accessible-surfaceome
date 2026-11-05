@@ -138,3 +138,46 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+.review {
+  border-left: 3px solid var(--teal-mid);
+  padding: var(--space-1) 0 var(--space-1) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.reviewTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: var(--fw-medium);
+}
+
+.reviewLede {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.checks {
+  margin: 0;
+  padding-left: 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.checks strong {
+  color: var(--ink);
+}
+
+.fails {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
