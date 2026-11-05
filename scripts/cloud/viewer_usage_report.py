@@ -57,6 +57,15 @@ QUERIES = {
         "FROM {ds} WHERE timestamp > NOW() - INTERVAL '{days}' DAY AND " + CLICKS + " "
         "GROUP BY page, kind, label ORDER BY clicks DESC LIMIT {top}"
     ),
+    # Catalog filters (named `Preset: …` / `Filter: …` in the viewer) record
+    # the click's direction, so "→ on" counts a filter being applied. Labels
+    # from before 2026-11-05 carry no direction and don't appear here.
+    "Filters turned on": (
+        "SELECT blob4 AS filter, SUM(_sample_interval) AS times_on "
+        "FROM {ds} WHERE timestamp > NOW() - INTERVAL '{days}' DAY AND " + CLICKS + " "
+        "AND (blob4 LIKE 'Filter:% → on' OR blob4 LIKE 'Preset:% → on') "
+        "GROUP BY filter ORDER BY times_on DESC LIMIT {top}"
+    ),
     "Genes with the most clicks": (
         "SELECT blob2 AS gene, SUM(_sample_interval) AS clicks "
         "FROM {ds} WHERE timestamp > NOW() - INTERVAL '{days}' DAY AND blob2 != '' AND "

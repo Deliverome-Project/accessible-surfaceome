@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { clickedControl, describeControl, structureVariantTrack, trackingDeclined } from "../lib/usage-events";
+import { clickedControl, describeControl, structureVariantTrack, toggleDirection, trackingDeclined } from "../lib/usage-events";
 
 const ORIGIN = "https://surfaceome.deliverome.org";
 
@@ -79,4 +79,31 @@ test("structure tabs track by kind of structure, not gene or accession", () => {
   assert.equal(structureVariantTrack("afdb", "Cyno ortholog"), "Structure tab: Cyno ortholog");
   assert.equal(structureVariantTrack("experimental", "1EW2"), "Structure tab: Experimental (PDB)");
   assert.equal(structureVariantTrack("schweke-homomer", "Homodimer"), "Structure tab: Predicted homodimer");
+});
+
+test("a named filter chip records whether the click turns it on or off", () => {
+  const off = el("BUTTON", { "data-track": "Filter: Deep-dive tier = Likely", "aria-pressed": "false" }, "Likely");
+  const on = el("BUTTON", { "data-track": "Filter: Deep-dive tier = Likely", "aria-pressed": "true" }, "Likely");
+  assert.equal(describeControl(off, "/", ORIGIN)?.label, "Filter: Deep-dive tier = Likely → on");
+  assert.equal(describeControl(on, "/", ORIGIN)?.label, "Filter: Deep-dive tier = Likely → off");
+});
+
+test("radio chips use aria-checked; panels use aria-expanded, which wins", () => {
+  const radio = el("BUTTON", { "data-track": "Filter: SURFACE-Bind = ≥1 site", "aria-checked": "false" });
+  assert.equal(describeControl(radio, "/", ORIGIN)?.label, "Filter: SURFACE-Bind = ≥1 site → on");
+  const panel = el("BUTTON", { "data-track": "More filters panel", "aria-pressed": "false", "aria-expanded": "false" });
+  assert.equal(describeControl(panel, "/", ORIGIN)?.label, "More filters panel → open");
+  assert.equal(toggleDirection(el("BUTTON", { "aria-expanded": "true" })), " → close");
+});
+
+test("controls without data-track, or that are not toggles, get no suffix", () => {
+  assert.equal(describeControl(el("BUTTON", { "aria-pressed": "false" }, "Plain"), "/", ORIGIN)?.label, "Plain");
+  assert.equal(describeControl(el("A", { href: "#s", "data-track": "Section: Expression" }), "/G/", ORIGIN)?.label, "Section: Expression");
+});
+
+test("the suffix survives truncation of a long name", () => {
+  const long = el("BUTTON", { "data-track": "Filter: " + "x".repeat(200), "aria-pressed": "false" });
+  const label = describeControl(long, "/", ORIGIN)?.label ?? "";
+  assert.equal(label.length, 80);
+  assert.ok(label.endsWith(" → on"));
 });

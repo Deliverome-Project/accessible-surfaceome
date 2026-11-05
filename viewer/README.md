@@ -158,6 +158,13 @@ nothing longer-lived. Nothing is sent under Global Privacy Control or Do Not
 Track. A control's label is its `data-track`, else `aria-label`, `title`
 or text; set `data-track` on any control whose text or title could carry
 personal data (see the ORCID link), and `data-track-ignore` to skip a subtree.
+Also set it on any control whose text carries a count or a per-gene number,
+or one control is split across many rows of the report. Catalog filters are
+named `Preset: …` and `Filter: <field> = <value>`, and panels `Filter group:
+…`. A named toggle gets its direction appended from its `aria-pressed`,
+`aria-checked` or `aria-expanded` state before the click (`→ on` / `→ off`,
+`→ open` / `→ close`). `scripts/cloud/viewer_usage_report.py` lists the
+"Filters turned on". The search box's text is never sent.
 Read the counts with `uv run python scripts/cloud/viewer_usage_report.py`.
 Change `/privacy` in the same change as anything that alters what is sent.
 
