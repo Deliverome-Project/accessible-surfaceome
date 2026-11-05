@@ -5,6 +5,7 @@ import { test } from "node:test";
 import {
   baseAccession,
   countedRank,
+  surfacePreference,
   formatQuant,
   ordinalPct,
   shareBelow,
@@ -110,4 +111,15 @@ test("quantity formatting", () => {
   assert.equal(formatQuant(11864.4), "11,864");
   assert.equal(formatQuant(23.44), "23.4");
   assert.equal(formatQuant(2.5e9), "2.50e9");
+});
+
+test("surface preference: differences, mean and verdict", () => {
+  assert.deepEqual(surfacePreference(undefined), { vsProcan: null, vsMembrane: null, mean: null, verdict: null });
+  const npc1 = surfacePreference([57, 74, 65]);
+  assert.equal(npc1.vsProcan, -8);
+  assert.equal(npc1.vsMembrane, -17);
+  assert.equal(npc1.verdict, "carryover");
+  assert.equal(surfacePreference([97, 78, 85]).verdict, "enriched");
+  assert.equal(surfacePreference([99, 97, 98]).verdict, "unclear");
+  assert.equal(surfacePreference([80, null, 60]).mean, 20);
 });

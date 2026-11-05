@@ -100,6 +100,14 @@ export interface StudyIndex {
   counted_detection_hist?: number[];
   /** Same over the deep-dived cohort including k = 0: "all" plus one per tier. */
   cohort_detection_hist?: Record<string, number[]>;
+  /** Surface-preference provenance and validation (see the build script). */
+  surface_preference?: {
+    reference: string;
+    min_surface_values: number;
+    min_membrane_values: number;
+    n_scored: number;
+    auroc_canonical_vs_low_or_not: { vs_procan?: number; vs_membrane?: number };
+  };
   /** Whole-lysate arms left out of the published data. */
   excluded_arms?: string[];
   arms: StudyArm[];
@@ -123,6 +131,10 @@ export interface PresenceEntry {
   /** Quantity: arm index → [value in the arm's quant_unit, percentile 0-100
    *  within that arm]. Values aren't comparable across arms; percentiles are. */
   q?: Record<string, [number, number]>;
+  /** Surface preference: [median percentile in counted surface datasets,
+   *  median in membrane-fraction datasets or null, ProCan whole-proteome
+   *  percentile or null]. Present only with enough quantified surface data. */
+  p?: [number, number | null, number | null];
 }
 
 export type PresenceShard = Record<string, PresenceEntry>;
@@ -265,6 +277,33 @@ export function ordinalPct(p: number): string {
   const suffix = teen ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[p % 10] ?? "th";
   return `${p}${suffix} percentile`;
 }
+
+export type PrefVerdict = "enriched" | "carryover" | "unclear";
+
+/** Surface minus each reference (percentile points), their mean, and a verdict:
+ *  at least +10 = surface-enriched, at most -10 = intracellular-carryover pattern. */
+export function surfacePreference(p: PresenceEntry["p"]): {
+  vsProcan: number | null;
+  vsMembrane: number | null;
+  mean: number | null;
+  verdict: PrefVerdict | null;
+} {
+  if (!p) return { vsProcan: null, vsMembrane: null, mean: null, verdict: null };
+  const [surf, membrane, procan] = p;
+  const vsProcan = procan == null ? null : surf - procan;
+  const vsMembrane = membrane == null ? null : surf - membrane;
+  const parts = [vsProcan, vsMembrane].filter((x): x is number => x != null);
+  const mean = parts.length ? Math.round(parts.reduce((a, b) => a + b, 0) / parts.length) : null;
+  const verdict =
+    mean == null ? null : mean >= 10 ? "enriched" : mean <= -10 ? "carryover" : "unclear";
+  return { vsProcan, vsMembrane, mean, verdict };
+}
+
+export const PREF_LABEL: Record<PrefVerdict, string> = {
+  enriched: "Surface-enriched",
+  carryover: "Intracellular carryover pattern",
+  unclear: "No clear difference",
+};
 
 export function isCounted(arm: StudyArm): boolean {
   return arm.status === "core" || arm.status === "provisional";
