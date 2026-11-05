@@ -35,7 +35,6 @@ const METHOD_HELP: Record<MethodClass, string> = {
     "Proteins are tagged on living, unbroken cells (biotinylation, glycan capture, proximity labeling), so a tag can only reach what faces outward. This is the only method family we count as evidence that a protein is reachable from outside the cell.",
   fractionation:
     "Cells are broken open and membranes are purified. This shows that a protein is membrane-associated, including on internal membranes, not that it is exposed on the outer surface.",
-  lysate: "Surveys of broken cells or tissue. Not published here.",
 };
 
 const sentence = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
@@ -85,9 +84,7 @@ export default async function SurfaceProteomicsPage() {
             and pass our quality review; together they detect{" "}
             <strong>{index.n_accessions_admitted.toLocaleString("en-US")} proteins</strong>.
             The rest are listed for completeness and clearly marked as not
-            counted. Whole-lysate glycoproteomes are left out, because
-            capturing glycoproteins after the cells are broken open cannot
-            tell the outer surface from internal membranes.
+            counted.
           </p>
           <p className={styles.note}>
             Each protein links to its Surfaceome page where one exists and

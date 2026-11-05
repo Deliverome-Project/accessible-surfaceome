@@ -135,7 +135,8 @@ page is not in the viewer's top nav; it is linked from the Open Data menu on
 deliverome.org. Only core
 and provisional arms (intact-cell labeling that passed review) count as
 surface detections; held, below-screen and comparator arms (membrane
-fractionation, lysate glycoproteomes) are shown and labelled as not counted.
+fractionation, inner-leaflet labeling) are shown and labelled as not counted.
+Whole-lysate glycoproteomes are not published.
 
 The files are committed and rebuilt by hand when a new snapshot is
 published. Point `--analysis-ref` at the deliverome-analysis branch that

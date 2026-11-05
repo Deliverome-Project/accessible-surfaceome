@@ -11,12 +11,14 @@ import {
   STATUS_HELP,
   STATUS_LABEL,
   STUDIES_PATH,
+  countedRank,
   studyHref,
   type ArmStatus,
   type StudyArm,
   type StudyIndex,
 } from "../../../lib/surface-proteomics";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import tip from "../../InfoTip/InfoTip.module.css";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./StudyPresence.module.css";
 
@@ -25,10 +27,25 @@ interface Props {
   symbol: string;
 }
 
-const GROUPS: { key: string; label: string; statuses: ArmStatus[] }[] = [
-  { key: "counted", label: "Counted · intact-cell labeling", statuses: ["core", "provisional"] },
-  { key: "held", label: "Not counted · held or below screen", statuses: ["held", "below_screen"] },
-  { key: "comparator", label: "Comparators · not extracellular evidence", statuses: ["comparator"] },
+const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] }[] = [
+  {
+    key: "counted",
+    label: "Surface evidence",
+    desc: "Proteins labeled on intact, living cells, in datasets that passed our quality checks. These count.",
+    statuses: ["core", "provisional"],
+  },
+  {
+    key: "held",
+    label: "Surface experiments we don't count",
+    desc: "Also intact-cell labeling, but the list is mostly background (below screen) or the published table can't be read per protein (held).",
+    statuses: ["held", "below_screen"],
+  },
+  {
+    key: "comparator",
+    label: "Membrane preps, for context",
+    desc: "Cells broken open and membranes purified, or labels that reach inside the cell. Shows a protein is on a membrane, not that it faces outward.",
+    statuses: ["comparator"],
+  },
 ];
 
 export function statusTone(s: ArmStatus) {
@@ -42,8 +59,8 @@ export function statusTone(s: ArmStatus) {
  * Presence of this protein across published cell-surface proteomics
  * studies (the S3E8 compendium), one dot per study arm. Only admitted
  * intact-cell labeling arms count as surface detections; held, below-
- * screen and comparator arms (membrane fractionation, lysate
- * glycoproteomes) are drawn separately and labelled as not counted.
+ * screen and comparator arms (membrane fractionation, inner-leaflet
+ * labeling) are drawn separately and labelled as not counted.
  */
 export function StudyPresence({ uniprotAcc, symbol }: Props) {
   const [data, setData] = useState<{ index: StudyIndex; hits: Set<number> } | null>(null);
@@ -82,6 +99,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
   }
 
   const { arms, counted, countedHits, pubs, pubHits, otherHits } = summary;
+  const rank = countedRank(data.index.counted_detection_hist, countedHits.length);
   const rows = arms
     .filter((x) => (showMissing || x.hit) && (showOther || isCounted(x.arm)))
     .sort(
@@ -101,6 +119,16 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           {otherHits > 0 ? ` · listed in ${otherHits} not-counted dataset${otherHits === 1 ? "" : "s"}` : ""}
         </span>
         <InfoTip wide label="About study presence">
+          {rank ? (
+            <>
+              <strong>How {countedHits.length} compares.</strong>{" "}
+              {rank.total.toLocaleString("en-US")} proteins are detected by at least one counted
+              dataset; the median one is detected by {rank.median}. {symbol} is detected by more
+              counted datasets than {Math.floor(rank.below * 100)}% of them.
+              <br />
+              <br />
+            </>
+          ) : null}
           Whether {symbol} ({uniprotAcc}) appears in the protein list of each
           human cell-surface proteomics dataset we collected and audited
           ({data.index.n_arms} datasets from {data.index.n_publications} papers).
@@ -111,9 +139,10 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           <strong>Counted</strong> datasets label proteins on intact cells and
           pass review (core or provisional). <strong>Held</strong> and{" "}
           <strong>below screen</strong> datasets are listed but not counted.{" "}
-          <strong>Comparators</strong> (membrane fractionation, lysate
-          glycoproteomes) show that a protein co-purifies with membranes,
-          not that it is reachable from outside the cell.
+          <strong>Comparators</strong> (membrane fractionation, or labeling
+          that reaches the inner side of the membrane) show that a protein
+          co-purifies with membranes, not that it is reachable from outside
+          the cell.
           <br />
           <br />
           Not detected means the protein is absent from that study&apos;s
@@ -121,6 +150,19 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           surface. Snapshot: {data.index.snapshot}.
         </InfoTip>
       </div>
+      {rank ? (
+        <p className={styles.rank}>
+          <span className={styles.rankBar} aria-hidden="true">
+            <span style={{ width: `${Math.max(2, rank.below * 100)}%` }} />
+          </span>
+          <span>
+            Detected by more counted datasets than{" "}
+            <strong>{Math.floor(rank.below * 100)}%</strong> of the{" "}
+            {rank.total.toLocaleString("en-US")} proteins any counted dataset found (the median
+            protein is found by {rank.median}).
+          </span>
+        </p>
+      ) : null}
 
       <div className={styles.strip} role="list" aria-label="Detection per dataset">
         {GROUPS.map((g) => {
@@ -128,7 +170,10 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           if (items.length === 0) return null;
           return (
             <div key={g.key} className={styles.group} role="listitem">
-              <span className={styles.groupLabel}>{g.label}</span>
+              <span className={styles.groupLabel}>
+                <span className={styles.groupName}>{g.label}</span>
+                <span className={styles.groupDesc}>{g.desc}</span>
+              </span>
               <span className={styles.dots}>
                 {items.map(({ arm, hit }) => (
                   <Dot key={arm.id} arm={arm} hit={hit} />
@@ -141,7 +186,6 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       <p className={styles.legend}>
         <span className={`${styles.dot} ${styles.intact_cell} ${styles.hit}`} /> intact-cell labeling
         <span className={`${styles.dot} ${styles.fractionation} ${styles.hit}`} /> membrane fractionation
-        <span className={`${styles.dot} ${styles.lysate} ${styles.hit}`} /> lysate
         <span className={styles.dot} /> not detected
       </p>
 
@@ -212,13 +256,41 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
 }
 
 function Dot({ arm, hit }: { arm: StudyArm; hit: boolean }) {
+  const counted = isCounted(arm);
   const label =
-    `${shortCitation(arm)} — ${arm.name}\n${METHOD_CLASS_LABEL[arm.method_class]} · ${arm.sample ?? ""}\n` +
-    `${hit ? "Detected" : "Not detected"} · ${STATUS_LABEL[arm.status]}${isCounted(arm) ? "" : " (not counted)"}`;
-  const cls = [styles.dot, hit ? `${styles[arm.method_class]} ${styles.hit}` : "", isCounted(arm) ? "" : styles.dim]
+    `${shortCitation(arm)}: ${arm.name}. ${hit ? "Detected" : "Not detected"}; ` +
+    `${STATUS_LABEL[arm.status]}${counted ? "" : ", not counted"}`;
+  const cls = [styles.dot, hit ? `${styles[arm.method_class]} ${styles.hit}` : "", counted ? "" : styles.dim]
     .filter(Boolean)
     .join(" ");
+  // Styled popover (the InfoTip one) rather than the OS title bubble.
   return (
-    <Link href={studyHref([arm.id])} className={cls} title={label} aria-label={label} />
+    <span className={tip.wrap} data-infotip="">
+      <Link href={studyHref([arm.id])} className={cls} aria-label={label} />
+      <span role="tooltip" className={`${tip.popover} ${styles.dotTip}`}>
+        <strong className={hit ? styles.tipHit : styles.tipMiss}>
+          {hit ? "Detected" : "Not detected"}
+        </strong>{" "}
+        in {shortCitation(arm)}
+        {arm.journal ? <span className={styles.tipMuted}> · {arm.journal}</span> : null}
+        <br />
+        {arm.name}
+        <br />
+        <span className={styles.tipMuted}>Method:</span> {METHOD_CLASS_LABEL[arm.method_class]} (
+        {arm.family_label})
+        <br />
+        <span className={styles.tipMuted}>Cells:</span> {arm.sample ?? "—"}
+        <br />
+        <span className={styles.tipMuted}>Proteins in list:</span> {arm.n_proteins.toLocaleString("en-US")}
+        {arm.reference_overlap != null
+          ? ` · ${Math.round(arm.reference_overlap * 100)}% known surface`
+          : ""}
+        <br />
+        <span className={styles.tipMuted}>Status:</span> {STATUS_LABEL[arm.status]},{" "}
+        {counted ? "counted as surface evidence" : "not counted"}
+        <br />
+        <span className={styles.tipMuted}>Click to open this dataset&apos;s protein list.</span>
+      </span>
+    </span>
   );
 }
