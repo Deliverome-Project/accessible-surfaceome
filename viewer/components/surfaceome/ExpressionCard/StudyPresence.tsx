@@ -58,6 +58,25 @@ type RowSort = "study" | "found" | "method" | "family" | "sample" | "status";
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const pct = (x: number) => `${Math.floor(x * 100)}%`;
 
+/** "Detected in 18 of 25 lines", with the lines listed on hover. */
+function LineDetail({ lines, hitLines }: { lines: string[]; hitLines: number[] }) {
+  const hitSet = new Set(hitLines);
+  return (
+    <div className={styles.lineDetail}>
+      Detected in <strong>{hitLines.length}</strong> of {lines.length} lines
+      <InfoTip label="Which cell lines">
+        <span className={styles.tipLine}>
+          <strong>Detected:</strong> {hitLines.map((j) => lines[j]).join(", ") || "none"}
+        </span>
+        <span className={styles.tipLine}>
+          <strong>Not detected:</strong>{" "}
+          {lines.filter((_, j) => !hitSet.has(j)).join(", ") || "none"}
+        </span>
+      </InfoTip>
+    </div>
+  );
+}
+
 function RankLine({ share, text }: { share: number; text: React.ReactNode }) {
   return (
     <p className={styles.rank}>
@@ -88,6 +107,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
     index: StudyIndex;
     hits: Set<number>;
     tier: TierCode | "none";
+    lines: Record<string, number[]>;
   } | null>(null);
   const [error, setError] = useState(false);
   const [showOther, setShowOther] = useState(false);
@@ -99,7 +119,12 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
     loadPresence(uniprotAcc)
       .then(({ index, entry }) => {
         if (live)
-          setData({ index, hits: new Set(entry?.a ?? []), tier: entry ? tierOf(entry) : "none" });
+          setData({
+            index,
+            hits: new Set(entry?.a ?? []),
+            tier: entry ? tierOf(entry) : "none",
+            lines: entry?.l ?? {},
+          });
       })
       .catch(() => live && setError(true));
     return () => {
@@ -254,7 +279,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ arm, hit }) => {
+            {rows.map(({ arm, hit, i }) => {
               const url = paperUrl(arm);
               return (
                 <tr key={arm.id} className={isCounted(arm) ? undefined : styles.notCounted}>
@@ -278,7 +303,12 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                   <td>
                     <FamilyChip arm={arm} />
                   </td>
-                  <td className={styles.sampleCell}>{arm.sample}</td>
+                  <td className={styles.sampleCell}>
+                    {arm.sample}
+                    {arm.lines && hit ? (
+                      <LineDetail lines={arm.lines} hitLines={data.lines[String(i)] ?? []} />
+                    ) : null}
+                  </td>
                   <td>
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
                       {STATUS_LABEL[arm.status]}

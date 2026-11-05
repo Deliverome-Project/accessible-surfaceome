@@ -5,6 +5,7 @@ import { Shell } from "../../components/Shell/Shell";
 import { StudiesExplorer } from "../../components/StudiesExplorer/StudiesExplorer";
 import { TierPill } from "../../components/StudiesExplorer/TierPill";
 import {
+  DOWNLOADS,
   isCounted,
   METHOD_CLASS_LABEL,
   OVERLAP_SCREEN,
@@ -79,6 +80,16 @@ export default function SurfaceProteomicsPage() {
             <code>{index.snapshot}</code>, built {index.generated_at}. Study
             curation is AI-assisted and still under review; report an error to{" "}
             <a href="mailto:surfaceome-viewer@deliverome.org">surfaceome-viewer@deliverome.org</a>.
+          </p>
+          <p className={styles.downloads}>
+            <strong>Download:</strong>{" "}
+            <a href={DOWNLOADS.matrix} download>
+              every protein × dataset (TSV, {index.n_accessions.toLocaleString("en-US")} rows)
+            </a>{" "}
+            ·{" "}
+            <a href={DOWNLOADS.datasets} download>
+              dataset details (TSV, {index.n_arms} rows)
+            </a>
           </p>
         </header>
 

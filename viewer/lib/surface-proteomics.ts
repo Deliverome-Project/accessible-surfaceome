@@ -39,7 +39,40 @@ export interface StudyArm {
   reference_overlap: number | null;
   repository: string | null;
   repository_ids: string[];
+  /** Curated cell-type group (CELL_GROUPS in the build script). */
+  cell_group?: CellGroup;
+  /** Cell-line names, for atlases whose table has one column per line. */
+  lines?: string[];
 }
+
+export type CellGroup =
+  | "blood_cancer"
+  | "solid_cancer"
+  | "immune"
+  | "neural"
+  | "stem_stromal"
+  | "other_normal"
+  | "multi";
+
+export const CELL_GROUP_ORDER: CellGroup[] = [
+  "blood_cancer",
+  "solid_cancer",
+  "immune",
+  "neural",
+  "stem_stromal",
+  "other_normal",
+  "multi",
+];
+
+export const CELL_GROUP_LABEL: Record<CellGroup, string> = {
+  blood_cancer: "Blood cancers",
+  solid_cancer: "Solid tumours",
+  immune: "Immune cells",
+  neural: "Neural cells",
+  stem_stromal: "Stem & stromal",
+  other_normal: "Other normal cells",
+  multi: "Multi-cell-type atlases",
+};
 
 export interface StudyIndex {
   generated_at: string;
@@ -76,6 +109,8 @@ export interface PresenceEntry {
   v?: number;
   /** Deep-dive tier (the catalog's `deep_dive_tier`), deep-dived proteins only. */
   t?: TierCode;
+  /** Per-line detection for atlases with `lines`: arm index → line indices. */
+  l?: Record<string, number[]>;
 }
 
 export type PresenceShard = Record<string, PresenceEntry>;
@@ -197,6 +232,12 @@ export const FAMILY_ORDER = [
   "other-chemoproteomic",
   "membrane-fractionation",
 ] as const;
+
+/** Whole-compendium downloads written by the build. */
+export const DOWNLOADS = {
+  matrix: `/data/surface-proteomics/surface_proteomics_matrix.tsv`,
+  datasets: `/data/surface-proteomics/surface_proteomics_datasets.tsv`,
+};
 
 export function isCounted(arm: StudyArm): boolean {
   return arm.status === "core" || arm.status === "provisional";

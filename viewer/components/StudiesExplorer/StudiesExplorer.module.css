@@ -647,3 +647,55 @@
   font-size: 0.85rem;
   color: var(--ink-soft);
 }
+
+.minCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.minCount input {
+  width: 3.6rem;
+  font: inherit;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  text-align: center;
+  background: var(--bg-soft);
+  color: var(--ink);
+}
+
+.lookup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lookupResults {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.lookupCard {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: var(--space-3) var(--space-4);
+}
+
+.lookupHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+/* In a column, .search's flex-basis would become a height. */
+.lookup .search {
+  flex: none;
+  width: 100%;
+  max-width: 32rem;
+}

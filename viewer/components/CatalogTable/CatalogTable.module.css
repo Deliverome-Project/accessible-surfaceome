@@ -1160,7 +1160,7 @@
        those columns, so they fell to implicit auto tracks; made explicit
        here to match the desktop template's track count. */
     grid-template-columns:
-      1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(6.5rem, 1fr)
+      1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem 3.2rem minmax(6.5rem, 1fr)
       minmax(6.5rem, 1fr) 5.5rem 5.5rem 5rem 5.5rem 6rem 6rem;
   }
   .uniprotCell,
@@ -1186,7 +1186,8 @@
   padding-bottom: 2px;
 }
 .groupHeaderSpacer {
-  grid-column: span 10;
+  /* 10 leading columns + the Proteomics column. */
+  grid-column: span 11;
 }
 .groupHeaderDeepDive {
   grid-column: span 4;
@@ -1376,4 +1377,18 @@
 }
 .tooltipLink:hover {
   text-decoration-thickness: 2px;
+}
+
+/* Surface-proteomics count: experimental evidence beside the DB votes. */
+.proteomicsCell {
+  justify-content: center;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.proteomicsLink {
+  color: var(--maroon-mid);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--maroon-mid) 40%, transparent);
+  text-underline-offset: 2px;
 }

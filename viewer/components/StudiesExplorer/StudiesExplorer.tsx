@@ -21,7 +21,11 @@ import {
   type TierCode,
   FAMILY_ORDER,
   tierOf,
+  CELL_GROUP_LABEL,
+  CELL_GROUP_ORDER,
+  type CellGroup,
 } from "../../lib/surface-proteomics";
+import { ProteinLookup } from "./ProteinLookup";
 import { statusTone } from "../surfaceome/ExpressionCard/StudyPresence";
 import { SortableHeader } from "../surfaceome/_shared/SortableHeader";
 import { SortResetButton } from "../surfaceome/_shared/SortResetButton";
@@ -60,12 +64,24 @@ interface Protein {
   nCounted: number;
 }
 
+/** Preset views over all counted datasets; each has a short link (?view=…). */
+export type View = "consensus" | "novel" | "review";
+const VIEWS: View[] = ["consensus", "novel", "review"];
+/** Detection floor the two discovery presets start from. */
+const DISCOVERY_MIN = 3;
+
 /** Arm ids in ?arm=, with split-study aliases (e.g. a parent paper id) expanded. */
 function readSelection(aliases: Record<string, string[]>): string[] {
   if (typeof window === "undefined") return [];
   const v = new URLSearchParams(window.location.search).get("arm");
   const ids = v ? v.split(",").filter(Boolean) : [];
   return [...new Set(ids.flatMap((id) => aliases[id] ?? [id]))];
+}
+
+function readView(): View | null {
+  if (typeof window === "undefined") return null;
+  const v = new URLSearchParams(window.location.search).get("view");
+  return VIEWS.includes(v as View) ? (v as View) : null;
 }
 
 const pct = (x: number | null) => (x == null ? "—" : `${Math.round(x * 100)}%`);
@@ -80,9 +96,12 @@ export function StudiesExplorer({ index }: Props) {
   );
   const countedIdx = useMemo(() => arms.flatMap((a, i) => (isCounted(a) ? [i] : [])), [arms]);
   const [query, setQuery] = useState("");
-  const [statuses, setStatuses] = useState<Set<ArmStatus>>(new Set(STATUS_ORDER));
-  const [classes, setClasses] = useState<Set<MethodClass>>(new Set(ALL_CLASSES));
+  // Catalog-style chips: nothing checked = no filter; checked values OR together.
+  const [statuses, setStatuses] = useState<Set<ArmStatus>>(new Set());
+  const [classes, setClasses] = useState<Set<MethodClass>>(new Set());
+  const [cellGroups, setCellGroups] = useState<Set<CellGroup>>(new Set());
   const [selected, setSelected] = useState<number[]>([]);
+  const [view, setView] = useState<View | null>(null);
   const [pickOpen, setPickOpen] = useState(true);
   const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<StudySort>();
   const showResults = () => {
@@ -94,22 +113,33 @@ export function StudiesExplorer({ index }: Props) {
 
   // Selection lives in ?arm=a,b so a gene page's dots can deep-link to a study.
   useEffect(() => {
-    const ids = readSelection(aliases ?? {});
-    const sel = ids.map((id) => idxById.get(id)).filter((i): i is number => i !== undefined);
+    const v = readView();
+    const ids = v ? [] : readSelection(aliases ?? {});
+    const sel = v
+      ? countedIdx
+      : ids.map((id) => idxById.get(id)).filter((i): i is number => i !== undefined);
+    setView(v);
     setSelected(sel);
     // Arriving from a link (a gene page dot, an email): go straight to the results.
     if (sel.length) setPickOpen(false);
-  }, [idxById, aliases]);
+  }, [idxById, aliases, countedIdx]);
   const updateSelected = useCallback(
-    (next: number[]) => {
+    (next: number[], nextView: View | null = null) => {
       setSelected(next);
+      setView(nextView);
       const url = new URL(window.location.href);
-      if (next.length) url.searchParams.set("arm", next.map((i) => arms[i].id).join(","));
-      else url.searchParams.delete("arm");
+      url.searchParams.delete("arm");
+      url.searchParams.delete("view");
+      if (nextView) url.searchParams.set("view", nextView);
+      else if (next.length) url.searchParams.set("arm", next.map((i) => arms[i].id).join(","));
       window.history.replaceState(null, "", url.toString());
     },
     [arms],
   );
+  const openView = (v: View) => {
+    updateSelected(countedIdx, v);
+    showResults();
+  };
   const toggle = (i: number) =>
     updateSelected(selected.includes(i) ? selected.filter((x) => x !== i) : [...selected, i]);
 
@@ -118,8 +148,9 @@ export function StudiesExplorer({ index }: Props) {
     .map((arm, i) => ({ arm, i }))
     .filter(
       ({ arm }) =>
-        statuses.has(arm.status) &&
-        classes.has(arm.method_class) &&
+        (statuses.size === 0 || statuses.has(arm.status)) &&
+        (classes.size === 0 || classes.has(arm.method_class)) &&
+        (cellGroups.size === 0 || (arm.cell_group != null && cellGroups.has(arm.cell_group))) &&
         (!q ||
           [arm.name, arm.first_author, arm.sample, arm.family_label, arm.journal, arm.pmid, String(arm.year)]
             .filter(Boolean)
@@ -154,19 +185,25 @@ export function StudiesExplorer({ index }: Props) {
       <section className={styles.start} aria-label="Where to start">
         <h2 className={`h-section ${styles.sectionTitle}`}>Where to start</h2>
         <div className={styles.startGrid}>
-          <button
-            type="button"
-            className={styles.startCard}
-            onClick={() => {
-              updateSelected(countedIdx);
-              showResults();
-            }}
-          >
+          <button type="button" className={styles.startCard} onClick={() => openView("consensus")}>
             <strong>Consensus surface list</strong>
             <span>
-              Every protein detected in any of the {countedIdx.length} counted datasets, ranked by
-              how many of them found it. The quickest view of what intact-cell experiments agree
-              is on the surface.
+              Every protein any of the {countedIdx.length} counted datasets detected, ranked by how
+              many found it: what intact-cell experiments agree is on the surface.
+            </span>
+          </button>
+          <button type="button" className={styles.startCard} onClick={() => openView("novel")}>
+            <strong>New surface candidates</strong>
+            <span>
+              Detected on intact cells by at least {DISCOVERY_MIN} counted datasets, missing from
+              all five surfaceome databases, and called Canonical or Likely by our deep dive.
+            </span>
+          </button>
+          <button type="button" className={styles.startCard} onClick={() => openView("review")}>
+            <strong>Detected, but not called surface</strong>
+            <span>
+              Proteins at least {DISCOVERY_MIN} counted datasets detected whose deep-dive tier is
+              Low confidence, Uncertain or Not surface: a review list for our own calls.
             </span>
           </button>
           <button
@@ -183,14 +220,16 @@ export function StudiesExplorer({ index }: Props) {
               and which only one of them found.
             </span>
           </button>
-          <Link href="/" className={styles.startCard}>
+          <button
+            type="button"
+            className={styles.startCard}
+            onClick={() => document.getElementById("protein-lookup")?.focus()}
+          >
             <strong>Look up one protein</strong>
-            <span>
-              Search the Surfaceome catalog and open the protein: its Expression section shows
-              which of these datasets detected it.
-            </span>
-          </Link>
+            <span>See every dataset that detected a protein, without leaving this page.</span>
+          </button>
         </div>
+        <ProteinLookup />
       </section>
 
       <details
@@ -228,6 +267,14 @@ export function StudiesExplorer({ index }: Props) {
           countOf={(s) => arms.filter((a) => a.status === s).length}
           value={statuses}
           onChange={setStatuses}
+        />
+        <ChipGroup
+          label="Cell type"
+          options={CELL_GROUP_ORDER}
+          labelOf={(g) => CELL_GROUP_LABEL[g]}
+          countOf={(g) => arms.filter((a) => a.cell_group === g).length}
+          value={cellGroups}
+          onChange={setCellGroups}
         />
         <ChipGroup
           label="Method"
@@ -319,7 +366,12 @@ export function StudiesExplorer({ index }: Props) {
                   <td>
                     <FamilyChip arm={arm} />
                   </td>
-                  <td className={styles.sample}>{arm.sample}</td>
+                  <td className={styles.sample}>
+                    {arm.sample}
+                    {arm.cell_group ? (
+                      <div className={styles.sub}>{CELL_GROUP_LABEL[arm.cell_group]}</div>
+                    ) : null}
+                  </td>
                   <td className={styles.num}>
                     {arm.n_proteins.toLocaleString("en-US")}
                     <Bar value={arm.n_proteins / maxN} />
@@ -364,8 +416,11 @@ export function StudiesExplorer({ index }: Props) {
             arms={arms}
             selected={selected}
             countedIdx={countedIdx}
-            consensus={
-              selected.length === countedIdx.length && countedIdx.every((i) => selected.includes(i))
+            view={
+              view ??
+              (selected.length === countedIdx.length && countedIdx.every((i) => selected.includes(i))
+                ? "consensus"
+                : null)
             }
           />
         </div>
@@ -466,14 +521,15 @@ function SelectionPanel({
   arms,
   selected,
   countedIdx,
-  consensus,
+  view,
 }: {
   arms: StudyArm[];
   selected: number[];
   countedIdx: number[];
-  /** The selection is exactly the counted datasets (the consensus list). */
-  consensus: boolean;
+  /** A preset over all counted datasets, or null for a hand-picked selection. */
+  view: View | null;
 }) {
+  const consensus = view !== null;
   const [presence, setPresence] = useState<PresenceShard | null>(null);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState("");
@@ -481,6 +537,13 @@ function SelectionPanel({
   // Same as the catalog's tier filter: nothing checked = every tier; checked tiers OR together.
   const [tierSel, setTierSel] = useState<Set<Tier>>(new Set());
   const [limit, setLimit] = useState(PAGE);
+  const [minCounted, setMinCounted] = useState(1);
+  useEffect(() => {
+    setMinCounted(view === "novel" || view === "review" ? DISCOVERY_MIN : 1);
+    // Database-absent detections are dominated by abundant ER / cytosolic
+    // background; start from the ones our deep dive also calls surface.
+    setTierSel(view === "novel" ? new Set<Tier>(["canonical", "likely"]) : new Set());
+  }, [view]);
   const [showAllCombos, setShowAllCombos] = useState(false);
   const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<ProteinSort>();
 
@@ -546,8 +609,16 @@ function SelectionPanel({
     if (mode.startsWith("c:")) return comboKey(p.arms, selected) === mode.slice(2);
     return true;
   });
-  const filtered = inMode.filter(
-    (p) => (tierSel.size === 0 || tierSel.has(p.tier)) && (!f ||
+  // Everything but the tier chips, so each chip's count is what checking it adds.
+  const preTier = inMode.filter(
+    (p) =>
+      p.nCounted >= minCounted &&
+      (view !== "novel" || p.votes === 0) &&
+      (view !== "review" || p.tier === "low" || p.tier === "uncertain" || p.tier === "no"),
+  );
+  const filtered = preTier.filter(
+    (p) =>
+      (tierSel.size === 0 || tierSel.has(p.tier)) && (!f ||
         p.acc.includes(f) ||
         p.symbol.toUpperCase().includes(f) ||
         p.name.toUpperCase().includes(f)),
@@ -569,7 +640,7 @@ function SelectionPanel({
           tier: (p) => TIER_ORDER.indexOf(p.tier),
           counted: (p) => p.nCounted,
         });
-  const tierCount = (t: Tier) => inMode.filter((p) => p.tier === t).length;
+  const tierCount = (t: Tier) => preTier.filter((p) => p.tier === t).length;
   const modeLabel =
     mode === "all"
       ? selected.length === 2
@@ -631,14 +702,34 @@ function SelectionPanel({
   return (
     <section className={styles.panel} aria-label="Selected studies">
       <h2 className={`h-section ${styles.sectionTitle}`}>
-        {consensus
+        {view === "novel"
+          ? "New surface candidates"
+          : view === "review"
+            ? "Detected, but not called surface"
+            : consensus
           ? "Consensus surface list"
           : single
             ? `Proteins in ${shortCitation(arms[selected[0]])}`
             : `Comparing ${selected.length} datasets`}
       </h2>
       <p className={styles.summary}>
-        {consensus ? (
+        {view === "novel" ? (
+          <>
+            Proteins detected on intact cells by at least {minCounted} counted dataset
+            {minCounted === 1 ? "" : "s"} that none of the five surfaceome databases (UniProt, GO,
+            SURFY, CSPA, HPA) list as surface. It starts filtered to proteins our deep dive rates
+            Canonical or Likely: without that filter the top of the list is abundant ER and
+            cytosolic proteins (chaperones, glycosylation enzymes) that intact-cell labeling picks
+            up as background. Clear the tier chips to see all of them.
+          </>
+        ) : view === "review" ? (
+          <>
+            Proteins detected on intact cells by at least {minCounted} counted dataset
+            {minCounted === 1 ? "" : "s"} that our deep dive rated Low confidence, Uncertain or Not
+            surface. Either the deep dive missed surface evidence, or the detections are
+            intracellular carry-over; each one is worth a second look.
+          </>
+        ) : consensus ? (
           <>
             <strong>{proteins.length.toLocaleString("en-US")}</strong> proteins were detected by at
             least one of the {selected.length} counted datasets, ranked by how many of them
@@ -822,6 +913,22 @@ function SelectionPanel({
             ) : null}
           </div>
         ) : null}
+        <label className={styles.minCount}>
+          Found in at least
+          <input
+            type="number"
+            min={1}
+            max={countedIdx.length}
+            value={minCounted}
+            onChange={(e) => {
+              const v = Math.max(1, Math.min(countedIdx.length, Number(e.target.value) || 1));
+              setMinCounted(v);
+              setLimit(PAGE);
+            }}
+            aria-label="Minimum number of counted datasets"
+          />
+          counted dataset{minCounted === 1 ? "" : "s"}
+        </label>
         <ChipGroup
           label="Tier"
           options={TIER_ORDER}
