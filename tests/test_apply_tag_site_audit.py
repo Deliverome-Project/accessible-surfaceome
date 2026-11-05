@@ -19,6 +19,13 @@ from accessible_surfaceome.paths import REPO_ROOT
 
 AUDIT_DIR = REPO_ROOT / "data" / "analysis" / "tag_site_corpus_audit"
 
+
+def _kept(c) -> dict:
+    """The surviving row of a non-delete correction (narrows Optional for ty)."""
+    assert c.row is not None, c
+    return c.row
+
+
 SEQ = "M" + "ACDEFGHIKLMNPQRSTVWY" * 10  # 201 aa
 
 
@@ -108,18 +115,18 @@ def test_confirmed_shifted_moves_the_residue_and_recomputes_flanks():
     audit = [_audit("GENEX-internal-10-lit", "confirmed_shifted", 10, "14")]
     (c,) = build_corrections(before, audit, {"P00001": SEQ}, version="v", synced_at="t")
     assert c.action == "update" and c.shift == 4
-    assert c.row["insert_after_residue"] == 14
+    assert _kept(c)["insert_after_residue"] == 14
     assert (
-        c.row["residue_before"],
-        c.row["residue_after"],
-        c.row["residue_label"],
+        _kept(c)["residue_before"],
+        _kept(c)["residue_after"],
+        _kept(c)["residue_label"],
     ) == flanks(SEQ, 14)
-    assert c.row["site_id"] == "GENEX-internal-10-lit"  # key kept
-    assert c.row["position_frame"] == "ortholog:mouse"
-    assert c.row["tag_sites_version"] == "v"
-    assert c.row["rationale"].startswith("[Literature audit")
-    assert c.row["rationale"].endswith("original rationale")
-    assert "10 -> 14" in c.row["rationale"]
+    assert _kept(c)["site_id"] == "GENEX-internal-10-lit"  # key kept
+    assert _kept(c)["position_frame"] == "ortholog:mouse"
+    assert _kept(c)["tag_sites_version"] == "v"
+    assert _kept(c)["rationale"].startswith("[Literature audit")
+    assert _kept(c)["rationale"].endswith("original rationale")
+    assert "10 -> 14" in _kept(c)["rationale"]
 
 
 def test_mature_numbering_maps_to_the_workers_frame_vocabulary():
@@ -134,7 +141,7 @@ def test_mature_numbering_maps_to_the_workers_frame_vocabulary():
         )
     ]
     (c,) = build_corrections(before, audit, {"P00001": SEQ}, version="v", synced_at="t")
-    assert c.row["position_frame"] == "mature"
+    assert _kept(c)["position_frame"] == "mature"
 
 
 def test_confirmed_exact_with_full_support_is_a_keep():
@@ -142,8 +149,8 @@ def test_confirmed_exact_with_full_support_is_a_keep():
     audit = [_audit("GENEX-internal-10-lit", "confirmed_exact", 10)]
     (c,) = build_corrections(before, audit, {"P00001": SEQ}, version="v", synced_at="t")
     assert c.action == "keep"
-    assert c.row["rationale"] == "original rationale"
-    assert c.row["insert_after_residue"] == 10
+    assert _kept(c)["rationale"] == "original rationale"
+    assert _kept(c)["insert_after_residue"] == 10
 
 
 def test_confirmed_exact_with_missing_assay_lowers_validation_only():
@@ -153,9 +160,9 @@ def test_confirmed_exact_with_missing_assay_lowers_validation_only():
     ]
     (c,) = build_corrections(before, audit, {"P00001": SEQ}, version="v", synced_at="t")
     assert c.action == "update"
-    assert c.row["validation_level"] == "surface_only"
-    assert c.row["insert_after_residue"] == 10
-    assert "surface_and_function -> surface_only" in c.row["rationale"]
+    assert _kept(c)["validation_level"] == "surface_only"
+    assert _kept(c)["insert_after_residue"] == 10
+    assert "surface_and_function -> surface_only" in _kept(c)["rationale"]
 
 
 def test_region_only_takes_the_shape_of_the_existing_region_rows(monkeypatch):
@@ -169,7 +176,7 @@ def test_region_only_takes_the_shape_of_the_existing_region_rows(monkeypatch):
         )
     ]
     (c,) = build_corrections(before, audit, {"P00001": SEQ}, version="v", synced_at="t")
-    r = c.row
+    r = _kept(c)
     assert r["insert_after_residue"] is None
     assert (r["residue_before"], r["residue_after"]) == ("", "")
     assert r["residue_label"] == "loop C at X10"
