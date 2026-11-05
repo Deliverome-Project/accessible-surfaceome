@@ -1284,6 +1284,7 @@ export function CatalogTable({
                 aria-selected={on}
                 aria-pressed={p.key === "all" ? undefined : on}
                 className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
+                data-track={`Preset: ${p.label}`}
                 onClick={() => {
                   // "All" clears the whole selection (and any sub-axis). Note:
                   // it does NOT clear the low-lit toggle — that's an independent
@@ -1347,6 +1348,7 @@ export function CatalogTable({
                 role="tab"
                 aria-selected={lowLitSurfy}
                 className={`${styles.presetChip} ${lowLitSurfy ? styles.presetChipOn : ""}`}
+                data-track="Preset: Low-lit + UniProt"
                 onClick={() => {
                   // Independent facet — toggles on its own, composing with any
                   // active tier presets (AND); does not clear them.
@@ -1448,6 +1450,7 @@ export function CatalogTable({
               className={`${styles.chip} ${deepDiveFilter !== "yes" ? styles.chipOn : ""}`}
               onClick={() => setDeepDiveFilter(null)}
               aria-pressed={deepDiveFilter !== "yes"}
+              data-track="Quick filter: All"
             >
               All <span className={styles.chipCount}>{n_rows}</span>
             </button>
@@ -1456,6 +1459,7 @@ export function CatalogTable({
               className={`${styles.chip} ${deepDiveFilter === "yes" ? styles.chipOn : ""}`}
               onClick={() => setDeepDiveFilter("yes")}
               aria-pressed={deepDiveFilter === "yes"}
+              data-track="Quick filter: Deep dive"
               title={`Only genes with a deep-dive record — ${n_with_deep_dive} of ${n_rows.toLocaleString()}`}
             >
               Deep dive{" "}
@@ -1468,6 +1472,7 @@ export function CatalogTable({
               aria-pressed={showFilters}
               aria-expanded={showFilters}
               aria-controls="catalog-filter-panel"
+              data-track={showFilters ? "Hide filters" : "More filters"}
             >
               {showFilters ? "Hide filters" : "More filters"}
               {activeFilterCount > 0 ? (
@@ -2419,6 +2424,8 @@ function CatalogRowView({
       href={`/${row.symbol}/`}
       className={styles.symbolButton}
       aria-label={`Open the deep-dive page for ${row.symbol}`}
+      // Which gene was opened shows up as that gene page's own pageview.
+      data-track="Open gene page"
     >
       {symbolStack}
     </a>

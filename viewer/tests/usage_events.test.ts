@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { clickedControl, describeControl, trackingDeclined } from "../lib/usage-events";
+import { clickedControl, describeControl, structureVariantTrack, trackingDeclined } from "../lib/usage-events";
 
 const ORIGIN = "https://surfaceome.deliverome.org";
 
@@ -68,4 +68,15 @@ test("Global Privacy Control or Do Not Track turns tracking off", () => {
   assert.equal(trackingDeclined({ doNotTrack: "1" }), true);
   assert.equal(trackingDeclined({ doNotTrack: "0" }), false);
   assert.equal(trackingDeclined({}), false);
+});
+
+test("structure tabs track by kind of structure, not gene or accession", () => {
+  assert.equal(structureVariantTrack("canonical", "Canonical"), "Structure tab: Canonical");
+  assert.equal(structureVariantTrack("afdb", "Isoform 2"), "Structure tab: Isoform");
+  assert.equal(structureVariantTrack("afdb", "Isoform 3"), "Structure tab: Isoform");
+  assert.equal(structureVariantTrack("afdb", "P11912-7"), "Structure tab: Isoform");
+  assert.equal(structureVariantTrack("afdb", "Mouse ortholog"), "Structure tab: Mouse ortholog");
+  assert.equal(structureVariantTrack("afdb", "Cyno ortholog"), "Structure tab: Cyno ortholog");
+  assert.equal(structureVariantTrack("experimental", "1EW2"), "Structure tab: Experimental (PDB)");
+  assert.equal(structureVariantTrack("schweke-homomer", "Homodimer"), "Structure tab: Predicted homodimer");
 });

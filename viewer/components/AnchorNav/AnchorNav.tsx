@@ -86,6 +86,9 @@ export function AnchorNav({ sections, active, onSelect }: AnchorNavProps) {
               key={s.id}
               ref={(el) => { linkRefs.current[i] = el; }}
               href={`#section-${s.id}`}
+              // Without this the label would be "04Expression": the section
+              // number varies by gene, splitting one section into several rows.
+              data-track={`Section: ${s.label}`}
               role="tab"
               tabIndex={tabIndex}
               aria-selected={isActive ? "true" : "false"}

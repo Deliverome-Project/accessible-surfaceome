@@ -56,6 +56,24 @@ export function describeControl(el: Element, path: string, origin: string): Usag
   return { path, kind, label };
 }
 
+/**
+ * A `data-track` name for a structure-viewer tab that is the same for every
+ * gene, so click counts add up by kind of structure. Without it the label is
+ * the tab's tooltip ("AlphaFold model for Isoform 2 (P11912-2).") and each
+ * gene and accession gets its own row. Ortholog tabs keep their species.
+ */
+export function structureVariantTrack(source: string, label: string): string {
+  if (source === "canonical") return "Structure tab: Canonical";
+  if (source === "experimental") return "Structure tab: Experimental (PDB)";
+  if (source === "schweke-homomer") return "Structure tab: Predicted homodimer";
+  const ortholog = /^(\w+) ortholog$/i.exec(label.trim());
+  if (ortholog) return `Structure tab: ${ortholog[1]} ortholog`;
+  // Every other AlphaFold tab is an isoform: "Isoform 2", or the raw
+  // accession when GeneHeader can't parse an isoform number from it.
+  if (source === "afdb") return "Structure tab: Isoform";
+  return "Structure tab: Other";
+}
+
 /** Global Privacy Control or Do Not Track set → send nothing. */
 export function trackingDeclined(nav: { doNotTrack?: string | null; globalPrivacyControl?: boolean }): boolean {
   return nav.globalPrivacyControl === true || nav.doNotTrack === "1";
