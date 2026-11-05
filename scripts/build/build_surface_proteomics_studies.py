@@ -37,12 +37,12 @@ Only arms with an ``admitted`` review decision (core / provisional) count as
 surface detections. Held arms (e.g. a fully imputed published matrix, where per-
 sample detection can't be recovered), arms below the reference-overlap screen,
 and comparators (membrane fractionation, inner-leaflet labeling) are kept and
-labelled so the viewer can show them as "listed, not counted".
+labeled so the viewer can show them as "listed, not counted".
 
 Whole-lysate arms are not published at all: an arm whose measurement is neither
 on intact cells nor on a membrane fraction (per :func:`method_class` — for
 example hydrazide or boronic-acid N-glycopeptide capture from whole-cell or
-whole-tumour lysate) is dropped from both outputs. Their ids are recorded in
+whole-tumor lysate) is dropped from both outputs. Their ids are recorded in
 ``studies.json`` under ``excluded_arms``.
 
 Joins are on UniProt accession with isoform suffixes stripped, never on gene
@@ -67,6 +67,7 @@ or from local copies of the three inputs with ``--source-dir DIR`` (holding
 from __future__ import annotations
 
 import argparse
+import bisect
 import csv
 import io
 import json
@@ -273,7 +274,7 @@ def base_accession(acc: str) -> str:
 
 
 def method_class(entry: dict[str, Any], intact: bool) -> str:
-    """intact_cell | fractionation | lysate — the axis the viewer colours on."""
+    """intact_cell | fractionation | lysate — the axis the viewer colors on."""
     if entry["method_group"] == "membrane-fractionation":
         return "fractionation"
     return "intact_cell" if intact else "lysate"
@@ -386,6 +387,9 @@ def add_registry_arms(
             )
         logger.info("added registry arm %s: %d proteins", sid, len(accs))
     return aliases
+
+
+csv.field_size_limit(1 << 30)  # some banked tables carry very long free-text cells
 
 
 def _read_external_table(key: str) -> list[dict[str, str]]:
@@ -595,6 +599,170 @@ def load_per_line(
     return dict(out)
 
 
+# Count columns a list-style table may carry when no per-sample quantity is
+# recorded, most specific first: (column, unit label).
+COUNT_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("# PSMs", "PSMs"),
+    ("Number of PSMs", "PSMs"),
+    ("total_spectral_count", "spectral counts"),
+    ("MS/MS Count", "MS/MS spectra"),
+    ("# Unique Peptides", "unique peptides"),
+    ("Number of Unique Peptides", "unique peptides"),
+    ("n_peptides", "peptides"),
+    ("n_probe_peptides", "probe-labeled peptides"),
+    ("# Peptides", "peptides"),
+    ("Number of Peptides", "peptides"),
+    ("Number of peptides", "peptides"),
+    ("Peptides", "peptides"),
+    ("peptides", "peptides"),
+)
+
+
+def quant_unit(columns: list[str], kinds: set[str], scale: str) -> str:
+    """Plain-language unit for a dataset's per-sample quantity columns."""
+    text = " ".join(columns + sorted(kinds)).lower()
+    rules = (
+        ("ibaq", "iBAQ intensity"),
+        ("lfq", "LFQ intensity"),
+        ("tmt", "TMT reporter abundance"),
+        ("log2auc", "log2 peptide AUC"),
+        ("numspectra", "spectral counts"),
+        ("spectral", "spectral counts"),
+        ("psm", "PSMs"),
+        ("prot_matches", "protein matches"),
+        ("unique peptides", "unique peptides"),
+        ("peptide", "peptides"),
+        ("peak area", "peak area"),
+        ("area", "peak area"),
+        ("pg.quantity", "DIA protein quantity"),
+        ("ms2quant", "DIA protein quantity"),
+        ("dia", "DIA protein quantity"),
+        ("intensity", "MS intensity"),
+        ("abundance", "reported abundance"),
+    )
+    if scale.startswith("log2"):
+        # A log2 column is an intensity unless a more specific measure is named.
+        specific = ("lfq", "tmt", "ibaq", "log2auc")
+        unit = next(
+            (label for key, label in rules if key in specific and key in text),
+            "intensity",
+        )
+        return unit if unit.startswith("log2") else f"log2 {unit}"
+    return next((label for key, label in rules if key in text), "reported abundance")
+
+
+def _num(v: Any) -> float | None:
+    try:
+        x = float(v)
+    except TypeError, ValueError:
+        return None
+    return x if x == x else None  # drop NaN
+
+
+def load_quant(
+    manifest: dict,
+    arms: list[dict[str, Any]],
+    index: dict[str, int],
+    mapping: dict[str, str],
+    read_table: Any,
+) -> dict[str, dict[str, list[float]]]:
+    """Per-protein quantity and within-dataset percentile, for each arm.
+
+    The quantity is the dataset's own measure, from its banked control table:
+    the mean over the extraction recipe's sample-group columns (missing and,
+    on linear scales, zero values skipped), or else a count column (PSMs,
+    peptides). Sets ``arm["quant_unit"]`` / ``arm["quant_note"]`` and returns
+    ``{canonical acc: {str(arm index): [value, percentile]}}``, the percentile
+    being the share of the dataset's quantified proteins with a lower value
+    (0-100). Values are not comparable across datasets; percentiles are.
+    """
+    by_id = {d["study_id"]: d for d in manifest["datasets"]}
+    out: dict[str, dict[str, list[float]]] = defaultdict(dict)
+    for sid, i in index.items():
+        d = by_id.get(sid)
+        key = (d or {}).get("control_tsv_key")
+        per_line = PER_LINE_TABLES.get(sid)
+        if per_line and not key:
+            key = per_line[0]
+        if not d or not key:
+            continue
+        try:
+            rows = read_table(key)
+        except Exception as e:  # a missing banked table is a gap, not a failure
+            logger.warning("no control table for %s: %s", sid, e)
+            continue
+        if not rows:
+            continue
+        header = list(rows[0])
+        groups = [
+            g
+            for e in d.get("extractions") or []
+            for g in e.get("sample_groups") or []
+            if g.get("use_for_membership", True)
+        ]
+        cols = [c for g in groups for c in g["columns"] if c in header]
+        scale = next((g.get("scale") or "linear" for g in groups), "linear")
+        if not cols and per_line:
+            # Per-line atlas tables: one abundance column per cell line.
+            cols = [c for c in header if c != per_line[1] and c not in per_line[2]]
+            groups = [{"replicate_kind": "abundance"}]
+        if cols:
+            unit = quant_unit(
+                cols, {g.get("replicate_kind") or "" for g in groups}, scale
+            )
+            note = (
+                f"mean over the samples where it was detected (of {len(cols)})"
+                if len(cols) > 1
+                else "one sample"
+            )
+        else:
+            hit = next(((c, u) for c, u in COUNT_COLUMNS if c in header), None)
+            if not hit:
+                continue
+            cols, unit, note, scale = [hit[0]], hit[1], "as reported", "linear"
+        log = scale.startswith("log2")
+        acc_col = next(
+            (
+                c
+                for c in ("uniprot_accession", per_line[1] if per_line else "")
+                if c in header
+            ),
+            None,
+        )
+        if not acc_col:
+            continue
+        values: dict[str, float] = {}
+        for r in rows:
+            acc = base_accession(r.get(acc_col) or "")
+            if not acc:
+                continue
+            acc = mapping.get(acc, acc)
+            xs = [
+                x
+                for x in (_num(r.get(c)) for c in cols)
+                if x is not None and (log or x > 0)
+            ]
+            if xs:
+                v = sum(xs) / len(xs)
+                values[acc] = max(values.get(acc, v), v)
+        if len(values) < 10:
+            continue
+        ordered = sorted(values.values())
+        n = len(ordered)
+        for acc, v in values.items():
+            below = bisect.bisect_left(ordered, v)
+            out[acc][str(i)] = [float(f"{v:.3g}"), round(100 * below / n)]
+        arms[i]["quant_unit"] = unit
+        arms[i]["quant_note"] = note
+        arms[i]["n_quantified"] = n
+    logger.info(
+        "quantities for %d of %d arms",
+        sum(1 for a in arms if a.get("quant_unit")),
+        len(arms),
+    )
+    return dict(out)
+
+
 def write_downloads(
     out: Path, arms: list[dict[str, Any]], shards: list[dict[str, Any]]
 ) -> None:
@@ -729,6 +897,36 @@ def load_pubmed(pmids: list[str]) -> dict[str, dict[str, Any]]:
     return out
 
 
+# The viewer uses American spelling. Our own curated descriptions (arm names,
+# sample text) are normalized; published paper titles are left as published.
+_AMERICAN = (
+    ("leukaemia", "leukemia"),
+    ("Leukaemia", "Leukemia"),
+    ("haemat", "hemat"),
+    ("Haemat", "Hemat"),
+    ("tumour", "tumor"),
+    ("Tumour", "Tumor"),
+    ("labelling", "labeling"),
+    ("Labelling", "Labeling"),
+    ("labelled", "labeled"),
+    ("polarised", "polarized"),
+    ("immortalised", "immortalized"),
+    ("Immortalised", "Immortalized"),
+    ("characterised", "characterized"),
+    ("oesophag", "esophag"),
+    ("Oesophag", "Esophag"),
+    ("haemoglobin", "hemoglobin"),
+)
+
+
+def americanize(text: str | None) -> str | None:
+    if not text:
+        return text
+    for a, b in _AMERICAN:
+        text = text.replace(a, b)
+    return text
+
+
 def _strip_citation(name: str) -> str:
     """Drop a trailing "(Author Year)" — the viewer shows the citation separately."""
     return re.sub(r"\s*\([^()]*\b(?:19|20)\d{2}\)\s*$", "", name).strip() or name
@@ -769,7 +967,7 @@ def build_arms(
         arms.append(
             {
                 "id": sid,
-                "name": _strip_citation(d["name"]),
+                "name": americanize(_strip_citation(d["name"])),
                 "publication": str(d.get("publication_id") or paper.get("pmid") or sid),
                 "first_author": paper.get("first_author"),
                 "year": paper.get("year"),
@@ -782,7 +980,9 @@ def build_arms(
                 "method_class": method_class(d, intact),
                 "intact_cell_labeling": "yes" if intact else "no",
                 "intact_cell_verified": icl in ("yes", "no"),
-                "sample": d.get("human_sample_type") or d.get("cell_or_tissue_type"),
+                "sample": americanize(
+                    d.get("human_sample_type") or d.get("cell_or_tissue_type")
+                ),
                 "status": STATUS_BY_ROLE.get(role, role),
                 "admitted": bool(d.get("admitted")),
                 "n_proteins": counts.get(sid, 0),
@@ -863,6 +1063,7 @@ def main() -> None:
             fallback_symbol.setdefault(acc, row["gene_symbol"])
 
     per_line = load_per_line(arms, index, mapping, _read_external_table)
+    quant = load_quant(manifest, arms, index, mapping, _read_external_table)
 
     shards: list[dict[str, Any]] = [{} for _ in range(N_SHARDS)]
     for acc in sorted(presence):
@@ -879,6 +1080,8 @@ def main() -> None:
             entry["t"] = tiers[acc]
         if acc in per_line:
             entry["l"] = per_line[acc]
+        if acc in quant:
+            entry["q"] = quant[acc]
         shards[shard_of(acc)][acc] = entry
 
     admitted = [a for a in arms if a["admitted"]]

@@ -23,6 +23,8 @@ import {
   tierOf,
   CELL_GROUP_LABEL,
   CELL_GROUP_ORDER,
+  formatQuant,
+  ordinalPct,
   type CellGroup,
 } from "../../lib/surface-proteomics";
 import { ProteinLookup } from "./ProteinLookup";
@@ -41,7 +43,7 @@ interface Props {
 
 type Tier = TierCode | "none";
 type StudySort = "study" | "year" | "method" | "family" | "sample" | "n" | "overlap" | "status";
-type ProteinSort = "protein" | "name" | "votes" | "tier" | "counted";
+type ProteinSort = "protein" | "name" | "votes" | "tier" | "counted" | "amount";
 
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const ALL_CLASSES: MethodClass[] = ["intact_cell", "fractionation"];
@@ -62,6 +64,8 @@ interface Protein {
   arms: Set<number>;
   /** Counted arms (anywhere in the compendium) that detect it. */
   nCounted: number;
+  /** [value, within-dataset percentile] when exactly one dataset is selected. */
+  q: [number, number] | null;
 }
 
 /** Preset views over all counted datasets; each has a short link (?view=…). */
@@ -574,6 +578,7 @@ function SelectionPanel({
         tier: tierOf(e),
         arms: new Set(hit),
         nCounted: e.a.filter((i) => counted.has(i)).length,
+        q: selected.length === 1 ? (e.q?.[String(selected[0])] ?? null) : null,
       });
     }
     return out;
@@ -639,6 +644,7 @@ function SelectionPanel({
           votes: (p) => p.votes ?? -1,
           tier: (p) => TIER_ORDER.indexOf(p.tier),
           counted: (p) => p.nCounted,
+          amount: (p) => p.q?.[1] ?? -1,
         });
   const tierCount = (t: Tier) => preTier.filter((p) => p.tier === t).length;
   const modeLabel =
@@ -662,6 +668,9 @@ function SelectionPanel({
       "db_votes_of_5",
       "surfaceome_tier",
       "n_counted_datasets_detected",
+      ...(single && arms[selected[0]].quant_unit
+        ? [`amount_${(arms[selected[0]].quant_unit ?? "").replace(/\W+/g, "_")}`, "percentile_in_dataset"]
+        : []),
       ...selected.map((i) => arms[i].id),
     ];
     const csv = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
@@ -675,6 +684,7 @@ function SelectionPanel({
           p.votes ?? "",
           p.tier === "none" ? "not_deep_dived" : p.tier,
           p.nCounted,
+          ...(single && arms[selected[0]].quant_unit ? [p.q?.[0] ?? "", p.q?.[1] ?? ""] : []),
           ...selected.map((i) => (p.arms.has(i) ? 1 : 0)),
         ].join(","),
       );
@@ -952,7 +962,7 @@ function SelectionPanel({
       </div>
       <p className={styles.linkHint}>
         Click a protein name to open its page in the Surfaceome viewer, with the full evidence
-        record. Names in grey were not deep-dived, so they link to their UniProt entry instead.
+        record. Names in gray were not deep-dived, so they link to their UniProt entry instead.
       </p>
       <div className={styles.count}>
         {shown.length.toLocaleString("en-US")} proteins
@@ -971,6 +981,9 @@ function SelectionPanel({
               {pHeader("votes", "DB votes", true)}
               {pHeader("tier", "Surfaceome tier")}
               {pHeader("counted", `Counted datasets (of ${countedIdx.length})`)}
+              {single && arms[selected[0]].quant_unit
+                ? pHeader("amount", `Amount here (${arms[selected[0]].quant_unit})`)
+                : null}
               {!single && !wide
                 ? selected.map((i) => (
                     <th key={i} className={styles.center} title={arms[i].name}>
@@ -1015,6 +1028,18 @@ function SelectionPanel({
                   <span className={styles.countedNum}>{p.nCounted}</span>
                   <Bar value={p.nCounted / Math.max(1, countedIdx.length)} />
                 </td>
+                {single && arms[selected[0]].quant_unit ? (
+                  <td className={styles.countedCell}>
+                    {p.q ? (
+                      <>
+                        <span className={styles.amountNum}>{formatQuant(p.q[0])}</span>
+                        <span className={styles.sub}> {ordinalPct(p.q[1])}</span>
+                      </>
+                    ) : (
+                      <span className={styles.sub}>—</span>
+                    )}
+                  </td>
+                ) : null}
                 {!single && !wide
                   ? selected.map((i) => (
                       <td key={i} className={styles.center}>

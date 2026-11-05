@@ -95,48 +95,6 @@
    7,
    5
   ],
-  "canonical": [
-   428,
-   195,
-   141,
-   87,
-   87,
-   72,
-   64,
-   47,
-   44,
-   55,
-   40,
-   32,
-   42,
-   27,
-   35,
-   27,
-   33,
-   24,
-   28,
-   19,
-   14,
-   23,
-   22,
-   14,
-   8,
-   17,
-   17,
-   12,
-   19,
-   6,
-   14,
-   12,
-   14,
-   11,
-   10,
-   10,
-   10,
-   10,
-   7,
-   5
-  ],
   "likely": [
    582,
    189,
@@ -176,48 +134,6 @@
    3,
    0,
    1,
-   0,
-   0
-  ],
-  "uncertain": [
-   44,
-   3,
-   1,
-   2,
-   0,
-   0,
-   1,
-   0,
-   0,
-   0,
-   0,
-   1,
-   0,
-   0,
-   0,
-   0,
-   1,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
    0,
    0
   ],
@@ -263,6 +179,48 @@
    0,
    0
   ],
+  "canonical": [
+   428,
+   195,
+   141,
+   87,
+   87,
+   72,
+   64,
+   47,
+   44,
+   55,
+   40,
+   32,
+   42,
+   27,
+   35,
+   27,
+   33,
+   24,
+   28,
+   19,
+   14,
+   23,
+   22,
+   14,
+   8,
+   17,
+   17,
+   12,
+   19,
+   6,
+   14,
+   12,
+   14,
+   11,
+   10,
+   10,
+   10,
+   10,
+   7,
+   5
+  ],
   "low": [
    625,
    115,
@@ -297,6 +255,48 @@
    1,
    0,
    1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "uncertain": [
+   44,
+   3,
+   1,
+   2,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
    0,
    0,
    0,
@@ -377,7 +377,10 @@
     "U937",
     "UKE1",
     "WSU"
-   ]
+   ],
+   "quant_unit": "reported abundance",
+   "quant_note": "mean over the samples where it was detected (of 25)",
+   "n_quantified": 2668
   },
   {
    "id": "salmela-cscc-2026",
@@ -403,7 +406,10 @@
    "repository_ids": [
     "PXD065511"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "MS intensity",
+   "quant_note": "mean over the samples where it was detected (of 9)",
+   "n_quantified": 2270
   },
   {
    "id": "dusailly-ec-2026",
@@ -453,7 +459,10 @@
    "repository_ids": [
     "PXD058999"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 12)",
+   "n_quantified": 4665
   },
   {
    "id": "glyco-pdx-csc-2026",
@@ -477,11 +486,14 @@
    "reference_overlap": 0.7144549763033176,
    "repository": null,
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "log2 intensity",
+   "quant_note": "mean over the samples where it was detected (of 27)",
+   "n_quantified": 844
   },
   {
    "id": "slezak-hct116apex-2026",
-   "name": "HCT116 exogenous APEX2 surface proximity labelling",
+   "name": "HCT116 exogenous APEX2 surface proximity labeling",
    "publication": "41875162",
    "first_author": "Slezak T",
    "year": 2026,
@@ -503,7 +515,10 @@
    "repository_ids": [
     "PXD069264"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "reported abundance",
+   "quant_note": "mean over the samples where it was detected (of 4)",
+   "n_quantified": 656
   },
   {
    "id": "rethore-huvec-2026",
@@ -529,7 +544,10 @@
    "repository_ids": [
     "PXD072355"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "reported abundance",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 2899
   },
   {
    "id": "sanchez-jurkat-2026",
@@ -546,7 +564,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "T-cell leukaemia cell line",
+   "sample": "T-cell leukemia cell line",
    "status": "core",
    "admitted": true,
    "n_proteins": 1543,
@@ -555,7 +573,10 @@
    "repository_ids": [
     "PXD068422"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "MS intensity",
+   "quant_note": "one sample",
+   "n_quantified": 1543
   },
   {
    "id": "ho-k562-csc-2026",
@@ -572,7 +593,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Leukaemia cell line",
+   "sample": "Leukemia cell line",
    "status": "below_screen",
    "admitted": false,
    "n_proteins": 3526,
@@ -582,7 +603,10 @@
     "MSV000102332",
     "PXD080445"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 3526
   },
   {
    "id": "ho-k562-conaey-2026",
@@ -599,7 +623,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Leukaemia cell line",
+   "sample": "Leukemia cell line",
    "status": "below_screen",
    "admitted": false,
    "n_proteins": 4964,
@@ -609,7 +633,10 @@
     "MSV000102332",
     "PXD080445"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 4964
   },
   {
    "id": "ho-k562-wgaey-2026",
@@ -626,7 +653,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Leukaemia cell line",
+   "sample": "Leukemia cell line",
    "status": "below_screen",
    "admitted": false,
    "n_proteins": 4963,
@@ -636,7 +663,10 @@
     "MSV000102332",
     "PXD080445"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 4963
   },
   {
    "id": "ho-k562-choley-2026",
@@ -653,7 +683,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Leukaemia cell line",
+   "sample": "Leukemia cell line",
    "status": "below_screen",
    "admitted": false,
    "n_proteins": 5398,
@@ -663,7 +693,10 @@
     "MSV000102332",
     "PXD080445"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 5398
   },
   {
    "id": "ho-k562-nbaey-2026",
@@ -680,7 +713,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Leukaemia cell line",
+   "sample": "Leukemia cell line",
    "status": "below_screen",
    "admitted": false,
    "n_proteins": 5077,
@@ -690,7 +723,10 @@
     "MSV000102332",
     "PXD080445"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 5077
   },
   {
    "id": "ho-k562-cscey-2026",
@@ -707,7 +743,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Leukaemia cell line",
+   "sample": "Leukemia cell line",
    "status": "below_screen",
    "admitted": false,
    "n_proteins": 5620,
@@ -717,7 +753,10 @@
     "MSV000102332",
     "PXD080445"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 5620
   },
   {
    "id": "ho-k562-snhs-2026",
@@ -734,7 +773,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Leukaemia cell line",
+   "sample": "Leukemia cell line",
    "status": "below_screen",
    "admitted": false,
    "n_proteins": 4393,
@@ -744,7 +783,10 @@
     "MSV000102332",
     "PXD080445"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 4393
   },
   {
    "id": "ho-k562-wgahrp-2026",
@@ -761,7 +803,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Leukaemia cell line",
+   "sample": "Leukemia cell line",
    "status": "below_screen",
    "admitted": false,
    "n_proteins": 5498,
@@ -771,7 +813,10 @@
     "MSV000102332",
     "PXD080445"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 5498
   },
   {
    "id": "stehn-mpnst-2026",
@@ -795,7 +840,10 @@
    "reference_overlap": 0.2785901762279715,
    "repository": "none (raw data on request)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "MS intensity",
+   "quant_note": "mean over the samples where it was detected (of 7)",
+   "n_quantified": 2667
   },
   {
    "id": "cattaneo-crc-2026",
@@ -821,7 +869,10 @@
    "repository_ids": [
     "PXD066343"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 12)",
+   "n_quantified": 8253
   },
   {
    "id": "mooney-os-2026",
@@ -847,7 +898,10 @@
    "repository_ids": [
     "PXD075484"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 44)",
+   "n_quantified": 2159
   },
   {
    "id": "chen-pc3-2026",
@@ -873,7 +927,10 @@
    "repository_ids": [
     "PXD077611"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "PSMs",
+   "quant_note": "as reported",
+   "n_quantified": 5712
   },
   {
    "id": "laurent-gsc-2026",
@@ -899,7 +956,10 @@
    "repository_ids": [
     "PXD075844"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "spectral counts",
+   "quant_note": "mean over the samples where it was detected (of 12)",
+   "n_quantified": 4709
   },
   {
    "id": "kuffa-crcpolar-2026",
@@ -916,14 +976,17 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "CRC cell lines (polarised)",
+   "sample": "CRC cell lines (polarized)",
    "status": "below_screen",
    "admitted": false,
    "n_proteins": 2974,
    "reference_overlap": 0.16275998679432155,
    "repository": "none found (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "log2 intensity",
+   "quant_note": "mean over the samples where it was detected (of 48)",
+   "n_quantified": 2974
   },
   {
    "id": "sucam-jhh4-carboxyl-2026",
@@ -949,7 +1012,10 @@
    "repository_ids": [
     "PXD068779"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "peptides",
+   "quant_note": "as reported",
+   "n_quantified": 1256
   },
   {
    "id": "sucam-jhh4-glyco-2026",
@@ -975,7 +1041,10 @@
    "repository_ids": [
     "PXD068779"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "peptides",
+   "quant_note": "as reported",
+   "n_quantified": 1278
   },
   {
    "id": "sucam-jhh4-multiplex-2026",
@@ -1001,7 +1070,10 @@
    "repository_ids": [
     "PXD068779"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "peptides",
+   "quant_note": "as reported",
+   "n_quantified": 1713
   },
   {
    "id": "sucam-2026",
@@ -1044,7 +1116,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Monocytic leukaemia line, macrophage-differentiated",
+   "sample": "Monocytic leukemia line, macrophage-differentiated",
    "status": "core",
    "admitted": true,
    "n_proteins": 548,
@@ -1054,7 +1126,10 @@
     "PXD053647",
     "PXD071681"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "log2 TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 548
   },
   {
    "id": "mazzone-rpe1-2026",
@@ -1071,14 +1146,17 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Immortalised non-cancer epithelial cell line",
+   "sample": "Immortalized non-cancer epithelial cell line",
    "status": "held",
    "admitted": false,
    "n_proteins": 2001,
    "reference_overlap": 0.22808764940239043,
    "repository": "none found (no ProteomeXchange identifier in the preprint)",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "log2 LFQ intensity",
+   "quant_note": "mean over the samples where it was detected (of 4)",
+   "n_quantified": 2005
   },
   {
    "id": "nash-i3neuron-2026",
@@ -1104,7 +1182,10 @@
    "repository_ids": [
     "PXD076394"
    ],
-   "cell_group": "neural"
+   "cell_group": "neural",
+   "quant_unit": "DIA protein quantity",
+   "quant_note": "mean over the samples where it was detected (of 4)",
+   "n_quantified": 2094
   },
   {
    "id": "taggi-bbb-2025",
@@ -1131,7 +1212,10 @@
     "MSV000096107",
     "PXD056849"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "log2 intensity",
+   "quant_note": "mean over the samples where it was detected (of 6)",
+   "n_quantified": 7616
   },
   {
    "id": "friedlova-cervix-2025",
@@ -1157,7 +1241,10 @@
    "repository_ids": [
     "PXD053951"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "reported abundance",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 1376
   },
   {
    "id": "martins-crc3d-2025",
@@ -1183,7 +1270,10 @@
    "repository_ids": [
     "PXD059013"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "PSMs",
+   "quant_note": "mean over the samples where it was detected (of 12)",
+   "n_quantified": 2811
   },
   {
    "id": "furan-biotin",
@@ -1209,7 +1299,10 @@
    "repository_ids": [
     "PXD059552"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "LFQ intensity",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 264
   },
   {
    "id": "laccid-2025",
@@ -1236,7 +1329,10 @@
     "PXD062870",
     "MSV000095684"
    ],
-   "cell_group": "immune"
+   "cell_group": "immune",
+   "quant_unit": "TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 2)",
+   "n_quantified": 5117
   },
   {
    "id": "holmes-2025",
@@ -1364,7 +1460,10 @@
    "repository_ids": [
     "PXD064632"
    ],
-   "cell_group": "neural"
+   "cell_group": "neural",
+   "quant_unit": "TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 30)",
+   "n_quantified": 2714
   },
   {
    "id": "cd38-myeloma-2024",
@@ -1390,7 +1489,10 @@
    "repository_ids": [
     "PXD027594"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "LFQ intensity",
+   "quant_note": "mean over the samples where it was detected (of 12)",
+   "n_quantified": 3121
   },
   {
    "id": "khan-chordoma-2024",
@@ -1416,7 +1518,10 @@
    "repository_ids": [
     "MSV000089171"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "log2 intensity",
+   "quant_note": "mean over the samples where it was detected (of 12)",
+   "n_quantified": 4117
   },
   {
    "id": "mooney-ewing-2024",
@@ -1442,7 +1547,10 @@
    "repository_ids": [
     "PXD043375"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 38)",
+   "n_quantified": 2504
   },
   {
    "id": "gasf-wang-2024",
@@ -1468,7 +1576,10 @@
    "repository_ids": [
     "PXD042888"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "probe-labeled peptides",
+   "quant_note": "as reported",
+   "n_quantified": 1354
   },
   {
    "id": "hunter-hfff-pmp-2024",
@@ -1485,7 +1596,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Immortalised primary fibroblasts",
+   "sample": "Immortalized primary fibroblasts",
    "status": "core",
    "admitted": true,
    "n_proteins": 1535,
@@ -1494,7 +1605,10 @@
    "repository_ids": [
     "PXD050878"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 5)",
+   "n_quantified": 1539
   },
   {
    "id": "udeshi-2024",
@@ -1518,7 +1632,10 @@
    "reference_overlap": 0.11856652687762105,
    "repository": null,
    "repository_ids": [],
-   "cell_group": "immune"
+   "cell_group": "immune",
+   "quant_unit": "log2 TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 2)",
+   "n_quantified": 2608
   },
   {
    "id": "hypoxic-gbm-2024",
@@ -1596,7 +1713,10 @@
    "repository_ids": [
     "PXD047474"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "iBAQ intensity",
+   "quant_note": "mean over the samples where it was detected (of 56)",
+   "n_quantified": 6911
   },
   {
    "id": "deng-2024",
@@ -1754,7 +1874,10 @@
    "repository_ids": [
     "PXD042403"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "spectral counts",
+   "quant_note": "as reported",
+   "n_quantified": 1231
   },
   {
    "id": "pandey-dipg-2023",
@@ -1778,7 +1901,10 @@
    "reference_overlap": 0.32750504371217215,
    "repository": "none (surface data not deposited)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "peptides",
+   "quant_note": "as reported",
+   "n_quantified": 2966
   },
   {
    "id": "rms-2023",
@@ -1802,7 +1928,10 @@
    "reference_overlap": 0.11608222490931076,
    "repository": null,
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "LFQ intensity",
+   "quant_note": "mean over the samples where it was detected (of 48)",
+   "n_quantified": 6613
   },
   {
    "id": "vilen-apex-2022",
@@ -1906,7 +2035,10 @@
    "repository_ids": [
     "PXD025000"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 4929
   },
   {
    "id": "capdeville-daoy-2022",
@@ -1932,7 +2064,10 @@
    "repository_ids": [
     "PXD030597"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "LFQ intensity",
+   "quant_note": "mean over the samples where it was detected (of 4)",
+   "n_quantified": 4313
   },
   {
    "id": "depierreux-hfff-pmp-2022",
@@ -1949,7 +2084,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Immortalised primary fibroblasts",
+   "sample": "Immortalized primary fibroblasts",
    "status": "core",
    "admitted": true,
    "n_proteins": 2614,
@@ -1958,7 +2093,10 @@
    "repository_ids": [
     "PXD033407"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 5)",
+   "n_quantified": 2621
   },
   {
    "id": "ferguson-2022",
@@ -1986,7 +2124,10 @@
     "PXD022553",
     "PXD032031"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "LFQ intensity",
+   "quant_note": "mean over the samples where it was detected (of 11)",
+   "n_quantified": 1153
   },
   {
    "id": "optimized-csc-aml-2022",
@@ -2036,7 +2177,10 @@
    "repository_ids": [
     "PXD028523"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "peptides",
+   "quant_note": "as reported",
+   "n_quantified": 1320
   },
   {
    "id": "anderson-2022",
@@ -2062,7 +2206,10 @@
    "repository_ids": [
     "PXD014165"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 20)",
+   "n_quantified": 5066
   },
   {
    "id": "gangras-shsy5y-2022",
@@ -2086,7 +2233,10 @@
    "reference_overlap": 0.34915254237288135,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "log2 peptide AUC",
+   "quant_note": "mean over the samples where it was detected (of 3)",
+   "n_quantified": 885
   },
   {
    "id": "lazar-skbr3shaving-2022",
@@ -2112,7 +2262,10 @@
    "repository_ids": [
     "PXD028978"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "PSMs",
+   "quant_note": "one sample",
+   "n_quantified": 1962
   },
   {
    "id": "lazar-skbr3amine-2022",
@@ -2138,7 +2291,10 @@
    "repository_ids": [
     "PXD028977"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "PSMs",
+   "quant_note": "one sample",
+   "n_quantified": 2301
   },
   {
    "id": "lazar-skbr3glyco-2022",
@@ -2164,7 +2320,10 @@
    "repository_ids": [
     "PXD028976"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "PSMs",
+   "quant_note": "one sample",
+   "n_quantified": 1913
   },
   {
    "id": "byrnes-2022",
@@ -2238,7 +2397,10 @@
    "repository_ids": [
     "PXD021819"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "peak area",
+   "quant_note": "mean over the samples where it was detected (of 16)",
+   "n_quantified": 1420
   },
   {
    "id": "soday-2021",
@@ -2264,7 +2426,10 @@
    "repository_ids": [
     "PXD022834"
    ],
-   "cell_group": "immune"
+   "cell_group": "immune",
+   "quant_unit": "reported abundance",
+   "quant_note": "mean over the samples where it was detected (of 10)",
+   "n_quantified": 1250
   },
   {
    "id": "lorenz-muller-2021",
@@ -2339,7 +2504,10 @@
    "reference_overlap": 0.09061357171881348,
    "repository": "none found (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "unique peptides",
+   "quant_note": "mean over the samples where it was detected (of 7)",
+   "n_quantified": 2449
   },
   {
    "id": "ito-bbb-2020",
@@ -2363,7 +2531,10 @@
    "reference_overlap": 0.592255125284738,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "peak area",
+   "quant_note": "mean over the samples where it was detected (of 2)",
+   "n_quantified": 439
   },
   {
    "id": "soh-hacat-pmp-2020",
@@ -2380,7 +2551,7 @@
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
-   "sample": "Immortalised keratinocyte line",
+   "sample": "Immortalized keratinocyte line",
    "status": "core",
    "admitted": true,
    "n_proteins": 1254,
@@ -2389,7 +2560,10 @@
    "repository_ids": [
     "PXD021351"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "TMT reporter abundance",
+   "quant_note": "one sample",
+   "n_quantified": 1258
   },
   {
    "id": "kong-lung-2020",
@@ -2415,7 +2589,10 @@
    "repository_ids": [
     "PXD016912"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "iBAQ intensity",
+   "quant_note": "mean over the samples where it was detected (of 6)",
+   "n_quantified": 2750
   },
   {
    "id": "ravenhill-2020",
@@ -2493,7 +2670,10 @@
    "repository_ids": [
     "PXD015359"
    ],
-   "cell_group": "stem_stromal"
+   "cell_group": "stem_stromal",
+   "quant_unit": "log2 TMT reporter abundance",
+   "quant_note": "mean over the samples where it was detected (of 4)",
+   "n_quantified": 5870
   },
   {
    "id": "leung-2020",
@@ -2596,7 +2776,10 @@
    "repository_ids": [
     "PXD010226"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "PSMs",
+   "quant_note": "mean over the samples where it was detected (of 6)",
+   "n_quantified": 926
   },
   {
    "id": "autocsc-2019",
@@ -2648,7 +2831,10 @@
    "repository_ids": [
     "PXD008378"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "quant_unit": "log2 intensity",
+   "quant_note": "mean over the samples where it was detected (of 10)",
+   "n_quantified": 988
   },
   {
    "id": "perna-2017",
@@ -2794,7 +2980,10 @@
    "reference_overlap": 0.16862037871956717,
    "repository": "none found",
    "repository_ids": [],
-   "cell_group": "stem_stromal"
+   "cell_group": "stem_stromal",
+   "quant_unit": "unique peptides",
+   "quant_note": "mean over the samples where it was detected (of 6)",
+   "n_quantified": 3339
   },
   {
    "id": "tyleckova-npc-2016",
@@ -2892,7 +3081,10 @@
    "repository_ids": [
     "PXD000589"
    ],
-   "cell_group": "multi"
+   "cell_group": "multi",
+   "quant_unit": "reported abundance",
+   "quant_note": "mean over the samples where it was detected (of 47)",
+   "n_quantified": 1490
   },
   {
    "id": "jung-colonorg-2015",
@@ -2916,7 +3108,10 @@
    "reference_overlap": 0.09121245828698554,
    "repository": "none",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "quant_unit": "MS intensity",
+   "quant_note": "one sample",
+   "n_quantified": 1797
   },
   {
    "id": "boheler-2014",
@@ -2964,7 +3159,10 @@
    "reference_overlap": 0.19311102968120192,
    "repository": "none",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "quant_unit": "spectral counts",
+   "quant_note": "mean over the samples where it was detected (of 8)",
+   "n_quantified": 2729
   },
   {
    "id": "english-brain-2012",
@@ -2988,7 +3186,10 @@
    "reference_overlap": 0.11915269196822595,
    "repository": "none",
    "repository_ids": [],
-   "cell_group": "neural"
+   "cell_group": "neural",
+   "quant_unit": "protein matches",
+   "quant_note": "mean over the samples where it was detected (of 2)",
+   "n_quantified": 1130
   },
   {
    "id": "msc-hoflack-2011",
@@ -3029,7 +3230,7 @@
    "method_class": "fractionation",
    "intact_cell_labeling": "no",
    "intact_cell_verified": true,
-   "sample": "Osteosarcoma line and immortalised fetal osteoblasts",
+   "sample": "Osteosarcoma line and immortalized fetal osteoblasts",
    "status": "comparator",
    "admitted": false,
    "n_proteins": 283,

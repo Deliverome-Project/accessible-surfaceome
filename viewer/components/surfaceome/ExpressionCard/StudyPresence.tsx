@@ -11,6 +11,8 @@ import {
   STATUS_HELP,
   STATUS_LABEL,
   STUDIES_PATH,
+  formatQuant,
+  ordinalPct,
   shareBelow,
   studyHref,
   TIER_LABEL,
@@ -54,7 +56,7 @@ const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] 
   },
 ];
 
-type RowSort = "study" | "found" | "method" | "family" | "sample" | "status";
+type RowSort = "study" | "found" | "amount" | "method" | "family" | "sample" | "status";
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const pct = (x: number) => `${Math.floor(x * 100)}%`;
 
@@ -63,7 +65,7 @@ function LineDetail({ lines, hitLines }: { lines: string[]; hitLines: number[] }
   const hitSet = new Set(hitLines);
   return (
     <div className={styles.lineDetail}>
-      Detected in <strong>{hitLines.length}</strong> of {lines.length} lines
+      Detected in <strong>{hitLines.length} of {lines.length}</strong> lines{" "}
       <InfoTip label="Which cell lines">
         <span className={styles.tipLine}>
           <strong>Detected:</strong> {hitLines.map((j) => lines[j]).join(", ") || "none"}
@@ -73,6 +75,32 @@ function LineDetail({ lines, hitLines }: { lines: string[]; hitLines: number[] }
           {lines.filter((_, j) => !hitSet.has(j)).join(", ") || "none"}
         </span>
       </InfoTip>
+    </div>
+  );
+}
+
+/** The dataset's own value for the protein, its unit, and its within-dataset rank. */
+function Amount({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number] }) {
+  if (!hit) return <span className={styles.muted}>—</span>;
+  if (!q || !arm.quant_unit) {
+    return (
+      <span className={styles.muted} title="This dataset publishes a protein list without a per-protein quantity">
+        list only
+      </span>
+    );
+  }
+  const [value, pct] = q;
+  return (
+    <div className={styles.amount}>
+      <div>
+        <strong>{formatQuant(value)}</strong> <span className={styles.unit}>{arm.quant_unit}</span>
+      </div>
+      <div className={styles.pctLine} title={`${arm.quant_note}; rank among the ${arm.n_quantified?.toLocaleString("en-US")} proteins this dataset quantified`}>
+        <span className={styles.pctBar} aria-hidden="true">
+          <span style={{ width: `${Math.max(2, pct)}%` }} />
+        </span>
+        {ordinalPct(pct)}
+      </div>
     </div>
   );
 }
@@ -100,7 +128,7 @@ export function statusTone(s: ArmStatus) {
  * studies (the S3E8 compendium), one dot per study arm. Only admitted
  * intact-cell labeling arms count as surface detections; held, below-
  * screen and comparator arms (membrane fractionation, inner-leaflet
- * labeling) are drawn separately and labelled as not counted.
+ * labeling) are drawn separately and labeled as not counted.
  */
 export function StudyPresence({ uniprotAcc, symbol }: Props) {
   const [data, setData] = useState<{
@@ -108,6 +136,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
     hits: Set<number>;
     tier: TierCode | "none";
     lines: Record<string, number[]>;
+    quant: Record<string, [number, number]>;
   } | null>(null);
   const [error, setError] = useState(false);
   const [showOther, setShowOther] = useState(false);
@@ -124,6 +153,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             hits: new Set(entry?.a ?? []),
             tier: entry ? tierOf(entry) : "none",
             lines: entry?.l ?? {},
+            quant: entry?.q ?? {},
           });
       })
       .catch(() => live && setError(true));
@@ -167,6 +197,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       : sortRows(filtered, {
           study: (r) => shortCitation(r.arm),
           found: (r) => Number(r.hit),
+          amount: (r) => data.quant[String(r.i)]?.[1] ?? -1,
           method: (r) => r.arm.method_class,
           family: (r) => r.arm.family_label,
           sample: (r) => r.arm.sample ?? "",
@@ -251,8 +282,8 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                 </span>
               </span>
               <span className={styles.dots}>
-                {items.map(({ arm, hit }) => (
-                  <Dot key={arm.id} arm={arm} hit={hit} />
+                {items.map(({ arm, hit, i }) => (
+                  <Dot key={arm.id} arm={arm} hit={hit} q={data.quant[String(i)]} />
                 ))}
               </span>
             </div>
@@ -265,6 +296,19 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
         <span className={styles.dot} /> not detected
       </p>
 
+      <p className={styles.actions}>
+        <label>
+          <input type="checkbox" checked={showOther} onChange={(e) => setShowOther(e.target.checked)} />{" "}
+          include not-counted datasets
+        </label>
+        <label>
+          <input type="checkbox" checked={showMissing} onChange={(e) => setShowMissing(e.target.checked)} />{" "}
+          include datasets where it was not detected
+        </label>
+        <span aria-hidden="true">·</span>
+        <Link href={STUDIES_PATH}>Explore all surface proteomics data →</Link>
+      </p>
+
       {rows.length > 0 ? (
         <div className={styles.tableScroll}>
         <table className={styles.table}>
@@ -272,6 +316,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             <tr>
               {th("study", "Study")}
               {th("found", "Detected")}
+              {th("amount", "Amount in dataset")}
               {th("method", "Method")}
               {th("family", "Chemistry")}
               {th("sample", "Cell type / sample")}
@@ -295,9 +340,12 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                     <div className={styles.armName}>{arm.name}</div>
                   </td>
                   <td>
-                    <span className={`${styles.yn} ${hit ? styles.ynYes : styles.ynNo}`}>
+                    <StatusPill size="sm" tone={hit ? "success" : "neutral"}>
                       {hit ? "Yes" : "No"}
-                    </span>
+                    </StatusPill>
+                  </td>
+                  <td className={styles.amountCell}>
+                    <Amount arm={arm} hit={hit} q={data.quant[String(i)]} />
                   </td>
                   <td className={styles.nowrap}>{METHOD_CLASS_LABEL[arm.method_class]}</td>
                   <td>
@@ -327,23 +375,11 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             : "Not detected in any counted dataset; tick “include not-counted datasets” to see where it was listed."}
         </p>
       )}
-      <p className={styles.actions}>
-        <label>
-          <input type="checkbox" checked={showOther} onChange={(e) => setShowOther(e.target.checked)} />{" "}
-          include not-counted datasets
-        </label>
-        <label>
-          <input type="checkbox" checked={showMissing} onChange={(e) => setShowMissing(e.target.checked)} />{" "}
-          include datasets where it was not detected
-        </label>
-        <span aria-hidden="true">·</span>
-        <Link href={STUDIES_PATH}>Explore all surface proteomics data →</Link>
-      </p>
     </div>
   );
 }
 
-function Dot({ arm, hit }: { arm: StudyArm; hit: boolean }) {
+function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number] }) {
   const counted = isCounted(arm);
   const label =
     `${shortCitation(arm)}: ${arm.name}. ${hit ? "Detected" : "Not detected"}; ` +
@@ -378,6 +414,12 @@ function Dot({ arm, hit }: { arm: StudyArm; hit: boolean }) {
             ? `, ${Math.round(arm.reference_overlap * 100)}% known surface`
             : ""}
         </span>
+        {hit && q && arm.quant_unit ? (
+          <span className={styles.tipLine}>
+            <span className={styles.tipMuted}>Amount:</span> {formatQuant(q[0])} {arm.quant_unit},{" "}
+            {ordinalPct(q[1])} in this dataset
+          </span>
+        ) : null}
         <span className={styles.tipLine}>
           <span className={styles.tipMuted}>Status:</span> {STATUS_LABEL[arm.status]},{" "}
           {counted ? "counted as surface evidence" : "not counted"}

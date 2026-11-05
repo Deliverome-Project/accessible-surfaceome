@@ -135,7 +135,7 @@ page is not in the viewer's top nav; it is linked from the Open Data menu on
 deliverome.org. Only core
 and provisional arms (intact-cell labeling that passed review) count as
 surface detections; held, high-background and comparator arms (membrane
-fractionation, inner-leaflet labeling) are shown and labelled as not counted.
+fractionation, inner-leaflet labeling) are shown and labeled as not counted.
 Whole-lysate glycoproteomes are not published. Reported accessions are normalized to each
 gene's canonical UniProt entry through its HGNC ID (HGNC's `uniprot_ids`, then
 UniProt's own HGNC cross-reference) and `gene_identifier_public`, so a gene is
