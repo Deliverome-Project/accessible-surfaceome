@@ -1,0 +1,11 @@
+label	short	evidence	family	size_genome	size_in_universe	new_to_universe	acc	yes_vs_no	pos	neg	yes	ctx	no_wrong
+Released column (alias leak: PM sub-compartments, no plain PM)	released (alias leak)	non-IEA	leak	2003	2022	0	0.4217687074829932	0.4482758620689655	0.3838383838383838	0.5	28	10	24
+Alias fix: outward terms only (rule as written in Methods)	alias fix (as written)	non-IEA	fix	711	719	0	0.4965986394557823	0.5689655172413793	0.2828282828282828	0.9375	21	7	3
+Alias fix + IEA	alias fix + IEA	all incl. IEA	fix	903	871	40	0.5374149659863946	0.5862068965517241	0.3434343434343434	0.9375	23	11	3
+Plain plasma membrane (incl. PM itself)	plain plasma membrane	non-IEA	broad	4984	4128	924	0.7278911564625851	0.6982758620689655	0.9191919191919192	0.3333333333333333	65	26	32
+GO proposal: outward or (PM and TM function)	"GO proposal:
+PM ∧ TM function"	non-IEA	go	2363	2325	82	0.6666666666666666	0.7586206896551724	0.5555555555555556	0.8958333333333334	45	10	5
+GO proposal + IEA	GO proposal + IEA	all incl. IEA	go	2602	2519	130	0.7142857142857143	0.7844827586206896	0.6262626262626263	0.8958333333333334	48	14	5
+GO proposal + adhesion fn + junction terms	+ adhesion + junction	non-IEA	ext	2507	2442	109	0.7142857142857143	0.8103448275862069	0.6262626262626263	0.8958333333333334	51	11	5
++ apical/basolateral membrane	+ apical/basolateral	non-IEA	rec	2631	2567	109	0.7210884353741497	0.8189655172413793	0.6363636363636364	0.8958333333333334	52	11	5
++ apical/basolateral + (PM and signaling receptor)	+ signaling receptor	non-IEA	ext	2705	2627	123	0.7278911564625851	0.8275862068965517	0.6464646464646465	0.8958333333333334	53	11	5
