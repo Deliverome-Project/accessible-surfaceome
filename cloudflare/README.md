@@ -1,5 +1,24 @@
 # Cloudflare integrations
 
+## GPI prediction and curation provenance
+
+`d1_gpi_schema.sql` adds two independent tables to both D1 databases.
+`netgpi_prediction` retains each raw NetGPI output row, its one-based output
+number and submitted ID, exact likelihood string and omega site, tool version,
+job ID when known, and checksummed source artifact. An exact original input
+also carries its sequence and SHA-256. Historical outputs without that input
+remain `unresolved_legacy`; neither accession nor length proves identity.
+`gpi_curation_record` preserves source rows from supplements, exclusions,
+blind-spot notes, manual form choices and derived gene calls with distinct
+`source_kind` values. Predictions never overwrite these decisions. The import
+code revision is recorded separately from the predictor version.
+
+Run `uv run python scripts/cloud/upload_gpi_predictions_to_d1.py --input FILE`
+to validate the exported JSON, then add `--execute` to append it to both D1s.
+The importer verifies every stored value and rejects a changed record under
+an existing key. It does not change the final gene architecture annotation
+or deploy any API/viewer changes.
+
 ## surfaceome_agents — D1 database for reproducible agent runs
 
 A separate D1 database from the existing `signups` one on the Deliverome
