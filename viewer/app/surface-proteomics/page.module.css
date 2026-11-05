@@ -56,7 +56,7 @@
 
 .keyHead {
   margin: 0 0 var(--space-2);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
@@ -98,7 +98,7 @@
 
 .yes,
 .no {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: var(--fw-medium);
   padding: 0 0.4rem;
   border-radius: 4px;
@@ -116,7 +116,7 @@
 
 .n {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: var(--muted);
   font-weight: var(--fw-regular, 400);
 }

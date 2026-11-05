@@ -5,6 +5,7 @@ import { test } from "node:test";
 import {
   baseAccession,
   countedRank,
+  shareBelow,
   isCounted,
   letter,
   studyHref,
@@ -77,4 +78,12 @@ test("counted-detection rank", () => {
   assert.deepEqual(countedRank(hist, 4), { below: 0.9, total: 10, median: 2 });
   const real = countedRank(index.counted_detection_hist, 1);
   assert.equal(real?.total, index.n_accessions_admitted);
+});
+
+test("cohort share below, zero detections included", () => {
+  const hist = [5, 3, 2]; // 5 proteins in no counted dataset, 3 in one, 2 in two
+  assert.deepEqual(shareBelow(hist, 0), { below: 0, total: 10 });
+  assert.deepEqual(shareBelow(hist, 2), { below: 0.8, total: 10 });
+  const all = index.cohort_detection_hist?.all;
+  assert.ok(all && all.reduce((a, b) => a + b, 0) > 5000);
 });

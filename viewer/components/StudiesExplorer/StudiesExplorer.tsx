@@ -19,23 +19,24 @@ import {
   type StudyArm,
   type StudyIndex,
   type TierCode,
-  type TierMap,
+  FAMILY_ORDER,
+  tierOf,
 } from "../../lib/surface-proteomics";
 import { statusTone } from "../surfaceome/ExpressionCard/StudyPresence";
 import { SortableHeader } from "../surfaceome/_shared/SortableHeader";
 import { SortResetButton } from "../surfaceome/_shared/SortResetButton";
 import { useTableSort, type SortValue } from "../surfaceome/_shared/useTableSort";
 import { StatusPill } from "../surfaceome/StatusPill/StatusPill";
+import { FamilyChip } from "./FamilyChip";
 import { TierPill } from "./TierPill";
 import styles from "./StudiesExplorer.module.css";
 
 interface Props {
   index: StudyIndex;
-  tiers: TierMap;
 }
 
 type Tier = TierCode | "none";
-type StudySort = "study" | "year" | "method" | "sample" | "n" | "overlap" | "status";
+type StudySort = "study" | "year" | "method" | "family" | "sample" | "n" | "overlap" | "status";
 type ProteinSort = "protein" | "name" | "votes" | "tier" | "counted";
 
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
@@ -69,7 +70,7 @@ function readSelection(aliases: Record<string, string[]>): string[] {
 
 const pct = (x: number | null) => (x == null ? "—" : `${Math.round(x * 100)}%`);
 
-export function StudiesExplorer({ index, tiers }: Props) {
+export function StudiesExplorer({ index }: Props) {
   const arms = index.arms;
   const idxById = useMemo(() => new Map(arms.map((a, i) => [a.id, i])), [arms]);
   const aliases = index.aliases;
@@ -129,7 +130,8 @@ export function StudiesExplorer({ index, tiers }: Props) {
   const comparators: Record<StudySort, (r: { arm: StudyArm }) => SortValue> = {
     study: (r) => shortCitation(r.arm),
     year: (r) => r.arm.year ?? 0,
-    method: (r) => `${r.arm.method_class} ${r.arm.family_label}`,
+    method: (r) => r.arm.method_class,
+    family: (r) => FAMILY_ORDER.indexOf(r.arm.family as (typeof FAMILY_ORDER)[number]),
     sample: (r) => r.arm.sample ?? "",
     n: (r) => r.arm.n_proteins,
     overlap: (r) => r.arm.reference_overlap ?? -1,
@@ -256,6 +258,7 @@ export function StudiesExplorer({ index, tiers }: Props) {
               {header("study", "Study")}
               {header("year", "Year")}
               {header("method", "Method")}
+              {header("family", "Chemistry")}
               {header("sample", "Cell type / sample")}
               {header("n", "Proteins", true)}
               {header("overlap", "Surface overlap")}
@@ -312,7 +315,9 @@ export function StudiesExplorer({ index, tiers }: Props) {
                       <span className={`${styles.swatch} ${styles[`sw_${arm.method_class}`]}`} aria-hidden="true" />
                       {METHOD_CLASS_LABEL[arm.method_class]}
                     </span>
-                    <div className={styles.sub}>{arm.family_label}</div>
+                  </td>
+                  <td>
+                    <FamilyChip arm={arm} />
                   </td>
                   <td className={styles.sample}>{arm.sample}</td>
                   <td className={styles.num}>
@@ -358,7 +363,6 @@ export function StudiesExplorer({ index, tiers }: Props) {
           <SelectionPanel
             arms={arms}
             selected={selected}
-            tiers={tiers}
             countedIdx={countedIdx}
             consensus={
               selected.length === countedIdx.length && countedIdx.every((i) => selected.includes(i))
@@ -461,13 +465,11 @@ function comboKey(arms: Set<number>, selected: number[]): string {
 function SelectionPanel({
   arms,
   selected,
-  tiers,
   countedIdx,
   consensus,
 }: {
   arms: StudyArm[];
   selected: number[];
-  tiers: TierMap;
   countedIdx: number[];
   /** The selection is exactly the counted datasets (the consensus list). */
   consensus: boolean;
@@ -506,13 +508,13 @@ function SelectionPanel({
         deep: e.d === 1,
         name: e.n ?? "",
         votes: e.v ?? null,
-        tier: tiers[acc] ?? "none",
+        tier: tierOf(e),
         arms: new Set(hit),
         nCounted: e.a.filter((i) => counted.has(i)).length,
       });
     }
     return out;
-  }, [presence, selected, tiers, counted]);
+  }, [presence, selected, counted]);
 
   const combos = useMemo(() => {
     if (selected.length < 2 || selected.length > MAX_UPSET) return [];
@@ -679,8 +681,7 @@ function SelectionPanel({
       ) : null}
       {!single && selected.some((i) => !isCounted(arms[i])) ? (
         <p className={styles.caveat}>
-          The selection includes datasets that are not counted as surface evidence (held, below
-          the screen, or comparators).
+          The selection includes datasets that are not counted as surface evidence (held, high background, or comparators).
         </p>
       ) : null}
 
@@ -692,6 +693,16 @@ function SelectionPanel({
             filled ones and in none of the others, largest group first. Click a row to list those
             proteins below.
           </p>
+          <p className={styles.totals}>
+            Totals:{" "}
+            {selected.map((i, k) => (
+              <span key={i}>
+                {k ? " · " : ""}
+                <strong>{label(i)}</strong> {arms[i].n_proteins.toLocaleString("en-US")}
+              </span>
+            ))}
+            . Each dataset&apos;s total is the sum of the rows its dot is filled in.
+          </p>
           <div className={styles.tableScroll}>
             <table className={`${styles.table} ${styles.upsetTable}`}>
               <thead>
@@ -701,6 +712,7 @@ function SelectionPanel({
                       {label(i)}
                     </th>
                   ))}
+                  <th>Found in</th>
                   <th>Proteins</th>
                   <th className={styles.num} title="Canonical or Likely Surfaceome proteins in this intersection">
                     Canonical + Likely
@@ -721,6 +733,7 @@ function SelectionPanel({
                           <span className={c.members.has(i) ? styles.memberOn : styles.memberOff} />
                         </td>
                       ))}
+                      <td className={styles.comboText}>{describeCombo(c.members, selected, label)}</td>
                       <td className={styles.upsetBarCell}>
                         <button
                           type="button"
@@ -774,20 +787,40 @@ function SelectionPanel({
           aria-label="Filter proteins"
         />
         {!single && !consensus ? (
-          <label className={styles.modeLabel}>
-            Show{" "}
-            <select
-              value={mode}
-              onChange={(e) => {
-                setMode(e.target.value as Mode);
-                setLimit(PAGE);
-              }}
-            >
-              <option value="all">{selected.length === 2 ? "in both" : "in all selected"}</option>
-              <option value="any">in any selected</option>
-              {mode.startsWith("c:") ? <option value={mode}>{modeLabel}</option> : null}
-            </select>
-          </label>
+          <div className={styles.segmented} role="group" aria-label="Which proteins to list">
+            {(
+              [
+                ["all", selected.length === 2 ? "In both" : `In all ${selected.length}`],
+                ["any", "In any"],
+              ] as const
+            ).map(([m, text]) => (
+              <button
+                key={m}
+                type="button"
+                className={styles.chip}
+                data-on={mode === m ? "true" : "false"}
+                aria-pressed={mode === m}
+                onClick={() => {
+                  setMode(m);
+                  setLimit(PAGE);
+                }}
+              >
+                {text}
+              </button>
+            ))}
+            {mode.startsWith("c:") ? (
+              <button
+                type="button"
+                className={styles.chip}
+                data-on="true"
+                aria-pressed="true"
+                title="Clear this intersection"
+                onClick={() => setMode("any")}
+              >
+                {describeCombo(new Set(mode.slice(2).split(",").map(Number)), selected, label)} ×
+              </button>
+            ) : null}
+          </div>
         ) : null}
         <ChipGroup
           label="Tier"
@@ -851,9 +884,6 @@ function SelectionPanel({
                       title={`Open the ${p.symbol} page in the Surfaceome viewer`}
                     >
                       {p.symbol}
-                      <span className={styles.arrow} aria-hidden="true">
-                        →
-                      </span>
                     </Link>
                   ) : (
                     <a
@@ -958,4 +988,13 @@ function OverlapMatrix({
       </table>
     </div>
   );
+}
+
+/** "Only A", "A and B, not C", "All three" — an exact intersection in words. */
+function describeCombo(members: Set<number>, selected: number[], label: (i: number) => string): string {
+  const inn = selected.filter((i) => members.has(i)).map(label);
+  const out = selected.filter((i) => !members.has(i)).map(label);
+  if (!out.length) return selected.length === 2 ? "Both" : selected.length === 3 ? "All three" : `All ${selected.length}`;
+  if (inn.length === 1) return `Only ${inn[0]}`;
+  return `${inn.join(" and ")}, not ${out.join(" or ")}`;
 }

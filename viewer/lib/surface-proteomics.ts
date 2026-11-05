@@ -56,6 +56,8 @@ export interface StudyIndex {
   aliases?: Record<string, string[]>;
   /** counted_detection_hist[k] = proteins detected in exactly k counted arms (k >= 1). */
   counted_detection_hist?: number[];
+  /** Same over the deep-dived cohort including k = 0: "all" plus one per tier. */
+  cohort_detection_hist?: Record<string, number[]>;
   /** Whole-lysate arms left out of the published data. */
   excluded_arms?: string[];
   arms: StudyArm[];
@@ -72,6 +74,8 @@ export interface PresenceEntry {
   n?: string;
   /** How many of the five source databases list it (catalog `n_sources`). */
   v?: number;
+  /** Deep-dive tier (the catalog's `deep_dive_tier`), deep-dived proteins only. */
+  t?: TierCode;
 }
 
 export type PresenceShard = Record<string, PresenceEntry>;
@@ -82,19 +86,19 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
   core: "Core",
   provisional: "Provisional",
   held: "Held",
-  below_screen: "Below screen",
+  below_screen: "High background",
   comparator: "Comparator",
 };
 
 export const STATUS_HELP: Record<ArmStatus, string> = {
-  core: "Admitted (core): intact-cell labeling list that passes the reference-overlap screen. Counts as a surface detection.",
+  core: "Core: intact-cell labeling, and at least 20% of the list are known surface proteins. Counts as surface evidence.",
   provisional:
-    "Admitted (provisional): intact-cell labeling list admitted with a caveat: it passes a filter-adjusted overlap minimum (the authors pre-selected by annotation) or sits within two points of the screen. Counts as a surface detection.",
-  held: "Held: the published table can't yet support a per-protein detection call (for example a fully imputed matrix, or an unresolved assay arm or baseline sample). Listed, not counted.",
+    "Provisional: intact-cell labeling that passes with a caveat, for example the authors pre-filtered the list to annotated surface proteins, or it sits just under 20%. Counts as surface evidence.",
+  held: "Held: the published table can't yet tell us which proteins were detected, for example every value is imputed. Listed, not counted.",
   below_screen:
-    "Below screen: intact-cell labeling list whose overlap with known surface proteins is under the 20% screen, so it is likely dominated by intracellular background. Listed, not counted.",
+    "High background: intact-cell labeling, but fewer than 20% of the list are known surface proteins, so it is mostly intracellular contamination. Listed, not counted.",
   comparator:
-    "Comparator: membrane fractionation, or a labeling arm known to reach the inner side of the membrane. Shown for context; not evidence of extracellular access.",
+    "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
 };
 
 export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {
@@ -112,9 +116,7 @@ export function studyHref(armIds: string[]): string {
 /** Surface-reference overlap a counted intact-cell arm must reach (the S3E8 screen). */
 export const OVERLAP_SCREEN = 0.2;
 
-/** Deep-dive tier per base UniProt accession, baked in by the page at build time. */
 export type TierCode = "canonical" | "likely" | "low" | "uncertain" | "no";
-export type TierMap = Record<string, TierCode>;
 
 export const TIER_LABEL: Record<TierCode | "none", string> = {
   canonical: "Canonical",
@@ -124,6 +126,10 @@ export const TIER_LABEL: Record<TierCode | "none", string> = {
   no: "Not surface",
   none: "Not deep-dived",
 };
+
+export function tierOf(e: PresenceEntry): TierCode | "none" {
+  return e.t ?? "none";
+}
 
 export const TIER_ORDER: (TierCode | "none")[] = ["canonical", "likely", "low", "uncertain", "no", "none"];
 
@@ -173,6 +179,24 @@ export function countedRank(
   }
   return { below: below / total, total, median };
 }
+
+/** Share of a histogram (indexed by detection count, k = 0 included) strictly below `k`. */
+export function shareBelow(hist: number[] | undefined, k: number): { below: number; total: number } | null {
+  if (!hist) return null;
+  const total = hist.reduce((s, x) => s + x, 0);
+  if (!total) return null;
+  return { below: hist.slice(0, k).reduce((s, x) => s + x, 0) / total, total };
+}
+
+/** Labeling chemistry families, each with its own chip colour. */
+export const FAMILY_ORDER = [
+  "biotin-amine",
+  "glycoprotein-capture",
+  "glycopeptide-capture",
+  "peroxidase-proximity",
+  "other-chemoproteomic",
+  "membrane-fractionation",
+] as const;
 
 export function isCounted(arm: StudyArm): boolean {
   return arm.status === "core" || arm.status === "provisional";
