@@ -35,9 +35,10 @@ const METHOD_HELP: Record<MethodClass, string> = {
     "Proteins are tagged on living, unbroken cells (biotinylation, glycan capture, proximity labeling), so a tag can only reach what faces outward. This is the only method family we count as evidence that a protein is reachable from outside the cell.",
   fractionation:
     "Cells are broken open and membranes are purified. This shows that a protein is membrane-associated, including on internal membranes, not that it is exposed on the outer surface.",
-  lysate:
-    "Glycoproteomes or other surveys of broken cells or tissue, plus labeling arms known to reach the inner side of the membrane. Context only.",
+  lysate: "Surveys of broken cells or tissue. Not published here.",
 };
+
+const sentence = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 
@@ -85,7 +86,9 @@ export default async function SurfaceProteomicsPage() {
             and pass our quality review; together they detect{" "}
             <strong>{index.n_accessions_admitted.toLocaleString("en-US")} proteins</strong>.
             The rest are listed for completeness and clearly marked as not
-            counted.
+            counted. Whole-lysate glycoproteomes are left out, because
+            capturing glycoproteins after the cells are broken open cannot
+            tell the outer surface from internal membranes.
           </p>
           <p className={styles.note}>
             Select one study to see its proteins, or several to see where their
@@ -104,7 +107,9 @@ export default async function SurfaceProteomicsPage() {
             <section>
               <h2 className={styles.keyHead}>Method</h2>
               <dl className={styles.defs}>
-                {(Object.keys(METHOD_HELP) as MethodClass[]).map((m) => (
+                {(Object.keys(METHOD_HELP) as MethodClass[])
+                  .filter((m) => index.arms.some((a) => a.method_class === m))
+                  .map((m) => (
                   <div key={m}>
                     <dt>
                       <span className={`${styles.swatch} ${styles[`sw_${m}`]}`} aria-hidden="true" />
@@ -127,7 +132,7 @@ export default async function SurfaceProteomicsPage() {
                       </span>{" "}
                       <span className={styles.n}>{countByStatus(s)} arms</span>
                     </dt>
-                    <dd>{STATUS_HELP[s].replace(/^[^:]+:\s*/, "")}</dd>
+                    <dd>{sentence(STATUS_HELP[s].replace(/^[^:]+:\s*/, ""))}</dd>
                   </div>
                 ))}
               </dl>

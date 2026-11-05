@@ -12,6 +12,13 @@ every human-only study arm we ingested, with the review decision for each:
 * ``method_audit.json`` — the per-paper methods-section audit (committed in the
   analysis repo, not in the snapshot). Its ``intact_cell_labeling`` field
   overrides the manifest's ``surface_accessibility_evidence`` flag when present.
+  An arm split out of a parent study (``recovery_parent_study``) inherits the
+  parent's audit entry.
+* ``sources.json`` — the analysis repo's study registry. An arm it lists that
+  the snapshot manifest lacks is added from its banked source table (George
+  2026 was wired in after the sweep and is missing from the sweep-v5 manifest).
+  A registry id the snapshot split into several arms becomes an alias, so a
+  link to the parent id (``?arm=vilen-2022``) opens all of its arms.
 
 Outputs (committed; the viewer serves them as static files):
 
@@ -25,8 +32,14 @@ Outputs (committed; the viewer serves them as static files):
 Only arms with an ``admitted`` review decision (core / provisional) count as
 surface detections. Held arms (e.g. a fully imputed published matrix, where per-
 sample detection can't be recovered), arms below the reference-overlap screen,
-and comparators (membrane fractionation, whole-lysate glycoproteomes) are kept
-and labelled so the viewer can show them as "listed, not counted".
+and comparators (membrane fractionation, inner-leaflet labeling) are kept and
+labelled so the viewer can show them as "listed, not counted".
+
+Whole-lysate arms are not published at all: an arm whose measurement is neither
+on intact cells nor on a membrane fraction (per :func:`method_class` — for
+example hydrazide or boronic-acid N-glycopeptide capture from whole-cell or
+whole-tumour lysate) is dropped from both outputs. Their ids are recorded in
+``studies.json`` under ``excluded_arms``.
 
 Joins are on UniProt accession with isoform suffixes stripped, never on gene
 symbols. Symbols are display-only, taken from the public catalog (falling back
@@ -54,6 +67,7 @@ import csv
 import io
 import json
 import logging
+import re
 import shutil
 import subprocess
 import time
@@ -73,7 +87,9 @@ OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 
 SNAPSHOT = "2026-11-02-sweep-v5"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
-METHOD_AUDIT_PATH = "analysis/sprint3/s3e8-cross-method-surfaceome/method_audit.json"
+ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
+METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
+SOURCES_PATH = f"{ANALYSIS_DIR}/sources.json"
 API_BASE = "https://api.deliverome.org/surfaceome"
 
 # Must match ``shardOf`` in viewer/lib/surface-proteomics.ts.
@@ -86,7 +102,13 @@ STATUS_BY_ROLE = {
     "hold": "held",
     "below_adjusted_screen": "below_screen",
     "complementary": "comparator",
+    # sources.json's role for an arm the registry admits as a primary input.
+    "primary": "core",
 }
+
+# Columns a banked source table may carry its UniProt accessions in.
+ACCESSION_COLUMNS = ("uniprot_accession", "Accession", "accession")
+GENE_COLUMNS = ("gene_symbol", "Gene_Symbol", "gene")
 
 # Method families: intact-cell labeling chemistries vs. fractionation / lysate.
 FAMILY_LABEL = {
@@ -133,12 +155,23 @@ def _read_s3(bucket: str, key: str) -> bytes:
     return s3.get_object(Bucket=bucket, Key=key)["Body"].read()
 
 
-def load_inputs(args: argparse.Namespace) -> tuple[dict, list[dict], dict]:
+def _git_show(args: argparse.Namespace, path: str) -> str:
+    return subprocess.run(
+        ["git", "-C", args.analysis_repo, "show", f"{args.analysis_ref}:{path}"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+
+
+def load_inputs(args: argparse.Namespace) -> tuple[dict, list[dict], dict, dict]:
     if args.source_dir:
         src = Path(args.source_dir)
         manifest = json.loads((src / "manifest.json").read_text())
         detections_text = (src / "detections_long.tsv").read_text()
         audit = json.loads((src / "method_audit.json").read_text())
+        sources_path = src / "sources.json"
+        sources = json.loads(sources_path.read_text()) if sources_path.exists() else {}
     else:
         import os
 
@@ -146,22 +179,81 @@ def load_inputs(args: argparse.Namespace) -> tuple[dict, list[dict], dict]:
         prefix = f"{PROCESSED_PREFIX}/{args.snapshot}"
         manifest = json.loads(_read_s3(bucket, f"{prefix}/manifest.json"))
         detections_text = _read_s3(bucket, f"{prefix}/detections_long.tsv").decode()
-        audit = json.loads(
-            subprocess.run(
-                [
-                    "git",
-                    "-C",
-                    args.analysis_repo,
-                    "show",
-                    f"{args.analysis_ref}:{METHOD_AUDIT_PATH}",
-                ],
-                check=True,
-                capture_output=True,
-                text=True,
-            ).stdout
-        )
+        audit = json.loads(_git_show(args, METHOD_AUDIT_PATH))
+        sources = json.loads(_git_show(args, SOURCES_PATH))
     detections = list(csv.DictReader(io.StringIO(detections_text), delimiter="\t"))
-    return manifest, detections, audit
+    return manifest, detections, audit, sources
+
+
+def _pick(columns: list[str], wanted: tuple[str, ...], first: str | None) -> str | None:
+    for c in ((first,) if first else ()) + wanted:
+        if c in columns:
+            return c
+    return None
+
+
+def add_registry_arms(
+    manifest: dict,
+    detections: list[dict],
+    sources: dict,
+    read_table: Any,
+) -> dict[str, list[str]]:
+    """Fold registry arms the snapshot manifest lacks into ``manifest``/``detections``.
+
+    Returns ``{parent_id: [arm ids]}`` for registry ids the snapshot split into
+    several arms; those are aliases, not arms of their own.
+    """
+    in_manifest = {d["study_id"] for d in manifest["datasets"]}
+    children: dict[str, list[str]] = defaultdict(list)
+    for d in manifest["datasets"]:
+        if d.get("recovery_parent_study"):
+            children[d["recovery_parent_study"]].append(d["study_id"])
+    aliases: dict[str, list[str]] = {}
+    cutoff = (manifest.get("inclusion_policy") or {}).get("base_overlap_cutoff", 0.2)
+    for e in sources.get("datasets", []):
+        sid = e["study_id"]
+        if sid in in_manifest:
+            continue
+        if children.get(sid):
+            aliases[sid] = sorted(children[sid])
+            continue
+        if not e.get("sources") or not e.get("extractions"):
+            logger.warning("registry arm %s has no banked source table; skipped", sid)
+            continue
+        ext = e["extractions"][0]
+        rows = read_table(e["sources"][ext.get("source", 0)]["key"])
+        cols = list(rows[0]) if rows else []
+        acc_col = _pick(cols, ACCESSION_COLUMNS, ext.get("accession"))
+        gene_col = _pick(cols, GENE_COLUMNS, ext.get("gene"))
+        if not acc_col:
+            raise RuntimeError(f"{sid}: no accession column in {cols[:6]}")
+        accs: dict[str, str] = {}
+        for r in rows:
+            acc = base_accession(r[acc_col] or "")
+            if re.fullmatch(r"[A-Z][A-Z0-9]{5,9}", acc):
+                accs.setdefault(acc, (r.get(gene_col) or "") if gene_col else "")
+        role = e.get("review_role") or "hold"
+        entry = dict(e)
+        entry["admitted"] = (
+            STATUS_BY_ROLE.get(role) in ("core", "provisional")
+            and bool(e.get("surface_accessibility_evidence"))
+            and float(e.get("pct_in_surf") or 0) >= cutoff
+        )
+        entry["paper"] = dict(e.get("paper") or {})
+        manifest["datasets"].append(entry)
+        for acc, gene in accs.items():
+            detections.append(
+                {"uniprot_accession": acc, "gene_symbol": gene, "study_id": sid}
+            )
+        logger.info("added registry arm %s: %d proteins", sid, len(accs))
+    return aliases
+
+
+def _read_external_table(key: str) -> list[dict[str, str]]:
+    import os
+
+    text = _read_s3(os.environ["S3_BUCKET_EXTERNAL"], key).decode()
+    return list(csv.DictReader(io.StringIO(text), delimiter="\t"))
 
 
 def _get_json(client: httpx.Client, url: str) -> Any:
@@ -250,7 +342,11 @@ def build_arms(
             if v is not None and (k != "doi" or not paper.get("doi")):
                 paper[k] = v
         paper["pmid"] = pmid
-        a = audit_ds.get(sid) or {}
+        a = (
+            audit_ds.get(sid)
+            or audit_ds.get(d.get("recovery_parent_study") or "")
+            or {}
+        )
         icl = a.get("intact_cell_labeling")
         intact = (
             icl == "yes"
@@ -305,7 +401,8 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     load_env(args.env_file)
 
-    manifest, detections, audit = load_inputs(args)
+    manifest, detections, audit, sources = load_inputs(args)
+    aliases = add_registry_arms(manifest, detections, sources, _read_external_table)
     counts: dict[str, set[str]] = defaultdict(set)
     for row in detections:
         counts[row["study_id"]].add(base_accession(row["uniprot_accession"]))
@@ -314,13 +411,21 @@ def main() -> None:
         for d in manifest["datasets"]
     ]
     pubmed = load_pubmed([p for p in pmids if p.isdigit()])
-    arms = build_arms(manifest, audit, {k: len(v) for k, v in counts.items()}, pubmed)
+    built = build_arms(manifest, audit, {k: len(v) for k, v in counts.items()}, pubmed)
+    # Whole-lysate arms measure neither intact cells nor a membrane fraction.
+    excluded = sorted(a["id"] for a in built if a["method_class"] == "lysate")
+    arms = [a for a in built if a["method_class"] != "lysate"]
     index = {a["id"]: i for i, a in enumerate(arms)}
+    aliases = {k: [c for c in v if c in index] for k, v in aliases.items()}
+    aliases = {k: v for k, v in aliases.items() if v}
+    logger.info("excluded %d whole-lysate arms: %s", len(excluded), ", ".join(excluded))
 
     symbols, deep = load_symbols(args.api_base)
     presence: dict[str, set[int]] = defaultdict(set)
     fallback_symbol: dict[str, str] = {}
     for row in detections:
+        if row["study_id"] not in index:
+            continue
         acc = base_accession(row["uniprot_accession"])
         presence[acc].add(index[row["study_id"]])
         if row.get("gene_symbol"):
@@ -349,6 +454,8 @@ def main() -> None:
         "n_accessions_admitted": sum(
             1 for s in presence.values() if any(arms[i]["admitted"] for i in s)
         ),
+        "aliases": aliases,
+        "excluded_arms": excluded,
         "arms": arms,
     }
 

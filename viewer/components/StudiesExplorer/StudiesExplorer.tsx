@@ -39,7 +39,7 @@ type StudySort = "study" | "year" | "method" | "sample" | "n" | "overlap" | "sta
 type ProteinSort = "protein" | "tier" | "counted";
 
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
-const CLASS_ORDER: MethodClass[] = ["intact_cell", "fractionation", "lysate"];
+const ALL_CLASSES: MethodClass[] = ["intact_cell", "fractionation", "lysate"];
 const PAGE = 200;
 /** Above this many selected studies the exact-intersection list stops being readable. */
 const MAX_UPSET = 10;
@@ -56,10 +56,12 @@ interface Protein {
   nCounted: number;
 }
 
-function readSelection(): string[] {
+/** Arm ids in ?arm=, with split-study aliases (e.g. a parent paper id) expanded. */
+function readSelection(aliases: Record<string, string[]>): string[] {
   if (typeof window === "undefined") return [];
   const v = new URLSearchParams(window.location.search).get("arm");
-  return v ? v.split(",").filter(Boolean) : [];
+  const ids = v ? v.split(",").filter(Boolean) : [];
+  return [...new Set(ids.flatMap((id) => aliases[id] ?? [id]))];
 }
 
 const pct = (x: number | null) => (x == null ? "—" : `${Math.round(x * 100)}%`);
@@ -67,18 +69,23 @@ const pct = (x: number | null) => (x == null ? "—" : `${Math.round(x * 100)}%`
 export function StudiesExplorer({ index, tiers }: Props) {
   const arms = index.arms;
   const idxById = useMemo(() => new Map(arms.map((a, i) => [a.id, i])), [arms]);
+  const aliases = index.aliases;
+  const CLASS_ORDER = useMemo(
+    () => ALL_CLASSES.filter((c) => arms.some((a) => a.method_class === c)),
+    [arms],
+  );
   const countedIdx = useMemo(() => arms.flatMap((a, i) => (isCounted(a) ? [i] : [])), [arms]);
   const [query, setQuery] = useState("");
   const [statuses, setStatuses] = useState<Set<ArmStatus>>(new Set(STATUS_ORDER));
-  const [classes, setClasses] = useState<Set<MethodClass>>(new Set(CLASS_ORDER));
+  const [classes, setClasses] = useState<Set<MethodClass>>(new Set(ALL_CLASSES));
   const [selected, setSelected] = useState<number[]>([]);
   const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<StudySort>();
 
   // Selection lives in ?arm=a,b so a gene page's dots can deep-link to a study.
   useEffect(() => {
-    const ids = readSelection();
+    const ids = readSelection(aliases ?? {});
     setSelected(ids.map((id) => idxById.get(id)).filter((i): i is number => i !== undefined));
-  }, [idxById]);
+  }, [idxById, aliases]);
   const updateSelected = useCallback(
     (next: number[]) => {
       setSelected(next);
@@ -524,7 +531,7 @@ function SelectionPanel({
             <li key={i}>
               <span className={styles.letter}>{label(i)}</span>
               <span>
-                <strong>{shortCitation(arms[i])}</strong> · {arms[i].sample}{" "}
+                <strong>{shortCitation(arms[i])}</strong> · {arms[i].name}{" "}
                 <span className={styles.sub}>
                   ({arms[i].n_proteins.toLocaleString("en-US")} proteins
                   {isCounted(arms[i]) ? "" : `; ${STATUS_LABEL[arms[i].status].toLowerCase()}, not counted`})
