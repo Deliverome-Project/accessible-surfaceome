@@ -127,6 +127,28 @@ break a deploy, but a real outage exits non-zero fast. So avoid deploying
 while another job is hammering the same Worker/D1 (e.g. an R2 `.md`
 populate); if the threshold trips, just retry once the Worker is healthy.
 
+### Surface proteomics studies (`/studies/` and the gene-page Expression tab)
+
+`public/data/surface-proteomics/` holds the published human cell-surface
+proteomics study compendium (S3E8 in deliverome-analysis): `studies.json`
+(one entry per study arm) and `presence/{NN}.json` (UniProt accession → arms
+it was listed in, sharded so a gene page fetches one ~45 KB file). The
+gene page's Expression tab shows detection per arm, and `/studies/` lists the
+arms, each arm's proteins and the overlap between selected arms. Only core
+and provisional arms (intact-cell labeling that passed review) count as
+surface detections; held, below-screen and comparator arms (membrane
+fractionation, lysate glycoproteomes) are shown and labelled as not counted.
+
+The files are committed and rebuilt by hand when a new snapshot is
+published. Point `--analysis-ref` at the deliverome-analysis branch that
+holds the snapshot's `method_audit.json`:
+
+```bash
+uv run python scripts/build/build_surface_proteomics_studies.py \
+  --env-file ~/git/deliverome-analysis/.env \
+  --analysis-ref origin/main --snapshot 2026-11-02-sweep-v5
+```
+
 ### Linking to a filtered catalogue
 
 Every catalogue filter, and the sort order, lives in the query string, so a

@@ -10,6 +10,7 @@ import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { ExpressionTable } from "./ExpressionTable";
+import { StudyPresence } from "./StudyPresence";
 import styles from "./ExpressionCard.module.css";
 
 interface Props {
@@ -158,6 +159,8 @@ export function ExpressionCard({ rec, n }: Props) {
           </p>
         ) : null}
       </div>
+
+      <StudyPresence uniprotAcc={rec.gene.uniprot_acc} symbol={rec.gene.hgnc_symbol} />
     </SectionCard>
   );
 }
