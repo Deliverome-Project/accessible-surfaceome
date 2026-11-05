@@ -5,6 +5,11 @@ import { test } from "node:test";
 import {
   baseAccession,
   isCounted,
+  letter,
+  studyHref,
+  TIER_HELP,
+  TIER_LABEL,
+  TIER_ORDER,
   shardOf,
   type PresenceShard,
   type StudyIndex,
@@ -47,5 +52,18 @@ test("presence entries point at real arms", () => {
     for (const e of Object.values(shard(i))) {
       for (const a of e.a) assert.ok(a >= 0 && a < index.arms.length);
     }
+  }
+});
+
+test("comparison letters and deep links", () => {
+  assert.deepEqual([0, 1, 25, 26, 27].map(letter), ["A", "B", "Z", "AA", "AB"]);
+  assert.equal(studyHref([]), "/surface-proteomics/");
+  assert.equal(studyHref(["a-1", "b 2"]), "/surface-proteomics/?arm=a-1,b%202");
+});
+
+test("every tier has a label and a definition", () => {
+  for (const t of TIER_ORDER) {
+    assert.ok(TIER_LABEL[t], t);
+    assert.ok(TIER_HELP[t], t);
   }
 });

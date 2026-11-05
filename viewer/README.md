@@ -122,14 +122,17 @@ break a deploy, but a real outage exits non-zero fast. So avoid deploying
 while another job is hammering the same Worker/D1 (e.g. an R2 `.md`
 populate); if the threshold trips, just retry once the Worker is healthy.
 
-### Surface proteomics studies (`/studies/` and the gene-page Expression tab)
+### Surface proteomics data (`/surface-proteomics/` and the gene-page Expression tab)
 
 `public/data/surface-proteomics/` holds the published human cell-surface
 proteomics study compendium (S3E8 in deliverome-analysis): `studies.json`
 (one entry per study arm) and `presence/{NN}.json` (UniProt accession → arms
 it was listed in, sharded so a gene page fetches one ~45 KB file). The
-gene page's Expression tab shows detection per arm, and `/studies/` lists the
-arms, each arm's proteins and the overlap between selected arms. Only core
+gene page's Expression tab shows detection per arm, and `/surface-proteomics/`
+lists the arms, each arm's proteins (with its deep-dive tier, baked in from the
+catalog at build time) and the exact intersections between selected arms. The
+page is not in the viewer's top nav; it is linked from the Open Data menu on
+deliverome.org. Only core
 and provisional arms (intact-cell labeling that passed review) count as
 surface detections; held, below-screen and comparator arms (membrane
 fractionation, lysate glycoproteomes) are shown and labelled as not counted.

@@ -1,0 +1,123 @@
+.page {
+  padding: var(--space-3) 0 var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.title {
+  margin: 0;
+}
+
+.lede {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.note {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--maroon-mid);
+}
+
+.key {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-soft);
+}
+
+.keySummary {
+  cursor: pointer;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+}
+
+.keyGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-4) var(--space-6);
+  margin-top: var(--space-3);
+}
+
+.keyHead {
+  margin: 0 0 var(--space-2);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: var(--fw-medium);
+}
+
+.defs {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.defs dt {
+  font-weight: var(--fw-medium);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.defs dd {
+  margin: 2px 0 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.swatch {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+
+.sw_intact_cell { background: var(--teal-mid); }
+.sw_fractionation { background: var(--amber-mid); }
+.sw_lysate { background: var(--lavender-bright); }
+
+.yes,
+.no {
+  font-size: 0.7rem;
+  font-weight: var(--fw-medium);
+  padding: 0 0.4rem;
+  border-radius: 4px;
+}
+
+.yes {
+  background: var(--teal-soft);
+  color: var(--teal-dark);
+}
+
+.no {
+  background: var(--line-soft);
+  color: var(--muted);
+}
+
+.n {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: var(--fw-regular, 400);
+}
