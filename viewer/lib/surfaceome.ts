@@ -327,6 +327,10 @@ export interface CatalogRow {
    *  back to the local predicate only when the Worker hasn't shipped
    *  it (pre-deploy interim / fs snapshot). */
   low_lit_uniprot?: boolean;
+  /** Counted surface-proteomics datasets (intact-cell labeling, passed review)
+   *  that detect this protein; set at build time from the study compendium,
+   *  absent when none do. */
+  sp_counted?: number;
 }
 
 export interface Catalog {

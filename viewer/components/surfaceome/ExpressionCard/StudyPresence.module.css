@@ -286,3 +286,12 @@ a.dot:focus-visible {
   max-width: 100%;
   min-width: 0;
 }
+
+.lineDetail {
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}

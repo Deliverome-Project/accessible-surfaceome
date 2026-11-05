@@ -39,6 +39,7 @@ import {
   parseCatalogUrl,
   serializeCatalogUrl,
   type CatalogUrlVocabulary,
+  type ProteomicsMode,
 } from "../../lib/catalog-url-state";
 import { InfoTip } from "../InfoTip/InfoTip";
 import { tooltips } from "../../lib/tooltips";
@@ -90,7 +91,7 @@ const ROW_OVERSCAN = 12;
 // ~1,230px laptop viewport — without a horizontal scrollbar. The DB-dot
 // columns hold an 8px dot, so their header label sets the width.
 const GRID_TEMPLATE =
-  "10rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 7rem minmax(7rem, 1fr) minmax(7rem, 1fr) 6rem 5.6rem 5.6rem 5.6rem";
+  "10rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 5.2rem 7rem minmax(7rem, 1fr) minmax(7rem, 1fr) 6rem 5.6rem 5.6rem 5.6rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -149,7 +150,7 @@ const CATALOG_MODELS: { id: string; idx: number; short: string; long: string }[]
 // type is derived from the list so the two can't drift apart.
 const SORT_KEYS = [
   "symbol", "n_sources", "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa",
-  "triage", "dd_access", "dd_conf", "dd_evidence", "dd_state",
+  "proteomics", "triage", "dd_access", "dd_conf", "dd_evidence", "dd_state",
 ] as const;
 type SortKey = (typeof SORT_KEYS)[number];
 type SortDir = "asc" | "desc";
@@ -345,6 +346,8 @@ interface CatalogTableProps {
   /** universe_version identifier from /v1/catalog — included in the
    *  TSV download filename so a downloaded snapshot is traceable. */
   universe_version?: string;
+  /** Counted surface-proteomics datasets, for the Proteomics column's tooltip. */
+  n_proteomics_datasets?: number;
 }
 
 export function CatalogTable({
@@ -354,6 +357,7 @@ export function CatalogTable({
   n_with_triage,
   n_with_deep_dive,
   universe_version,
+  n_proteomics_datasets,
 }: CatalogTableProps) {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>(DEFAULT_SORT_KEY);
@@ -473,6 +477,8 @@ export function CatalogTable({
   type SurfaceBindFilter = "any" | "ge1" | "ge3" | "not_in" | null;
   const [surfaceBindFilter, setSurfaceBindFilter] =
     useState<SurfaceBindFilter>(null);
+  // Counted surface-proteomics datasets (intact-cell labeling) detecting it.
+  const [proteomicsFilter, setProteomicsFilter] = useState<ProteomicsMode | null>(null);
   // Deep-dive filters — 13 enum-valued + 8 boolean. Enum filters use
   // OR-semantics within a field (any of the checked values passes)
   // and AND across fields. Bool filters are tri-state — "any"
@@ -586,6 +592,7 @@ export function CatalogTable({
     setReasonFilter(new Set());
     setDeepDiveFilter(null);
     setSurfaceBindFilter(null);
+    setProteomicsFilter(null);
     setDdEnumFilters(() => {
       const out = {} as Record<DdEnumKey, Set<string>>;
       for (const f of DD_ENUM_FIELDS) out[f.key] = new Set();
@@ -752,6 +759,7 @@ export function CatalogTable({
     verdictFilter.size +
     reasonFilter.size +
     (deepDiveFilter !== null ? 1 : 0) +
+    (proteomicsFilter !== null ? 1 : 0) +
     ddActiveCount;
   // `ddActive` gates the deep-dive predicate (requires deep_dive=true
   // and applies enum/bool filters). It does NOT include the SURFACE-
@@ -915,6 +923,7 @@ export function CatalogTable({
       setReasonFilter(new Set(s.reasons));
       setDeepDiveFilter(s.deepDive);
       setSurfaceBindFilter(s.surfaceBind);
+      setProteomicsFilter(s.proteomics);
       setDdEnumFilters((prev) => {
         const out = { ...prev };
         for (const f of DD_ENUM_FIELDS) out[f.key] = new Set(s.ddEnum[f.key] ?? []);
@@ -930,9 +939,10 @@ export function CatalogTable({
       const panelFilters =
         s.db.length + s.nSources.length + s.verdicts.length + s.reasons.length +
         s.tiers.length + Object.keys(s.ddEnum).length + Object.keys(s.ddBool).length +
-        (s.surfaceBind ? 1 : 0);
+        (s.surfaceBind ? 1 : 0) +
+        (s.proteomics ? 1 : 0);
       if (panelFilters > 0) setShowFilters(true);
-      if (s.db.length || s.nSources.length) setDatabasesGroupOpen(true);
+      if (s.db.length || s.nSources.length || s.proteomics) setDatabasesGroupOpen(true);
       if (s.verdicts.length || s.reasons.length) setTriageGroupOpen(true);
       if (s.tiers.length || Object.keys(s.ddEnum).length || Object.keys(s.ddBool).length || s.surfaceBind) {
         setDeepDiveGroupOpen(true);
@@ -955,6 +965,7 @@ export function CatalogTable({
     s.reasons = [...reasonFilter];
     s.deepDive = deepDiveFilter;
     s.surfaceBind = surfaceBindFilter;
+    s.proteomics = proteomicsFilter;
     for (const f of DD_ENUM_FIELDS) {
       if (ddEnumFilters[f.key].size) s.ddEnum[f.key] = [...ddEnumFilters[f.key]];
     }
@@ -983,6 +994,7 @@ export function CatalogTable({
     reasonFilter,
     deepDiveFilter,
     surfaceBindFilter,
+    proteomicsFilter,
     ddEnumFilters,
     ddBoolFilters,
     sortKey,
@@ -1033,6 +1045,11 @@ export function CatalogTable({
       if (deepDiveFilter !== null) {
         const k = r.deep_dive ? "yes" : "no";
         if (k !== deepDiveFilter) return false;
+      }
+      if (proteomicsFilter !== null) {
+        const n = r.sp_counted ?? 0;
+        if (proteomicsFilter === "none" ? n !== 0 : n < Number(proteomicsFilter.slice(2)))
+          return false;
       }
       if (surfaceBindFilter !== null) {
         const sb = r.surface_bind_sites;
@@ -1132,6 +1149,7 @@ export function CatalogTable({
     reasonFilter,
     deepDiveFilter,
     surfaceBindFilter,
+    proteomicsFilter,
     ddActive,
     ddEnumFilters,
     ddBoolFilters,
@@ -1640,6 +1658,39 @@ export function CatalogTable({
                     Exactly this many of the 5 DBs; checked counts combine with OR
                   </span>
                 </div>
+                <div className={styles.filterRow} role="radiogroup" aria-label="Surface proteomics">
+                  <span className={styles.filterLabel}>Surface proteomics</span>
+                  <div className={styles.filterChips}>
+                    {(
+                      [
+                        { k: "ge1", label: "≥1 dataset" },
+                        { k: "ge3", label: "≥3 datasets" },
+                        { k: "ge10", label: "≥10 datasets" },
+                        { k: "none", label: "none" },
+                      ] as const
+                    ).map(({ k, label }) => {
+                      const on = proteomicsFilter === k;
+                      return (
+                        <button
+                          key={`sp-filter-${k}`}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                          onClick={() => setProteomicsFilter(on ? null : k)}
+                          data-track={`Filter: Surface proteomics = ${label}`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className={styles.filterHint}>
+                    Detected on intact cells by this many of the counted datasets
+                    {n_proteomics_datasets ? ` (of ${n_proteomics_datasets})` : ""}.{" "}
+                    <a href="/surface-proteomics/">About the data</a>. Click an active chip to clear.
+                  </span>
+                </div>
               </div>
             ) : null}
           </div>{/* end .filterGroup (Databases) */}
@@ -2086,6 +2137,16 @@ export function CatalogTable({
               extraClass={styles.headerDbCell}
             />
           ))}
+          <SortableHeader
+            label="Proteomics"
+            k="proteomics"
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onClick={setSort}
+            align="center"
+            title="Counted surface-proteomics datasets that detected it (sort)"
+            info={`How many of the ${n_proteomics_datasets ?? "counted"} published intact-cell surface-proteomics datasets that pass our review detected this protein. Experimental surface evidence, independent of the five databases. Click a number to see the datasets.`}
+          />
           {CATALOG_MODELS.map((m) => (
             <SortableHeader
               key={`mhdr-${m.id}`}
@@ -2285,6 +2346,7 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
     "sonnet_ncbi_verdict", "sonnet_ncbi_reason",
     "opus_ncbi_verdict",   "opus_ncbi_reason",
     "has_deep_dive",
+    "n_counted_surface_proteomics_datasets",
   ];
   const body: TsvCell[][] = rows.map((r) => [
     r.symbol,
@@ -2301,6 +2363,7 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
     r.triage_by_model[1]?.verdict ?? "", r.triage_by_model[1]?.reason ?? "",
     r.triage_by_model[2]?.verdict ?? "", r.triage_by_model[2]?.reason ?? "",
     r.deep_dive ? 1 : 0,
+    r.sp_counted ?? 0,
   ]);
   return buildTsv(headers, body);
 }
@@ -2313,6 +2376,7 @@ function sortValue(r: CatalogRow, k: SortKey): string | number {
   if (k === "db_surfy") return r.db.surfy ? 1 : 0;
   if (k === "db_cspa") return r.db.cspa ? 1 : 0;
   if (k === "db_hpa") return r.db.hpa ? 1 : 0;
+  if (k === "proteomics") return r.sp_counted ?? 0;
   if (k === "triage") {
     // Sort by the triage-agent verdict (Worker slot 1) — the only
     // model with full-genome coverage. yes > contextual > no > none.
@@ -2527,6 +2591,22 @@ function CatalogRowView({
           </div>
         );
       })}
+      <div className={`${styles.cell} ${styles.proteomicsCell}`} role="cell">
+        {row.sp_counted ? (
+          <a
+            href={row.deep_dive ? `/${row.symbol}/#section-expression` : "/surface-proteomics/"}
+            className={styles.proteomicsLink}
+            title={`Detected by ${row.sp_counted} counted surface-proteomics dataset${row.sp_counted === 1 ? "" : "s"}`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {row.sp_counted}
+          </a>
+        ) : (
+          <span className={styles.dim} title="Not detected by any counted surface-proteomics dataset">
+            0
+          </span>
+        )}
+      </div>
       {CATALOG_MODELS.map((m) => {
         const cell = row.triage_by_model[m.idx];
         return (

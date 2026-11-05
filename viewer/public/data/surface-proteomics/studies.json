@@ -95,6 +95,48 @@
    7,
    5
   ],
+  "canonical": [
+   428,
+   195,
+   141,
+   87,
+   87,
+   72,
+   64,
+   47,
+   44,
+   55,
+   40,
+   32,
+   42,
+   27,
+   35,
+   27,
+   33,
+   24,
+   28,
+   19,
+   14,
+   23,
+   22,
+   14,
+   8,
+   17,
+   17,
+   12,
+   19,
+   6,
+   14,
+   12,
+   14,
+   11,
+   10,
+   10,
+   10,
+   10,
+   7,
+   5
+  ],
   "likely": [
    582,
    189,
@@ -134,6 +176,48 @@
    3,
    0,
    1,
+   0,
+   0
+  ],
+  "uncertain": [
+   44,
+   3,
+   1,
+   2,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
    0,
    0
   ],
@@ -179,48 +263,6 @@
    0,
    0
   ],
-  "canonical": [
-   428,
-   195,
-   141,
-   87,
-   87,
-   72,
-   64,
-   47,
-   44,
-   55,
-   40,
-   32,
-   42,
-   27,
-   35,
-   27,
-   33,
-   24,
-   28,
-   19,
-   14,
-   23,
-   22,
-   14,
-   8,
-   17,
-   17,
-   12,
-   19,
-   6,
-   14,
-   12,
-   14,
-   11,
-   10,
-   10,
-   10,
-   10,
-   7,
-   5
-  ],
   "low": [
    625,
    115,
@@ -255,48 +297,6 @@
    1,
    0,
    1,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0
-  ],
-  "uncertain": [
-   44,
-   3,
-   1,
-   2,
-   0,
-   0,
-   1,
-   0,
-   0,
-   0,
-   0,
-   1,
-   0,
-   0,
-   0,
-   0,
-   1,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
    0,
    0,
    0,
@@ -349,7 +349,35 @@
    "n_proteins": 2668,
    "reference_overlap": 0.3016,
    "repository": "none_deposited",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "blood_cancer",
+   "lines": [
+    "697",
+    "CMS",
+    "EOL1",
+    "HEL9217",
+    "HL60",
+    "K562",
+    "KASUMI1",
+    "KG1",
+    "M07E",
+    "ML2",
+    "MOLM13",
+    "MOLT4",
+    "MONOMAC6",
+    "MV411",
+    "NALM6",
+    "NOMO1",
+    "OCIAML2",
+    "OCIAML3",
+    "REH",
+    "RS411",
+    "SET2",
+    "THP1",
+    "U937",
+    "UKE1",
+    "WSU"
+   ]
   },
   {
    "id": "salmela-cscc-2026",
@@ -374,7 +402,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD065511"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "dusailly-ec-2026",
@@ -397,7 +426,8 @@
    "n_proteins": 3020,
    "reference_overlap": 0.11346344690704598,
    "repository": "none found",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "other_normal"
   },
   {
    "id": "porter-gbm-2026",
@@ -422,7 +452,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD058999"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "glyco-pdx-csc-2026",
@@ -445,7 +476,8 @@
    "n_proteins": 834,
    "reference_overlap": 0.7144549763033176,
    "repository": null,
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "slezak-hct116apex-2026",
@@ -470,7 +502,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD069264"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "rethore-huvec-2026",
@@ -495,7 +528,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD072355"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "sanchez-jurkat-2026",
@@ -520,7 +554,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD068422"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "ho-k562-csc-2026",
@@ -546,7 +581,8 @@
    "repository_ids": [
     "MSV000102332",
     "PXD080445"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "ho-k562-conaey-2026",
@@ -572,7 +608,8 @@
    "repository_ids": [
     "MSV000102332",
     "PXD080445"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "ho-k562-wgaey-2026",
@@ -598,7 +635,8 @@
    "repository_ids": [
     "MSV000102332",
     "PXD080445"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "ho-k562-choley-2026",
@@ -624,7 +662,8 @@
    "repository_ids": [
     "MSV000102332",
     "PXD080445"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "ho-k562-nbaey-2026",
@@ -650,7 +689,8 @@
    "repository_ids": [
     "MSV000102332",
     "PXD080445"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "ho-k562-cscey-2026",
@@ -676,7 +716,8 @@
    "repository_ids": [
     "MSV000102332",
     "PXD080445"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "ho-k562-snhs-2026",
@@ -702,7 +743,8 @@
    "repository_ids": [
     "MSV000102332",
     "PXD080445"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "ho-k562-wgahrp-2026",
@@ -728,7 +770,8 @@
    "repository_ids": [
     "MSV000102332",
     "PXD080445"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "stehn-mpnst-2026",
@@ -751,7 +794,8 @@
    "n_proteins": 2667,
    "reference_overlap": 0.2785901762279715,
    "repository": "none (raw data on request)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "cattaneo-crc-2026",
@@ -776,7 +820,8 @@
    "repository": "PRIDE (raw only)",
    "repository_ids": [
     "PXD066343"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "mooney-os-2026",
@@ -801,7 +846,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD075484"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "chen-pc3-2026",
@@ -826,7 +872,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD077611"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "laurent-gsc-2026",
@@ -851,7 +898,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD075844"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "kuffa-crcpolar-2026",
@@ -874,7 +922,8 @@
    "n_proteins": 2974,
    "reference_overlap": 0.16275998679432155,
    "repository": "none found (supplementary tables only)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "sucam-jhh4-carboxyl-2026",
@@ -899,7 +948,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD068779"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "sucam-jhh4-glyco-2026",
@@ -924,7 +974,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD068779"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "sucam-jhh4-multiplex-2026",
@@ -949,7 +1000,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD068779"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "sucam-2026",
@@ -974,7 +1026,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD068779"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "xu-thp1-surface-2026",
@@ -1000,7 +1053,8 @@
    "repository_ids": [
     "PXD053647",
     "PXD071681"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "mazzone-rpe1-2026",
@@ -1023,7 +1077,8 @@
    "n_proteins": 2001,
    "reference_overlap": 0.22808764940239043,
    "repository": "none found (no ProteomeXchange identifier in the preprint)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "other_normal"
   },
   {
    "id": "nash-i3neuron-2026",
@@ -1048,7 +1103,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD076394"
-   ]
+   ],
+   "cell_group": "neural"
   },
   {
    "id": "taggi-bbb-2025",
@@ -1074,7 +1130,8 @@
    "repository_ids": [
     "MSV000096107",
     "PXD056849"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "friedlova-cervix-2025",
@@ -1099,7 +1156,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD053951"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "martins-crc3d-2025",
@@ -1124,7 +1182,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD059013"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "furan-biotin",
@@ -1149,7 +1208,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD059552"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "laccid-2025",
@@ -1175,7 +1235,8 @@
    "repository_ids": [
     "PXD062870",
     "MSV000095684"
-   ]
+   ],
+   "cell_group": "immune"
   },
   {
    "id": "holmes-2025",
@@ -1200,7 +1261,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD060977"
-   ]
+   ],
+   "cell_group": "neural"
   },
   {
    "id": "breyer-2025",
@@ -1223,7 +1285,8 @@
    "n_proteins": 1371,
    "reference_overlap": 0.3311451495258935,
    "repository": "supplement",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "neural"
   },
   {
    "id": "thorup-nge",
@@ -1248,7 +1311,8 @@
    "repository": "MassIVE",
    "repository_ids": [
     "MSV000098694"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "thorup-wgahrp",
@@ -1273,7 +1337,8 @@
    "repository": "MassIVE",
    "repository_ids": [
     "MSV000098694"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "nicholson-gm2-2025",
@@ -1298,7 +1363,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD064632"
-   ]
+   ],
+   "cell_group": "neural"
   },
   {
    "id": "cd38-myeloma-2024",
@@ -1323,7 +1389,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD027594"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "khan-chordoma-2024",
@@ -1348,7 +1415,8 @@
    "repository": "MassIVE",
    "repository_ids": [
     "MSV000089171"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "mooney-ewing-2024",
@@ -1373,7 +1441,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD043375"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "gasf-wang-2024",
@@ -1398,7 +1467,8 @@
    "repository": "supplement",
    "repository_ids": [
     "PXD042888"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "hunter-hfff-pmp-2024",
@@ -1423,7 +1493,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD050878"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "udeshi-2024",
@@ -1446,7 +1517,8 @@
    "n_proteins": 2584,
    "reference_overlap": 0.11856652687762105,
    "repository": null,
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "immune"
   },
   {
    "id": "hypoxic-gbm-2024",
@@ -1471,7 +1543,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD048880"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "lasa-2024",
@@ -1496,7 +1569,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD043772"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "hamilton-nb-2024",
@@ -1521,7 +1595,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD047474"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "deng-2024",
@@ -1547,7 +1622,8 @@
    "repository_ids": [
     "PXD048921",
     "JPST002467"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "reeves-2024",
@@ -1572,7 +1648,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD055086"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "veneer-2024",
@@ -1598,7 +1675,8 @@
    "repository_ids": [
     "MSV000093424",
     "MSV000093894"
-   ]
+   ],
+   "cell_group": "immune"
   },
   {
    "id": "cellsurfer-2023",
@@ -1623,7 +1701,8 @@
    "repository": "MassIVE",
    "repository_ids": [
     "MSV000088624"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "calligaris-chs-2023",
@@ -1648,7 +1727,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD042402"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "cyssurf-yan",
@@ -1673,7 +1753,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD042403"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "pandey-dipg-2023",
@@ -1696,7 +1777,8 @@
    "n_proteins": 2952,
    "reference_overlap": 0.32750504371217215,
    "repository": "none (surface data not deposited)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "rms-2023",
@@ -1719,7 +1801,8 @@
    "n_proteins": 6612,
    "reference_overlap": 0.11608222490931076,
    "repository": null,
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "vilen-apex-2022",
@@ -1744,7 +1827,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD031845"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "vilen-sia-2022",
@@ -1769,7 +1853,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD031845"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "sbiosite-2023",
@@ -1794,7 +1879,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD044519"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "fielding-a549-pmp-2022",
@@ -1819,7 +1905,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD025000"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "capdeville-daoy-2022",
@@ -1844,7 +1931,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD030597"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "depierreux-hfff-pmp-2022",
@@ -1869,7 +1957,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD033407"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "ferguson-2022",
@@ -1896,7 +1985,8 @@
     "PXD022482",
     "PXD022553",
     "PXD032031"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "optimized-csc-aml-2022",
@@ -1919,7 +2009,8 @@
    "n_proteins": 568,
    "reference_overlap": 0.6432337434094904,
    "repository": "supplement",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "kirkemo-2022",
@@ -1944,7 +2035,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD028523"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "anderson-2022",
@@ -1969,7 +2061,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD014165"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "gangras-shsy5y-2022",
@@ -1992,7 +2085,8 @@
    "n_proteins": 885,
    "reference_overlap": 0.34915254237288135,
    "repository": "none (supplementary tables only)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "lazar-skbr3shaving-2022",
@@ -2017,7 +2111,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD028978"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "lazar-skbr3amine-2022",
@@ -2042,7 +2137,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD028977"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "lazar-skbr3glyco-2022",
@@ -2067,7 +2163,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD028976"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "byrnes-2022",
@@ -2090,7 +2187,8 @@
    "n_proteins": 1230,
    "reference_overlap": 0.4912974683544304,
    "repository": null,
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "immune"
   },
   {
    "id": "nix-ball-2021",
@@ -2113,7 +2211,8 @@
    "n_proteins": 3785,
    "reference_overlap": 0.19738562091503267,
    "repository": null,
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "orfanou-breast-2021",
@@ -2138,7 +2237,8 @@
    "repository": "PRIDE (msf only)",
    "repository_ids": [
     "PXD021819"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "soday-2021",
@@ -2163,7 +2263,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD022834"
-   ]
+   ],
+   "cell_group": "immune"
   },
   {
    "id": "lorenz-muller-2021",
@@ -2186,7 +2287,8 @@
    "n_proteins": 423,
    "reference_overlap": 0.6572104018912529,
    "repository": "none (supplementary tables only)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "neural"
   },
   {
    "id": "myc-wells-2021",
@@ -2212,7 +2314,8 @@
    "repository_ids": [
     "MSV000085930",
     "PXD020799"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "li-npc-2021",
@@ -2235,7 +2338,8 @@
    "n_proteins": 2449,
    "reference_overlap": 0.09061357171881348,
    "repository": "none found (supplementary tables only)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "ito-bbb-2020",
@@ -2258,7 +2362,8 @@
    "n_proteins": 439,
    "reference_overlap": 0.592255125284738,
    "repository": "none (supplementary tables only)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "other_normal"
   },
   {
    "id": "soh-hacat-pmp-2020",
@@ -2283,7 +2388,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD021351"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "kong-lung-2020",
@@ -2308,7 +2414,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD016912"
-   ]
+   ],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "ravenhill-2020",
@@ -2333,7 +2440,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD013832"
-   ]
+   ],
+   "cell_group": "immune"
   },
   {
    "id": "myeloma-csc-2020",
@@ -2358,7 +2466,8 @@
    "repository": "MassIVE",
    "repository_ids": [
     "MSV000084858"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "wojdyla-2020",
@@ -2383,7 +2492,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD015359"
-   ]
+   ],
+   "cell_group": "stem_stromal"
   },
   {
    "id": "leung-2020",
@@ -2409,7 +2519,8 @@
    "repository_ids": [
     "PXD017039 (PRIDE; holds ONLY raw .raw + search-engine output .mgf.byrslt/.byspec2/.pep.xml/.fasta - no processed protein tables)",
     "PMC7148585 (PNAS Supporting Information; source of the protein-level CSC table used here)"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "matta-2019",
@@ -2434,7 +2545,8 @@
    "repository": "supplement",
    "repository_ids": [
     "PMID:31227739"
-   ]
+   ],
+   "cell_group": "stem_stromal"
   },
   {
    "id": "leung-2019",
@@ -2457,7 +2569,8 @@
    "n_proteins": 862,
    "reference_overlap": 0.6457142857142857,
    "repository": null,
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "giovani-pdl-2019",
@@ -2482,7 +2595,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD010226"
-   ]
+   ],
+   "cell_group": "other_normal"
   },
   {
    "id": "autocsc-2019",
@@ -2507,7 +2621,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD013627"
-   ]
+   ],
+   "cell_group": "multi"
   },
   {
    "id": "schmidt-aml-2018",
@@ -2532,7 +2647,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD008378"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "perna-2017",
@@ -2557,7 +2673,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD007552"
-   ]
+   ],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "hepatic-endoderm-2017",
@@ -2580,7 +2697,8 @@
    "n_proteins": 395,
    "reference_overlap": 0.8379746835443038,
    "repository": "supplement",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "stem_stromal"
   },
   {
    "id": "kalxdorf-2017",
@@ -2603,7 +2721,8 @@
    "n_proteins": 1389,
    "reference_overlap": 0.7223021582733813,
    "repository": null,
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "immune"
   },
   {
    "id": "haverland-2017",
@@ -2626,7 +2745,8 @@
    "n_proteins": 390,
    "reference_overlap": 0.7381546134663342,
    "repository": "supplement",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "blood_cancer"
   },
   {
    "id": "xiao-mcf7-2017",
@@ -2649,7 +2769,8 @@
    "n_proteins": 265,
    "reference_overlap": 0.8566037735849057,
    "repository": "none (list from the Veneer reanalysis, Table S1 of Gundry lab JPR 2024)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "niehage-dpsc-2016",
@@ -2672,7 +2793,8 @@
    "n_proteins": 3326,
    "reference_overlap": 0.16862037871956717,
    "repository": "none found",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "stem_stromal"
   },
   {
    "id": "tyleckova-npc-2016",
@@ -2695,7 +2817,8 @@
    "n_proteins": 521,
    "reference_overlap": 0.5777351247600768,
    "repository": "none (list from the Veneer reanalysis, Table S1 of Gundry lab JPR 2024)",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "neural"
   },
   {
    "id": "mallanna-2016",
@@ -2718,7 +2841,8 @@
    "n_proteins": 300,
    "reference_overlap": 0.66,
    "repository": "supplement",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "other_normal"
   },
   {
    "id": "holley-msc-2015",
@@ -2741,7 +2865,8 @@
    "n_proteins": 5429,
    "reference_overlap": 0.12120095781911955,
    "repository": "not verified",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "stem_stromal"
   },
   {
    "id": "cspa-2015",
@@ -2766,7 +2891,8 @@
    "repository": "PRIDE",
    "repository_ids": [
     "PXD000589"
-   ]
+   ],
+   "cell_group": "multi"
   },
   {
    "id": "jung-colonorg-2015",
@@ -2789,7 +2915,8 @@
    "n_proteins": 1795,
    "reference_overlap": 0.09121245828698554,
    "repository": "none",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "other_normal"
   },
   {
    "id": "boheler-2014",
@@ -2812,7 +2939,8 @@
    "n_proteins": 496,
    "reference_overlap": 0.8387096774193549,
    "repository": "supplement",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "stem_stromal"
   },
   {
    "id": "posthumadeboer-os-2013",
@@ -2835,7 +2963,8 @@
    "n_proteins": 2729,
    "reference_overlap": 0.19311102968120192,
    "repository": "none",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   },
   {
    "id": "english-brain-2012",
@@ -2858,7 +2987,8 @@
    "n_proteins": 1130,
    "reference_overlap": 0.11915269196822595,
    "repository": "none",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "neural"
   },
   {
    "id": "msc-hoflack-2011",
@@ -2881,7 +3011,8 @@
    "n_proteins": 175,
    "reference_overlap": 0.6019900497512438,
    "repository": "supplement",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "stem_stromal"
   },
   {
    "id": "zhang-os-2010",
@@ -2904,7 +3035,8 @@
    "n_proteins": 283,
    "reference_overlap": 0.3674911660777385,
    "repository": "none",
-   "repository_ids": []
+   "repository_ids": [],
+   "cell_group": "solid_cancer"
   }
  ]
 }

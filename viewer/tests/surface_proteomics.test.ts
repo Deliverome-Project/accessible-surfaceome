@@ -87,3 +87,15 @@ test("cohort share below, zero detections included", () => {
   const all = index.cohort_detection_hist?.all;
   assert.ok(all && all.reduce((a, b) => a + b, 0) > 5000);
 });
+
+test("every dataset has a cell-type group; per-line atlases list their lines", () => {
+  for (const arm of index.arms) assert.ok(arm.cell_group, arm.id);
+  for (let i = 0; i < index.n_shards; i++) {
+    for (const e of Object.values(shard(i))) {
+      for (const [armIdx, lines] of Object.entries(e.l ?? {})) {
+        const arm = index.arms[Number(armIdx)];
+        assert.ok(arm.lines && lines.every((j) => j >= 0 && j < arm.lines!.length), arm.id);
+      }
+    }
+  }
+});

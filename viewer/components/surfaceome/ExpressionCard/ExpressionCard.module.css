@@ -84,3 +84,10 @@
   padding-left: var(--space-5);
   color: var(--ink-soft);
 }
+
+/* Scrolls the expression table sideways on narrow screens instead of the page. */
+.tableScroll {
+  overflow-x: auto;
+  max-width: 100%;
+  min-width: 0;
+}

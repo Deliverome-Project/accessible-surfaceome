@@ -111,6 +111,140 @@ STATUS_BY_ROLE = {
     "primary": "core",
 }
 
+# Curated cell-type group for every published arm (the viewer's cell-type filter).
+# The build fails if an arm is missing, so a new arm must be classified here.
+CELL_GROUPS: dict[str, tuple[str, ...]] = {
+    "blood_cancer": (
+        "george-aml-2026",
+        "sanchez-jurkat-2026",
+        "ho-k562-csc-2026",
+        "ho-k562-conaey-2026",
+        "ho-k562-wgaey-2026",
+        "ho-k562-choley-2026",
+        "ho-k562-nbaey-2026",
+        "ho-k562-cscey-2026",
+        "ho-k562-snhs-2026",
+        "ho-k562-wgahrp-2026",
+        "sucam-2026",
+        "xu-thp1-surface-2026",
+        "cyssurf-yan",
+        "cd38-myeloma-2024",
+        "lasa-2024",
+        "ferguson-2022",
+        "optimized-csc-aml-2022",
+        "anderson-2022",
+        "nix-ball-2021",
+        "myeloma-csc-2020",
+        "leung-2019",
+        "schmidt-aml-2018",
+        "perna-2017",
+        "haverland-2017",
+    ),
+    "solid_cancer": (
+        "salmela-cscc-2026",
+        "porter-gbm-2026",
+        "glyco-pdx-csc-2026",
+        "slezak-hct116apex-2026",
+        "stehn-mpnst-2026",
+        "cattaneo-crc-2026",
+        "mooney-os-2026",
+        "chen-pc3-2026",
+        "laurent-gsc-2026",
+        "kuffa-crcpolar-2026",
+        "sucam-jhh4-carboxyl-2026",
+        "sucam-jhh4-glyco-2026",
+        "sucam-jhh4-multiplex-2026",
+        "friedlova-cervix-2025",
+        "martins-crc3d-2025",
+        "furan-biotin",
+        "khan-chordoma-2024",
+        "mooney-ewing-2024",
+        "gasf-wang-2024",
+        "hypoxic-gbm-2024",
+        "hamilton-nb-2024",
+        "reeves-2024",
+        "calligaris-chs-2023",
+        "pandey-dipg-2023",
+        "rms-2023",
+        "vilen-apex-2022",
+        "vilen-sia-2022",
+        "sbiosite-2023",
+        "fielding-a549-pmp-2022",
+        "capdeville-daoy-2022",
+        "gangras-shsy5y-2022",
+        "lazar-skbr3shaving-2022",
+        "lazar-skbr3amine-2022",
+        "lazar-skbr3glyco-2022",
+        "orfanou-breast-2021",
+        "li-npc-2021",
+        "kong-lung-2020",
+        "xiao-mcf7-2017",
+        "posthumadeboer-os-2013",
+        "zhang-os-2010",
+    ),
+    "immune": (
+        "laccid-2025",
+        "udeshi-2024",
+        "veneer-2024",
+        "byrnes-2022",
+        "soday-2021",
+        "ravenhill-2020",
+        "kalxdorf-2017",
+    ),
+    "neural": (
+        "nash-i3neuron-2026",
+        "holmes-2025",
+        "breyer-2025",
+        "nicholson-gm2-2025",
+        "lorenz-muller-2021",
+        "tyleckova-npc-2016",
+        "english-brain-2012",
+    ),
+    "stem_stromal": (
+        "wojdyla-2020",
+        "matta-2019",
+        "hepatic-endoderm-2017",
+        "niehage-dpsc-2016",
+        "holley-msc-2015",
+        "boheler-2014",
+        "msc-hoflack-2011",
+    ),
+    "other_normal": (
+        "dusailly-ec-2026",
+        "rethore-huvec-2026",
+        "mazzone-rpe1-2026",
+        "taggi-bbb-2025",
+        "thorup-nge",
+        "thorup-wgahrp",
+        "hunter-hfff-pmp-2024",
+        "deng-2024",
+        "cellsurfer-2023",
+        "depierreux-hfff-pmp-2022",
+        "kirkemo-2022",
+        "myc-wells-2021",
+        "ito-bbb-2020",
+        "soh-hacat-pmp-2020",
+        "leung-2020",
+        "giovani-pdl-2019",
+        "mallanna-2016",
+        "jung-colonorg-2015",
+    ),
+    "multi": (
+        "cspa-2015",
+        "autocsc-2019",
+    ),
+}
+
+# Arms whose banked source table has one column per cell line; the gene page
+# shows which lines detected a protein. (accession column, non-line columns)
+PER_LINE_TABLES: dict[str, tuple[str, str, tuple[str, ...]]] = {
+    "george-aml-2026": (
+        "cell-surface-proteomics/2026-09-19-george-v1/biotin-amine/george-aml-2026/surface_mean_abundance.tsv",
+        "Accession",
+        ("Gene_Symbol", "SPC"),
+    ),
+}
+
 # Columns a banked source table may carry its UniProt accessions in.
 ACCESSION_COLUMNS = ("uniprot_accession", "Accession", "accession")
 GENE_COLUMNS = ("gene_symbol", "Gene_Symbol", "gene")
@@ -423,6 +557,100 @@ def normalize_accessions(
     return mapping, stats
 
 
+def load_per_line(
+    arms: list[dict[str, Any]],
+    index: dict[str, int],
+    mapping: dict[str, str],
+    read_table: Any,
+) -> dict[str, dict[str, list[int]]]:
+    """Per-cell-line detection for arms in PER_LINE_TABLES.
+
+    Sets ``arm["lines"]`` to the line names and returns
+    ``{canonical acc: {str(arm index): [line indices]}}`` (value > 0 = detected).
+    Accessions go through the same normalization as the detections.
+    """
+    out: dict[str, dict[str, list[int]]] = defaultdict(dict)
+    for sid, (key, acc_col, skip) in PER_LINE_TABLES.items():
+        if sid not in index:
+            continue
+        rows = read_table(key)
+        line_cols = [c for c in rows[0] if c != acc_col and c not in skip]
+        arms[index[sid]]["lines"] = line_cols
+        hits: dict[str, set[int]] = defaultdict(set)
+        for r in rows:
+            acc = base_accession(r[acc_col] or "")
+            if not re.fullmatch(r"[A-Z][A-Z0-9]{5,9}", acc):
+                continue
+            acc = mapping.get(acc, acc)
+            for j, c in enumerate(line_cols):
+                try:
+                    if float(r[c] or 0) > 0:
+                        hits[acc].add(j)
+                except ValueError:
+                    pass
+        for acc, js in hits.items():
+            if js:
+                out[acc][str(index[sid])] = sorted(js)
+        logger.info("per-line detail for %s: %d lines", sid, len(line_cols))
+    return dict(out)
+
+
+def write_downloads(
+    out: Path, arms: list[dict[str, Any]], shards: list[dict[str, Any]]
+) -> None:
+    """Whole-compendium downloads: a protein x dataset matrix and dataset metadata."""
+    counted = [i for i, a in enumerate(arms) if a["admitted"]]
+    with (out / "surface_proteomics_matrix.tsv").open("w", newline="") as fh:
+        w = csv.writer(fh, delimiter="\t", lineterminator="\n")
+        w.writerow(
+            [
+                "uniprot_acc",
+                "symbol",
+                "name",
+                "surfaceome_tier",
+                "db_votes_of_5",
+                "n_counted_datasets",
+                *[a["id"] for a in arms],
+            ]
+        )
+        entries = sorted(
+            ((acc, e) for shard in shards for acc, e in shard.items()),
+            key=lambda x: x[0],
+        )
+        for acc, e in entries:
+            hit = set(e["a"])
+            w.writerow(
+                [
+                    acc,
+                    e["s"],
+                    e.get("n", ""),
+                    e.get("t", "not_deep_dived" if not e["d"] else ""),
+                    e.get("v", ""),
+                    sum(1 for i in counted if i in hit),
+                    *["1" if i in hit else "0" for i in range(len(arms))],
+                ]
+            )
+    # Ends on always-present columns: a trailing empty field would leave a
+    # trailing tab, which whitespace-trimming tools (and pre-commit) strip.
+    cols = [
+        "id", "name", "first_author", "year", "journal", "pmid", "doi", "repository",
+        "repository_ids", "method_class", "family", "family_label", "cell_group",
+        "sample", "reference_overlap", "n_proteins", "admitted", "status",
+    ]  # fmt: skip
+    with (out / "surface_proteomics_datasets.tsv").open("w", newline="") as fh:
+        w = csv.writer(fh, delimiter="\t", lineterminator="\n")
+        w.writerow(cols)
+        for a in arms:
+            w.writerow(
+                [
+                    ";".join(a[c])
+                    if isinstance(a.get(c), list)
+                    else str(a.get(c) if a.get(c) is not None else "").strip()
+                    for c in cols
+                ]
+            )
+
+
 def counted_hist(
     presence: dict[str, set[int]], arms: list[dict[str, Any]]
 ) -> list[int]:
@@ -611,6 +839,12 @@ def main() -> None:
     # Whole-lysate arms measure neither intact cells nor a membrane fraction.
     excluded = sorted(a["id"] for a in built if a["method_class"] == "lysate")
     arms = [a for a in built if a["method_class"] != "lysate"]
+    group_of = {sid: g for g, ids in CELL_GROUPS.items() for sid in ids}
+    missing = [a["id"] for a in arms if a["id"] not in group_of]
+    if missing:
+        raise SystemExit(f"add these arms to CELL_GROUPS: {', '.join(missing)}")
+    for a in arms:
+        a["cell_group"] = group_of[a["id"]]
     index = {a["id"]: i for i, a in enumerate(arms)}
     aliases = {k: [c for c in v if c in index] for k, v in aliases.items()}
     aliases = {k: v for k, v in aliases.items() if v}
@@ -628,6 +862,8 @@ def main() -> None:
         if row.get("gene_symbol"):
             fallback_symbol.setdefault(acc, row["gene_symbol"])
 
+    per_line = load_per_line(arms, index, mapping, _read_external_table)
+
     shards: list[dict[str, Any]] = [{} for _ in range(N_SHARDS)]
     for acc in sorted(presence):
         entry: dict[str, Any] = {
@@ -641,6 +877,8 @@ def main() -> None:
             entry["v"] = votes[acc]
         if acc in tiers:
             entry["t"] = tiers[acc]
+        if acc in per_line:
+            entry["l"] = per_line[acc]
         shards[shard_of(acc)][acc] = entry
 
     admitted = [a for a in arms if a["admitted"]]
@@ -680,6 +918,7 @@ def main() -> None:
         (args.out / "presence" / f"{i:02d}.json").write_text(
             json.dumps(shard, separators=(",", ":"), ensure_ascii=False) + "\n"
         )
+    write_downloads(args.out, arms, shards)
     logger.info(
         "wrote %d arms (%d publications; %d admitted arms / %d publications), %d accessions (%d in admitted arms) → %s",
         meta["n_arms"],
