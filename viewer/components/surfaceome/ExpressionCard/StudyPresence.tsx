@@ -11,14 +11,20 @@ import {
   STATUS_HELP,
   STATUS_LABEL,
   STUDIES_PATH,
-  countedRank,
+  shareBelow,
   studyHref,
+  TIER_LABEL,
+  tierOf,
   type ArmStatus,
+  type TierCode,
   type StudyArm,
   type StudyIndex,
 } from "../../../lib/surface-proteomics";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import tip from "../../InfoTip/InfoTip.module.css";
+import { FamilyChip } from "../../StudiesExplorer/FamilyChip";
+import { SortableHeader } from "../_shared/SortableHeader";
+import { useTableSort, type SortValue } from "../_shared/useTableSort";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./StudyPresence.module.css";
 
@@ -37,7 +43,7 @@ const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] 
   {
     key: "held",
     label: "Surface experiments we don't count",
-    desc: "Also intact-cell labeling, but the list is mostly background (below screen) or the published table can't be read per protein (held).",
+    desc: "Also intact-cell labeling, but most of the list is intracellular background (high background), or the published table can't tell us which proteins were detected (held).",
     statuses: ["held", "below_screen"],
   },
   {
@@ -47,6 +53,21 @@ const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] 
     statuses: ["comparator"],
   },
 ];
+
+type RowSort = "study" | "found" | "method" | "family" | "sample" | "status";
+const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
+const pct = (x: number) => `${Math.floor(x * 100)}%`;
+
+function RankLine({ share, text }: { share: number; text: React.ReactNode }) {
+  return (
+    <p className={styles.rank}>
+      <span className={styles.rankBar} aria-hidden="true">
+        <span style={{ width: `${Math.max(2, share * 100)}%` }} />
+      </span>
+      <span>{text}</span>
+    </p>
+  );
+}
 
 export function statusTone(s: ArmStatus) {
   if (s === "core") return "success" as const;
@@ -63,16 +84,22 @@ export function statusTone(s: ArmStatus) {
  * labeling) are drawn separately and labelled as not counted.
  */
 export function StudyPresence({ uniprotAcc, symbol }: Props) {
-  const [data, setData] = useState<{ index: StudyIndex; hits: Set<number> } | null>(null);
+  const [data, setData] = useState<{
+    index: StudyIndex;
+    hits: Set<number>;
+    tier: TierCode | "none";
+  } | null>(null);
   const [error, setError] = useState(false);
   const [showOther, setShowOther] = useState(false);
   const [showMissing, setShowMissing] = useState(false);
+  const { sortKey, sortDir, onSort, ariaSort, sortRows } = useTableSort<RowSort>();
 
   useEffect(() => {
     let live = true;
     loadPresence(uniprotAcc)
       .then(({ index, entry }) => {
-        if (live) setData({ index, hits: new Set(entry?.a ?? []) });
+        if (live)
+          setData({ index, hits: new Set(entry?.a ?? []), tier: entry ? tierOf(entry) : "none" });
       })
       .catch(() => live && setError(true));
     return () => {
@@ -99,46 +126,55 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
   }
 
   const { arms, counted, countedHits, pubs, pubHits, otherHits } = summary;
-  const rank = countedRank(data.index.counted_detection_hist, countedHits.length);
-  const rows = arms
-    .filter((x) => (showMissing || x.hit) && (showOther || isCounted(x.arm)))
-    .sort(
-      (a, b) =>
-        Number(b.hit) - Number(a.hit) ||
-        Number(isCounted(b.arm)) - Number(isCounted(a.arm)) ||
-        (b.arm.year ?? 0) - (a.arm.year ?? 0),
-    );
+  const hists = data.index.cohort_detection_hist;
+  const k = countedHits.length;
+  const vsCohort = shareBelow(hists?.all, k);
+  const vsTier = data.tier !== "none" ? shareBelow(hists?.[data.tier], k) : null;
+  const filtered = arms.filter((x) => (showMissing || x.hit) && (showOther || isCounted(x.arm)));
+  const rows =
+    sortKey === null
+      ? [...filtered].sort(
+          (a, b) =>
+            Number(b.hit) - Number(a.hit) ||
+            Number(isCounted(b.arm)) - Number(isCounted(a.arm)) ||
+            (b.arm.year ?? 0) - (a.arm.year ?? 0),
+        )
+      : sortRows(filtered, {
+          study: (r) => shortCitation(r.arm),
+          found: (r) => Number(r.hit),
+          method: (r) => r.arm.method_class,
+          family: (r) => r.arm.family_label,
+          sample: (r) => r.arm.sample ?? "",
+          status: (r) => STATUS_ORDER.indexOf(r.arm.status),
+        } satisfies Record<RowSort, (r: (typeof filtered)[number]) => SortValue>);
+  const th = (key: RowSort, text: string) => (
+    <th aria-sort={ariaSort(key)}>
+      <SortableHeader k={key} active={sortKey === key} direction={sortDir} onSort={onSort}>
+        {text}
+      </SortableHeader>
+    </th>
+  );
 
   return (
     <div className={styles.wrap}>
       <div className={`label-mono ${styles.subhead}`}>
         Published surface-proteomics studies
         <span className={styles.rollup}>
-          detected in {countedHits.length} of {counted.length} counted datasets ({pubHits.size} of{" "}
+          Detected in {countedHits.length} of {counted.length} counted datasets ({pubHits.size} of{" "}
           {pubs.size} papers)
           {otherHits > 0 ? ` · listed in ${otherHits} not-counted dataset${otherHits === 1 ? "" : "s"}` : ""}
         </span>
         <InfoTip wide label="About study presence">
-          {rank ? (
-            <>
-              <strong>How {countedHits.length} compares.</strong>{" "}
-              {rank.total.toLocaleString("en-US")} proteins are detected by at least one counted
-              dataset; the median one is detected by {rank.median}. {symbol} is detected by more
-              counted datasets than {Math.floor(rank.below * 100)}% of them.
-              <br />
-              <br />
-            </>
-          ) : null}
           Whether {symbol} ({uniprotAcc}) appears in the protein list of each
           human cell-surface proteomics dataset we collected and audited
           ({data.index.n_arms} datasets from {data.index.n_publications} papers).
-          Proteins are matched by UniProt accession, after mapping retired
-          accessions to their current entry.
+          Each reported accession is mapped to the gene&apos;s canonical UniProt
+          entry through its HGNC ID, the same resolver the rest of the site uses.
           <br />
           <br />
           <strong>Counted</strong> datasets label proteins on intact cells and
           pass review (core or provisional). <strong>Held</strong> and{" "}
-          <strong>below screen</strong> datasets are listed but not counted.{" "}
+          <strong>high-background</strong> datasets are listed but not counted.{" "}
           <strong>Comparators</strong> (membrane fractionation, or labeling
           that reaches the inner side of the membrane) show that a protein
           co-purifies with membranes, not that it is reachable from outside
@@ -150,18 +186,30 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           surface. Snapshot: {data.index.snapshot}.
         </InfoTip>
       </div>
-      {rank ? (
-        <p className={styles.rank}>
-          <span className={styles.rankBar} aria-hidden="true">
-            <span style={{ width: `${Math.max(2, rank.below * 100)}%` }} />
-          </span>
-          <span>
-            Detected by more counted datasets than{" "}
-            <strong>{Math.floor(rank.below * 100)}%</strong> of the{" "}
-            {rank.total.toLocaleString("en-US")} proteins any counted dataset found (the median
-            protein is found by {rank.median}).
-          </span>
-        </p>
+      {vsCohort ? (
+        <div className={styles.rankBox}>
+          <RankLine
+            share={vsCohort.below}
+            text={
+              <>
+                Found in more counted datasets than <strong>{pct(vsCohort.below)}</strong> of the{" "}
+                {vsCohort.total.toLocaleString("en-US")} surface candidates we deep-dived
+              </>
+            }
+          />
+          {vsTier && data.tier !== "none" ? (
+            <RankLine
+              share={vsTier.below}
+              text={
+                <>
+                  and than <strong>{pct(vsTier.below)}</strong> of the{" "}
+                  {vsTier.total.toLocaleString("en-US")} proteins in its tier,{" "}
+                  {TIER_LABEL[data.tier]}
+                </>
+              }
+            />
+          ) : null}
+        </div>
       ) : null}
 
       <div className={styles.strip} role="list" aria-label="Detection per dataset">
@@ -172,7 +220,10 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             <div key={g.key} className={styles.group} role="listitem">
               <span className={styles.groupLabel}>
                 <span className={styles.groupName}>{g.label}</span>
-                <span className={styles.groupDesc}>{g.desc}</span>
+                <InfoTip label={`About ${g.label}`}>{g.desc}</InfoTip>
+                <span className={styles.groupStatus}>
+                  {g.statuses.map((st) => STATUS_LABEL[st]).join(" + ")}
+                </span>
               </span>
               <span className={styles.dots}>
                 {items.map(({ arm, hit }) => (
@@ -190,14 +241,16 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       </p>
 
       {rows.length > 0 ? (
+        <div className={styles.tableScroll}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Study</th>
-              <th>Detected</th>
-              <th>Method</th>
-              <th>Cell type / sample</th>
-              <th>Status</th>
+              {th("study", "Study")}
+              {th("found", "Detected")}
+              {th("method", "Method")}
+              {th("family", "Chemistry")}
+              {th("sample", "Cell type / sample")}
+              {th("status", "Status")}
             </tr>
           </thead>
           <tbody>
@@ -205,7 +258,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
               const url = paperUrl(arm);
               return (
                 <tr key={arm.id} className={isCounted(arm) ? undefined : styles.notCounted}>
-                  <td>
+                  <td className={styles.studyCell}>
                     {url ? (
                       <a href={url} target="_blank" rel="noreferrer">
                         {shortCitation(arm)}
@@ -216,12 +269,16 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                     {arm.pmid ? <span className={styles.pmid}> PMID {arm.pmid}</span> : null}
                     <div className={styles.armName}>{arm.name}</div>
                   </td>
-                  <td>{hit ? "Yes" : "No"}</td>
                   <td>
-                    {METHOD_CLASS_LABEL[arm.method_class]}
-                    <div className={styles.armName}>{arm.family_label}</div>
+                    <span className={`${styles.yn} ${hit ? styles.ynYes : styles.ynNo}`}>
+                      {hit ? "Yes" : "No"}
+                    </span>
                   </td>
-                  <td>{arm.sample}</td>
+                  <td className={styles.nowrap}>{METHOD_CLASS_LABEL[arm.method_class]}</td>
+                  <td>
+                    <FamilyChip arm={arm} />
+                  </td>
+                  <td className={styles.sampleCell}>{arm.sample}</td>
                   <td>
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
                       {STATUS_LABEL[arm.status]}
@@ -232,6 +289,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             })}
           </tbody>
         </table>
+        </div>
       ) : (
         <p className={styles.empty}>
           {data.hits.size === 0
@@ -268,28 +326,35 @@ function Dot({ arm, hit }: { arm: StudyArm; hit: boolean }) {
     <span className={tip.wrap} data-infotip="">
       <Link href={studyHref([arm.id])} className={cls} aria-label={label} />
       <span role="tooltip" className={`${tip.popover} ${styles.dotTip}`}>
-        <strong className={hit ? styles.tipHit : styles.tipMiss}>
-          {hit ? "Detected" : "Not detected"}
-        </strong>{" "}
-        in {shortCitation(arm)}
-        {arm.journal ? <span className={styles.tipMuted}> · {arm.journal}</span> : null}
-        <br />
-        {arm.name}
-        <br />
-        <span className={styles.tipMuted}>Method:</span> {METHOD_CLASS_LABEL[arm.method_class]} (
-        {arm.family_label})
-        <br />
-        <span className={styles.tipMuted}>Cells:</span> {arm.sample ?? "—"}
-        <br />
-        <span className={styles.tipMuted}>Proteins in list:</span> {arm.n_proteins.toLocaleString("en-US")}
-        {arm.reference_overlap != null
-          ? ` · ${Math.round(arm.reference_overlap * 100)}% known surface`
-          : ""}
-        <br />
-        <span className={styles.tipMuted}>Status:</span> {STATUS_LABEL[arm.status]},{" "}
-        {counted ? "counted as surface evidence" : "not counted"}
-        <br />
-        <span className={styles.tipMuted}>Click to open this dataset&apos;s protein list.</span>
+        <span className={styles.tipLine}>
+          <strong className={hit ? styles.tipHit : styles.tipMiss}>
+            {hit ? "Detected" : "Not detected"}
+          </strong>{" "}
+          in {shortCitation(arm)}
+          {arm.journal ? <span className={styles.tipMuted}> · {arm.journal}</span> : null}
+        </span>
+        <span className={styles.tipLine}>{arm.name}</span>
+        <span className={styles.tipLine}>
+          <span className={styles.tipMuted}>Method:</span> {METHOD_CLASS_LABEL[arm.method_class]},{" "}
+          {arm.family_label.toLowerCase()}
+        </span>
+        <span className={styles.tipLine}>
+          <span className={styles.tipMuted}>Cells:</span> {arm.sample ?? "—"}
+        </span>
+        <span className={styles.tipLine}>
+          <span className={styles.tipMuted}>Proteins in list:</span>{" "}
+          {arm.n_proteins.toLocaleString("en-US")}
+          {arm.reference_overlap != null
+            ? `, ${Math.round(arm.reference_overlap * 100)}% known surface`
+            : ""}
+        </span>
+        <span className={styles.tipLine}>
+          <span className={styles.tipMuted}>Status:</span> {STATUS_LABEL[arm.status]},{" "}
+          {counted ? "counted as surface evidence" : "not counted"}
+        </span>
+        <span className={`${styles.tipLine} ${styles.tipMuted}`}>
+          Click to open this dataset&apos;s protein list.
+        </span>
       </span>
     </span>
   );

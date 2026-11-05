@@ -1,6 +1,8 @@
 .wrap {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
   gap: var(--space-3);
   padding: var(--space-4) 0;
   border-top: 1px solid var(--line);
@@ -14,9 +16,9 @@
 
 .rollup {
   margin-left: 0.5rem;
-  color: var(--muted-soft, var(--muted));
+  color: var(--ink-soft);
   font-weight: var(--fw-regular, 400);
-  font-size: 0.85em;
+  font-size: 0.9rem;
   letter-spacing: 0;
   text-transform: none;
 }
@@ -49,8 +51,9 @@
 
 .groupLabel {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.1rem 0.4rem;
 }
 
 .groupName {
@@ -59,9 +62,8 @@
   color: var(--ink-soft);
 }
 
-.groupDesc {
-  font-size: 0.74rem;
-  line-height: 1.4;
+.groupStatus {
+  font-size: 0.8rem;
   color: var(--muted);
 }
 
@@ -110,7 +112,7 @@ a.dot:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-1) var(--space-3);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--muted);
 }
 
@@ -134,7 +136,7 @@ a.dot:focus-visible {
 }
 
 .table th {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--muted);
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -146,15 +148,16 @@ a.dot:focus-visible {
 }
 
 .armName {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--muted);
   margin-top: 2px;
 }
 
 .pmid {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .actions {
@@ -227,4 +230,59 @@ a.dot:focus-visible {
   display: block;
   height: 100%;
   background: var(--teal-mid);
+}
+
+.rankBox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tipLine {
+  display: block;
+}
+
+.tipLine + .tipLine {
+  margin-top: 2px;
+}
+
+.studyCell {
+  min-width: 11rem;
+  max-width: 16rem;
+}
+
+.sampleCell {
+  min-width: 12rem;
+  max-width: 18rem;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.yn {
+  display: inline-flex;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: var(--fw-medium);
+  border: 1px solid transparent;
+}
+
+.ynYes {
+  background: var(--teal-tint);
+  border-color: var(--teal-lt);
+  color: var(--teal-deepest);
+}
+
+.ynNo {
+  background: var(--bg-soft);
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.tableScroll {
+  overflow-x: auto;
+  max-width: 100%;
+  min-width: 0;
 }

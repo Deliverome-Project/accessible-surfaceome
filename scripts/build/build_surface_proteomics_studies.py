@@ -28,8 +28,10 @@ Outputs (committed; the viewer serves them as static files):
   table, sharded by :func:`shard_of` so a gene page fetches one ~30 KB file
   instead of the whole table. Each shard maps a base UniProt accession to
   ``{"s": symbol, "d": 1 if it has a deep-dive page, "a": [arm indices],
-  "n": HGNC full name, "v": number of the five source databases listing it}``
-  (``n`` / ``v`` omitted when unknown).
+  "n": HGNC full name, "v": number of the five source databases listing it,
+  "t": deep-dive tier}`` (``n`` / ``v`` / ``t`` omitted when unknown). Reported
+  accessions are first normalized to the gene's canonical accession through the
+  HGNC-ID path (:func:`normalize_accessions`).
 
 Only arms with an ``admitted`` review decision (core / provisional) count as
 surface detections. Held arms (e.g. a fully imputed published matrix, where per-
@@ -272,27 +274,153 @@ def _get_json(client: httpx.Client, url: str) -> Any:
 
 def load_symbols(
     api_base: str,
-) -> tuple[dict[str, str], set[str], dict[str, int]]:
-    """Accession → display symbol, the deep-dived set, and accession → 5-DB votes."""
+) -> tuple[dict[str, str], set[str], dict[str, int], dict[str, str]]:
+    """Accession → display symbol, the deep-dived set, accession → 5-DB votes,
+    and accession → deep-dive tier (the Worker's ``deep_dive_tier``)."""
     headers = {"User-Agent": "accessible-surfaceome build (surface-proteomics studies)"}
     with httpx.Client(timeout=120, headers=headers) as client:
         catalog = _get_json(client, f"{api_base}/v1/catalog")
         genes = _get_json(client, f"{api_base}/v1/genes")
     symbols: dict[str, str] = {}
     votes: dict[str, int] = {}
+    tiers: dict[str, str] = {}
     for row in catalog["rows"]:
         acc = base_accession(row.get("uniprot") or "")
         if acc and acc not in symbols:
             symbols[acc] = row["symbol"]
             if isinstance(row.get("n_sources"), int):
                 votes[acc] = row["n_sources"]
+            if row.get("deep_dive") and row.get("deep_dive_tier"):
+                tiers[acc] = row["deep_dive_tier"]
     deep: set[str] = set()
     for g in genes["genes"]:
         acc = base_accession(g.get("uniprot_acc") or "")
         if acc:
             deep.add(acc)
             symbols[acc] = g["gene_symbol"]
-    return symbols, deep, votes
+    return symbols, deep, votes, tiers
+
+
+def load_canonical() -> tuple[dict[str, str], str]:
+    """hgnc_id → canonical UniProt accession, from public D1 ``gene_identifier_public``.
+
+    This is the stable-ID cache the HGNC-ID resolver (``resolve_by_hgnc_id``)
+    writes, and the only sanctioned source for a gene's canonical accession.
+    """
+    from accessible_surfaceome.cloud.d1_client import D1Client
+
+    rows: list[dict[str, Any]] = []
+    with D1Client.public() as d1:
+        offset = 0
+        while True:
+            page = d1.query(
+                "SELECT hgnc_id, uniprot_acc, resolver_version FROM gene_identifier_public"
+                " ORDER BY hgnc_id LIMIT 2000 OFFSET ?;",
+                [offset],
+            )
+            rows += page
+            offset += 2000
+            if len(page) < 2000:
+                break
+    versions = sorted(
+        {r["resolver_version"] for r in rows if r.get("resolver_version")}
+    )
+    canonical = {
+        r["hgnc_id"]: base_accession(r["uniprot_acc"])
+        for r in rows
+        if r.get("uniprot_acc")
+    }
+    return canonical, ",".join(versions)
+
+
+def load_hgnc_xrefs(path: Path) -> dict[str, set[str]]:
+    """UniProt accession → HGNC ids that cross-reference it (HGNC ``uniprot_ids``)."""
+    out: dict[str, set[str]] = defaultdict(set)
+    with path.open(newline="") as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            for acc in (row.get("uniprot_ids") or "").split("|"):
+                if acc.strip():
+                    out[base_accession(acc)].add(row["hgnc_id"])
+    return out
+
+
+def load_uniprot_hgnc(accs: list[str]) -> tuple[dict[str, set[str]], str | None]:
+    """UniProt's own HGNC cross-reference for accessions HGNC doesn't list.
+
+    Mostly unreviewed TrEMBL entries for a gene whose canonical entry differs.
+    Human entries only.
+    """
+    out: dict[str, set[str]] = {}
+    release = None
+    headers = {"User-Agent": "accessible-surfaceome build (surface-proteomics studies)"}
+    url = "https://rest.uniprot.org/uniprotkb/accessions"
+    with httpx.Client(timeout=120, headers=headers) as client:
+        for i in range(0, len(accs), 500):
+            batch = accs[i : i + 500]
+            r = client.get(
+                url,
+                params={
+                    "accessions": ",".join(batch),
+                    "fields": "accession,organism_id,xref_hgnc",
+                    "format": "tsv",
+                    "size": 500,
+                },
+            )
+            r.raise_for_status()
+            release = r.headers.get("x-uniprot-release") or release
+            for row in csv.DictReader(io.StringIO(r.text), delimiter="\t"):
+                if row.get("Organism (ID)") != "9606":
+                    continue
+                ids = {x for x in (row.get("HGNC") or "").split(";") if x.strip()}
+                if ids:
+                    out[row["Entry"]] = ids
+    return out, release
+
+
+def normalize_accessions(
+    accs: set[str],
+    canonical: dict[str, str],
+    hgnc_xrefs: dict[str, set[str]],
+    uniprot_hgnc: Any,
+) -> tuple[dict[str, str], dict[str, Any]]:
+    """Map each reported accession to its gene's canonical accession.
+
+    Accession → HGNC id (HGNC's own ``uniprot_ids`` xref first, then UniProt's
+    HGNC xref) → canonical accession from ``gene_identifier_public``. Never via a
+    symbol. An accession that reaches no gene, or more than one, is kept as
+    reported.
+    """
+    canonical_accs = set(canonical.values())
+    hgnc_of: dict[str, set[str]] = {}
+    for acc in accs:
+        if acc not in canonical_accs and acc in hgnc_xrefs:
+            hgnc_of[acc] = hgnc_xrefs[acc]
+    rest = sorted(a for a in accs if a not in canonical_accs and a not in hgnc_of)
+    from_uniprot, release = uniprot_hgnc(rest) if rest else ({}, None)
+    hgnc_of.update(from_uniprot)
+    mapping: dict[str, str] = {}
+    n_mapped = n_ambiguous = 0
+    for acc in accs:
+        if acc in canonical_accs:
+            continue
+        targets = {canonical[h] for h in hgnc_of.get(acc, ()) if h in canonical}
+        if len(targets) == 1:
+            mapping[acc] = targets.pop()
+            n_mapped += 1
+        elif len(targets) > 1:
+            n_ambiguous += 1
+    stats = {
+        "n_reported": len(accs),
+        "n_already_canonical": len(accs & canonical_accs),
+        "n_mapped_to_canonical": n_mapped,
+        "n_ambiguous_kept": n_ambiguous,
+        "n_unmapped_kept": len(accs)
+        - len(accs & canonical_accs)
+        - n_mapped
+        - n_ambiguous,
+        "uniprot_release": release,
+    }
+    return mapping, stats
 
 
 def counted_hist(
@@ -305,6 +433,22 @@ def counted_hist(
         if k:
             hist[k] += 1
     return hist
+
+
+def cohort_hists(
+    presence: dict[str, set[int]],
+    arms: list[dict[str, Any]],
+    deep: set[str],
+    tiers: dict[str, str],
+) -> dict[str, list[int]]:
+    counted = {i for i, a in enumerate(arms) if a["admitted"]}
+    out: dict[str, list[int]] = defaultdict(lambda: [0] * (len(counted) + 1))
+    for acc in deep:
+        k = len(presence.get(acc, set()) & counted)
+        out["all"][k] += 1
+        if acc in tiers:
+            out[tiers[acc]][k] += 1
+    return dict(out)
 
 
 def load_names(path: Path) -> dict[str, str]:
@@ -357,6 +501,11 @@ def load_pubmed(pmids: list[str]) -> dict[str, dict[str, Any]]:
     return out
 
 
+def _strip_citation(name: str) -> str:
+    """Drop a trailing "(Author Year)" — the viewer shows the citation separately."""
+    return re.sub(r"\s*\([^()]*\b(?:19|20)\d{2}\)\s*$", "", name).strip() or name
+
+
 def build_arms(
     manifest: dict,
     audit: dict,
@@ -392,7 +541,7 @@ def build_arms(
         arms.append(
             {
                 "id": sid,
-                "name": d["name"],
+                "name": _strip_citation(d["name"]),
                 "publication": str(d.get("publication_id") or paper.get("pmid") or sid),
                 "first_author": paper.get("first_author"),
                 "year": paper.get("year"),
@@ -438,6 +587,18 @@ def main() -> None:
 
     manifest, detections, audit, sources = load_inputs(args)
     aliases = add_registry_arms(manifest, detections, sources, _read_external_table)
+    canonical, resolver_version = load_canonical()
+    mapping, norm_stats = normalize_accessions(
+        {base_accession(r["uniprot_accession"]) for r in detections},
+        canonical,
+        load_hgnc_xrefs(HGNC_TSV),
+        load_uniprot_hgnc,
+    )
+    norm_stats["resolver_version"] = resolver_version
+    for row in detections:
+        acc = base_accession(row["uniprot_accession"])
+        row["uniprot_accession"] = mapping.get(acc, acc)
+    logger.info("accession normalization: %s", norm_stats)
     counts: dict[str, set[str]] = defaultdict(set)
     for row in detections:
         counts[row["study_id"]].add(base_accession(row["uniprot_accession"]))
@@ -455,7 +616,7 @@ def main() -> None:
     aliases = {k: v for k, v in aliases.items() if v}
     logger.info("excluded %d whole-lysate arms: %s", len(excluded), ", ".join(excluded))
 
-    symbols, deep, votes = load_symbols(args.api_base)
+    symbols, deep, votes, tiers = load_symbols(args.api_base)
     names = load_names(HGNC_TSV)
     presence: dict[str, set[int]] = defaultdict(set)
     fallback_symbol: dict[str, str] = {}
@@ -478,6 +639,8 @@ def main() -> None:
             entry["n"] = names[acc]
         if acc in votes:
             entry["v"] = votes[acc]
+        if acc in tiers:
+            entry["t"] = tiers[acc]
         shards[shard_of(acc)][acc] = entry
 
     admitted = [a for a in arms if a["admitted"]]
@@ -498,6 +661,10 @@ def main() -> None:
         # counted_detection_hist[k] = proteins detected in exactly k counted arms
         # (k >= 1), so the viewer can say where one protein's count ranks.
         "counted_detection_hist": counted_hist(presence, arms),
+        # Same, over the deep-dived cohort including proteins no counted arm
+        # detected (k = 0), overall and per deep-dive tier.
+        "cohort_detection_hist": cohort_hists(presence, arms, deep, tiers),
+        "accession_normalization": norm_stats,
         "aliases": aliases,
         "excluded_arms": excluded,
         "arms": arms,

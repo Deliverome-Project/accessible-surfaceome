@@ -134,9 +134,13 @@ catalog at build time) and the exact intersections between selected arms. The
 page is not in the viewer's top nav; it is linked from the Open Data menu on
 deliverome.org. Only core
 and provisional arms (intact-cell labeling that passed review) count as
-surface detections; held, below-screen and comparator arms (membrane
+surface detections; held, high-background and comparator arms (membrane
 fractionation, inner-leaflet labeling) are shown and labelled as not counted.
-Whole-lysate glycoproteomes are not published.
+Whole-lysate glycoproteomes are not published. Reported accessions are normalized to each
+gene's canonical UniProt entry through its HGNC ID (HGNC's `uniprot_ids`, then
+UniProt's own HGNC cross-reference) and `gene_identifier_public`, so a gene is
+never split across two entries; the counts are in `studies.json` under
+`accession_normalization`. The build reads `.env` for public D1 credentials.
 
 The files are committed and rebuilt by hand when a new snapshot is
 published. Point `--analysis-ref` at the deliverome-analysis branch that

@@ -4,10 +4,7 @@ import type { Metadata } from "next";
 import { Shell } from "../../components/Shell/Shell";
 import { StudiesExplorer } from "../../components/StudiesExplorer/StudiesExplorer";
 import { TierPill } from "../../components/StudiesExplorer/TierPill";
-import { deepDiveTier } from "../../lib/catalog-presets";
-import { loadCatalog, withDeepDiveFilters } from "../../lib/surfaceome";
 import {
-  baseAccession,
   isCounted,
   METHOD_CLASS_LABEL,
   OVERLAP_SCREEN,
@@ -18,7 +15,6 @@ import {
   type ArmStatus,
   type MethodClass,
   type StudyIndex,
-  type TierMap,
 } from "../../lib/surface-proteomics";
 import styles from "./page.module.css";
 
@@ -44,27 +40,17 @@ const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen"
 /**
  * /surface-proteomics/ — the S3E8 study compendium, linked from
  * deliverome.org's Open Data menu rather than the viewer's own nav. The
- * study index and each protein's deep-dive tier are baked in at build time;
+ * study index is baked in at build time;
  * the per-protein presence shards are fetched in the browser only when a
  * reader opens a study's protein list or compares studies.
  */
-export default async function SurfaceProteomicsPage() {
+export default function SurfaceProteomicsPage() {
   const index = JSON.parse(
     readFileSync(
       path.join(process.cwd(), "public", "data", "surface-proteomics", "studies.json"),
       "utf8",
     ),
   ) as StudyIndex;
-
-  // Same tier derivation the catalog and gene pages use, keyed by accession.
-  const catalog = await loadCatalog();
-  const rows = await withDeepDiveFilters(catalog.rows);
-  const tiers: TierMap = {};
-  for (const r of rows) {
-    if (r.deep_dive && r.deep_dive_filters && r.uniprot) {
-      tiers[baseAccession(r.uniprot)] = deepDiveTier(r.deep_dive_filters).tier;
-    }
-  }
 
   const counted = index.arms.filter(isCounted);
   const countByStatus = (s: ArmStatus) => index.arms.filter((a) => a.status === s).length;
@@ -176,7 +162,7 @@ export default async function SurfaceProteomicsPage() {
           </div>
         </details>
 
-        <StudiesExplorer index={index} tiers={tiers} />
+        <StudiesExplorer index={index} />
       </section>
     </Shell>
   );
