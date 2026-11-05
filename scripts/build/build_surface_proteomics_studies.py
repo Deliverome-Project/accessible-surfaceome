@@ -27,7 +27,9 @@ Outputs (committed; the viewer serves them as static files):
 * ``viewer/public/data/surface-proteomics/presence/{NN}.json`` — the presence
   table, sharded by :func:`shard_of` so a gene page fetches one ~30 KB file
   instead of the whole table. Each shard maps a base UniProt accession to
-  ``{"s": symbol, "d": 1 if it has a deep-dive page, "a": [arm indices]}``.
+  ``{"s": symbol, "d": 1 if it has a deep-dive page, "a": [arm indices],
+  "n": HGNC full name, "v": number of the five source databases listing it}``
+  (``n`` / ``v`` omitted when unknown).
 
 Only arms with an ``admitted`` review decision (core / provisional) count as
 surface detections. Held arms (e.g. a fully imputed published matrix, where per-
@@ -84,6 +86,7 @@ logger = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
+HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
 SNAPSHOT = "2026-11-02-sweep-v5"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
@@ -267,24 +270,56 @@ def _get_json(client: httpx.Client, url: str) -> Any:
     raise RuntimeError(f"GET {url} kept failing")
 
 
-def load_symbols(api_base: str) -> tuple[dict[str, str], set[str]]:
-    """Accession → display symbol (whole-proteome catalog) and the deep-dived set."""
+def load_symbols(
+    api_base: str,
+) -> tuple[dict[str, str], set[str], dict[str, int]]:
+    """Accession → display symbol, the deep-dived set, and accession → 5-DB votes."""
     headers = {"User-Agent": "accessible-surfaceome build (surface-proteomics studies)"}
     with httpx.Client(timeout=120, headers=headers) as client:
         catalog = _get_json(client, f"{api_base}/v1/catalog")
         genes = _get_json(client, f"{api_base}/v1/genes")
     symbols: dict[str, str] = {}
+    votes: dict[str, int] = {}
     for row in catalog["rows"]:
         acc = base_accession(row.get("uniprot") or "")
         if acc and acc not in symbols:
             symbols[acc] = row["symbol"]
+            if isinstance(row.get("n_sources"), int):
+                votes[acc] = row["n_sources"]
     deep: set[str] = set()
     for g in genes["genes"]:
         acc = base_accession(g.get("uniprot_acc") or "")
         if acc:
             deep.add(acc)
             symbols[acc] = g["gene_symbol"]
-    return symbols, deep
+    return symbols, deep, votes
+
+
+def counted_hist(
+    presence: dict[str, set[int]], arms: list[dict[str, Any]]
+) -> list[int]:
+    counted = {i for i, a in enumerate(arms) if a["admitted"]}
+    hist = [0] * (len(counted) + 1)
+    for idx in presence.values():
+        k = len(idx & counted)
+        if k:
+            hist[k] += 1
+    return hist
+
+
+def load_names(path: Path) -> dict[str, str]:
+    """Accession → approved full name, from HGNC's ``uniprot_ids`` column.
+
+    Keyed on the accession HGNC cross-references, never on a symbol. Display only.
+    """
+    names: dict[str, str] = {}
+    with path.open(newline="") as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            for acc in (row.get("uniprot_ids") or "").split("|"):
+                acc = base_accession(acc)
+                if acc and row.get("name"):
+                    names.setdefault(acc, row["name"])
+    return names
 
 
 def load_pubmed(pmids: list[str]) -> dict[str, dict[str, Any]]:
@@ -420,7 +455,8 @@ def main() -> None:
     aliases = {k: v for k, v in aliases.items() if v}
     logger.info("excluded %d whole-lysate arms: %s", len(excluded), ", ".join(excluded))
 
-    symbols, deep = load_symbols(args.api_base)
+    symbols, deep, votes = load_symbols(args.api_base)
+    names = load_names(HGNC_TSV)
     presence: dict[str, set[int]] = defaultdict(set)
     fallback_symbol: dict[str, str] = {}
     for row in detections:
@@ -433,11 +469,16 @@ def main() -> None:
 
     shards: list[dict[str, Any]] = [{} for _ in range(N_SHARDS)]
     for acc in sorted(presence):
-        shards[shard_of(acc)][acc] = {
+        entry: dict[str, Any] = {
             "s": symbols.get(acc) or fallback_symbol.get(acc) or "",
             "d": 1 if acc in deep else 0,
             "a": sorted(presence[acc]),
         }
+        if acc in names:
+            entry["n"] = names[acc]
+        if acc in votes:
+            entry["v"] = votes[acc]
+        shards[shard_of(acc)][acc] = entry
 
     admitted = [a for a in arms if a["admitted"]]
     meta = {
@@ -454,6 +495,9 @@ def main() -> None:
         "n_accessions_admitted": sum(
             1 for s in presence.values() if any(arms[i]["admitted"] for i in s)
         ),
+        # counted_detection_hist[k] = proteins detected in exactly k counted arms
+        # (k >= 1), so the viewer can say where one protein's count ranks.
+        "counted_detection_hist": counted_hist(presence, arms),
         "aliases": aliases,
         "excluded_arms": excluded,
         "arms": arms,

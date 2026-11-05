@@ -36,10 +36,10 @@ interface Props {
 
 type Tier = TierCode | "none";
 type StudySort = "study" | "year" | "method" | "sample" | "n" | "overlap" | "status";
-type ProteinSort = "protein" | "tier" | "counted";
+type ProteinSort = "protein" | "name" | "votes" | "tier" | "counted";
 
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
-const ALL_CLASSES: MethodClass[] = ["intact_cell", "fractionation", "lysate"];
+const ALL_CLASSES: MethodClass[] = ["intact_cell", "fractionation"];
 const PAGE = 200;
 /** Above this many selected studies the exact-intersection list stops being readable. */
 const MAX_UPSET = 10;
@@ -49,6 +49,9 @@ interface Protein {
   acc: string;
   symbol: string;
   deep: boolean;
+  name: string;
+  /** Source databases (of five) listing it as surface; null when not in the catalog. */
+  votes: number | null;
   tier: Tier;
   /** Indices of the selected arms that list it. */
   arms: Set<number>;
@@ -473,7 +476,8 @@ function SelectionPanel({
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState("");
   const [mode, setMode] = useState<Mode>("any");
-  const [tierSel, setTierSel] = useState<Set<Tier>>(new Set(TIER_ORDER));
+  // Same as the catalog's tier filter: nothing checked = every tier; checked tiers OR together.
+  const [tierSel, setTierSel] = useState<Set<Tier>>(new Set());
   const [limit, setLimit] = useState(PAGE);
   const [showAllCombos, setShowAllCombos] = useState(false);
   const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<ProteinSort>();
@@ -500,6 +504,8 @@ function SelectionPanel({
         acc,
         symbol: e.s,
         deep: e.d === 1,
+        name: e.n ?? "",
+        votes: e.v ?? null,
         tier: tiers[acc] ?? "none",
         arms: new Set(hit),
         nCounted: e.a.filter((i) => counted.has(i)).length,
@@ -539,7 +545,10 @@ function SelectionPanel({
     return true;
   });
   const filtered = inMode.filter(
-    (p) => tierSel.has(p.tier) && (!f || p.acc.includes(f) || p.symbol.toUpperCase().includes(f)),
+    (p) => (tierSel.size === 0 || tierSel.has(p.tier)) && (!f ||
+        p.acc.includes(f) ||
+        p.symbol.toUpperCase().includes(f) ||
+        p.name.toUpperCase().includes(f)),
   );
   // Default order: most-detected first, so the strongest surface evidence leads.
   const shown =
@@ -553,6 +562,8 @@ function SelectionPanel({
         )
       : sortRows(filtered, {
           protein: (p) => p.symbol || `~${p.acc}`,
+          name: (p) => p.name || "~",
+          votes: (p) => p.votes ?? -1,
           tier: (p) => TIER_ORDER.indexOf(p.tier),
           counted: (p) => p.nCounted,
         });
@@ -571,13 +582,24 @@ function SelectionPanel({
             .join(" + ")}`;
 
   const downloadCsv = () => {
-    const head = ["symbol", "uniprot_acc", "surfaceome_tier", "n_counted_arms_detected", ...selected.map((i) => arms[i].id)];
+    const head = [
+      "symbol",
+      "name",
+      "uniprot_acc",
+      "db_votes_of_5",
+      "surfaceome_tier",
+      "n_counted_datasets_detected",
+      ...selected.map((i) => arms[i].id),
+    ];
+    const csv = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
     const lines = [head.join(",")];
     for (const p of shown) {
       lines.push(
         [
-          p.symbol,
+          csv(p.symbol),
+          csv(p.name),
           p.acc,
+          p.votes ?? "",
           p.tier === "none" ? "not_deep_dived" : p.tier,
           p.nCounted,
           ...selected.map((i) => (p.arms.has(i) ? 1 : 0)),
@@ -743,7 +765,7 @@ function SelectionPanel({
         <input
           type="search"
           className={styles.search}
-          placeholder="Filter by symbol or accession…"
+          placeholder="Filter by symbol, name or accession…"
           value={filter}
           onChange={(e) => {
             setFilter(e.target.value);
@@ -778,7 +800,20 @@ function SelectionPanel({
             setLimit(PAGE);
           }}
         />
+        <span className={styles.filterHint}>
+          {tierSel.size === 0 ? (
+            "All tiers shown; check tiers to narrow (they combine with OR)"
+          ) : (
+            <button type="button" className={styles.linkButton} onClick={() => setTierSel(new Set())}>
+              show all tiers
+            </button>
+          )}
+        </span>
       </div>
+      <p className={styles.linkHint}>
+        Click a protein name to open its page in the Surfaceome viewer, with the full evidence
+        record. Names in grey were not deep-dived, so they link to their UniProt entry instead.
+      </p>
       <div className={styles.count}>
         {shown.length.toLocaleString("en-US")} proteins
         <button type="button" className={styles.linkButton} onClick={downloadCsv}>
@@ -792,9 +827,10 @@ function SelectionPanel({
           <thead>
             <tr>
               {pHeader("protein", "Protein")}
+              {pHeader("name", "Name")}
+              {pHeader("votes", "DB votes", true)}
               {pHeader("tier", "Surfaceome tier")}
               {pHeader("counted", `Counted datasets (of ${countedIdx.length})`)}
-              <th>UniProt</th>
               {!single && !wide
                 ? selected.map((i) => (
                     <th key={i} className={styles.center} title={arms[i].name}>
@@ -809,14 +845,31 @@ function SelectionPanel({
               <tr key={p.acc}>
                 <td>
                   {p.deep && p.symbol ? (
-                    <Link href={`/${p.symbol}/`} className={styles.protein}>
+                    <Link
+                      href={`/${p.symbol}/`}
+                      className={styles.protein}
+                      title={`Open the ${p.symbol} page in the Surfaceome viewer`}
+                    >
                       {p.symbol}
+                      <span className={styles.arrow} aria-hidden="true">
+                        →
+                      </span>
                     </Link>
                   ) : (
-                    <span className={styles.noPage} title="No Surfaceome page for this protein">
-                      {p.symbol || "—"}
-                    </span>
+                    <a
+                      href={`https://www.uniprot.org/uniprotkb/${p.acc}/entry`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.noPage}
+                      title={`Not deep-dived, so no Surfaceome page; opens UniProt ${p.acc}`}
+                    >
+                      {p.symbol || p.acc}
+                    </a>
                   )}
+                </td>
+                <td className={styles.nameCell}>{p.name || "—"}</td>
+                <td className={styles.num} title="Source databases (of 5) listing it as surface">
+                  {p.votes ?? "—"}
                 </td>
                 <td>
                   <TierPill tier={p.tier} />
@@ -824,16 +877,6 @@ function SelectionPanel({
                 <td className={styles.countedCell}>
                   <span className={styles.countedNum}>{p.nCounted}</span>
                   <Bar value={p.nCounted / Math.max(1, countedIdx.length)} />
-                </td>
-                <td>
-                  <a
-                    href={`https://www.uniprot.org/uniprotkb/${p.acc}/entry`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={styles.mono}
-                  >
-                    {p.acc}
-                  </a>
                 </td>
                 {!single && !wide
                   ? selected.map((i) => (

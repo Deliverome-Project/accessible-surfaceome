@@ -15,7 +15,7 @@
  */
 
 export type ArmStatus = "core" | "provisional" | "held" | "below_screen" | "comparator";
-export type MethodClass = "intact_cell" | "fractionation" | "lysate";
+export type MethodClass = "intact_cell" | "fractionation";
 
 export interface StudyArm {
   id: string;
@@ -54,6 +54,8 @@ export interface StudyIndex {
   n_accessions_admitted: number;
   /** Registry ids the snapshot split into several arms → those arm ids. */
   aliases?: Record<string, string[]>;
+  /** counted_detection_hist[k] = proteins detected in exactly k counted arms (k >= 1). */
+  counted_detection_hist?: number[];
   /** Whole-lysate arms left out of the published data. */
   excluded_arms?: string[];
   arms: StudyArm[];
@@ -66,6 +68,10 @@ export interface PresenceEntry {
   d: 0 | 1;
   /** Indices into `StudyIndex.arms`. */
   a: number[];
+  /** HGNC approved full name, when HGNC cross-references the accession. */
+  n?: string;
+  /** How many of the five source databases list it (catalog `n_sources`). */
+  v?: number;
 }
 
 export type PresenceShard = Record<string, PresenceEntry>;
@@ -94,7 +100,6 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
 export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {
   intact_cell: "Intact-cell labeling",
   fractionation: "Membrane fractionation",
-  lysate: "Lysate / non-intact",
 };
 
 /** Viewer route of the study explorer (linked from deliverome.org's Open Data menu). */
@@ -142,6 +147,31 @@ export function letter(i: number): string {
     n = Math.floor(n / 26) - 1;
   } while (n >= 0);
   return s;
+}
+
+/**
+ * Where a protein detected in `k` counted datasets ranks among every protein
+ * any counted dataset detected: the share with fewer detections, and the
+ * median count. Null when the histogram is missing or `k` is 0.
+ */
+export function countedRank(
+  hist: number[] | undefined,
+  k: number,
+): { below: number; total: number; median: number } | null {
+  if (!hist || k < 1) return null;
+  const total = hist.reduce((s, x) => s + x, 0);
+  if (!total) return null;
+  const below = hist.slice(1, k).reduce((s, x) => s + x, 0);
+  let acc = 0;
+  let median = 1;
+  for (let i = 1; i < hist.length; i++) {
+    acc += hist[i];
+    if (acc >= total / 2) {
+      median = i;
+      break;
+    }
+  }
+  return { below: below / total, total, median };
 }
 
 export function isCounted(arm: StudyArm): boolean {

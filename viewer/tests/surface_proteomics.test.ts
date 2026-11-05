@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   baseAccession,
+  countedRank,
   isCounted,
   letter,
   studyHref,
@@ -66,4 +67,14 @@ test("every tier has a label and a definition", () => {
     assert.ok(TIER_LABEL[t], t);
     assert.ok(TIER_HELP[t], t);
   }
+});
+
+test("counted-detection rank", () => {
+  // 4 proteins in 1 dataset, 3 in 2, 2 in 3, 1 in 4.
+  const hist = [0, 4, 3, 2, 1];
+  assert.equal(countedRank(hist, 0), null);
+  assert.deepEqual(countedRank(hist, 1), { below: 0, total: 10, median: 2 });
+  assert.deepEqual(countedRank(hist, 4), { below: 0.9, total: 10, median: 2 });
+  const real = countedRank(index.counted_detection_hist, 1);
+  assert.equal(real?.total, index.n_accessions_admitted);
 });

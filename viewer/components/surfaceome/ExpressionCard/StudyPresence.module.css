@@ -2,8 +2,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding-top: var(--space-4);
+  padding: var(--space-4) 0;
   border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .subhead {
@@ -34,7 +35,7 @@
 
 .group {
   display: grid;
-  grid-template-columns: minmax(10rem, 16rem) 1fr;
+  grid-template-columns: minmax(12rem, 20rem) 1fr;
   gap: var(--space-3);
   align-items: center;
 }
@@ -47,7 +48,20 @@
 }
 
 .groupLabel {
-  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.groupName {
+  font-size: 0.82rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink-soft);
+}
+
+.groupDesc {
+  font-size: 0.74rem;
+  line-height: 1.4;
   color: var(--muted);
 }
 
@@ -86,11 +100,6 @@ a.dot:focus-visible {
   border-color: var(--amber-mid);
 }
 
-.hit.lysate {
-  background: var(--lavender-bright);
-  border-color: var(--lavender-bright);
-}
-
 .dim {
   opacity: 0.55;
 }
@@ -110,15 +119,16 @@ a.dot:focus-visible {
 }
 
 .table {
-  width: 100%;
+  width: auto;
   border-collapse: collapse;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
+  line-height: 1.35;
 }
 
 .table th,
 .table td {
   text-align: left;
-  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  padding: 0.35rem 0.9rem 0.35rem 0;
   border-bottom: 1px solid var(--line-soft);
   vertical-align: top;
 }
@@ -161,4 +171,60 @@ a.dot:focus-visible {
   gap: 0.3rem;
   align-items: center;
   color: var(--muted);
+}
+
+/* Links site-wide inherit colour with no underline; make these read as links. */
+.table a,
+.actions a {
+  color: var(--maroon-mid);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--maroon-mid) 40%, transparent);
+  text-underline-offset: 2px;
+}
+
+.table a:hover,
+.actions a:hover {
+  text-decoration-color: currentColor;
+}
+
+.dotTip {
+  min-width: 20rem;
+  max-width: 26rem;
+  text-align: left;
+}
+
+.tipHit {
+  color: var(--teal-mid);
+}
+
+.tipMiss {
+  color: inherit;
+}
+
+.tipMuted {
+  opacity: 0.7;
+}
+
+.rank {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.rankBar {
+  flex: none;
+  width: 6rem;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.rankBar > span {
+  display: block;
+  height: 100%;
+  background: var(--teal-mid);
 }

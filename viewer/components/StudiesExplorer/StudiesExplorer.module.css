@@ -78,16 +78,18 @@
   max-width: 100%;
 }
 
+/* Columns size to their content: no stretching to fill the page width. */
 .table {
-  width: 100%;
+  width: auto;
   border-collapse: collapse;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
+  line-height: 1.35;
 }
 
 .table th,
 .table td {
   text-align: left;
-  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  padding: 0.35rem 0.9rem 0.35rem 0;
   border-bottom: 1px solid var(--line-soft);
   vertical-align: top;
 }
@@ -119,8 +121,14 @@
 }
 
 .sample {
-  min-width: 12rem;
-  max-width: 22rem;
+  min-width: 9rem;
+  max-width: 16rem;
+}
+
+.nameCell {
+  min-width: 13rem;
+  max-width: 20rem;
+  color: var(--ink-soft);
 }
 
 .links {
@@ -267,8 +275,8 @@
 }
 
 .studyCell {
-  min-width: 14rem;
-  max-width: 26rem;
+  min-width: 12rem;
+  max-width: 22rem;
 }
 
 .paperLinks {
@@ -296,7 +304,6 @@
 
 .sw_intact_cell { background: var(--teal-mid); }
 .sw_fractionation { background: var(--amber-mid); }
-.sw_lysate { background: var(--lavender-bright); }
 
 .bar {
   display: block;
@@ -423,7 +430,7 @@
 }
 
 .upsetBarCell {
-  width: 18rem;
+  width: 15rem;
 }
 
 .upsetButton {
@@ -471,11 +478,46 @@
   margin-top: var(--space-2);
 }
 
-.protein {
-  font-weight: var(--fw-medium);
+/* Links site-wide inherit colour with no underline; in these tables they
+   have to read as links. */
+.table a {
+  color: var(--maroon-mid);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--maroon-mid) 40%, transparent);
+  text-underline-offset: 2px;
 }
 
-.noPage {
+.table a:hover,
+.table a:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+.protein {
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+
+.arrow {
+  display: inline-block;
+  margin-left: 0.25rem;
+  font-size: 0.8em;
+  text-decoration: none;
+  transition: transform 0.15s;
+}
+
+.protein:hover .arrow,
+.protein:focus-visible .arrow {
+  transform: translateX(2px);
+}
+
+.table a.noPage {
+  color: var(--muted);
+  text-decoration-color: color-mix(in srgb, var(--muted) 40%, transparent);
+}
+
+.linkHint {
+  margin: 0;
+  font-size: 0.84rem;
   color: var(--muted);
 }
 
@@ -576,4 +618,9 @@
 
 .results {
   scroll-margin-top: var(--space-6);
+}
+
+.filterHint {
+  font-size: 0.78rem;
+  color: var(--muted);
 }
