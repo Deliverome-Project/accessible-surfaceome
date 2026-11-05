@@ -1,7 +1,7 @@
 """Apply the tag-site literature audit to public D1's ``tag_site_public``.
 
-The 176 ``literature_retrieved`` internal rows used to train the S5E13 ranker
-were audited by hand against their cited papers (deliverome-analysis PR 236).
+The 191 live ``literature_retrieved`` internal rows (176 of them the S5E13
+ranker's training set) were audited by hand against their cited papers (deliverome-analysis PR 236).
 This script loads the audit's corrections as a new ``tag_sites_version`` so
 the public API (``/v1/tag-sites/{SYMBOL}``) stops serving the wrong residues.
 The pure logic lives in :mod:`accessible_surfaceome.cloud.tag_site_audit`.
@@ -10,14 +10,15 @@ Inputs, all under ``data/analysis/tag_site_corpus_audit/``:
 
 * ``audit.tsv`` — the audit, keyed by ``site_id`` (committed copy of
   ``processed://scratch/becca/tag-site-corpus-audit/audit.tsv``).
-* ``rows_before.json`` — the 176 audited rows exactly as served before the
+* ``rows_before.json`` — the 191 audited rows exactly as served before the
   correction, captured by ``--export-before``. The corrections are always
   built from THIS snapshot, never from the live table, so a re-run after a
   literature re-sync restores the corrections instead of shifting an already
   corrected residue a second time.
-* ``canonical_sequences.json`` — human canonical sequences (from
+* ``canonical_sequences.json`` / ``per_residue_topology.json`` — human
+  canonical sequence and DeepTMHMM per-residue topology (from
   ``topology_public``) for every accession in the snapshot, also captured by
-  ``--export-before``; what the recomputed residue flanks are read from.
+  ``--export-before``; what recomputed flanks and topology states are read from.
 
 Outputs (committed, so a reader can diff the change): ``rows_after.json`` and
 ``summary.json``.
@@ -65,6 +66,7 @@ AUDIT_DIR = REPO_ROOT / "data" / "analysis" / "tag_site_corpus_audit"
 AUDIT_TSV = AUDIT_DIR / "audit.tsv"
 ROWS_BEFORE = AUDIT_DIR / "rows_before.json"
 SEQUENCES = AUDIT_DIR / "canonical_sequences.json"
+TOPOLOGIES = AUDIT_DIR / "per_residue_topology.json"
 ROWS_AFTER = AUDIT_DIR / "rows_after.json"
 SUMMARY = AUDIT_DIR / "summary.json"
 
@@ -104,20 +106,27 @@ def export_before(
 
     accs = sorted({r["uniprot_acc"] for r in rows})
     seqs: dict[str, str] = {}
+    topos: dict[str, str] = {}
     for ch in _chunks(accs, 90):
         marks = ", ".join("?" * len(ch))
         for r in client.query(
-            "SELECT uniprot_acc, sequence FROM topology_public WHERE cohort = 'human_canonical' "
+            "SELECT uniprot_acc, sequence, per_residue_topology FROM topology_public "
+            "WHERE cohort = 'human_canonical' "
             f"AND is_canonical = 1 AND uniprot_acc IN ({marks});",
             ch,
         ):
             seqs[r["uniprot_acc"]] = r["sequence"]
+            topos[r["uniprot_acc"]] = r["per_residue_topology"] or ""
     if set(accs) - set(seqs):
         raise SystemExit(f"no canonical sequence for {sorted(set(accs) - set(seqs))}")
     SEQUENCES.write_text(
         json.dumps(seqs, indent=0, sort_keys=True) + "\n", encoding="utf-8"
     )
     print(f"wrote {len(seqs)} sequences -> {SEQUENCES.relative_to(REPO_ROOT)}")
+    TOPOLOGIES.write_text(
+        json.dumps(topos, indent=0, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    print(f"wrote {len(topos)} topologies -> {TOPOLOGIES.relative_to(REPO_ROOT)}")
 
     if full_export is not None:
         every = client.query(
@@ -191,9 +200,10 @@ def main() -> int:
 
     before = json.loads(ROWS_BEFORE.read_text(encoding="utf-8"))
     seqs = json.loads(SEQUENCES.read_text(encoding="utf-8"))
+    topos = json.loads(TOPOLOGIES.read_text(encoding="utf-8"))
     synced_at = datetime.now(UTC).isoformat()
     corrections = build_corrections(
-        before, audit, seqs, version=args.version, synced_at=synced_at
+        before, audit, seqs, version=args.version, synced_at=synced_at, topologies=topos
     )
     summary = summarize(corrections)
     summary["tag_sites_version"] = args.version

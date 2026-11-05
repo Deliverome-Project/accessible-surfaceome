@@ -12,7 +12,10 @@ no D1, no network. ``scripts/cloud/apply_tag_site_audit.py`` does the I/O.
 Per-verdict rule
 ----------------
 ``confirmed_exact``
-    Residue unchanged. Only ``validation_level`` may change (below).
+    Residue unchanged. Only ``validation_level`` may change (below). A region
+    row (``insert_after_residue`` NULL) whose paper the audit could read down
+    to a junction gains that residue (``corrected_residue``), with flanks,
+    label and topology state derived as for a shift.
 ``confirmed_shifted``
     ``insert_after_residue`` becomes ``corrected_residue``;
     ``residue_before`` / ``residue_after`` / ``residue_label`` are recomputed
@@ -98,8 +101,9 @@ DROP_VERDICTS = frozenset(
     {"not_supported", "wrong_species_numbering", "terminal_misfiled"}
 )
 
-#: ``region_only`` rows: site_id -> (residue_label, candidate insert_after span
-#: or None). The label is the loop / domain the paper names, as read in the
+#: ``region_only`` rows that were served WITH a residue: site_id ->
+#: (residue_label, candidate insert_after span or None). A row already served
+#: as a region (``*-internal-None-lit``) keeps its own label and is not listed. The label is the loop / domain the paper names, as read in the
 #: audit notes; the span is the set of junctions the paper's wording leaves
 #: open (e.g. "at Y113" is 112|113 or 113|114) and is omitted when the paper
 #: gives no residue at all.
@@ -282,6 +286,7 @@ def build_corrections(
     *,
     version: str,
     synced_at: str,
+    topologies: dict[str, str] | None = None,
 ) -> list[Correction]:
     """Apply the audit to ``before_rows`` (the rows as served, keyed by site_id).
 
@@ -290,7 +295,14 @@ def build_corrections(
     ``keep`` otherwise (``row`` is still the full row so a re-run can rewrite
     it under the new version). Raises on an audit row with no served row, a
     missing sequence, or a verdict this module does not know.
+
+    ``topologies`` maps accession -> per-residue DeepTMHMM string (``I`` /
+    ``M`` / ``O``). It is read only when a region row gains a residue: such a
+    row was served with ``extracellular = 0`` / ``compartment = 'unknown'``
+    (the region shape), and the pinned junction needs the topology state the
+    residue rows carry.
     """
+    topologies = topologies or {}
     by_id = {r["site_id"]: r for r in before_rows}
     out: list[Correction] = []
     for a in audit_rows:
@@ -337,7 +349,12 @@ def build_corrections(
             )
 
         new_residue: int | None = orig_i
-        if verdict == "confirmed_shifted":
+        gains_residue = (
+            orig_i is None
+            and verdict in ("confirmed_exact", "confirmed_shifted")
+            and a["corrected_residue"].strip() != ""
+        )
+        if verdict == "confirmed_shifted" or gains_residue:
             seq = sequences.get(src["uniprot_acc"])
             if not seq:
                 raise KeyError(f"{sid}: no canonical sequence for {src['uniprot_acc']}")
@@ -350,14 +367,47 @@ def build_corrections(
                 residue_label=label,
                 position_frame=_frame(a["paper_numbering_basis"]),
             )
-            notes.insert(
-                0,
-                (
-                    f"insert_after_residue {orig_i} -> {new_residue} on human canonical "
-                    f"{src['uniprot_acc']} (paper numbering: {a['paper_numbering_basis']}, "
-                    f"construct species: {a['species_of_construct']})."
-                ),
-            )
+            if gains_residue:
+                topo = topologies.get(src["uniprot_acc"], "")
+                state = topo[new_residue - 1] if len(topo) >= new_residue else None
+                row.update(
+                    residue_range=None,
+                    position_evidence="validated",
+                    cited_tag_residue=None,
+                    topology_state=state,
+                    extracellular=1 if state == "O" else 0,
+                    compartment=(
+                        "extracellular"
+                        if state == "O"
+                        else "intracellular"
+                        if state == "I"
+                        else "unknown"
+                    ),
+                )
+                notes.insert(
+                    0,
+                    (
+                        f"insert_after_residue NULL -> {new_residue}: the paper pins the "
+                        f"junction on human canonical {src['uniprot_acc']} (paper numbering: "
+                        f"{a['paper_numbering_basis']}, construct species: "
+                        f"{a['species_of_construct']})."
+                    ),
+                )
+            else:
+                notes.insert(
+                    0,
+                    (
+                        f"insert_after_residue {orig_i} -> {new_residue} on human canonical "
+                        f"{src['uniprot_acc']} (paper numbering: {a['paper_numbering_basis']}, "
+                        f"construct species: {a['species_of_construct']})."
+                    ),
+                )
+        elif verdict == "region_only" and orig_i is None:
+            # Already served as a region row (the ``*-internal-None-lit`` shape)
+            # and the audit could not pin a junction either: the shape stays,
+            # only the validation level may move.
+            if notes:
+                notes.insert(0, "region-level site confirmed; no junction recoverable.")
         elif verdict == "region_only":
             if sid not in REGION_LABELS:
                 raise KeyError(f"{sid}: region_only row has no entry in REGION_LABELS")

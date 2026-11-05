@@ -190,6 +190,75 @@ def test_region_only_takes_the_shape_of_the_existing_region_rows(monkeypatch):
     assert r["position_frame"] is None
 
 
+def test_region_row_that_the_paper_pins_gains_the_residue():
+    before = [
+        _row(
+            "GENEX-internal-None-lit",
+            None,
+            residue_before="",
+            residue_after="",
+            residue_label="ECL2",
+            extracellular=0,
+            compartment="unknown",
+            position_evidence="inferred",
+        )
+    ]
+    audit = [
+        _audit(
+            "GENEX-internal-None-lit",
+            "confirmed_exact",
+            None,
+            "12",
+            basis="ortholog:rat",
+        )
+    ]
+    topo = "I" * 5 + "M" * 5 + "O" * 191
+    (c,) = build_corrections(
+        before,
+        audit,
+        {"P00001": SEQ},
+        version="v",
+        synced_at="t",
+        topologies={"P00001": topo},
+    )
+    r = _kept(c)
+    assert c.action == "update" and c.residue_before_audit is None
+    assert r["insert_after_residue"] == 12
+    assert (r["residue_before"], r["residue_after"], r["residue_label"]) == flanks(
+        SEQ, 12
+    )
+    assert (r["topology_state"], r["extracellular"], r["compartment"]) == (
+        "O",
+        1,
+        "extracellular",
+    )
+    assert (
+        r["position_evidence"] == "validated" and r["position_frame"] == "ortholog:rat"
+    )
+    assert r["site_id"] == "GENEX-internal-None-lit"
+    assert "NULL -> 12" in r["rationale"]
+
+
+def test_region_row_the_paper_cannot_pin_keeps_its_shape():
+    before = [
+        _row(
+            "GENEX-internal-None-lit",
+            None,
+            residue_before="",
+            residue_after="",
+            residue_label="ECL2",
+            extracellular=0,
+            compartment="unknown",
+        )
+    ]
+    audit = [_audit("GENEX-internal-None-lit", "region_only", None, "", function="no")]
+    (c,) = build_corrections(before, audit, {"P00001": SEQ}, version="v", synced_at="t")
+    r = _kept(c)
+    assert r["insert_after_residue"] is None and r["residue_label"] == "ECL2"
+    assert r["validation_level"] == "surface_only"
+    assert "no junction recoverable" in r["rationale"]
+
+
 @pytest.mark.parametrize(
     "verdict", ["not_supported", "wrong_species_numbering", "terminal_misfiled"]
 )
@@ -228,7 +297,11 @@ def test_unknown_verdict_is_an_error():
 
 def test_committed_audit_covers_every_region_label_and_vice_versa():
     audit = read_audit(AUDIT_DIR / "audit.tsv")
-    region = {a["site_id"] for a in audit if a["verdict"] == "region_only"}
+    region = {
+        a["site_id"]
+        for a in audit
+        if a["verdict"] == "region_only" and a["insert_after_residue"] != ""
+    }
     assert region == set(REGION_LABELS)
 
 
@@ -238,19 +311,21 @@ def test_committed_rows_after_are_what_the_snapshot_plus_audit_produce():
     seqs = json.loads((AUDIT_DIR / "canonical_sequences.json").read_text())
     summary = json.loads((AUDIT_DIR / "summary.json").read_text())
     audit = read_audit(AUDIT_DIR / "audit.tsv")
+    topos = json.loads((AUDIT_DIR / "per_residue_topology.json").read_text())
     corr = build_corrections(
         before,
         audit,
         seqs,
         version=summary["tag_sites_version"],
         synced_at="<set at execute time>",
+        topologies=topos,
     )
     expected = [c.row for c in corr if c.row is not None]
     committed = json.loads((AUDIT_DIR / "rows_after.json").read_text())
     assert committed == expected
     assert summarize(corr)["by_verdict"] == summary["by_verdict"]
     assert {c.site_id for c in corr} == {r["site_id"] for r in before}
-    assert len(before) == 176
+    assert len(before) == 191
 
 
 def test_snapshot_flanks_agree_with_the_committed_sequences():
