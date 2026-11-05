@@ -36,7 +36,7 @@ function parentHref(path: string): string {
  *     wordmark is a link back to deliverome.org.
  *   • A `/` separator + "Surfaceome" sub-brand so the URL hierarchy
  *     reads inline ("Deliverome / Surfaceome") without a second nav row.
- *   • Right side: local Surfaceome nav (Compare · SurfaceBench · API ·
+ *   • Right side: local Surfaceome nav (Compare · Studies · SurfaceBench · API ·
  *     Prompts · Reproducibility) + GitHub icon. Mirrors the spacing /
  *     typography of the parent's primary nav (`Team · News · Careers ·
  *     Contact`) so the two sites visually share a header shape.
@@ -104,6 +104,9 @@ export function Shell({ children }: ShellProps) {
           <nav id="primary-nav" className={styles.nav} aria-label="Surfaceome sections">
             <NavLink href="/compare" matchPrefix>
               Compare
+            </NavLink>
+            <NavLink href="/studies" matchPrefix>
+              Studies
             </NavLink>
             <NavLink href="/benchmark" matchPrefix>
               SurfaceBench
