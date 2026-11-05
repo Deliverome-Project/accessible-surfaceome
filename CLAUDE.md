@@ -865,13 +865,16 @@ a Pages binding.
   both work without them because their binaries ship as optional
   dependencies. Leave them unapproved; the `npm warn install-scripts` line
   is expected.
-- **`NODE_VERSION` on Cloudflare Pages lives outside the repo.** Set it
-  to the same value as `.nvmrc` (Settings → Environment Variables →
-  Production + Preview). **When bumping Node anywhere here, always
-  remind the user to bump `NODE_VERSION` on Cloudflare Pages in the
-  same change.** Skipping it means the Pages build either keeps using
-  the old Node (silent drift) or falls through to Cloudflare's rolling
-  default (which can shift under you).
+- **Cloudflare Pages takes its Node version from `viewer/.nvmrc`.** The
+  Pages project's root directory is `viewer/`, and its settings are managed
+  through `viewer/wrangler.toml`, which sets no `NODE_VERSION`. The dashboard
+  therefore cannot hold one (it says only secrets are editable there), and
+  the build reads `viewer/.nvmrc`. Bumping both `.nvmrc` files moves the
+  Pages build with them; confirm the Node version in the first production
+  build log after a bump. Do **not** add a `NODE_VERSION` var to
+  `wrangler.toml`: it would override `.nvmrc` and, applied to Preview, break
+  `dev` preview builds while `dev` is still on the previous major
+  (`engine-strict`).
 - **`viewer/.npmrc` hardening** (per lirantal/npm-security-best-practices):
   - `engine-strict=true` — refuse `npm install` on wrong Node major
   - `audit-level=high` — `npm audit` (and implicit audit) exits non-zero on high+

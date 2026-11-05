@@ -519,13 +519,11 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   warning) via `engine-strict=true` in `viewer/.npmrc`. `viewer/@types/node`
   tracks the same major. npm 11.20+ skips dependency install scripts unless
   approved; `esbuild` and `workerd` work without theirs, so leave them
-  unapproved (the `npm warn install-scripts` line is expected). **`NODE_VERSION` build env var on Cloudflare
-  Pages lives outside the repo and must be kept in sync with `.nvmrc`
-  (Settings → Environment Variables → Production + Preview). When
-  bumping Node anywhere here, always remind the user to bump it on
-  Cloudflare Pages in the same change.** Skipping it leaves the Pages
-  build on the old Node (silent drift) or on Cloudflare's rolling
-  default (shifts under you).
+  unapproved (the `npm warn install-scripts` line is expected). Cloudflare Pages takes its Node
+  version from `viewer/.nvmrc`: the project is managed through
+  `viewer/wrangler.toml`, which sets no `NODE_VERSION`, so there is nothing to
+  set in the dashboard. Bumping `.nvmrc` moves the Pages build; check the first
+  production build log after a bump.
 - **`viewer/.npmrc` hardening** (per lirantal/npm-security-best-practices):
   `engine-strict=true`, `audit-level=high`, `min-release-age=7`
   (forward-looking; npm 11.11.0 defines but doesn't yet enforce). For
