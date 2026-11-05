@@ -93,6 +93,53 @@ export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {
   lysate: "Lysate / non-intact",
 };
 
+/** Viewer route of the study explorer (linked from deliverome.org's Open Data menu). */
+export const STUDIES_PATH = "/surface-proteomics/";
+
+export function studyHref(armIds: string[]): string {
+  return armIds.length ? `${STUDIES_PATH}?arm=${armIds.map(encodeURIComponent).join(",")}` : STUDIES_PATH;
+}
+
+/** Surface-reference overlap a counted intact-cell arm must reach (the S3E8 screen). */
+export const OVERLAP_SCREEN = 0.2;
+
+/** Deep-dive tier per base UniProt accession, baked in by the page at build time. */
+export type TierCode = "canonical" | "likely" | "low" | "uncertain" | "no";
+export type TierMap = Record<string, TierCode>;
+
+export const TIER_LABEL: Record<TierCode | "none", string> = {
+  canonical: "Canonical",
+  likely: "Likely",
+  low: "Low confidence",
+  uncertain: "Uncertain",
+  no: "Not surface",
+  none: "Not deep-dived",
+};
+
+export const TIER_ORDER: (TierCode | "none")[] = ["canonical", "likely", "low", "uncertain", "no", "none"];
+
+export const TIER_HELP: Record<TierCode | "none", string> = {
+  canonical:
+    "Our high-confidence surface shortlist: the deep dive found direct evidence that the protein sits on the cell surface and is reachable from outside.",
+  likely:
+    "Surface on broader evidence than Canonical: accessible, but with a caveat such as a mostly intracellular pool or surface display only in some cell states.",
+  low: "Below the Likely bar: the deep dive rated surface accessibility low or moderate, or the evidence is too thin for a shortlist.",
+  uncertain: "The deep dive could not settle whether the protein reaches the surface.",
+  no: "The deep dive judged the protein not accessible at the cell surface.",
+  none: "No deep-dive record: our triage step did not put this protein forward as a surface candidate, so it has no gene page.",
+};
+
+/** "A", "B", … "Z", "AA" — short handles for selected studies in a comparison. */
+export function letter(i: number): string {
+  let s = "";
+  let n = i;
+  do {
+    s = String.fromCharCode(65 + (n % 26)) + s;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return s;
+}
+
 export function isCounted(arm: StudyArm): boolean {
   return arm.status === "core" || arm.status === "provisional";
 }

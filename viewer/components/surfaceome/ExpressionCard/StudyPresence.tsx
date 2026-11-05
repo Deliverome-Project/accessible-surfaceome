@@ -10,6 +10,8 @@ import {
   shortCitation,
   STATUS_HELP,
   STATUS_LABEL,
+  STUDIES_PATH,
+  studyHref,
   type ArmStatus,
   type StudyArm,
   type StudyIndex,
@@ -203,7 +205,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           include arms where it was not detected
         </label>
         <span aria-hidden="true">·</span>
-        <Link href="/studies/">Explore all surface-proteomics studies →</Link>
+        <Link href={STUDIES_PATH}>Explore all surface proteomics data →</Link>
       </p>
     </div>
   );
@@ -217,6 +219,6 @@ function Dot({ arm, hit }: { arm: StudyArm; hit: boolean }) {
     .filter(Boolean)
     .join(" ");
   return (
-    <Link href={`/studies/?arm=${encodeURIComponent(arm.id)}`} className={cls} title={label} aria-label={label} />
+    <Link href={studyHref([arm.id])} className={cls} title={label} aria-label={label} />
   );
 }
