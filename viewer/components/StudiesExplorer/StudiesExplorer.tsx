@@ -79,12 +79,22 @@ export function StudiesExplorer({ index, tiers }: Props) {
   const [statuses, setStatuses] = useState<Set<ArmStatus>>(new Set(STATUS_ORDER));
   const [classes, setClasses] = useState<Set<MethodClass>>(new Set(ALL_CLASSES));
   const [selected, setSelected] = useState<number[]>([]);
+  const [pickOpen, setPickOpen] = useState(true);
   const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<StudySort>();
+  const showResults = () => {
+    setPickOpen(false);
+    requestAnimationFrame(() =>
+      document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+  };
 
   // Selection lives in ?arm=a,b so a gene page's dots can deep-link to a study.
   useEffect(() => {
     const ids = readSelection(aliases ?? {});
-    setSelected(ids.map((id) => idxById.get(id)).filter((i): i is number => i !== undefined));
+    const sel = ids.map((id) => idxById.get(id)).filter((i): i is number => i !== undefined);
+    setSelected(sel);
+    // Arriving from a link (a gene page dot, an email): go straight to the results.
+    if (sel.length) setPickOpen(false);
   }, [idxById, aliases]);
   const updateSelected = useCallback(
     (next: number[]) => {
@@ -136,15 +146,74 @@ export function StudiesExplorer({ index, tiers }: Props) {
 
   return (
     <div className={styles.wrap}>
-      <h2 className={`h-section ${styles.sectionTitle}`}>1 · Pick studies</h2>
+      <section className={styles.start} aria-label="Where to start">
+        <h2 className={`h-section ${styles.sectionTitle}`}>Where to start</h2>
+        <div className={styles.startGrid}>
+          <button
+            type="button"
+            className={styles.startCard}
+            onClick={() => {
+              updateSelected(countedIdx);
+              showResults();
+            }}
+          >
+            <strong>Consensus surface list</strong>
+            <span>
+              Every protein detected in any of the {countedIdx.length} counted datasets, ranked by
+              how many of them found it. The quickest view of what intact-cell experiments agree
+              is on the surface.
+            </span>
+          </button>
+          <button
+            type="button"
+            className={styles.startCard}
+            onClick={() => {
+              setPickOpen(true);
+              requestAnimationFrame(() => document.getElementById("dataset-search")?.focus());
+            }}
+          >
+            <strong>Compare specific studies</strong>
+            <span>
+              Tick one dataset to see its proteins, or several to see which proteins they share
+              and which only one of them found.
+            </span>
+          </button>
+          <Link href="/" className={styles.startCard}>
+            <strong>Look up one protein</strong>
+            <span>
+              Search the Surfaceome catalog and open the protein: its Expression section shows
+              which of these datasets detected it.
+            </span>
+          </Link>
+        </div>
+      </section>
+
+      <details
+        className={styles.pickBox}
+        open={pickOpen}
+        onToggle={(e) => setPickOpen((e.currentTarget as HTMLDetailsElement).open)}
+      >
+        <summary className={styles.pickSummary}>
+          <span className={`h-section ${styles.sectionTitle}`}>Choose datasets</span>
+          <span className={styles.pickMeta}>
+            {selected.length
+              ? `${selected.length} selected · click to ${pickOpen ? "hide" : "change"} the list`
+              : `${arms.length} datasets from ${index.n_publications} papers · click to ${pickOpen ? "hide" : "show"}`}
+          </span>
+        </summary>
+        <p className={styles.sub}>
+          A paper can contribute several datasets, for example one per cell line or labeling
+          method. Faded rows are listed for completeness but not counted as surface evidence.
+        </p>
       <div className={styles.controls}>
         <input
+          id="dataset-search"
           type="search"
           className={styles.search}
           placeholder="Search author, cell type, method, PMID…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          aria-label="Search studies"
+          aria-label="Search datasets"
         />
         <ChipGroup
           label="Status"
@@ -166,11 +235,8 @@ export function StudiesExplorer({ index, tiers }: Props) {
       </div>
 
       <div className={styles.count}>
-        {rows.length} of {arms.length} arms shown
+        {rows.length} of {arms.length} datasets shown
         {selected.length > 0 ? ` · ${selected.length} selected` : ""}
-        <button type="button" className={styles.linkButton} onClick={() => updateSelected(countedIdx)}>
-          select all {countedIdx.length} counted arms
-        </button>
         {selected.length > 0 ? (
           <button type="button" className={styles.linkButton} onClick={() => updateSelected([])}>
             clear selection
@@ -268,12 +334,38 @@ export function StudiesExplorer({ index, tiers }: Props) {
         </table>
       </div>
 
+      </details>
+
+      {selected.length > 0 && pickOpen ? (
+        <div className={styles.stickyBar} role="region" aria-label="Selection">
+          <span>
+            <strong>{selected.length}</strong> dataset{selected.length === 1 ? "" : "s"} selected
+          </span>
+          <button type="button" className={styles.primaryButton} onClick={showResults}>
+            Show results ↓
+          </button>
+          <button type="button" className={styles.linkButton} onClick={() => updateSelected([])}>
+            clear
+          </button>
+        </div>
+      ) : null}
+
       {selected.length > 0 ? (
-        <SelectionPanel arms={arms} selected={selected} tiers={tiers} countedIdx={countedIdx} />
+        <div id="results" className={styles.results}>
+          <SelectionPanel
+            arms={arms}
+            selected={selected}
+            tiers={tiers}
+            countedIdx={countedIdx}
+            consensus={
+              selected.length === countedIdx.length && countedIdx.every((i) => selected.includes(i))
+            }
+          />
+        </div>
       ) : (
         <p className={styles.hint}>
-          Tick one or more studies above (or select all counted arms) to see their proteins and
-          where the lists intersect.
+          Pick a starting point above, or tick datasets in the list, to see their proteins and
+          where the lists overlap.
         </p>
       )}
     </div>
@@ -368,11 +460,14 @@ function SelectionPanel({
   selected,
   tiers,
   countedIdx,
+  consensus,
 }: {
   arms: StudyArm[];
   selected: number[];
   tiers: TierMap;
   countedIdx: number[];
+  /** The selection is exactly the counted datasets (the consensus list). */
+  consensus: boolean;
 }) {
   const [presence, setPresence] = useState<PresenceShard | null>(null);
   const [error, setError] = useState(false);
@@ -433,6 +528,8 @@ function SelectionPanel({
   if (!presence) return <p className={styles.empty}>Loading protein lists…</p>;
 
   const single = selected.length === 1;
+  // Past MAX_UPSET a per-dataset legend and dot columns are noise; the counts carry it.
+  const wide = selected.length > MAX_UPSET;
   const label = (i: number) => letter(selected.indexOf(i));
   const inAll = proteins.filter((p) => p.arms.size === selected.length).length;
   const f = filter.trim().toUpperCase();
@@ -462,9 +559,11 @@ function SelectionPanel({
   const tierCount = (t: Tier) => inMode.filter((p) => p.tier === t).length;
   const modeLabel =
     mode === "all"
-      ? `in all ${selected.length} selected studies`
+      ? selected.length === 2
+        ? "in both selected datasets"
+        : `in all ${selected.length} selected datasets`
       : mode === "any"
-        ? "in any selected study"
+        ? "in any selected dataset"
         : `in exactly ${mode
             .slice(2)
             .split(",")
@@ -508,16 +607,27 @@ function SelectionPanel({
   return (
     <section className={styles.panel} aria-label="Selected studies">
       <h2 className={`h-section ${styles.sectionTitle}`}>
-        2 · {single ? `Proteins in ${shortCitation(arms[selected[0]])}` : `Compare ${selected.length} studies`}
+        {consensus
+          ? "Consensus surface list"
+          : single
+            ? `Proteins in ${shortCitation(arms[selected[0]])}`
+            : `Comparing ${selected.length} datasets`}
       </h2>
       <p className={styles.summary}>
-        {single ? (
+        {consensus ? (
+          <>
+            <strong>{proteins.length.toLocaleString("en-US")}</strong> proteins were detected by at
+            least one of the {selected.length} counted datasets, ranked by how many of them
+            found each one, so the proteins most experiments agree on come first.
+          </>
+        ) : single ? (
           <>
             <strong>{proteins.length.toLocaleString("en-US")}</strong> proteins.
           </>
         ) : (
           <>
-            <strong>{inAll.toLocaleString("en-US")}</strong> proteins in all {selected.length},{" "}
+            <strong>{inAll.toLocaleString("en-US")}</strong> proteins in{" "}
+            {selected.length === 2 ? "both" : `all ${selected.length}`},{" "}
             <strong>{proteins.length.toLocaleString("en-US")}</strong> in at least one.
           </>
         )}{" "}
@@ -525,7 +635,7 @@ function SelectionPanel({
         Likely Surfaceome proteins.
       </p>
 
-      {!single ? (
+      {!single && wide ? null : !single ? (
         <ol className={styles.legend}>
           {selected.map((i) => (
             <li key={i}>
@@ -547,8 +657,8 @@ function SelectionPanel({
       ) : null}
       {!single && selected.some((i) => !isCounted(arms[i])) ? (
         <p className={styles.caveat}>
-          The selection includes arms that are not counted as surface detections (held, below screen
-          or comparators).
+          The selection includes datasets that are not counted as surface evidence (held, below
+          the screen, or comparators).
         </p>
       ) : null}
 
@@ -556,8 +666,9 @@ function SelectionPanel({
         <div className={styles.upset}>
           <h3 className={styles.subTitle}>Intersections</h3>
           <p className={styles.sub}>
-            Each row is one exact combination of the selected studies: proteins found in the filled
-            studies and in none of the others. Click a row to list those proteins.
+            Each row is one exact combination of the selected datasets: proteins found in the
+            filled ones and in none of the others, largest group first. Click a row to list those
+            proteins below.
           </p>
           <div className={styles.tableScroll}>
             <table className={`${styles.table} ${styles.upsetTable}`}>
@@ -621,12 +732,13 @@ function SelectionPanel({
         </div>
       ) : !single ? (
         <p className={styles.sub}>
-          Select {MAX_UPSET} or fewer studies to see their exact intersections; the protein list
-          below works for any selection.
+          {consensus
+            ? "Intersections are shown when you compare up to " + MAX_UPSET + " datasets."
+            : `Select ${MAX_UPSET} or fewer datasets to see their exact intersections; the protein list below works for any selection.`}
         </p>
       ) : null}
 
-      <h3 className={styles.subTitle}>Proteins {single ? "" : modeLabel}</h3>
+      <h3 className={styles.subTitle}>Proteins {single || consensus ? "" : modeLabel}</h3>
       <div className={styles.controls}>
         <input
           type="search"
@@ -639,7 +751,7 @@ function SelectionPanel({
           }}
           aria-label="Filter proteins"
         />
-        {!single ? (
+        {!single && !consensus ? (
           <label className={styles.modeLabel}>
             Show{" "}
             <select
@@ -649,7 +761,7 @@ function SelectionPanel({
                 setLimit(PAGE);
               }}
             >
-              <option value="all">in all selected</option>
+              <option value="all">{selected.length === 2 ? "in both" : "in all selected"}</option>
               <option value="any">in any selected</option>
               {mode.startsWith("c:") ? <option value={mode}>{modeLabel}</option> : null}
             </select>
@@ -681,9 +793,9 @@ function SelectionPanel({
             <tr>
               {pHeader("protein", "Protein")}
               {pHeader("tier", "Surfaceome tier")}
-              {pHeader("counted", `Counted arms (of ${countedIdx.length})`)}
+              {pHeader("counted", `Counted datasets (of ${countedIdx.length})`)}
               <th>UniProt</th>
-              {!single
+              {!single && !wide
                 ? selected.map((i) => (
                     <th key={i} className={styles.center} title={arms[i].name}>
                       {label(i)}
@@ -723,7 +835,7 @@ function SelectionPanel({
                     {p.acc}
                   </a>
                 </td>
-                {!single
+                {!single && !wide
                   ? selected.map((i) => (
                       <td key={i} className={styles.center}>
                         <span className={p.arms.has(i) ? styles.memberOn : styles.memberOff} />

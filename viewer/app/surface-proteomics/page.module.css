@@ -121,3 +121,9 @@
   color: var(--muted);
   font-weight: var(--fw-regular, 400);
 }
+
+.keyHint {
+  font-weight: var(--fw-regular, 400);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
