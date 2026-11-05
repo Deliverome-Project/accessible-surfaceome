@@ -853,20 +853,28 @@ a Pages binding.
   `npx --yes wrangler ...` so the pinned version always wins over
   any globally installed wrangler. CI does the same `npm ci`.
 - **Node version pin: `.nvmrc` is the source of truth**
-  (currently `24.14.1`). It's mirrored at `viewer/.nvmrc` because
+  (currently `26.12.1`). It's mirrored at `viewer/.nvmrc` because
   `cd viewer && nvm use` won't walk up the tree. Workflows read it via
   `node-version-file:` so CI never drifts from local dev. The
   `engines.node` field in `package.json` (root) and `viewer/package.json`
-  uses `^24` as a *floor* assertion (`engine-strict=true` in `viewer/.npmrc`
+  uses `^26` as a *floor* assertion (`engine-strict=true` in `viewer/.npmrc`
   promotes the engines mismatch from warn to error). The
   `viewer/@types/node` dep tracks the same major.
-- **`NODE_VERSION` on Cloudflare Pages lives outside the repo.** Set it
-  to the same value as `.nvmrc` (Settings → Environment Variables →
-  Production + Preview). **When bumping Node anywhere here, always
-  remind the user to bump `NODE_VERSION` on Cloudflare Pages in the
-  same change.** Skipping it means the Pages build either keeps using
-  the old Node (silent drift) or falls through to Cloudflare's rolling
-  default (which can shift under you).
+  npm 11.20+ (bundled with Node 26) skips dependency install scripts unless
+  approved; `esbuild` and `workerd` (via wrangler) are the only ones here, and
+  both work without them because their binaries ship as optional
+  dependencies. Leave them unapproved; the `npm warn install-scripts` line
+  is expected.
+- **Cloudflare Pages takes its Node version from `viewer/.nvmrc`.** The
+  Pages project's root directory is `viewer/`, and its settings are managed
+  through `viewer/wrangler.toml`, which sets no `NODE_VERSION`. The dashboard
+  therefore cannot hold one (it says only secrets are editable there), and
+  the build reads `viewer/.nvmrc`. Bumping both `.nvmrc` files moves the
+  Pages build with them; confirm the Node version in the first production
+  build log after a bump. Do **not** add a `NODE_VERSION` var to
+  `wrangler.toml`: it would override `.nvmrc` and, applied to Preview, break
+  `dev` preview builds while `dev` is still on the previous major
+  (`engine-strict`).
 - **`viewer/.npmrc` hardening** (per lirantal/npm-security-best-practices):
   - `engine-strict=true` — refuse `npm install` on wrong Node major
   - `audit-level=high` — `npm audit` (and implicit audit) exits non-zero on high+
