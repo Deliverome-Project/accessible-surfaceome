@@ -2673,13 +2673,13 @@ function CatalogRowView({
           <a
             href={row.deep_dive ? `/${row.symbol}/#section-expression` : "/surface-proteomics/"}
             className={styles.proteomicsLink}
-            title={`Detected by ${row.sp_counted} counted surface-proteomics dataset${row.sp_counted === 1 ? "" : "s"}`}
+            aria-label={`Detected by ${row.sp_counted} counted surface-proteomics dataset${row.sp_counted === 1 ? "" : "s"}`}
             onClick={(e) => e.stopPropagation()}
           >
             {row.sp_counted}
           </a>
         ) : (
-          <span className={styles.dim} title="Not detected by any counted surface-proteomics dataset">
+          <span className={styles.dim} aria-label="Not detected by any counted surface-proteomics dataset">
             0
           </span>
         )}

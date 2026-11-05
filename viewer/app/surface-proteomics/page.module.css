@@ -181,3 +181,13 @@
   color: var(--muted);
   white-space: nowrap;
 }
+
+.key .review {
+  margin-top: var(--space-3);
+}
+
+.snapshot {
+  margin: var(--space-3) 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}

@@ -28,6 +28,7 @@ import {
   type CellGroup,
 } from "../../lib/surface-proteomics";
 import { ProteinLookup } from "./ProteinLookup";
+import { HoverTip } from "../surfaceome/_shared/HoverTip";
 import { statusTone } from "../surfaceome/ExpressionCard/StudyPresence";
 import { SortableHeader } from "../surfaceome/_shared/SortableHeader";
 import { SortResetButton } from "../surfaceome/_shared/SortResetButton";
@@ -384,12 +385,15 @@ export function StudiesExplorer({ index }: Props) {
                     <OverlapBar value={arm.reference_overlap} intact={arm.method_class === "intact_cell"} />
                   </td>
                   <td>
-                    <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]} nativeTooltip>
+                    <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
                       {STATUS_LABEL[arm.status]}
                     </StatusPill>
                     <div className={counted ? styles.countedYes : styles.countedNo}>
                       {counted ? "counted" : "not counted"}
                     </div>
+                    {arm.status_reason ? (
+                      <div className={styles.statusReason}>{arm.status_reason}</div>
+                    ) : null}
                   </td>
                 </tr>
               );
@@ -451,12 +455,12 @@ function OverlapBar({ value, intact }: { value: number | null; intact: boolean }
   if (value == null) return <span className={styles.sub}>—</span>;
   const pass = value >= OVERLAP_SCREEN;
   return (
-    <span
-      className={styles.overlap}
-      title={`${pct(value)} of this study's proteins are established surface proteins${
-        intact ? ` (counted arms need ≥${pct(OVERLAP_SCREEN)})` : ""
-      }`}
+    <HoverTip
+      tip={`${pct(value)} of this dataset's proteins are well-established surface proteins${
+        intact ? `; counted datasets need at least ${pct(OVERLAP_SCREEN)} (the tick)` : ""
+      }.`}
     >
+    <span className={styles.overlap}>
       <span className={styles.overlapTrack}>
         <span
           className={`${styles.overlapFill} ${intact ? (pass ? styles.pass : styles.fail) : styles.na}`}
@@ -466,6 +470,7 @@ function OverlapBar({ value, intact }: { value: number | null; intact: boolean }
       </span>
       <span className={styles.overlapNum}>{pct(value)}</span>
     </span>
+    </HoverTip>
   );
 }
 
@@ -491,14 +496,13 @@ function ChipGroup<T extends string>({
       <legend className="label-mono">{label}</legend>
       {options.map((o) => {
         const on = value.has(o);
-        return (
+        const chip = (
           <button
             key={o}
             type="button"
             className={styles.chip}
             data-on={on ? "true" : "false"}
             aria-pressed={on}
-            title={titleOf?.(o)}
             onClick={() => {
               const next = new Set(value);
               if (on) next.delete(o);
@@ -508,6 +512,14 @@ function ChipGroup<T extends string>({
           >
             {labelOf(o)} <span className={styles.chipCount}>{countOf(o)}</span>
           </button>
+        );
+        const help = titleOf?.(o);
+        return help ? (
+          <HoverTip key={o} tip={help}>
+            {chip}
+          </HoverTip>
+        ) : (
+          chip
         );
       })}
     </fieldset>
@@ -809,13 +821,13 @@ function SelectionPanel({
               <thead>
                 <tr>
                   {selected.map((i) => (
-                    <th key={i} className={styles.center} title={arms[i].name}>
-                      {label(i)}
+                    <th key={i} className={styles.center}>
+                      <HoverTip tip={`${shortCitation(arms[i])}: ${arms[i].name}`}>{label(i)}</HoverTip>
                     </th>
                   ))}
                   <th>Found in</th>
                   <th>Proteins</th>
-                  <th className={styles.num} title="Canonical or Likely Surfaceome proteins in this intersection">
+                  <th className={styles.num}>
                     Canonical + Likely
                   </th>
                 </tr>
@@ -915,7 +927,7 @@ function SelectionPanel({
                 className={styles.chip}
                 data-on="true"
                 aria-pressed="true"
-                title="Clear this intersection"
+                aria-label="Clear this intersection"
                 onClick={() => setMode("any")}
               >
                 {describeCombo(new Set(mode.slice(2).split(",").map(Number)), selected, label)} ×
@@ -986,8 +998,8 @@ function SelectionPanel({
                 : null}
               {!single && !wide
                 ? selected.map((i) => (
-                    <th key={i} className={styles.center} title={arms[i].name}>
-                      {label(i)}
+                    <th key={i} className={styles.center}>
+                      <HoverTip tip={`${shortCitation(arms[i])}: ${arms[i].name}`}>{label(i)}</HoverTip>
                     </th>
                   ))
                 : null}
@@ -1001,7 +1013,6 @@ function SelectionPanel({
                     <Link
                       href={`/${p.symbol}/`}
                       className={styles.protein}
-                      title={`Open the ${p.symbol} page in the Surfaceome viewer`}
                     >
                       {p.symbol}
                     </Link>
@@ -1011,14 +1022,14 @@ function SelectionPanel({
                       target="_blank"
                       rel="noreferrer"
                       className={styles.noPage}
-                      title={`Not deep-dived, so no Surfaceome page; opens UniProt ${p.acc}`}
+                      aria-label={`${p.symbol || p.acc}: not deep-dived; opens UniProt ${p.acc}`}
                     >
                       {p.symbol || p.acc}
                     </a>
                   )}
                 </td>
                 <td className={styles.nameCell}>{p.name || "—"}</td>
-                <td className={styles.num} title="Source databases (of 5) listing it as surface">
+                <td className={styles.num}>
                   {p.votes ?? "—"}
                 </td>
                 <td>
@@ -1091,8 +1102,8 @@ function OverlapMatrix({
           <tr>
             <th />
             {selected.map((i) => (
-              <th key={i} className={styles.num} title={arms[i].name}>
-                {label(i)}
+              <th key={i} className={styles.num}>
+                <HoverTip tip={`${shortCitation(arms[i])}: ${arms[i].name}`}>{label(i)}</HoverTip>
               </th>
             ))}
           </tr>
@@ -1100,7 +1111,7 @@ function OverlapMatrix({
         <tbody>
           {selected.map((i, a) => (
             <tr key={i}>
-              <th scope="row" title={arms[i].name}>
+              <th scope="row">
                 {label(i)} <span className={styles.sub}>{shortCitation(arms[i])}</span>
               </th>
               {selected.map((j, b) => {

@@ -927,6 +927,70 @@ def americanize(text: str | None) -> str | None:
     return text
 
 
+# What the authors limited their list to, when they pre-filtered it.
+FILTER_UNIVERSE_LABEL = {
+    "topology": "transmembrane or signal-peptide proteins",
+    "broad": "membrane- or surface-annotated proteins",
+    "broad_surf": "membrane- or surface-annotated proteins",
+    "surfy": "SURFY-predicted surface proteins",
+    "pm": "plasma-membrane-annotated proteins",
+}
+
+# Held reasons, matched in order against the review note (lower-cased). The
+# note itself is not exported; only this short structured label is.
+HELD_REASONS = (
+    ("imput", "values are imputed, so detection can't be read per protein"),
+    ("does not match", "the deposited table doesn't match the paper's design"),
+    ("channel", "the sample-to-condition map is unpublished"),
+    ("reported surface set", "only the authors' pre-selected surface list is public"),
+    (
+        "restricted to the original",
+        "only the authors' pre-selected surface list is public",
+    ),
+    ("no-biotin control recovers", "the no-label control recovers the same signal"),
+    ("ratio threshold", "only proteins above an enrichment cutoff are reported"),
+    ("background control", "no background control in the deposit"),
+    ("barcoded", "samples can't be separated in the published table"),
+    ("pool", "conditions are pooled in one list, with no separable baseline"),
+    ("biological", "only biological comparisons are published, not a baseline list"),
+)
+
+
+def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
+    """Short, plain reason for any status other than Core."""
+    pct = d.get("pct_in_surf")
+    universe = d.get("filter_universe")
+    filtered = universe not in (None, "human")
+    if status == "provisional":
+        if filtered:
+            what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
+            return f"author pre-filtered to {what}"
+        if pct is not None and pct < base:
+            return f"just under the {base:.0%} bar ({pct:.1%})"
+        return "built from a partial author export (peptide-level table)"
+    if status == "below_screen":
+        if filtered and pct is not None:
+            return f"pre-filtered list below its raised bar ({pct:.0%} vs {(d.get('adjusted_overlap_cutoff') or base):.0%})"
+        return (
+            f"{pct:.0%} known surface proteins, under {base:.0%}"
+            if pct is not None
+            else None
+        )
+    if status == "held":
+        note = (d.get("reason") or "").lower()
+        return next(
+            (label for key, label in HELD_REASONS if key in note),
+            "per-protein detection can't be recovered from the table",
+        )
+    if status == "comparator":
+        if d.get("method_group") == "membrane-fractionation":
+            return "membrane fractionation, not intact-cell labeling"
+        if "inner-leaflet" in (d.get("reason") or "").lower():
+            return "labeling reaches the inner side of the membrane"
+        return "not intact-cell surface labeling"
+    return None
+
+
 def _strip_citation(name: str) -> str:
     """Drop a trailing "(Author Year)" — the viewer shows the citation separately."""
     return re.sub(r"\s*\([^()]*\b(?:19|20)\d{2}\)\s*$", "", name).strip() or name
@@ -939,6 +1003,9 @@ def build_arms(
     pubmed: dict[str, dict[str, Any]],
 ) -> list[dict[str, Any]]:
     audit_ds = audit.get("datasets", {})
+    base_cutoff = float(
+        (manifest.get("inclusion_policy") or {}).get("base_overlap_cutoff", 0.2)
+    )
     arms: list[dict[str, Any]] = []
     for d in manifest["datasets"]:
         sid = d["study_id"]
@@ -984,6 +1051,9 @@ def build_arms(
                     d.get("human_sample_type") or d.get("cell_or_tissue_type")
                 ),
                 "status": STATUS_BY_ROLE.get(role, role),
+                "status_reason": status_reason(
+                    d, STATUS_BY_ROLE.get(role, role), base_cutoff
+                ),
                 "admitted": bool(d.get("admitted")),
                 "n_proteins": counts.get(sid, 0),
                 "reference_overlap": d.get("pct_in_surf"),
