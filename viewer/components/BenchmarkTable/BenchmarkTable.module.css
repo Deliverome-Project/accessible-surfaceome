@@ -58,7 +58,7 @@
   display: inline-flex;
   padding: 0.02rem 0.32rem;
   font-family: var(--font-sans);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -220,7 +220,7 @@
   gap: 0.3rem;
   padding: 0.25rem 0.6rem;
   font-family: var(--font-sans);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.04em;
   color: var(--muted);
@@ -246,7 +246,7 @@
  * the user always sees what they're about to download. */
 .downloadCount {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 
@@ -330,7 +330,7 @@
   margin-left: 0.4rem;
   padding: 0.05rem 0.35rem;
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--amber-deepest);
@@ -349,7 +349,7 @@
 .headerCell {
   padding: 0.5rem 0.6rem;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -383,7 +383,7 @@
 }
 
 .modelHeaderVersion {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   letter-spacing: 0.02em;
 }
 
@@ -397,7 +397,7 @@
 
 .prodMark {
   margin-left: 0.15rem;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: var(--accent);
 }
 
@@ -410,7 +410,7 @@
   margin-left: 0.4rem;
   padding: 0.02rem 0.35rem;
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   vertical-align: middle;
@@ -512,7 +512,7 @@
 
 .symbolName {
   font-family: var(--font-sans);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--muted);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -567,7 +567,7 @@
 
 .symbolChevron {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: var(--muted);
   width: 0.85rem;
   flex-shrink: 0;
@@ -681,7 +681,7 @@
  * Compact (abbreviated text, fixed min-width) so one pill per model
  * plus the row chrome fit at desktop width. */
 .verdictMini {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.04em;
   padding: 0.12rem 0.3rem;
@@ -694,7 +694,7 @@
 .verdictLabel {
   display: inline-flex;
   padding: 0.12rem 0.42rem;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -759,7 +759,7 @@
 
 .classText {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--muted);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -824,7 +824,7 @@
 
 .variantHeader {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
   color: var(--muted);
   padding: 0.2rem 0;
@@ -1122,7 +1122,7 @@
 }
 
 .drawerVerdictLabel {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   font-weight: 400;
   letter-spacing: 0.08em;
   opacity: 0.72;

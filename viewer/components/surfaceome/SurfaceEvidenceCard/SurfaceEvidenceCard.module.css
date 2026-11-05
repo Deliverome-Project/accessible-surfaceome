@@ -133,7 +133,7 @@
 .methodHead::before {
   content: "▸";
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   transition: transform 0.12s ease;
 }
 

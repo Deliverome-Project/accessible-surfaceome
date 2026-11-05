@@ -86,11 +86,11 @@ const ROW_OVERSCAN = 12;
 //
 // Fixed tracks are sized to their measured content (header label or
 // widest pill, plus cell padding), not rounded up: the minimum sums to
-// ~74.6rem (~1,194px) so the grid fits the 1,280px page width — and a
+// ~75rem (~1,200px) so the grid fits the 1,280px page width — and a
 // ~1,230px laptop viewport — without a horizontal scrollbar. The DB-dot
 // columns hold an 8px dot, so their header label sets the width.
 const GRID_TEMPLATE =
-  "10rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 7rem minmax(7rem, 1fr) minmax(7rem, 1fr) 6rem 5.6rem 5.6rem 5.6rem";
+  "10rem 3.4rem 4.6rem 2.6rem 3.8rem 3.4rem 3rem 7rem minmax(6.2rem, 1fr) minmax(6.2rem, 1fr) 6.2rem 6.2rem 6.2rem 6.2rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when

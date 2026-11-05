@@ -178,7 +178,7 @@
    the link affordance is on the wordmark, not the version. */
 .brandVersion {
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: var(--fw-regular);
   letter-spacing: 0.04em;
   color: var(--muted);
