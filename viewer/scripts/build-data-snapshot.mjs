@@ -182,23 +182,25 @@ async function snapshotEndpoints() {
 
 async function snapshotRecords() {
   // Enumerate the deep-dive gene set the same way generateStaticParams
-  // does (Worker /v1/genes). One small fetch — same as the catalog above,
-  // which already succeeds on the Pages build, so this is not the thing
-  // the WAF/rate-limiter blocks.
+  // does (Worker /v1/genes). One small fetch, retried like the catalog
+  // above: on 2026-11-05 a bare fetch() here hit a single transient 503
+  // (`database_busy`, Retry-After: 30, sent while D1 is overloaded or
+  // exporting) and failed the Pages build that every other fetch in this
+  // script would have retried through.
   const listUrl = `${API_BASE}/v1/genes`;
   console.log(`[snapshot] fetching ${listUrl}`);
-  let listRes;
-  try {
-    listRes = await fetch(listUrl);
-  } catch (e) {
-    console.error(`[snapshot] /v1/genes → fetch failed: ${e.message}`);
-    process.exit(1);
-  }
+  const listRes = await fetchWithRetry(listUrl, {
+    maxAttempts: 5,
+    readBody: (res) => res.json(),
+  });
   if (!listRes.ok) {
-    console.error(`[snapshot] /v1/genes → HTTP ${listRes.status}`);
+    console.error(
+      `[snapshot] /v1/genes → failed after retries ` +
+        `(status=${listRes.status ?? "network"}${listRes.degraded ? `, degraded=${listRes.degraded}` : ""})`,
+    );
     process.exit(1);
   }
-  const listBody = await listRes.json();
+  const listBody = listRes.body;
   const symbols = (listBody.genes ?? [])
     .map((g) => g.gene_symbol)
     .filter(Boolean);

@@ -102,3 +102,58 @@ test(
     );
   },
 );
+
+test(
+  "build-data-snapshot.mjs: retries a transient 503 on the /v1/genes list instead of failing the build",
+  { timeout: 60_000 },
+  async () => {
+    // 2026-11-05: the Pages build failed on ONE `database_busy` 503 from
+    // /v1/genes, the only fetch in the script that had no retry.
+    let listRequests = 0;
+    const server = createServer((req, res) => {
+      if (req.url === "/v1/genes") {
+        listRequests += 1;
+        if (listRequests === 1) {
+          res.writeHead(503, { "content-type": "application/json", "retry-after": "0" });
+          res.end(JSON.stringify({ error: "database_busy", retry_after_s: 30 }));
+          return;
+        }
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ genes: [{ gene_symbol: "GENE0" }] }));
+        return;
+      }
+      if (req.url === "/v1/catalog" || req.url === "/v1/benchmark/matrix") {
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end("{}");
+        return;
+      }
+      if (req.url === "/v1/genes/GENE0") {
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ gene_symbol: "GENE0" }));
+        return;
+      }
+      res.writeHead(404);
+      res.end();
+    });
+    await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const { port } = server.address();
+    const child = spawn(process.execPath, [SCRIPT], {
+      cwd: VIEWER_ROOT,
+      env: {
+        ...process.env,
+        SURFACEOME_API_BASE: `http://127.0.0.1:${port}`,
+        SURFACEOME_BUILD_FETCH_CONCURRENCY: "1",
+        SURFACEOME_BUILD_FETCH_RPS: "1000",
+      },
+    });
+    let stderr = "";
+    child.stderr.on("data", (d) => {
+      stderr += d.toString();
+    });
+    const exitCode = await new Promise((resolve) => child.on("close", resolve));
+    server.close();
+
+    assert.equal(listRequests, 2, "the 503 on /v1/genes must be retried exactly once");
+    assert.equal(exitCode, 0, `build must succeed after the retry; stderr:\n${stderr.slice(0, 4000)}`);
+  },
+);
