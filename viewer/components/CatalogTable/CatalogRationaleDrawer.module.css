@@ -235,7 +235,7 @@
 
 .drawerSecondaryLabel {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
   margin: 0 0 var(--space-1);
 }
@@ -260,7 +260,7 @@
 
 .drawerSecondaryVerdict {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: lowercase;
   padding: 0.05rem 0.35rem;
   border-radius: 3px;
@@ -269,7 +269,7 @@
 
 .drawerSecondaryVariant {
   font-family: var(--font-mono);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 
@@ -295,7 +295,7 @@
 .drawerHeadlineDate {
   color: var(--muted);
   font-family: var(--font-mono);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
 }
 
 /* Date column for secondary disagreement rows — matches the eyeline
@@ -303,6 +303,6 @@
  * stale runs (e.g. ncbi:2026-06-01 vs pubmed_ncbi:2026-06-23). */
 .drawerSecondaryDate {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }

@@ -251,7 +251,7 @@ details.promptBlock[open] > .promptCardSummary::before {
 .tocLabel {
   margin: 0 0 var(--space-3);
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);

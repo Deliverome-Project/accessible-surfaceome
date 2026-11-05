@@ -158,7 +158,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.3rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--muted);
   margin-left: 0.4rem;
 }
@@ -181,7 +181,7 @@
 
 .dupLabel {
   color: var(--muted);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
   letter-spacing: 0.05em;
 }
 
@@ -240,5 +240,5 @@
 
 .citeAccession {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
