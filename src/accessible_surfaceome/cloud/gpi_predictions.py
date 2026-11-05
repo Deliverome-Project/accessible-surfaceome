@@ -12,9 +12,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
-from typing import Any
-
-from accessible_surfaceome.cloud.d1_client import D1Client
+from typing import Any, Protocol
 
 PREDICTION_COLS = (
     "run_id",
@@ -47,6 +45,10 @@ CURATION_COLS = (
     "record_json",
 )
 SCHEMA = Path(__file__).resolve().parents[3] / "cloudflare/d1_gpi_schema.sql"
+
+
+class QueryClient(Protocol):
+    def query(self, sql: str, params: list[Any] | None = None) -> list[dict[str, Any]]: ...
 
 
 def validate_prediction(row: dict[str, Any]) -> None:
@@ -98,7 +100,7 @@ def schema_statements() -> list[str]:
 
 
 def publish(
-    client: D1Client,
+    client: QueryClient,
     predictions: list[dict[str, Any]],
     curation: list[dict[str, Any]],
 ) -> dict[str, int]:
