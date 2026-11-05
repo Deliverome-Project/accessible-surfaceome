@@ -124,13 +124,15 @@ def publish(
             ("source_sha256", "record_number"),
         ),
     ):
-        # Keep D1 below its 100-parameter statement limit.
-        chunk_size = 100 // len(columns)
+        # One bound JSON array per statement avoids D1's 100-parameter ceiling
+        # while keeping each request small and reducing shared-account API calls.
+        chunk_size = 50
         for start in range(0, len(rows), chunk_size):
             chunk = rows[start : start + chunk_size]
-            sql = f"INSERT OR IGNORE INTO {table} ({', '.join(columns)}) VALUES "
-            sql += ", ".join("(" + ", ".join("?" for _ in columns) + ")" for _ in chunk)
-            client.query(sql, [row[col] for row in chunk for col in columns])
+            sql = f"INSERT OR IGNORE INTO {table} ({', '.join(columns)}) SELECT "
+            sql += ", ".join(f"json_extract(value, '$.{col}')" for col in columns)
+            sql += " FROM json_each(?)"
+            client.query(sql, [json.dumps(chunk, separators=(",", ":"))])
         # One read per run/source; do not issue one request per predicted protein.
         group_key = keys[0]
         for group in sorted({row[group_key] for row in rows}):
