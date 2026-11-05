@@ -61,7 +61,7 @@ with the deliverome.org site.
 - Output directory: `out`
 - Custom domain: `surfaceome.deliverome.org`
 - Framework preset: Next.js (Static HTML Export)
-- Node version: 24 (see `.nvmrc`; `package.json` sets `engines.node: ^24` with `engine-strict`)
+- Node version: 26 (see `.nvmrc`; `package.json` sets `engines.node: ^26` with `engine-strict`)
 
 `wrangler.toml` records the same target so `npm run deploy` works
 locally via Wrangler.
