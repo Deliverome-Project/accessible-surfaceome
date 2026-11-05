@@ -664,6 +664,7 @@ export function CatalogTable({
                 } ${isImplied && !on ? styles.filterChipPresetImplied : ""}`}
                 onClick={() => toggleDdEnumFilter(field.key, v)}
                 aria-pressed={on}
+                data-track={`Filter: ${field.label} = ${label}`}
                 data-preset-implied={isImplied ? "true" : undefined}
                 title={titleHint}
               >
@@ -714,6 +715,7 @@ export function CatalogTable({
                 aria-checked={on}
                 className={`${styles.filterVerdictChip} ${toneClass}`}
                 onClick={() => cycleDdBoolFilter(field.key, k)}
+                data-track={`Filter: ${field.label} = ${label}`}
               >
                 {label}
               </button>
@@ -1420,6 +1422,7 @@ export function CatalogTable({
                     aria-selected={on}
                     aria-pressed={on}
                     className={`${styles.presetChip} ${styles.presetSubChip} ${on ? styles.presetChipOn : ""}`}
+                    data-track={`Preset: Cell-state induced / ${s.label}`}
                     onClick={() => setInductionSubs((cur) => {
                       const next = new Set(cur);
                       if (next.has(s.key)) next.delete(s.key);
@@ -1485,7 +1488,7 @@ export function CatalogTable({
               aria-pressed={showFilters}
               aria-expanded={showFilters}
               aria-controls="catalog-filter-panel"
-              data-track={showFilters ? "Hide filters" : "More filters"}
+              data-track="More filters panel"
             >
               {showFilters ? "Hide filters" : "More filters"}
               {activeFilterCount > 0 ? (
@@ -1566,6 +1569,7 @@ export function CatalogTable({
                 type="button"
                 className={styles.groupHeader}
                 onClick={() => setDatabasesGroupOpen((v) => !v)}
+                data-track="Filter group: Databases"
                 aria-expanded={databasesGroupOpen}
                 aria-controls="catalog-filter-group-databases"
               >
@@ -1600,6 +1604,7 @@ export function CatalogTable({
                           className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
                           onClick={() => toggleDbFilter(d.key)}
                           aria-pressed={on}
+                          data-track={`Filter: Database lists it = ${d.long}`}
                           title={`Require ${d.long} = yes`}
                         >
                           {d.long}
@@ -1623,6 +1628,7 @@ export function CatalogTable({
                           className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
                           onClick={() => toggleNSourcesFilter(n)}
                           aria-pressed={on}
+                          data-track={`Filter: Databases listing it = ${n}`}
                           title={`Listed as surface by exactly ${n} of the 5 databases`}
                         >
                           {n === 0 ? "none" : n === 5 ? "all 5" : `${n} of 5`}
@@ -1645,6 +1651,7 @@ export function CatalogTable({
                 type="button"
                 className={styles.groupHeader}
                 onClick={() => setTriageGroupOpen((v) => !v)}
+                data-track="Filter group: Triage"
                 aria-expanded={triageGroupOpen}
                 aria-controls="catalog-filter-group-triage"
               >
@@ -1699,6 +1706,7 @@ export function CatalogTable({
                     className={`${styles.filterVerdictChip} ${on ? toneClass : ""}`}
                     onClick={() => toggleVerdictFilter(v.key)}
                     aria-pressed={on}
+                    data-track={`Filter: Triage verdict = ${v.label}`}
                   >
                     {v.label}
                   </button>
@@ -1738,6 +1746,7 @@ export function CatalogTable({
                           className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
                           onClick={() => toggleReasonFilter(r)}
                           aria-pressed={on}
+                          data-track={`Filter: Triage reason = ${prettyReason(r)}`}
                         >
                           {prettyReason(r)}
                         </button>
@@ -1762,6 +1771,7 @@ export function CatalogTable({
                           className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
                           onClick={() => toggleReasonFilter(REASON_OTHER)}
                           aria-pressed={on}
+                          data-track="Filter: Triage reason = other"
                           title="Catch-all bucket the agent uses when nothing else fits"
                         >
                           other
@@ -1793,6 +1803,7 @@ export function CatalogTable({
                     aria-checked={on}
                     className={`${styles.filterVerdictChip} ${on ? toneClass : ""}`}
                     onClick={() => toggleDeepDiveFilter(k)}
+                    data-track={`Filter: Has deep dive = ${k}`}
                   >
                     {k}
                   </button>
@@ -1830,6 +1841,7 @@ export function CatalogTable({
                 type="button"
                 className={styles.groupHeader}
                 onClick={() => setDeepDiveGroupOpen((v) => !v)}
+                data-track="Filter group: Deep Dive"
                 aria-expanded={deepDiveGroupOpen}
                 aria-controls="catalog-filter-group-deep-dive"
               >
@@ -1870,6 +1882,7 @@ export function CatalogTable({
                           className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
                           onClick={() => toggleTierFilter(t.key)}
                           aria-pressed={on}
+                          data-track={`Filter: Deep-dive tier = ${t.label}`}
                           title={`Deep-dive tier = ${t.label}`}
                         >
                           {t.label}
@@ -1889,6 +1902,7 @@ export function CatalogTable({
                     type="button"
                     className={styles.subheadButton}
                     onClick={() => setDdLlmOpen((v) => !v)}
+                data-track="Filter group: Deep Dive / Surface call"
                     aria-expanded={ddLlmOpen}
                   >
                     <span className={styles.groupHeaderChevron} aria-hidden="true">
@@ -1919,6 +1933,7 @@ export function CatalogTable({
                     type="button"
                     className={styles.subheadButton}
                     onClick={() => setDdRisksOpen((v) => !v)}
+                data-track="Filter group: Deep Dive / Risks"
                     aria-expanded={ddRisksOpen}
                   >
                     <span className={styles.groupHeaderChevron} aria-hidden="true">
@@ -1944,6 +1959,7 @@ export function CatalogTable({
                     type="button"
                     className={styles.subheadButton}
                     onClick={() => setDdDetOpen((v) => !v)}
+                data-track="Filter group: Deep Dive / Deterministic"
                     aria-expanded={ddDetOpen}
                   >
                     <span className={styles.groupHeaderChevron} aria-hidden="true">
@@ -1992,6 +2008,7 @@ export function CatalogTable({
                               aria-checked={on}
                               className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
                               onClick={() => toggleSurfaceBindFilter(k)}
+                              data-track={`Filter: SURFACE-Bind = ${label}`}
                             >
                               {label}
                             </button>

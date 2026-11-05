@@ -29,18 +29,39 @@ export function clickedControl(target: EventTarget | null): Element | null {
 }
 
 /**
+ * What a click on a named toggle does, read from its state BEFORE the click
+ * (UsageBeacon listens in the capture phase, ahead of React's handler):
+ * " → open" / " → close" for a panel, " → on" / " → off" for a filter chip,
+ * "" for anything that is not a toggle. Lets the report count filters
+ * switched on, not just clicked.
+ */
+export function toggleDirection(el: Element): string {
+  const expanded = el.getAttribute("aria-expanded");
+  if (expanded === "true") return " → close";
+  if (expanded === "false") return " → open";
+  const state = el.getAttribute("aria-pressed") ?? el.getAttribute("aria-checked");
+  if (state === "true") return " → off";
+  if (state === "false") return " → on";
+  return "";
+}
+
+/**
  * Describe a clicked control as an event, or null when it has no usable
- * label. `data-track` names a control explicitly; otherwise its accessible
- * name (aria-label, title) or visible text is used.
+ * label. `data-track` names a control explicitly, and a named toggle gets its
+ * direction appended (see `toggleDirection`); otherwise its accessible name
+ * (aria-label, title) or visible text is used.
  */
 export function describeControl(el: Element, path: string, origin: string): UsageEvent | null {
+  const tracked = el.getAttribute("data-track");
+  const suffix = tracked ? toggleDirection(el) : "";
   const raw =
-    el.getAttribute("data-track") ??
+    tracked ??
     el.getAttribute("aria-label") ??
     el.getAttribute("title") ??
     el.textContent ??
     "";
-  const label = raw.replace(/\s+/g, " ").trim().slice(0, LABEL_MAX);
+  const base = raw.replace(/\s+/g, " ").trim().slice(0, LABEL_MAX - suffix.length);
+  const label = base ? base + suffix : "";
   if (!label || label.includes("@")) return null;
   let kind: UsageEventKind = "button";
   const href = el.tagName === "A" ? el.getAttribute("href") : null;
