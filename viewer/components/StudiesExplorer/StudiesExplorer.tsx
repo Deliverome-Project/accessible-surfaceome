@@ -114,7 +114,7 @@ const CHOICES: { key: Choice; label: string; desc: (nCounted: number) => string 
     key: "review",
     label: "Not called surface",
     desc: () =>
-      `Detected by at least ${DISCOVERY_MIN} counted datasets, but our deep dive rates them Low confidence, Uncertain or Not surface: a review list for our own calls.`,
+      `Detected by at least ${DISCOVERY_MIN} counted datasets and enriched over background (surface preference +10 or more), but our deep dive rates them Low confidence, Uncertain or Not surface: a review list for our own calls.`,
   },
   {
     key: "compare",
@@ -623,8 +623,14 @@ function SelectionPanel({
   const [minCounted, setMinCounted] = useState(() => Number(param("min")) || 1);
   const [maxDb, setMaxDb] = useState(() => (param("maxdb") != null ? Number(param("maxdb")) : NOVEL_MAX_DB));
   // null = no surface-preference requirement.
+  // Discovery views default to +10; the consensus list and comparisons to no filter.
+  const prefDefault = view === "novel" || view === "review" ? NOVEL_MIN_PREF : null;
   const [minPref, setMinPref] = useState<number | null>(() =>
-    param("minpref") === "any" ? null : param("minpref") != null ? Number(param("minpref")) : NOVEL_MIN_PREF,
+    param("minpref") === "any"
+      ? null
+      : param("minpref") != null
+        ? Number(param("minpref"))
+        : prefDefault,
   );
   useEffect(() => {
     // Keep filters restored from the URL on first mount; reset them on a later view change.
@@ -634,7 +640,7 @@ function SelectionPanel({
     // background; start from the ones our deep dive also calls surface.
     setTierSel(new Set());
     setMaxDb(NOVEL_MAX_DB);
-    setMinPref(NOVEL_MIN_PREF);
+    setMinPref(view === "novel" || view === "review" ? NOVEL_MIN_PREF : null);
   }, [view]);
   const [showAllCombos, setShowAllCombos] = useState(false);
   const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<ProteinSort>(
@@ -651,8 +657,7 @@ function SelectionPanel({
       mode: mode !== "any" ? mode : null,
       ps: sortKey ? `${sortKey}:${sortDir}` : null,
       maxdb: view === "novel" && maxDb !== NOVEL_MAX_DB ? String(maxDb) : null,
-      minpref:
-        view === "novel" && minPref !== NOVEL_MIN_PREF ? (minPref == null ? "any" : String(minPref)) : null,
+      minpref: minPref !== prefDefault ? (minPref == null ? "any" : String(minPref)) : null,
     });
   }, [filter, tierSel, minCounted, mode, sortKey, sortDir, maxDb, minPref, view]);
 
@@ -730,8 +735,8 @@ function SelectionPanel({
   const preTier = inMode.filter(
     (p) =>
       p.nCounted >= minCounted &&
-      (view !== "novel" ||
-        ((p.votes ?? 0) <= maxDb && (minPref == null || (p.pref.mean ?? -Infinity) >= minPref))) &&
+      (view !== "novel" || (p.votes ?? 0) <= maxDb) &&
+      (minPref == null || (p.pref.mean ?? -Infinity) >= minPref) &&
       (view !== "review" || p.tier === "low" || p.tier === "uncertain" || p.tier === "no"),
   );
   const filtered = preTier.filter(
@@ -747,7 +752,9 @@ function SelectionPanel({
       ? [...filtered].sort(
           (a, b) =>
             // New candidates lead with enrichment over background.
-            (view === "novel" ? (b.pref.mean ?? -999) - (a.pref.mean ?? -999) : 0) ||
+            (view === "novel" || view === "review"
+              ? (b.pref.mean ?? -999) - (a.pref.mean ?? -999)
+              : 0) ||
             b.arms.size - a.arms.size ||
             b.nCounted - a.nCounted ||
             Number(!a.symbol) - Number(!b.symbol) ||
@@ -866,9 +873,12 @@ function SelectionPanel({
         ) : view === "review" ? (
           <>
             Proteins detected on intact cells by at least {minCounted} counted dataset
-            {minCounted === 1 ? "" : "s"} that our deep dive rated Low confidence, Uncertain or Not
-            surface. Either the deep dive missed surface evidence, or the detections are
-            intracellular carry-over; each one is worth a second look.
+            {minCounted === 1 ? "" : "s"}
+            {minPref == null ? "" : ` and ranking at least ${minPref > 0 ? "+" : ""}${minPref} points higher in surface preps than in the whole proteome and membrane preps`}
+            , that our deep dive rated Low confidence, Uncertain or Not surface. Sorted by surface
+            preference. These are where the data and our calls disagree most: either the deep dive
+            missed surface evidence, or the enrichment has another cause (see the look-alikes
+            under New candidates). Blank the enrichment filter to see every detection.
           </>
         ) : consensus ? (
           <>
@@ -1091,26 +1101,26 @@ function SelectionPanel({
               />
               of 5 databases
             </label>
-            <label className={styles.minCount}>
-              Surface pref. at least
-              <input
-                type="number"
-                min={-100}
-                max={100}
-                step={5}
-                value={minPref ?? ""}
-                placeholder="any"
-                onChange={(e) => {
-                  const raw = e.target.value.trim();
-                  setMinPref(raw === "" ? null : Math.max(-100, Math.min(100, Number(raw))));
-                  setLimit(PAGE);
-                }}
-                aria-label="Minimum surface preference (blank for any)"
-              />
-              <span className={styles.sub}>(blank = any)</span>
-            </label>
           </>
         ) : null}
+        <label className={styles.minCount}>
+          Surface pref. at least
+          <input
+            type="number"
+            min={-100}
+            max={100}
+            step={5}
+            value={minPref ?? ""}
+            placeholder="any"
+            onChange={(e) => {
+              const raw = e.target.value.trim();
+              setMinPref(raw === "" ? null : Math.max(-100, Math.min(100, Number(raw))));
+              setLimit(PAGE);
+            }}
+            aria-label="Minimum surface preference (blank for any)"
+          />
+          <span className={styles.sub}>(blank = any)</span>
+        </label>
         <ChipGroup
           label="Tier"
           options={TIER_ORDER}
