@@ -135,27 +135,48 @@ function Amount({
 
 /** This dataset's percentile minus each reference: the per-study version of
  *  the surface-preference score. */
+/** This dataset's percentile minus the mean of the available references, or null. */
+function studyPrefMean(pct: number | undefined, refs: [number | null, number | null]): number | null {
+  if (pct == null) return null;
+  const diffs = refs.filter((x): x is number => x != null).map((r) => pct - r);
+  return diffs.length ? Math.round(diffs.reduce((a, b) => a + b, 0) / diffs.length) : null;
+}
+
 function StudyPref({ pct, refs }: { pct: number; refs: [number | null, number | null] }) {
   const [procan, membrane] = refs;
-  if (procan == null && membrane == null) return null;
-  const part = (d: number, label: string) => (
-    <span className={d >= 10 ? styles.prefPos : d <= -10 ? styles.prefNeg : undefined}>
-      {signed(d)} {label}
-    </span>
-  );
+  const mean = studyPrefMean(pct, refs);
+  if (mean == null) return null;
+  const tone = mean >= 10 ? styles.chipPos : mean <= -10 ? styles.chipNeg : styles.chipMid;
+  const verdict =
+    mean >= 10 ? "surface-enriched" : mean <= -10 ? "intracellular carryover" : "no clear difference";
   return (
     <HoverTip
-      tip={`This dataset's ${ordinalPct(pct)} minus the protein's ${
-        procan != null ? `ProCan whole-proteome percentile (${procan})` : ""
-      }${procan != null && membrane != null ? " and " : ""}${
-        membrane != null ? `median membrane-prep percentile (${membrane})` : ""
-      }. +10 or more reads as surface-enriched in this study, −10 or less as carryover.`}
+      tip={
+        <>
+          <span className={styles.tipLine}>
+            <strong>
+              {signed(mean)} in this study: {verdict}
+            </strong>
+          </span>
+          {procan != null ? (
+            <span className={styles.tipLine}>
+              {signed(pct - procan)} vs the ProCan whole proteome ({ordinalPct(pct)} here,{" "}
+              {ordinalPct(procan)} in ProCan)
+            </span>
+          ) : null}
+          {membrane != null ? (
+            <span className={styles.tipLine}>
+              {signed(pct - membrane)} vs membrane preps ({ordinalPct(membrane)} median)
+            </span>
+          ) : null}
+          <span className={`${styles.tipLine} ${styles.tipMuted}`}>
+            Average of the comparisons. +10 or more = surface-enriched (green), −10 or less =
+            intracellular carryover (yellow).
+          </span>
+        </>
+      }
     >
-      <div className={styles.studyPref}>
-        {procan != null ? part(pct - procan, "vs proteome") : null}
-        {procan != null && membrane != null ? " · " : null}
-        {membrane != null ? part(pct - membrane, "vs membrane") : null}
-      </div>
+      <span className={`${styles.prefChip} ${tone}`}>{signed(mean)}</span>
     </HoverTip>
   );
 }
@@ -354,12 +375,18 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           (a, b) =>
             Number(b.hit) - Number(a.hit) ||
             Number(isCounted(b.arm)) - Number(isCounted(a.arm)) ||
+            // Most enriched over background first; datasets without a value last.
+            (studyPrefMean(data.quant[String(b.i)]?.[1], data.refs) ?? -999) -
+              (studyPrefMean(data.quant[String(a.i)]?.[1], data.refs) ?? -999) ||
             (b.arm.year ?? 0) - (a.arm.year ?? 0),
         )
       : sortRows(filtered, {
           study: (r) => shortCitation(r.arm),
           found: (r) => Number(r.hit),
-          amount: (r) => data.quant[String(r.i)]?.[1] ?? -1,
+          // Sort by enrichment over background (per-study preference), not the raw rank.
+          amount: (r) =>
+            studyPrefMean(data.quant[String(r.i)]?.[1], data.refs) ??
+            (sortDir === "asc" ? Infinity : -Infinity),
           method: (r) => r.arm.method_class,
           family: (r) => r.arm.family_label,
           sample: (r) => r.arm.sample ?? "",
@@ -485,7 +512,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             <tr>
               {th("study", "Study")}
               {th("found", "Detected")}
-              {th("amount", "Amount in dataset")}
+              {th("amount", "Amount · vs background")}
               {th("method", "Method")}
               {th("family", "Chemistry")}
               {th("sample", "Cell type / sample")}
