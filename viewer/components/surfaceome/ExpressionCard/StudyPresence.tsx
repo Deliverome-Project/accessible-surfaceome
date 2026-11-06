@@ -135,12 +135,15 @@ function StudyPref({ pct, refs }: { pct: number; refs: [number | null, number | 
   const [procan, membrane] = refs;
   const mean = studyPrefMean(pct, refs);
   if (mean == null) return null;
-  const tone = mean >= 10 ? styles.chipPos : mean <= -10 ? styles.chipNeg : styles.chipMid;
+  const tone = mean >= 10 ? "success" : mean <= -10 ? "amber" : "neutral";
   const verdict =
     mean >= 10 ? "surface-enriched" : mean <= -10 ? "intracellular carryover" : "no clear difference";
+  const short = mean >= 10 ? "enriched" : mean <= -10 ? "carryover" : "no difference";
   return (
-    <HoverTip
-      tip={
+    <StatusPill
+      size="sm"
+      tone={tone}
+      title={
         <>
           <span className={styles.tipLine}>
             <strong>
@@ -165,13 +168,8 @@ function StudyPref({ pct, refs }: { pct: number; refs: [number | null, number | 
         </>
       }
     >
-      <span className={styles.bgCell}>
-        <span className={`${styles.prefChip} ${tone}`}>{signed(mean)}</span>
-        <span className={styles.bgWord}>
-          {mean >= 10 ? "surface-enriched" : mean <= -10 ? "carryover" : "no clear difference"}
-        </span>
-      </span>
-    </HoverTip>
+      {signed(mean)} {short}
+    </StatusPill>
   );
 }
 
