@@ -112,7 +112,7 @@ const CHOICES: { key: Choice; label: string; desc: (nCounted: number) => string 
   },
   {
     key: "review",
-    label: "Not called surface",
+    label: "Possible misses",
     desc: () =>
       `Detected by at least ${DISCOVERY_MIN} counted datasets and enriched over background (surface preference +10 or more), but our deep dive rates them Low confidence, Uncertain or Not surface: a review list for our own calls.`,
   },
@@ -850,7 +850,7 @@ function SelectionPanel({
         {view === "novel"
           ? "New surface candidates"
           : view === "review"
-            ? "Detected, but not called surface"
+            ? "Possible misses: surface-detected, but not in our Canonical or Likely tiers"
             : consensus
           ? "Consensus surface list"
           : single
