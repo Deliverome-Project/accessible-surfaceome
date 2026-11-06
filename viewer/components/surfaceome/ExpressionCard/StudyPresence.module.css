@@ -319,7 +319,7 @@ a.dot:focus-visible {
 .fixedTable {
   table-layout: fixed;
   width: 100%;
-  min-width: 72rem;
+  min-width: 78rem;
 }
 
 /* Break between words, never mid-word (globals.css sets overflow-wrap:
@@ -457,7 +457,7 @@ a.dot:focus-visible {
 /* Per-study surface preference: green = surface-enriched, yellow = carryover. */
 .prefChip {
   display: inline-flex;
-  margin-top: 3px;
+  margin-top: 0;
   padding: 0.05rem 0.5rem;
   border-radius: 999px;
   font-size: 0.8rem;
@@ -482,4 +482,22 @@ a.dot:focus-visible {
   background: var(--bg-soft);
   border-color: var(--line);
   color: var(--ink-soft);
+}
+
+.bgCell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.bgWord {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+/* The raw amount is secondary to the vs-background readout. */
+.amountCell .amount {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
 }

@@ -69,7 +69,7 @@ const FAMILY_SHORT: Record<string, string> = {
   "membrane-fractionation": "Fractionation",
 };
 
-type RowSort = "study" | "found" | "amount" | "method" | "family" | "sample" | "status";
+type RowSort = "study" | "found" | "bg" | "amount" | "method" | "family" | "sample" | "status";
 const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const pct = (x: number) => `${Math.floor(x * 100)}%`;
 
@@ -93,17 +93,7 @@ function LineDetail({ lines, hitLines }: { lines: string[]; hitLines: number[] }
 }
 
 /** The dataset's own value for the protein, its unit, and its within-dataset rank. */
-function Amount({
-  arm,
-  hit,
-  q,
-  refs,
-}: {
-  arm: StudyArm;
-  hit: boolean;
-  q?: [number, number];
-  refs: [number | null, number | null];
-}) {
+function Amount({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number] }) {
   if (!hit) return <span className={styles.muted}>—</span>;
   if (!q || !arm.quant_unit) {
     return (
@@ -128,7 +118,6 @@ function Amount({
         {ordinalPct(pct)}
       </div>
       </HoverTip>
-      <StudyPref pct={pct} refs={refs} />
     </div>
   );
 }
@@ -176,7 +165,12 @@ function StudyPref({ pct, refs }: { pct: number; refs: [number | null, number | 
         </>
       }
     >
-      <span className={`${styles.prefChip} ${tone}`}>{signed(mean)}</span>
+      <span className={styles.bgCell}>
+        <span className={`${styles.prefChip} ${tone}`}>{signed(mean)}</span>
+        <span className={styles.bgWord}>
+          {mean >= 10 ? "surface-enriched" : mean <= -10 ? "carryover" : "no clear difference"}
+        </span>
+      </span>
     </HoverTip>
   );
 }
@@ -383,10 +377,11 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       : sortRows(filtered, {
           study: (r) => shortCitation(r.arm),
           found: (r) => Number(r.hit),
-          // Sort by enrichment over background (per-study preference), not the raw rank.
-          amount: (r) =>
+          // Missing values sort last in either direction.
+          bg: (r) =>
             studyPrefMean(data.quant[String(r.i)]?.[1], data.refs) ??
             (sortDir === "asc" ? Infinity : -Infinity),
+          amount: (r) => data.quant[String(r.i)]?.[1] ?? (sortDir === "asc" ? Infinity : -Infinity),
           method: (r) => r.arm.method_class,
           family: (r) => r.arm.family_label,
           sample: (r) => r.arm.sample ?? "",
@@ -500,10 +495,11 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
         <table className={`${styles.table} ${styles.fixedTable}`}>
           {/* Fixed widths, so toggling which rows show never re-flows the columns. */}
           <colgroup>
-            <col style={{ width: "12rem" }} />
+            <col style={{ width: "11.5rem" }} />
             <col style={{ width: "6.75rem" }} />
-            <col style={{ width: "10.5rem" }} />
-            <col style={{ width: "9rem" }} />
+            <col style={{ width: "8.5rem" }} />
+            <col style={{ width: "9.5rem" }} />
+            <col style={{ width: "8.5rem" }} />
             <col style={{ width: "13.75rem" }} />
             <col />
             <col style={{ width: "10rem" }} />
@@ -512,7 +508,8 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             <tr>
               {th("study", "Study")}
               {th("found", "Detected")}
-              {th("amount", "Amount · vs background")}
+              {th("bg", "Vs background")}
+              {th("amount", "Amount in dataset")}
               {th("method", "Method")}
               {th("family", "Chemistry")}
               {th("sample", "Cell type / sample")}
@@ -540,8 +537,15 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                       {hit ? "Yes" : "No"}
                     </StatusPill>
                   </td>
+                  <td>
+                    {hit && data.quant[String(i)] ? (
+                      <StudyPref pct={data.quant[String(i)][1]} refs={data.refs} />
+                    ) : (
+                      <span className={styles.muted}>—</span>
+                    )}
+                  </td>
                   <td className={styles.amountCell}>
-                    <Amount arm={arm} hit={hit} q={data.quant[String(i)]} refs={data.refs} />
+                    <Amount arm={arm} hit={hit} q={data.quant[String(i)]} />
                   </td>
                   <td className={styles.nowrap}>{METHOD_CLASS_LABEL[arm.method_class]}</td>
                   <td>
