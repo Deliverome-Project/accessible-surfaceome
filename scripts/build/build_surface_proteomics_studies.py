@@ -1112,7 +1112,7 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
         if filtered and pct is not None:
             return f"pre-filtered list below its raised bar ({pct:.0%} vs {(d.get('adjusted_overlap_cutoff') or base):.0%})"
         return (
-            f"{pct:.0%} known surface proteins, under {base:.0%}"
+            f"{pct:.0%} Canonical or Likely proteins, under {base:.0%}"
             if pct is not None
             else None
         )

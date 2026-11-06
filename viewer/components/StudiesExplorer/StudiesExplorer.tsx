@@ -519,7 +519,7 @@ function OverlapBar({ value, intact }: { value: number | null; intact: boolean }
   const pass = value >= OVERLAP_SCREEN;
   return (
     <HoverTip
-      tip={`${pct(value)} of this dataset's proteins are well-established surface proteins${
+      tip={`${pct(value)} of this dataset's proteins are Canonical or Likely in our Surfaceome${
         intact ? `; counted datasets need at least ${pct(OVERLAP_SCREEN)} (the tick)` : ""
       }.`}
     >
