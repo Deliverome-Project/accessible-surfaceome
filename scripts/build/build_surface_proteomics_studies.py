@@ -841,6 +841,23 @@ def surface_preference(
     return out
 
 
+def membrane_medians(
+    quant: dict[str, dict[str, list[float]]], arms: list[dict[str, Any]]
+) -> dict[str, int]:
+    """Median within-dataset percentile across membrane-fraction datasets."""
+    membrane = {
+        str(i)
+        for i, a in enumerate(arms)
+        if a["method_class"] == "fractionation" and a.get("quant_unit")
+    }
+    out: dict[str, int] = {}
+    for acc, q in quant.items():
+        frac = [v[1] for k, v in q.items() if k in membrane]
+        if len(frac) >= MIN_MEMBRANE_VALUES:
+            out[acc] = round(statistics.median(frac))
+    return out
+
+
 def preference_auroc(
     pref: dict[str, list[int | None]], tiers: dict[str, str]
 ) -> dict[str, float]:
@@ -1257,7 +1274,9 @@ def main() -> None:
 
     per_line = load_per_line(arms, index, mapping, _read_external_table)
     quant = load_quant(manifest, arms, index, mapping, _read_external_table)
-    pref = surface_preference(quant, arms, load_procan_percentiles(mapping))
+    procan = load_procan_percentiles(mapping)
+    pref = surface_preference(quant, arms, procan)
+    membrane = membrane_medians(quant, arms)
 
     shards: list[dict[str, Any]] = [{} for _ in range(N_SHARDS)]
     for acc in sorted(presence):
@@ -1278,6 +1297,12 @@ def main() -> None:
             entry["q"] = quant[acc]
         if acc in pref:
             entry["p"] = pref[acc]
+        # References for per-dataset comparisons, kept for every protein that has
+        # them (the overall score above needs MIN_SURFACE_VALUES).
+        if acc in procan:
+            entry["w"] = round(procan[acc])
+        if acc in membrane:
+            entry["m"] = membrane[acc]
         shards[shard_of(acc)][acc] = entry
 
     admitted = [a for a in arms if a["admitted"]]
