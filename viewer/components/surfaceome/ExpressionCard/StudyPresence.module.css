@@ -453,3 +453,33 @@ a.dot:focus-visible {
 
 .prefPos { color: var(--teal-dark); font-weight: var(--fw-medium); }
 .prefNeg { color: var(--amber-dark); font-weight: var(--fw-medium); }
+
+/* Per-study surface preference: green = surface-enriched, yellow = carryover. */
+.prefChip {
+  display: inline-flex;
+  margin-top: 3px;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+  border: 1px solid transparent;
+}
+
+.chipPos {
+  background: var(--teal-tint);
+  border-color: var(--teal-lt);
+  color: var(--teal-deepest);
+}
+
+.chipNeg {
+  background: var(--amber-tint);
+  border-color: var(--amber-light);
+  color: var(--amber-deepest);
+}
+
+.chipMid {
+  background: var(--bg-soft);
+  border-color: var(--line);
+  color: var(--ink-soft);
+}
