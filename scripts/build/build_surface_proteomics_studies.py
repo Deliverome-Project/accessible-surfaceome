@@ -49,16 +49,22 @@ Joins are on UniProt accession with isoform suffixes stripped, never on gene
 symbols. Symbols are display-only, taken from the public catalog (falling back
 to the study's own symbol column when the catalog has no row for the accession).
 
+* ``methods.json`` and ``surface_proteomics_methods.tsv`` — per-arm methods and
+  source detail (:func:`build_methods`): the source files with their public
+  links, the method audit (labeling, beads, instrument), the extraction filters
+  and sample-to-group mapping, and the review decision with its rationale.
+
 Nothing from the analysis repo's ``outreach/`` prefix, and no author contact
-details, are read or written. Free-text review notes are not exported either:
-the viewer gets structured fields only.
+details, are read or written. Internal storage keys (S3 paths) are never
+written: a source file is named by its file name and linked only through a
+public URL, or through the paper or repository accession.
 
 Run (S3 credentials as in deliverome-analysis's ``.env``)::
 
     uv run python scripts/build/build_surface_proteomics_studies.py \\
         --env-file ~/git/deliverome-analysis/.env \\
         --analysis-repo ~/git/deliverome-analysis \\
-        --analysis-ref origin/becca/s3e8-fractionation-family
+        --analysis-ref <deliverome-analysis commit>
 
 or from local copies of the three inputs with ``--source-dir DIR`` (holding
 ``manifest.json``, ``detections_long.tsv`` and ``method_audit.json``).
@@ -1391,6 +1397,279 @@ def build_arms(
     return sorted(arms, key=lambda a: (-int(a["year"] or 0), str(a["name"])))
 
 
+_URL = re.compile(r"https?://[^\s)\"']+")
+# "hold: threshold 20.0000%; borderline allowance 0.0%. " — the screen numbers
+# are exported as fields of their own, so the rationale starts after them.
+_REASON_PREFIX = re.compile(
+    r"^[a-z_ ]+:\s*(?:threshold [\d.]+%;\s*borderline allowance [\d.]+%\.?\s*)?"
+)
+
+
+# Internal registry wording in the audit's provenance notes, restated for readers.
+_PUBLIC_WORDING = (
+    (
+        re.compile(
+            r"S3E8 sweep registry \(sweep_sources\.json\), method summarized from "
+        ),
+        "Summarized from ",
+    ),
+    (re.compile(r"during the ([\d/-]+) sweep"), r"during our \1 literature sweep"),
+    (re.compile(r"\(sweep registry entry; "), "("),
+)
+
+
+def public_wording(text: str | None) -> str | None:
+    if not text:
+        return text
+    for pat, repl in _PUBLIC_WORDING:
+        text = pat.sub(repl, text)
+    return americanize(text)
+
+
+def _public_url(value: Any) -> str | None:
+    if not isinstance(value, str):
+        return None
+    m = _URL.search(value)
+    return m.group(0).rstrip(".,;") if m else None
+
+
+def _file_name(path: str | None) -> str | None:
+    return (
+        path.rstrip("/").rsplit("/", 1)[-1] if isinstance(path, str) and path else None
+    )
+
+
+def _derived_from(v: Any) -> list[dict[str, Any]] | None:
+    """The table(s) a derived table was rebuilt from, as public-safe file entries."""
+    items = v if isinstance(v, list) else [v] if v else []
+    out = [
+        source_file(x) if isinstance(x, dict) else {"file": _file_name(x)}
+        for x in items
+    ]
+    return [x for x in out if x.get("file")] or None
+
+
+def source_file(s: dict[str, Any]) -> dict[str, Any]:
+    """One source table, public-safe: file name, sheet and a public link only.
+
+    The S3 ``key``, ``derived_from`` key and ``local_path`` directory are
+    internal storage paths and never leave the build.
+    """
+    # A list is a nested path: a member inside an archive inside the download.
+    chain = s.get("archive_member")
+    chain = chain if isinstance(chain, list) else [chain] if chain else []
+    member = chain[-1] if chain else None
+    name = (
+        _file_name(member)
+        or _file_name(s.get("relative_path"))
+        or _file_name(s.get("local_path"))
+        or _file_name(s.get("key"))
+    )
+    url = (
+        _public_url(s.get("url"))
+        or _public_url(s.get("public_url"))
+        or _public_url(s.get("archive_url"))
+    )
+    md = s.get("manual_download")
+    page = _public_url(md.get("page") if isinstance(md, dict) else md)
+    out: dict[str, Any] = {
+        "file": name,
+        "sheet": s.get("sheet"),
+        # The download is an archive; ``file`` is the member read from it.
+        "archive": " › ".join(
+            n
+            for n in [_file_name(_public_url(s.get("archive_url")) or s.get("url"))]
+            + [_file_name(x) for x in chain[:-1]]
+            if n
+        )
+        if member
+        else None,
+        "url": url,
+        # Publisher page the file was downloaded from by hand (no direct link).
+        "page": page if not url else None,
+        "repository_path": s.get("repository_path"),
+        "derived_from": _derived_from(s.get("derived_from")),
+        "derivation": americanize(s.get("derivation")),
+        "note": americanize(s.get("role")),
+        "sha256": s.get("sha256"),
+    }
+    return {k: v for k, v in out.items() if v not in (None, "")}
+
+
+def _filters(e: dict[str, Any]) -> list[str]:
+    """An extraction's row filters as short readable rules."""
+    rules: list[str] = []
+    for col, val in (e.get("equals") or {}).items():
+        rules.append(f"{col} = {json.dumps(val) if isinstance(val, bool) else val}")
+    for col, val in (e.get("minimum") or {}).items():
+        rules.append(f"{col} ≥ {val}")
+    for col, val in (e.get("maximum") or {}).items():
+        rules.append(f"{col} ≤ {val}")
+    if e.get("exclude_flags"):
+        rules.append("drop rows flagged " + ", ".join(e["exclude_flags"]))
+    for col, pat in (e.get("exclude_contains") or {}).items():
+        rules.append(f"drop rows where {col} matches {pat}")
+    if e.get("any_equals_one"):
+        rules.append(
+            "keep rows where any of " + ", ".join(e["any_equals_one"]) + " = 1"
+        )
+    if e.get("symbol_regex"):
+        rules.append(f"symbols matching {e['symbol_regex']}")
+    return rules
+
+
+def extraction(e: dict[str, Any], files: list[dict[str, Any]]) -> dict[str, Any]:
+    src = e.get("source", 0)
+    groups = []
+    for g in e.get("sample_groups") or []:
+        groups.append(
+            {
+                k: (americanize(v) if isinstance(v, str) else v)
+                for k, v in {
+                    "cell_type": g.get("cell_type"),
+                    "condition": g.get("condition"),
+                    "columns": g.get("columns") or [],
+                    "scale": g.get("scale"),
+                    "min_observed": g.get("min_observed"),
+                    "detection_floor": g.get("detection_floor"),
+                    "replicate_kind": g.get("replicate_kind"),
+                    "use_for_membership": g.get("use_for_membership"),
+                }.items()
+                if v is not None
+            }
+        )
+    out = {
+        "file": files[src]["file"]
+        if isinstance(src, int) and src < len(files)
+        else None,
+        "accession_column": e.get("accession"),
+        "gene_column": e.get("gene"),
+        "filters": _filters(e),
+        "sample_groups": groups,
+    }
+    return {k: v for k, v in out.items() if v not in (None, "", [])}
+
+
+def build_methods(
+    manifest: dict, audit: dict, arms: list[dict[str, Any]]
+) -> dict[str, dict[str, Any]]:
+    """Per-arm methods and source detail for the viewer's "Methods and source" panel.
+
+    Everything here is already public in the papers and deposits, restated from
+    the manifest and the method audit. The review rationale is our own published
+    reasoning for the arm's role.
+    """
+    audit_ds = audit.get("datasets", {})
+    audit_alias = audit.get("arm_aliases", {})
+    by_id = {d["study_id"]: d for d in manifest["datasets"]}
+    out: dict[str, dict[str, Any]] = {}
+    for arm in arms:
+        d = by_id[arm["id"]]
+        parent = d.get("recovery_parent_study")
+        a = (
+            audit_ds.get(arm["id"])
+            or audit_ds.get(audit_alias.get(arm["id"], ""))
+            or audit_ds.get(parent or "")
+            or {}
+        )
+        files = [source_file(s) for s in d.get("sources") or []]
+        rationale = d.get("review_rationale") or _REASON_PREFIX.sub(
+            "", d.get("reason") or ""
+        )
+        rec = {
+            "method": americanize(a.get("verified_method") or d.get("method_detail")),
+            "method_source": public_wording(a.get("source")),
+            "beads": public_wording(a.get("beads")),
+            "lot": a.get("lot"),
+            "instrument": a.get("instrument"),
+            "instrument_detail": a.get("instrument_detail"),
+            "instrument_source": a.get("instrument_source"),
+            "cell_or_tissue": americanize(d.get("cell_or_tissue_type")),
+            "sample_scope": americanize(d.get("sample_scope")),
+            "source_files": files,
+            "extractions": [extraction(e, files) for e in d.get("extractions") or []],
+            "parent_study": parent,
+            "annotation_filter": d.get("annotation_filter"),
+            "filter_universe": d.get("filter_universe"),
+            "n_total_ids": d.get("n_total_ids"),
+            "n_in_reference": d.get("n_in_surf"),
+            "overlap_cutoff": d.get("adjusted_overlap_cutoff"),
+            "borderline_margin": d.get("borderline_margin"),
+            "rationale": americanize(rationale.strip()) or None,
+            "target_species": d.get("target_species"),
+            "species_note": americanize(d.get("species_scope_note")),
+            "n_species_excluded": d.get("n_species_excluded"),
+            "n_species_unresolved": d.get("n_species_unresolved"),
+        }
+        out[arm["id"]] = {k: v for k, v in rec.items() if v not in (None, "", [])}
+    return out
+
+
+METHODS_TSV_COLS = (
+    "id", "name", "first_author", "year", "pmid", "doi", "status", "status_reason",
+    "rationale", "repository", "repository_ids", "source_files", "method",
+    "method_source", "beads", "lot", "instrument", "instrument_detail",
+    "instrument_source", "cell_or_tissue", "sample_scope", "accession_columns",
+    "filters", "sample_groups", "n_total_ids", "n_in_reference", "reference_overlap",
+    "overlap_cutoff", "target_species", "species_note", "n_species_excluded",
+    "n_species_unresolved", "n_proteins",
+)  # fmt: skip
+
+
+def _tsv_cell(v: Any) -> str:
+    """One TSV field: no tabs or newlines inside it."""
+    if v is None:
+        return ""
+    return re.sub(r"[\t\r\n]+", " ", str(v)).strip()
+
+
+def write_methods_tsv(
+    out: Path, arms: list[dict[str, Any]], methods: dict[str, dict[str, Any]]
+) -> None:
+    """One row per arm; list-valued fields joined with " | "."""
+
+    def file_text(f: dict[str, Any]) -> str:
+        bits = [f.get("file") or "?"]
+        if f.get("sheet"):
+            bits.append(f"sheet {f['sheet']}")
+        if f.get("archive"):
+            bits.append(f"in {f['archive']}")
+        link = f.get("url") or f.get("page")
+        return " ".join(bits) + (f" <{link}>" if link else "")
+
+    def group_text(g: dict[str, Any]) -> str:
+        label = " / ".join(x for x in (g.get("cell_type"), g.get("condition")) if x)
+        cols = ", ".join(g.get("columns") or [])
+        rule = f"min_observed {g['min_observed']}" if "min_observed" in g else ""
+        if "detection_floor" in g:
+            rule += f"; floor {g['detection_floor']}"
+        return f"{label}: {cols}" + (f" ({rule})" if rule else "")
+
+    with (out / "surface_proteomics_methods.tsv").open("w", newline="") as fh:
+        w = csv.writer(fh, delimiter="\t", lineterminator="\n")
+        w.writerow(METHODS_TSV_COLS)
+        for arm in arms:
+            m = methods.get(arm["id"], {})
+            ex = m.get("extractions") or []
+            row = {
+                **arm,
+                **m,
+                "repository_ids": ";".join(arm.get("repository_ids") or []),
+                "source_files": " | ".join(
+                    file_text(f) for f in m.get("source_files") or []
+                ),
+                "accession_columns": " | ".join(
+                    f"{e.get('file') or '?'}: {e.get('accession_column') or '?'}"
+                    for e in ex
+                ),
+                "filters": " | ".join(r for e in ex for r in e.get("filters") or []),
+                "sample_groups": " | ".join(
+                    group_text(g) for e in ex for g in e.get("sample_groups") or []
+                ),
+            }
+            w.writerow([_tsv_cell(row.get(c)) for c in METHODS_TSV_COLS])
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--snapshot", default=SNAPSHOT)
@@ -1536,6 +1815,11 @@ def main() -> None:
             json.dumps(shard, separators=(",", ":"), ensure_ascii=False) + "\n"
         )
     write_downloads(args.out, arms, shards)
+    methods = build_methods(manifest, audit, arms)
+    (args.out / "methods.json").write_text(
+        json.dumps(methods, separators=(",", ":"), ensure_ascii=False) + "\n"
+    )
+    write_methods_tsv(args.out, arms, methods)
     logger.info(
         "wrote %d arms (%d publications; %d admitted arms / %d publications), %d accessions (%d in admitted arms) → %s",
         meta["n_arms"],
