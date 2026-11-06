@@ -48,6 +48,7 @@ test("round-trips every parameter, in a fixed key order", () => {
   s.reasons = ["gpi_anchored"];
   s.deepDive = "yes";
   s.surfaceBind = "ge1";
+  s.proteomics = "ge3";
   s.ddEnum = { surface_method_direct: ["flow_cytometry"] };
   s.ddBool = { has_tm: "yes" };
   s.sort = "dd_conf";
@@ -56,7 +57,7 @@ test("round-trips every parameter, in a fixed key order", () => {
   assert.equal(
     qs,
     "q=cd%203&preset=induced&trigger=cancer,immune&lowlit=1&db=uniprot,hpa&nsrc=0,5" +
-      "&tier=low,no&triage=contextual&reason=gpi_anchored&dd=yes&sb=ge1" +
+      "&tier=low,no&triage=contextual&reason=gpi_anchored&dd=yes&sb=ge1&sp=ge3" +
       "&f.surface_method_direct=flow_cytometry&b.has_tm=yes&sort=dd_conf&dir=asc",
   );
   const back = parseCatalogUrl(qs, VOCAB);
@@ -76,6 +77,7 @@ test("unknown values and parameters are dropped, not fatal", () => {
   assert.deepEqual(s.ddBool, {});
   assert.equal(s.deepDive, null);
   assert.equal(s.surfaceBind, null);
+  assert.equal(s.proteomics, null);
 });
 
 test("duplicate values collapse", () => {
