@@ -135,6 +135,10 @@ export interface PresenceEntry {
    *  median in membrane-fraction datasets or null, ProCan whole-proteome
    *  percentile or null]. Present only with enough quantified surface data. */
   p?: [number, number | null, number | null];
+  /** ProCan whole-proteome percentile (any protein ProCan quantifies). */
+  w?: number;
+  /** Median percentile across membrane-fraction datasets (needs 3). */
+  m?: number;
 }
 
 export type PresenceShard = Record<string, PresenceEntry>;

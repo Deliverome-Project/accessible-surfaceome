@@ -17,9 +17,7 @@ import {
   type PresenceEntry,
   formatQuant,
   ordinalPct,
-  shareBelow,
   studyHref,
-  TIER_LABEL,
   tierOf,
   type ArmStatus,
   type TierCode,
@@ -95,7 +93,17 @@ function LineDetail({ lines, hitLines }: { lines: string[]; hitLines: number[] }
 }
 
 /** The dataset's own value for the protein, its unit, and its within-dataset rank. */
-function Amount({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number] }) {
+function Amount({
+  arm,
+  hit,
+  q,
+  refs,
+}: {
+  arm: StudyArm;
+  hit: boolean;
+  q?: [number, number];
+  refs: [number | null, number | null];
+}) {
   if (!hit) return <span className={styles.muted}>—</span>;
   if (!q || !arm.quant_unit) {
     return (
@@ -120,7 +128,35 @@ function Amount({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, num
         {ordinalPct(pct)}
       </div>
       </HoverTip>
+      <StudyPref pct={pct} refs={refs} />
     </div>
+  );
+}
+
+/** This dataset's percentile minus each reference: the per-study version of
+ *  the surface-preference score. */
+function StudyPref({ pct, refs }: { pct: number; refs: [number | null, number | null] }) {
+  const [procan, membrane] = refs;
+  if (procan == null && membrane == null) return null;
+  const part = (d: number, label: string) => (
+    <span className={d >= 10 ? styles.prefPos : d <= -10 ? styles.prefNeg : undefined}>
+      {signed(d)} {label}
+    </span>
+  );
+  return (
+    <HoverTip
+      tip={`This dataset's ${ordinalPct(pct)} minus the protein's ${
+        procan != null ? `ProCan whole-proteome percentile (${procan})` : ""
+      }${procan != null && membrane != null ? " and " : ""}${
+        membrane != null ? `median membrane-prep percentile (${membrane})` : ""
+      }. +10 or more reads as surface-enriched in this study, −10 or less as carryover.`}
+    >
+      <div className={styles.studyPref}>
+        {procan != null ? part(pct - procan, "vs proteome") : null}
+        {procan != null && membrane != null ? " · " : null}
+        {membrane != null ? part(pct - membrane, "vs membrane") : null}
+      </div>
+    </HoverTip>
   );
 }
 
@@ -150,7 +186,7 @@ function PreferenceBox({
   pref: PresenceEntry["p"];
   meta: StudyIndex["surface_preference"];
 }) {
-  const { vsProcan, vsMembrane, verdict } = surfacePreference(pref);
+  const { vsProcan, vsMembrane, mean, verdict } = surfacePreference(pref);
   const tip = (
     <>
       <span className={styles.tipLine}>
@@ -229,20 +265,17 @@ function PreferenceBox({
           )}
         </>
       )}
+      {mean != null ? (
+        <p className={styles.prefRule}>
+          Average of the two: <strong>{signed(mean)}</strong> percentile points. We call{" "}
+          <strong>+10 or more</strong> surface-enriched, <strong>−10 or less</strong> an
+          intracellular carryover pattern, and anything in between no clear difference.
+        </p>
+      ) : null}
     </div>
   );
 }
 
-function RankLine({ share, text }: { share: number; text: React.ReactNode }) {
-  return (
-    <p className={styles.rank}>
-      <span className={styles.rankBar} aria-hidden="true">
-        <span style={{ width: `${Math.max(2, share * 100)}%` }} />
-      </span>
-      <span>{text}</span>
-    </p>
-  );
-}
 
 export function statusTone(s: ArmStatus) {
   if (s === "core") return "success" as const;
@@ -266,6 +299,8 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
     lines: Record<string, number[]>;
     quant: Record<string, [number, number]>;
     pref: PresenceEntry["p"];
+    /** References for per-dataset comparisons: [ProCan pct, membrane median]. */
+    refs: [number | null, number | null];
   } | null>(null);
   const [error, setError] = useState(false);
   const [showOther, setShowOther] = useState(false);
@@ -284,6 +319,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             lines: entry?.l ?? {},
             quant: entry?.q ?? {},
             pref: entry?.p,
+            refs: [entry?.w ?? null, entry?.m ?? null],
           });
       })
       .catch(() => live && setError(true));
@@ -311,10 +347,6 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
   }
 
   const { arms, counted, countedHits, pubs, pubHits, otherHits } = summary;
-  const hists = data.index.cohort_detection_hist;
-  const k = countedHits.length;
-  const vsCohort = shareBelow(hists?.all, k);
-  const vsTier = data.tier !== "none" ? shareBelow(hists?.[data.tier], k) : null;
   const filtered = arms.filter((x) => (showMissing || x.hit) && (showOther || isCounted(x.arm)));
   const rows =
     sortKey === null
@@ -372,32 +404,6 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           surface. Snapshot: {data.index.snapshot}.
         </InfoTip>
       </div>
-      {vsCohort ? (
-        <div className={styles.rankBox}>
-          <RankLine
-            share={vsCohort.below}
-            text={
-              <>
-                Found in more counted datasets than <strong>{pct(vsCohort.below)}</strong> of the{" "}
-                {vsCohort.total.toLocaleString("en-US")} surface candidates we deep-dived
-              </>
-            }
-          />
-          {vsTier && data.tier !== "none" ? (
-            <RankLine
-              share={vsTier.below}
-              text={
-                <>
-                  and than <strong>{pct(vsTier.below)}</strong> of the{" "}
-                  {vsTier.total.toLocaleString("en-US")} proteins in its tier,{" "}
-                  {TIER_LABEL[data.tier]}
-                </>
-              }
-            />
-          ) : null}
-        </div>
-      ) : null}
-
       <PreferenceBox pref={data.pref} meta={data.index.surface_preference} />
 
       <div className={styles.strip} role="list" aria-label="Detection per dataset">
@@ -508,7 +514,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                     </StatusPill>
                   </td>
                   <td className={styles.amountCell}>
-                    <Amount arm={arm} hit={hit} q={data.quant[String(i)]} />
+                    <Amount arm={arm} hit={hit} q={data.quant[String(i)]} refs={data.refs} />
                   </td>
                   <td className={styles.nowrap}>{METHOD_CLASS_LABEL[arm.method_class]}</td>
                   <td>

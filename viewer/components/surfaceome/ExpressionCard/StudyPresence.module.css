@@ -200,35 +200,9 @@ a.dot:focus-visible {
   opacity: 0.7;
 }
 
-.rank {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-}
 
-.rankBar {
-  flex: none;
-  width: 6rem;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--line-soft);
-  overflow: hidden;
-}
 
-.rankBar > span {
-  display: block;
-  height: 100%;
-  background: var(--teal-mid);
-}
 
-.rankBox {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
 
 .tipLine {
   display: block;
@@ -464,3 +438,18 @@ a.dot:focus-visible {
   width: 1px;
   background: var(--ink-soft);
 }
+
+.prefRule {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.studyPref {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.prefPos { color: var(--teal-dark); font-weight: var(--fw-medium); }
+.prefNeg { color: var(--amber-dark); font-weight: var(--fw-medium); }
