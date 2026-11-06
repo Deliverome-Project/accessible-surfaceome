@@ -1239,7 +1239,7 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
             what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
             return f"author pre-filtered to {what}"
         if pct is not None and pct < base:
-            return f"just under the {base:.0%} bar ({pct:.1%})"
+            return f"within 2 points of the {base:.0%} screen ({pct:.1%})"
         return "built from a partial author export (peptide-level table)"
     if status == "below_screen":
         if filtered and pct is not None:
