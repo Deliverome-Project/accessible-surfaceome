@@ -8,6 +8,7 @@ import {
   DOWNLOADS,
   isCounted,
   METHOD_CLASS_LABEL,
+  OVERLAP_ALLOWANCE_PTS,
   OVERLAP_SCREEN,
   STATUS_HELP,
   STATUS_LABEL,
@@ -119,8 +120,9 @@ export default function SurfaceProteomicsPage() {
             <li>
               <strong>Mostly surface proteins, not background.</strong> At least{" "}
               {Math.round(OVERLAP_SCREEN * 100)}% of the dataset&apos;s proteins must be
-              established surface proteins, meaning Canonical or Likely in our Surfaceome. A
-              list below that is dominated by intracellular contamination. (A random set of
+              established surface proteins, meaning Canonical or Likely in our Surfaceome; a list
+              within {OVERLAP_ALLOWANCE_PTS} points below that counts only as Provisional. A list
+              further below is dominated by intracellular contamination. (A random set of
               human proteins scores about 15%.) When the authors pre-filtered their list to
               annotated surface proteins, the bar is raised to match.{" "}
               <span className={styles.fails}>
@@ -188,7 +190,8 @@ export default function SurfaceProteomicsPage() {
                     Surfaceome. A clean intact-cell experiment scores high; one
                     swamped by intracellular contamination scores low. Intact-cell datasets
                     need at least {Math.round(OVERLAP_SCREEN * 100)}% (the tick on each
-                    bar) to be counted.
+                    bar) to be counted, or count as Provisional within{" "}
+                    {OVERLAP_ALLOWANCE_PTS} points below it (light bar).
                   </dd>
                 </div>
                 <div>
