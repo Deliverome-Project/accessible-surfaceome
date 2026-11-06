@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   isCounted,
   letter,
@@ -32,6 +32,7 @@ import {
 } from "../../lib/surface-proteomics";
 import { ProteinLookup } from "./ProteinLookup";
 import { HoverTip } from "../surfaceome/_shared/HoverTip";
+import { InfoTip } from "../InfoTip/InfoTip";
 import { statusTone } from "../surfaceome/ExpressionCard/StudyPresence";
 import { SortableHeader } from "../surfaceome/_shared/SortableHeader";
 import { SortResetButton } from "../surfaceome/_shared/SortResetButton";
@@ -80,6 +81,9 @@ export type View = "consensus" | "novel" | "review";
 const VIEWS: View[] = ["consensus", "novel", "review"];
 /** Detection floor the two discovery presets start from. */
 const DISCOVERY_MIN = 3;
+/** New-candidate defaults: at most this many DB votes, and at least this surface preference. */
+const NOVEL_MAX_DB = 1;
+const NOVEL_MIN_PREF = 10;
 
 /** Arm ids in ?arm=, with split-study aliases (e.g. a parent paper id) expanded. */
 function readSelection(aliases: Record<string, string[]>): string[] {
@@ -104,7 +108,7 @@ const CHOICES: { key: Choice; label: string; desc: (nCounted: number) => string 
     key: "novel",
     label: "New candidates",
     desc: () =>
-      `Detected on intact cells by at least ${DISCOVERY_MIN} counted datasets, missing from all five surfaceome databases, and called Canonical or Likely by our deep dive.`,
+      `Detected on intact cells by at least ${DISCOVERY_MIN} counted datasets, listed by at most one of the five surfaceome databases, and enriched over background (surface preference +10 or more). All three are adjustable.`,
   },
   {
     key: "review",
@@ -125,6 +129,23 @@ const CHOICES: { key: Choice; label: string; desc: (nCounted: number) => string 
   },
 ];
 
+/** One query parameter, or null (server render / absent). */
+function param(name: string): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+/** Write (or clear) query parameters without adding a history entry, so the
+ *  page's filters survive clicking through to a protein and coming back. */
+function setParams(values: Record<string, string | null>) {
+  const url = new URL(window.location.href);
+  for (const [k, v] of Object.entries(values)) {
+    if (v) url.searchParams.set(k, v);
+    else url.searchParams.delete(k);
+  }
+  window.history.replaceState(window.history.state, "", url.toString());
+}
+
 function readView(): View | null {
   if (typeof window === "undefined") return null;
   const v = new URLSearchParams(window.location.search).get("view");
@@ -142,11 +163,25 @@ export function StudiesExplorer({ index }: Props) {
     [arms],
   );
   const countedIdx = useMemo(() => arms.flatMap((a, i) => (isCounted(a) ? [i] : [])), [arms]);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(() => param("dq") ?? "");
   // Catalog-style chips: nothing checked = no filter; checked values OR together.
-  const [statuses, setStatuses] = useState<Set<ArmStatus>>(new Set());
-  const [classes, setClasses] = useState<Set<MethodClass>>(new Set());
-  const [cellGroups, setCellGroups] = useState<Set<CellGroup>>(new Set());
+  const [statuses, setStatuses] = useState<Set<ArmStatus>>(
+    () => new Set((param("st")?.split(",").filter(Boolean) ?? []) as ArmStatus[]),
+  );
+  const [classes, setClasses] = useState<Set<MethodClass>>(
+    () => new Set((param("mc")?.split(",").filter(Boolean) ?? []) as MethodClass[]),
+  );
+  const [cellGroups, setCellGroups] = useState<Set<CellGroup>>(
+    () => new Set((param("cg")?.split(",").filter(Boolean) ?? []) as CellGroup[]),
+  );
+  useEffect(() => {
+    setParams({
+      dq: query.trim() || null,
+      st: [...statuses].join(",") || null,
+      mc: [...classes].join(",") || null,
+      cg: [...cellGroups].join(",") || null,
+    });
+  }, [query, statuses, classes, cellGroups]);
   const [selected, setSelected] = useState<number[]>([]);
   const [view, setView] = useState<View | null>(null);
   // Hand-picked modes; a preset view takes precedence when set.
@@ -576,20 +611,50 @@ function SelectionPanel({
   const consensus = view !== null;
   const [presence, setPresence] = useState<PresenceShard | null>(null);
   const [error, setError] = useState(false);
-  const [filter, setFilter] = useState("");
-  const [mode, setMode] = useState<Mode>("any");
+  // Filters start from the URL (pf, tiers, min, mode, ps) so Back restores them.
+  const restored = useRef(param("pf") != null || param("tiers") != null || param("min") != null || param("mode") != null);
+  const [filter, setFilter] = useState(() => param("pf") ?? "");
+  const [mode, setMode] = useState<Mode>(() => (param("mode") as Mode | null) ?? "any");
   // Same as the catalog's tier filter: nothing checked = every tier; checked tiers OR together.
-  const [tierSel, setTierSel] = useState<Set<Tier>>(new Set());
+  const [tierSel, setTierSel] = useState<Set<Tier>>(
+    () => new Set((param("tiers")?.split(",").filter(Boolean) ?? []) as Tier[]),
+  );
   const [limit, setLimit] = useState(PAGE);
-  const [minCounted, setMinCounted] = useState(1);
+  const [minCounted, setMinCounted] = useState(() => Number(param("min")) || 1);
+  const [maxDb, setMaxDb] = useState(() => (param("maxdb") != null ? Number(param("maxdb")) : NOVEL_MAX_DB));
+  // null = no surface-preference requirement.
+  const [minPref, setMinPref] = useState<number | null>(() =>
+    param("minpref") === "any" ? null : param("minpref") != null ? Number(param("minpref")) : NOVEL_MIN_PREF,
+  );
   useEffect(() => {
+    // Keep filters restored from the URL on first mount; reset them on a later view change.
+    if (restored.current) return;
     setMinCounted(view === "novel" || view === "review" ? DISCOVERY_MIN : 1);
     // Database-absent detections are dominated by abundant ER / cytosolic
     // background; start from the ones our deep dive also calls surface.
-    setTierSel(view === "novel" ? new Set<Tier>(["canonical", "likely"]) : new Set());
+    setTierSel(new Set());
+    setMaxDb(NOVEL_MAX_DB);
+    setMinPref(NOVEL_MIN_PREF);
   }, [view]);
   const [showAllCombos, setShowAllCombos] = useState(false);
-  const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<ProteinSort>();
+  const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<ProteinSort>(
+    (() => {
+      const [k, d] = (param("ps") ?? "").split(":");
+      return k ? { key: k as ProteinSort, dir: d === "desc" ? "desc" : "asc" } : undefined;
+    })(),
+  );
+  useEffect(() => {
+    setParams({
+      pf: filter.trim() || null,
+      tiers: [...tierSel].join(",") || null,
+      min: minCounted > 1 ? String(minCounted) : null,
+      mode: mode !== "any" ? mode : null,
+      ps: sortKey ? `${sortKey}:${sortDir}` : null,
+      maxdb: view === "novel" && maxDb !== NOVEL_MAX_DB ? String(maxDb) : null,
+      minpref:
+        view === "novel" && minPref !== NOVEL_MIN_PREF ? (minPref == null ? "any" : String(minPref)) : null,
+    });
+  }, [filter, tierSel, minCounted, mode, sortKey, sortDir, maxDb, minPref, view]);
 
   useEffect(() => {
     loadAllPresence().then(setPresence, () => setError(true));
@@ -597,6 +662,11 @@ function SelectionPanel({
   // An intersection stops making sense once the selection changes under it.
   const selKey = selected.join(",");
   useEffect(() => {
+    if (restored.current) {
+      // Restored from the URL: keep it this once, then behave normally.
+      restored.current = false;
+      return;
+    }
     setMode(selKey.includes(",") && selKey.split(",").length <= MAX_UPSET ? "all" : "any");
     setLimit(PAGE);
   }, [selKey]);
@@ -660,7 +730,8 @@ function SelectionPanel({
   const preTier = inMode.filter(
     (p) =>
       p.nCounted >= minCounted &&
-      (view !== "novel" || p.votes === 0) &&
+      (view !== "novel" ||
+        ((p.votes ?? 0) <= maxDb && (minPref == null || (p.pref.mean ?? -Infinity) >= minPref))) &&
       (view !== "review" || p.tier === "low" || p.tier === "uncertain" || p.tier === "no"),
   );
   const filtered = preTier.filter(
@@ -675,6 +746,8 @@ function SelectionPanel({
     sortKey === null
       ? [...filtered].sort(
           (a, b) =>
+            // New candidates lead with enrichment over background.
+            (view === "novel" ? (b.pref.mean ?? -999) - (a.pref.mean ?? -999) : 0) ||
             b.arms.size - a.arms.size ||
             b.nCounted - a.nCounted ||
             Number(!a.symbol) - Number(!b.symbol) ||
@@ -745,11 +818,18 @@ function SelectionPanel({
     URL.revokeObjectURL(a.href);
   };
 
-  const pHeader = (k: ProteinSort, text: string, num = false) => (
+  const pHeader = (k: ProteinSort, text: string, num = false, info?: ReactNode) => (
     <th aria-sort={ariaSort(k)} className={num ? styles.num : undefined}>
-      <SortableHeader k={k} active={sortKey === k} direction={sortDir} onSort={onSort}>
-        {text}
-      </SortableHeader>
+      <span className={styles.headWithTip}>
+        <SortableHeader k={k} active={sortKey === k} direction={sortDir} onSort={onSort}>
+          {text}
+        </SortableHeader>
+        {info ? (
+          <InfoTip wide align="end" label={`About ${text}`}>
+            {info}
+          </InfoTip>
+        ) : null}
+      </span>
     </th>
   );
   const maxCombo = combos[0]?.n ?? 1;
@@ -774,11 +854,14 @@ function SelectionPanel({
         {view === "novel" ? (
           <>
             Proteins detected on intact cells by at least {minCounted} counted dataset
-            {minCounted === 1 ? "" : "s"} that none of the five surfaceome databases (UniProt, GO,
-            SURFY, CSPA, HPA) list as surface. It starts filtered to proteins our deep dive rates
-            Canonical or Likely: without that filter the top of the list is abundant ER and
-            cytosolic proteins (chaperones, glycosylation enzymes) that intact-cell labeling picks
-            up as background. Clear the tier chips to see all of them.
+            {minCounted === 1 ? "" : "s"}, listed as surface by at most {maxDb} of the five
+            surfaceome databases (UniProt, GO, SURFY, CSPA, HPA)
+            {minPref == null ? "" : `, and ranking at least ${minPref > 0 ? "+" : ""}${minPref} points higher in surface preps than in the whole proteome and membrane preps`}
+            . Sorted by surface preference. The enrichment filter is what keeps out abundant ER
+            and cytosolic background; blank it to see every detection. Watch for known
+            look-alikes: naturally biotinylated carboxylases (PCCA, ACACA, MCCC1) in biotin
+            datasets, skin contaminants (hornerin, filaggrin-2), and serum or matrix proteins that
+            stick to cells.
           </>
         ) : view === "review" ? (
           <>
@@ -991,6 +1074,43 @@ function SelectionPanel({
           />
           counted dataset{minCounted === 1 ? "" : "s"}
         </label>
+        {view === "novel" ? (
+          <>
+            <label className={styles.minCount}>
+              Listed by at most
+              <input
+                type="number"
+                min={0}
+                max={5}
+                value={maxDb}
+                onChange={(e) => {
+                  setMaxDb(Math.max(0, Math.min(5, Number(e.target.value) || 0)));
+                  setLimit(PAGE);
+                }}
+                aria-label="Maximum number of surfaceome databases listing it"
+              />
+              of 5 databases
+            </label>
+            <label className={styles.minCount}>
+              Surface pref. at least
+              <input
+                type="number"
+                min={-100}
+                max={100}
+                step={5}
+                value={minPref ?? ""}
+                placeholder="any"
+                onChange={(e) => {
+                  const raw = e.target.value.trim();
+                  setMinPref(raw === "" ? null : Math.max(-100, Math.min(100, Number(raw))));
+                  setLimit(PAGE);
+                }}
+                aria-label="Minimum surface preference (blank for any)"
+              />
+              <span className={styles.sub}>(blank = any)</span>
+            </label>
+          </>
+        ) : null}
         <ChipGroup
           label="Tier"
           options={TIER_ORDER}
@@ -1033,7 +1153,24 @@ function SelectionPanel({
               {pHeader("votes", "DB votes", true)}
               {pHeader("tier", "Surfaceome tier")}
               {pHeader("counted", `Counted datasets (of ${countedIdx.length})`)}
-              {pHeader("pref", "Surface pref.", true)}
+              {pHeader(
+                "pref",
+                "Surface pref.",
+                true,
+                <>
+                  How much higher the protein ranks in surface preps than in two backgrounds,
+                  in percentile points. It averages two comparisons: its median percentile in
+                  the counted surface datasets minus (1) its percentile in the ProCan whole
+                  proteome (949 cancer cell lines,{" "}
+                  <a href="https://pubmed.ncbi.nlm.nih.gov/35839778/" target="_blank" rel="noreferrer">
+                    PMID 35839778
+                  </a>
+                  ) and (2) its median percentile in our membrane-fraction datasets. +10 or more
+                  (green) is surface-enriched; −10 or less (yellow) looks like intracellular
+                  carryover. Hover a value for both comparisons. Blank: quantified in fewer than
+                  5 counted datasets.
+                </>,
+              )}
               {single && arms[selected[0]].quant_unit
                 ? pHeader("amount", `Amount here (${arms[selected[0]].quant_unit})`)
                 : null}
@@ -1208,8 +1345,8 @@ function PrefCell({
             ? `; ${sign(pref.vsProcan)} vs the ProCan whole proteome (${ordinalPct(raw[2])})`
             : ""}
           {pref.vsMembrane != null && raw[1] != null
-            ? `; ${sign(pref.vsMembrane)} vs membrane preps (${ordinalPct(raw[1])})`
-            : ""}
+            ? `; ${sign(pref.vsMembrane)} vs membrane-fraction datasets (${ordinalPct(raw[1])})`
+            : "; too few membrane-fraction values to compare"}
           .
         </>
       }

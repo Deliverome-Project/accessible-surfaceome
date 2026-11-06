@@ -604,8 +604,9 @@
   cursor: pointer;
 }
 
+/* Clears the sticky site header (66px, taller when its nav wraps). */
 .results {
-  scroll-margin-top: var(--space-6);
+  scroll-margin-top: 6.5rem;
 }
 
 .filterHint {
@@ -755,3 +756,9 @@
 
 .prefPos { color: var(--teal-dark); }
 .prefNeg { color: var(--amber-dark); }
+
+.headWithTip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
