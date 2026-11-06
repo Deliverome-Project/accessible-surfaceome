@@ -154,12 +154,12 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
 };
 
 export const STATUS_HELP: Record<ArmStatus, string> = {
-  core: "Core: intact-cell labeling, and at least 20% of the list are known surface proteins. Counts as surface evidence.",
+  core: "Core: intact-cell labeling, and at least 20% of the list are Canonical or Likely Surfaceome proteins. Counts as surface evidence.",
   provisional:
     "Provisional: intact-cell labeling that passes with a caveat, for example the authors pre-filtered the list to annotated surface proteins, or it sits just under 20%. Counts as surface evidence.",
   held: "Held: the published table can't yet tell us which proteins were detected, for example every value is imputed. Listed, not counted.",
   below_screen:
-    "High background: intact-cell labeling, but fewer than 20% of the list are known surface proteins, so it is mostly intracellular contamination. Listed, not counted.",
+    "High background: intact-cell labeling, but fewer than 20% of the list are Canonical or Likely Surfaceome proteins, so it is mostly intracellular contamination. Listed, not counted.",
   comparator:
     "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
 };

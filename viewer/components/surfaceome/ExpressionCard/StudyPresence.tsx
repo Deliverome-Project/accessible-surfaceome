@@ -618,7 +618,7 @@ function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number
           <span className={styles.tipMuted}>Proteins in list:</span>{" "}
           {arm.n_proteins.toLocaleString("en-US")}
           {arm.reference_overlap != null
-            ? `, ${Math.round(arm.reference_overlap * 100)}% known surface`
+            ? `, ${Math.round(arm.reference_overlap * 100)}% Canonical or Likely`
             : ""}
         </span>
         {hit && q && arm.quant_unit ? (
