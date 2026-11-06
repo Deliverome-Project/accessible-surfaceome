@@ -92,7 +92,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-05-sweep-v8"
+SNAPSHOT = "2026-11-06-sweep-v9"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -163,6 +163,9 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "choksawangkarn-rpmi8226-pellicle-2013",
         "wang-aml-surface-2015",
         "weekes-thp1-ul138-2013",
+        "ramya-bjab-gal-2013",
+        "ramya-bjab-pal-2013",
+        "nayak-k562-memper-glyco-2021",
         "yanagida-hl60-raft-2007",
     ),
     "solid_cancer": (
@@ -260,9 +263,21 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "yan-hnscc-spheres-2013",
         "barua-hct116-2020",
         "pshezhetsky-caco2-pm-2007",
+        "xiao-hepg2-galnaz-2016",
+        "xiao-hepg2-glcnaz-2016",
+        "xiao-hepg2-mannaz-2016",
+        "tobys-hela-ap2-2021",
+        "zhao-lung-bdap-2004",
+        "garcia-shsy5y-2009",
+        "kang-mda453-csc-2013",
+        "mi-hcc-csc-2012",
+        "yokoyama-endometrial-2013",
+        "park-glioma-gsi-2018",
+        "rahbar-mcf7mxr-pellicle-2005",
     ),
     "immune": (
         "laccid-2025",
+        "everberg-pbmc-atps-2006",
         "udeshi-2024",
         "veneer-2024",
         "byrnes-2022",
@@ -301,6 +316,8 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "petrareanu-heparg-2013",
         "akpinar-msc-pm-2021",
         "weldemariam-hesc-membrane-2018",
+        "dormeyer-hesc-hecc-pm-2008",
+        "mcquade-hesc-membrane-2009",
     ),
     "other_normal": (
         "dusailly-ec-2026",
@@ -351,6 +368,8 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "vaish-hek293tshaving-2024",
         "olivieri-rbc-drm-2021",
         "he-liver-pm-2007",
+        "zhang-placenta-stb-2010",
+        "zhao-pm-affinity-2003",
     ),
     "multi": (
         "cspa-2015",
