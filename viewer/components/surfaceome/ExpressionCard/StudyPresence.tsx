@@ -419,6 +419,9 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           the cell.
           <br />
           <br />
+          The compendium covers whole-surface measurements: labeling of exposed proteins on intact cells, and membrane fractionation. It does not include targeted membrane enrichment of chosen proteins, such as proximity labeling around a single bait, antibody or affinity pulldowns, or lists restricted to a target panel.
+          <br />
+          <br />
           Not detected means the protein is absent from that study&apos;s
           list. It is not evidence the protein is absent from the cell
           surface. Snapshot: {data.index.snapshot}.
