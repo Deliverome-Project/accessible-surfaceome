@@ -385,6 +385,7 @@
 
 .pass { background: var(--teal-mid); }
 .fail { background: var(--amber-mid); }
+.near { background: var(--teal-lt); }
 .na { background: var(--muted); opacity: 0.45; }
 
 .overlapTick {

@@ -7,6 +7,7 @@ import {
   letter,
   loadAllPresence,
   METHOD_CLASS_LABEL,
+  OVERLAP_ALLOWANCE_PTS,
   OVERLAP_SCREEN,
   shortCitation,
   STATUS_HELP,
@@ -449,7 +450,11 @@ export function StudiesExplorer({ index }: Props) {
                     <Bar value={arm.n_proteins / maxN} />
                   </td>
                   <td>
-                    <OverlapBar value={arm.reference_overlap} intact={arm.method_class === "intact_cell"} />
+                    <OverlapBar
+                      value={arm.reference_overlap}
+                      intact={arm.method_class === "intact_cell"}
+                      status={arm.status}
+                    />
                   </td>
                   <td>
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
@@ -514,19 +519,41 @@ function Bar({ value }: { value: number }) {
 }
 
 /** Surface overlap with a tick at the screen an intact-cell arm must reach. */
-function OverlapBar({ value, intact }: { value: number | null; intact: boolean }) {
+function OverlapBar({
+  value,
+  intact,
+  status,
+}: {
+  value: number | null;
+  intact: boolean;
+  status: StudyArm["status"];
+}) {
   if (value == null) return <span className={styles.sub}>—</span>;
-  const pass = value >= OVERLAP_SCREEN;
+  // Color follows the review outcome, not the raw number: a provisional
+  // arm inside the 2-point allowance is counted (light teal), and a
+  // pre-filtered list below its raised bar is high background (amber).
+  const counted = status === "core" || status === "provisional";
+  const tone = !intact
+    ? styles.na
+    : status === "below_screen"
+      ? styles.fail
+      : counted && value < OVERLAP_SCREEN
+        ? styles.near
+        : value >= OVERLAP_SCREEN
+          ? styles.pass
+          : styles.fail;
   return (
     <HoverTip
       tip={`${pct(value)} of this dataset's proteins are Canonical or Likely in our Surfaceome${
-        intact ? `; counted datasets need at least ${pct(OVERLAP_SCREEN)} (the tick)` : ""
+        intact
+          ? `; counted datasets need at least ${pct(OVERLAP_SCREEN)} (the tick), or are Provisional within ${OVERLAP_ALLOWANCE_PTS} points below it`
+          : ""
       }.`}
     >
     <span className={styles.overlap}>
       <span className={styles.overlapTrack}>
         <span
-          className={`${styles.overlapFill} ${intact ? (pass ? styles.pass : styles.fail) : styles.na}`}
+          className={`${styles.overlapFill} ${tone}`}
           style={{ width: `${Math.min(100, value * 100)}%` }}
         />
         <span className={styles.overlapTick} style={{ left: `${OVERLAP_SCREEN * 100}%` }} />

@@ -752,6 +752,24 @@ def _num(v: Any) -> float | None:
     return x if x == x else None  # drop NaN
 
 
+def quant_is_abundance(
+    cols: list[str], groups: list[dict[str, Any]], rows: list[dict[str, str]]
+) -> bool:
+    """Whether a recipe's sample columns rank proteins by abundance.
+
+    Two kinds of column don't: ratios against a reference (SILAC light/heavy
+    against a shared standard, fold changes), whose rank says how a protein
+    changed rather than how much of it there is, and 0/1 detection flags,
+    which carry no amount at all. Those datasets still count as detections;
+    they just get no quantity (or a count column, when the table has one).
+    """
+    text = " ".join(cols + [g.get("replicate_kind") or "" for g in groups]).lower()
+    if re.search(r"\bratios?\b|\bfold[- ]change", text):
+        return False
+    seen = {x for r in rows for c in cols if (x := _num(r.get(c))) is not None}
+    return not seen <= {0.0, 1.0}
+
+
 def load_quant(
     manifest: dict,
     arms: list[dict[str, Any]],
@@ -771,6 +789,7 @@ def load_quant(
     """
     by_id = {d["study_id"]: d for d in manifest["datasets"]}
     out: dict[str, dict[str, list[float]]] = defaultdict(dict)
+    demoted: list[str] = []
     for sid, i in index.items():
         d = by_id.get(sid)
         key = (d or {}).get("control_tsv_key")
@@ -795,6 +814,9 @@ def load_quant(
         ]
         cols = [c for g in groups for c in g["columns"] if c in header]
         scale = next((g.get("scale") or "linear" for g in groups), "linear")
+        if cols and not quant_is_abundance(cols, groups, rows):
+            demoted.append(sid)
+            cols = []
         if not cols and per_line:
             # Per-line atlas tables: one abundance column per cell line.
             cols = [c for c in header if c != per_line[1] and c not in per_line[2]]
@@ -849,6 +871,10 @@ def load_quant(
         arms[i]["quant_note"] = note
         arms[i]["n_quantified"] = n
     logger.info(
+        "sample columns are ratios or 0/1 flags, not abundance (count column or none): %s",
+        ", ".join(sorted(demoted)) or "none",
+    )
+    logger.info(
         "quantities for %d of %d arms",
         sum(1 for a in arms if a.get("quant_unit")),
         len(arms),
@@ -862,6 +888,19 @@ def load_quant(
 PROCAN_KEY = "procan-depmapsanger/goncalves-2022/ProCan-DepMapSanger_protein_matrix_8498_averaged.txt"
 MIN_SURFACE_VALUES = 5
 MIN_MEMBRANE_VALUES = 3
+# Lipid-raft / detergent-resistant-membrane preps (S3E8 FRACTIONATION.md).
+# They stay listed as comparators, but they isolate particular microdomains,
+# not the membrane as a whole, so they are left out of the membrane background
+# the surface-preference score compares against.
+RAFT_PREPS = frozenset(
+    {
+        "adam-lncap-drm-2008",
+        "chhuon-hela-raft-2016",
+        "hammoud-mdm-raft-2022",
+        "harant-sma-srm-2023",
+        "szklanna-platelet-drm-2016",
+    }
+)
 
 
 def load_procan_percentiles(mapping: dict[str, str]) -> dict[str, float]:
@@ -915,7 +954,9 @@ def surface_preference(
     membrane = {
         str(i)
         for i, a in enumerate(arms)
-        if a["method_class"] == "fractionation" and a.get("quant_unit")
+        if a["method_class"] == "fractionation"
+        and a.get("quant_unit")
+        and a["id"] not in RAFT_PREPS
     }
     out: dict[str, list[int | None]] = {}
     for acc, q in quant.items():
@@ -1198,7 +1239,7 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
             what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
             return f"author pre-filtered to {what}"
         if pct is not None and pct < base:
-            return f"just under the {base:.0%} bar ({pct:.1%})"
+            return f"within 2 points of the {base:.0%} screen ({pct:.1%})"
         return "built from a partial author export (peptide-level table)"
     if status == "below_screen":
         if filtered and pct is not None:

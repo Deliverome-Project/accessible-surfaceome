@@ -156,7 +156,7 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
 export const STATUS_HELP: Record<ArmStatus, string> = {
   core: "Core: intact-cell labeling, and at least 20% of the list are Canonical or Likely Surfaceome proteins. Counts as surface evidence.",
   provisional:
-    "Provisional: intact-cell labeling that passes with a caveat, for example the authors pre-filtered the list to annotated surface proteins, or it sits just under 20%. Counts as surface evidence.",
+    "Provisional: intact-cell labeling that passes with a caveat, for example the authors pre-filtered the list to annotated surface proteins, or it sits within 2 points below the 20% screen (18–20%). Counts as surface evidence.",
   held: "Held: the published table can't yet tell us which proteins were detected, for example every value is imputed. Listed, not counted.",
   below_screen:
     "High background: intact-cell labeling, but fewer than 20% of the list are Canonical or Likely Surfaceome proteins, so it is mostly intracellular contamination. Listed, not counted.",
@@ -178,6 +178,8 @@ export function studyHref(armIds: string[]): string {
 
 /** Surface-reference overlap a counted intact-cell arm must reach (the S3E8 screen). */
 export const OVERLAP_SCREEN = 0.2;
+/** S3E8 admits an intact-cell list up to this many points below the screen, as Provisional only. */
+export const OVERLAP_ALLOWANCE_PTS = 2;
 
 export type TierCode = "canonical" | "likely" | "low" | "uncertain" | "no";
 
