@@ -40,6 +40,7 @@ import { SortResetButton } from "../surfaceome/_shared/SortResetButton";
 import { useTableSort, type SortValue } from "../surfaceome/_shared/useTableSort";
 import { StatusPill } from "../surfaceome/StatusPill/StatusPill";
 import { FamilyChip } from "./FamilyChip";
+import { MethodsPanel } from "./MethodsPanel";
 import { TierPill } from "./TierPill";
 import styles from "./StudiesExplorer.module.css";
 
@@ -952,6 +953,7 @@ function SelectionPanel({
       {single && !isCounted(arms[selected[0]]) ? (
         <p className={styles.caveat}>{STATUS_HELP[arms[selected[0]].status]}</p>
       ) : null}
+      {single && !consensus ? <MethodsPanel key={arms[selected[0]].id} arm={arms[selected[0]]} /> : null}
       {!single && selected.some((i) => !isCounted(arms[i])) ? (
         <p className={styles.caveat}>
           The selection includes datasets that are not counted as surface evidence (held, high background, or comparators).
