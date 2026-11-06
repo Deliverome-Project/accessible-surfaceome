@@ -72,6 +72,9 @@ export default function SurfaceProteomicsPage() {
             The other {index.n_arms - counted.length} are listed for completeness
             and marked as not counted.
           </p>
+          <p className={styles.scope}>
+            The compendium covers whole-surface measurements: labeling of exposed proteins on intact cells, and membrane fractionation. It does not include targeted membrane enrichment of chosen proteins, such as proximity labeling around a single bait, antibody or affinity pulldowns, or lists restricted to a target panel.
+          </p>
           <p className={styles.downloads}>
             <strong>Download:</strong>{" "}
             <a href={DOWNLOADS.matrix} download>

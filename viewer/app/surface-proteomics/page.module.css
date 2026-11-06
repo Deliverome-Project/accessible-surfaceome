@@ -191,3 +191,10 @@
   font-size: 0.8rem;
   color: var(--muted);
 }
+
+.scope {
+  max-width: 62rem;
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
