@@ -92,7 +92,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-05-sweep-v7"
+SNAPSHOT = "2026-11-05-sweep-v8"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -163,6 +163,7 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "choksawangkarn-rpmi8226-pellicle-2013",
         "wang-aml-surface-2015",
         "weekes-thp1-ul138-2013",
+        "yanagida-hl60-raft-2007",
     ),
     "solid_cancer": (
         "salmela-cscc-2026",
@@ -257,6 +258,8 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "sun-hela-seel-2016",
         "sun-hela-seel-chase-2016",
         "yan-hnscc-spheres-2013",
+        "barua-hct116-2020",
+        "pshezhetsky-caco2-pm-2007",
     ),
     "immune": (
         "laccid-2025",
@@ -297,6 +300,7 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "gomesalves-hcsc-2015",
         "petrareanu-heparg-2013",
         "akpinar-msc-pm-2021",
+        "weldemariam-hesc-membrane-2018",
     ),
     "other_normal": (
         "dusailly-ec-2026",
@@ -343,6 +347,10 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "blonder-epidermis-pm-2004",
         "smeekens-hek293t-galnaz-2015",
         "ponnusamy-fnrbc-membrane-2012",
+        "ito-huvec-hdlec-2025",
+        "vaish-hek293tshaving-2024",
+        "olivieri-rbc-drm-2021",
+        "he-liver-pm-2007",
     ),
     "multi": (
         "cspa-2015",
@@ -923,6 +931,8 @@ RAFT_PREPS = frozenset(
         "hammoud-mdm-raft-2022",
         "harant-sma-srm-2023",
         "szklanna-platelet-drm-2016",
+        "olivieri-rbc-drm-2021",
+        "yanagida-hl60-raft-2007",
     }
 )
 
