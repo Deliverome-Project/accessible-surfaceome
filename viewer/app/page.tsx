@@ -1,6 +1,7 @@
 import { Shell } from "../components/Shell/Shell";
 import { CatalogTable } from "../components/CatalogTable/CatalogTable";
 import { loadCatalog, withDeepDiveFilters } from "../lib/surfaceome";
+import { nCountedDatasets, withProteomicsCounts } from "../lib/surface-proteomics-server";
 import styles from "./page.module.css";
 
 /**
@@ -16,7 +17,7 @@ export default async function HomePage() {
   // Rebuild deep-dive filters from records so a new filter field works
   // without redeploying the Worker (the /v1/catalog `ddf` lags the in-tree
   // taxonomy). Same helper /compare uses.
-  const rows = await withDeepDiveFilters(catalog.rows);
+  const rows = withProteomicsCounts(await withDeepDiveFilters(catalog.rows));
 
   return (
     <Shell>
@@ -58,6 +59,7 @@ export default async function HomePage() {
           n_with_triage={catalog.n_with_triage}
           n_with_deep_dive={catalog.n_with_deep_dive}
           universe_version={catalog.universe_version}
+          n_proteomics_datasets={nCountedDatasets()}
         />
 
         <footer className={styles.footnotes}>

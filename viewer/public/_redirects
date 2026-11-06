@@ -1,0 +1,4 @@
+# The surface proteomics page moved from /studies/ to /surface-proteomics/.
+# Author emails link /studies/?arm=<study_id>; Pages keeps the query string.
+/studies /surface-proteomics/ 301
+/studies/ /surface-proteomics/ 301
