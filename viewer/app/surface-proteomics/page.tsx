@@ -84,6 +84,10 @@ export default function SurfaceProteomicsPage() {
             ·{" "}
             <a href={DOWNLOADS.datasets} download>
               dataset details (TSV, {index.n_arms} rows)
+            </a>{" "}
+            ·{" "}
+            <a href={DOWNLOADS.methods} download>
+              methods and source detail (TSV, {index.n_arms} rows)
             </a>
           </p>
         </header>
