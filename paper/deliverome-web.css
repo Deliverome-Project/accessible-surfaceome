@@ -215,7 +215,7 @@ html { -webkit-text-size-adjust: 100%; }
  * Prose
  * ============================================================ */
 
-h2, h3, h4, h6 {
+h2, h3, h4, h5, h6 {
   font-family: var(--font-sans, "Manrope"), sans-serif;
   color: var(--maroon-dark);
   line-height: 1.25;
@@ -249,10 +249,12 @@ h2 {
 }
 
 /* Each step is a clear drop from the one above, so a heading's level is
- * legible from its size alone: 20.8 / 18 / 16.3 / 14.4 px. */
+ * legible from its size alone: 20.8 / 18 / 16.3 / 14.4 px. h5 and h6 share
+ * the last step: build.py re-levels the Methods' h6-under-h4 headings to h5
+ * so the outline doesn't skip a level, and they should look as before. */
 h3 { font-size: 1.125rem; font-weight: 700; color: var(--ink); }
 h4 { font-size: 1.02rem; font-weight: 600; color: var(--ink-soft); }
-h6 { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+h5, h6 { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
 
 p { margin-block: 0 1.05rem; }
 
@@ -316,7 +318,7 @@ strong { font-weight: 600; }
  * caption's rail lands exactly on the body text's left edge. The
  * `100% - 3rem` arm keeps the same gutter once the viewport is narrower
  * than the measure. */
-.paper-root > .figure-block h5 {
+.paper-root > .figure-block > figcaption {
   /* The block's content box IS the text column (see above), so the
    * legend simply fills it. */
   width: 100%;
@@ -333,7 +335,10 @@ img {
   margin-inline: auto;
 }
 
-h5 {
+/* Captions are <figcaption> (html_polish.semantic_captions), scoped to the
+ * in-page blocks so the lightbox's own <figcaption> keeps its rules. */
+.figure-block > figcaption,
+.table-block > figcaption {
   /* Rail only — the filled caption card belongs to the print edition,
    * where it separates figures from two-column body text. On a white
    * single-column page it just adds noise. */
@@ -353,14 +358,16 @@ h5 {
  * figures.lua wraps around "Figure N. Title sentence."; `strong` is
  * the .docx's own bolding of the same words, kept so a caption the
  * filter could not resolve still reads right here. */
-h5 .caption-lead,
-h5 strong { color: var(--maroon-dark); font-weight: 600; }
+.figure-block > figcaption .caption-lead,
+.figure-block > figcaption strong,
+.table-block > figcaption .caption-lead,
+.table-block > figcaption strong { color: var(--maroon-dark); font-weight: 600; }
 
 /* Panel markers inside a legend. A multi-panel legend otherwise reads
  * as one undifferentiated paragraph, so finding the sentence that
  * explains panel b means reading the whole thing. Same maroon as the
  * caption's run-in, a step heavier than the prose around it. */
-h5 .panel-label,
+.figure-block > figcaption .panel-label,
 .figure-lightbox__inner figcaption .panel-label {
   font-weight: 700;
   color: var(--maroon-dark);
@@ -368,8 +375,10 @@ h5 .panel-label,
 
 /* Landing highlight: clicking a cross-reference should make it
  * obvious WHICH block you just jumped to. */
-.figure-block:target h5,
-h5:target {
+.figure-block:target > figcaption,
+.table-block:target > figcaption,
+.figure-block > figcaption:target,
+.table-block > figcaption:target {
   box-shadow: 0 0 0 3px var(--maroon-soft);
 }
 
@@ -471,9 +480,13 @@ th { color: var(--maroon-dark); font-weight: 600; }
 /* Tables can use more width than the prose measure: Supplementary
  * Table 1 is three columns of codes plus descriptions. */
 .paper-root > table,
-.paper-root > h5.table-caption {
+.paper-root > .table-block {
   max-width: min(58rem, 100%);
 }
+/* A <figure>'s default block margins would add to the caption's and the
+ * table's own; the children already space themselves as they did when
+ * they were loose in the page. */
+.paper-root > .table-block { margin-block: 0; }
 
 /* build.py demotes all but the first <thead> row into <tbody>; each
  * body cell holds a reason code over its description. */
@@ -750,7 +763,7 @@ td p:first-child strong { color: var(--maroon-dark); }
   width: 100%;
   margin-top: 0.9rem;
   padding: 0.3rem 0 0.3rem 1rem;
-  /* Matches the lighter in-flow caption rail (see `h5` above). */
+  /* Matches the lighter in-flow caption rail (see `.figure-block > figcaption` above). */
   border-left: 1.5px solid rgba(146, 32, 56, 0.45);
   font-size: 0.85rem;
   line-height: 1.5;

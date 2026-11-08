@@ -12,6 +12,9 @@ Why: each of these fixed a visible defect in the rendered manuscript.
   whole table rendered in the uppercase header style.
 - Table captions follow their table in the .docx; in print they were
   stranded at the foot of a page with the table on the next.
+- Captions came out as <h5> headings, so on the web every figure broke the
+  heading outline (h2 -> h5) and failed Lighthouse's heading-order audit;
+  the web build makes them <figure>/<figcaption> and closes h4 -> h6 gaps.
 """
 from __future__ import annotations
 
@@ -28,8 +31,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "paper"))
 
 from html_polish import (  # noqa: E402  # ty: ignore[unresolved-import]
     captions_above_tables,
+    close_heading_gaps,
     demote_extra_header_rows,
     polish_print_html,
+    semantic_captions,
     unnest_wbr,
 )
 
@@ -124,3 +129,45 @@ def test_filter_skips_tables_and_plain_underscores():
     assert table is not None
     assert "<wbr>" not in table.group(0)
     assert "lone _ stays" in html
+
+
+def test_semantic_captions_makes_figures_and_table_figures():
+    body = _body(
+        '<h2>Results</h2>'
+        '<div class="figure-block reveal" id="f1"><p><img src="a.svg" alt="x"/></p>'
+        '<h5><span class="caption-lead"><strong>Figure 1. T.</strong></span> Legend.</h5></div>'
+        '<h5 class="table-caption reveal">Supplementary Table 1. Codes.</h5>'
+        '<table class="reveal"><tr><td>a</td></tr></table>'
+    )
+    assert semantic_captions(body) == (1, 1)
+    fig = body.find("figure")
+    assert fig.get("class") == "figure-block reveal" and fig.get("id") == "f1"
+    cap = fig.find("figcaption")
+    assert cap is not None and cap.find(".//span[@class='caption-lead']") is not None
+    table_fig = body.xpath("figure[@class='table-block']")[0]
+    assert [c.tag for c in table_fig] == ["figcaption", "table"]
+    assert table_fig[0].get("class") == "table-caption reveal"
+    assert not list(body.iter("h5"))
+    assert not body.xpath(".//div[contains(@class, 'figure-block')]")
+
+
+def test_semantic_captions_rejects_unknown_caption_shapes():
+    with pytest.raises(ValueError, match="one"):
+        semantic_captions(_body(
+            '<div class="figure-block"><p><img src="a.svg"/></p><h5>A</h5><h5>B</h5></div>'
+        ))
+    with pytest.raises(ValueError, match="left after"):
+        semantic_captions(_body("<h2>A</h2><h5>Stray caption</h5>"))
+
+
+def test_close_heading_gaps_relevels_only_skipped_headings():
+    body = _body(
+        "<h1>T</h1><h2>Methods</h2><h3>Deep dive</h3><h4>Retrieval</h4>"
+        "<h6 id='d'>Discovery</h6><h6>Filtering</h6><h4>Scoring</h4><h2>Refs</h2>"
+    )
+    assert close_heading_gaps(body) == 2
+    assert [h.tag for h in body.xpath(".//*[self::h1 or self::h2 or self::h3 or "
+            "self::h4 or self::h5 or self::h6]")] == [
+        "h1", "h2", "h3", "h4", "h5", "h5", "h4", "h2"
+    ]
+    assert body.xpath(".//h5[@id='d']")
