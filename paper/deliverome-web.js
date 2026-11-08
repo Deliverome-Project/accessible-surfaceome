@@ -410,7 +410,7 @@
   function open(block) {
     var source = block.querySelector("img");
     if (!source) return;
-    var caption = block.querySelector("h5");
+    var caption = block.querySelector(":scope > figcaption");
     index = order.indexOf(block);
     if (counter) {
       counter.textContent =

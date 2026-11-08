@@ -791,6 +791,21 @@ def build_web(
     if revealed:
         print(f"  marked {revealed} block(s) for scroll reveal")
 
+    # Captions out of the heading outline: <figure>/<figcaption> instead of
+    # the .docx's Heading 5, then close the h4 -> h6 gaps that leaves. After
+    # every pass above, which all still find captions as <h5>.
+    if body is not None:
+        from html_polish import (  # ty: ignore[unresolved-import]
+            close_heading_gaps,
+            semantic_captions,
+        )
+
+        figures, tables = semantic_captions(body)
+        print(f"  captions -> <figcaption>: {figures} figure(s), {tables} table(s)")
+        relevelled = close_heading_gaps(body)
+        if relevelled:
+            print(f"  re-levelled {relevelled} heading(s) that skipped a level")
+
     index = out_dir / "index.html"
     # Trailing newline: lxml's tostring doesn't emit one, and when this
     # file is committed to a repo with an end-of-file-fixer pre-commit

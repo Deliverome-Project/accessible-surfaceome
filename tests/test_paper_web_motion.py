@@ -695,7 +695,8 @@ def test_section_headings_outrank_their_subsections() -> None:
     against h3's 20px — so the hierarchy read backwards and crossing
     into a new section registered as nothing at all."""
     css = _strip_comments(WEB_CSS.read_text())
-    sizes = [_font_px(css, s) for s in ("h2", "h3", "h4", "h6")]
+    # h5 and h6 share a rule: build.py re-levels h6-under-h4 to h5.
+    sizes = [_font_px(css, s) for s in ("h2", "h3", "h4", "h5, h6")]
     assert sizes == sorted(sizes, reverse=True), (
         f"heading sizes are not monotonic by level: {sizes}"
     )
@@ -719,7 +720,7 @@ def test_figure_legend_shares_the_body_text_column() -> None:
         "the block also inherits the body's padding-inline, so subtracting "
         "the gutters here insets the figure by them twice"
     )
-    rule = re.search(r"\.paper-root > \.figure-block h5\s*\{([^}]*)\}", css)
+    rule = re.search(r"\.paper-root > \.figure-block > figcaption\s*\{([^}]*)\}", css)
     assert rule, "the figure legend has no width of its own"
     assert "width: 100%" in rule.group(1), "legend does not fill the figure column"
 
