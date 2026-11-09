@@ -127,6 +127,36 @@ break a deploy, but a real outage exits non-zero fast. So avoid deploying
 while another job is hammering the same Worker/D1 (e.g. an R2 `.md`
 populate); if the threshold trips, just retry once the Worker is healthy.
 
+### Surface proteomics data (`/surface-proteomics/` and the gene-page Expression tab)
+
+`public/data/surface-proteomics/` holds the published human cell-surface
+proteomics study compendium (S3E8 in deliverome-analysis): `studies.json`
+(one entry per study arm) and `presence/{NN}.json` (UniProt accession → arms
+it was listed in, sharded so a gene page fetches one ~45 KB file). The
+gene page's Expression tab shows detection per arm, and `/surface-proteomics/`
+lists the arms, each arm's proteins (with its deep-dive tier, baked in from the
+catalog at build time) and the exact intersections between selected arms. The
+page is not in the viewer's top nav; it is linked from the Open Data menu on
+deliverome.org. Only core
+and provisional arms (intact-cell labeling that passed review) count as
+surface detections; held, high-background and comparator arms (membrane
+fractionation, inner-leaflet labeling) are shown and labeled as not counted.
+Whole-lysate glycoproteomes are not published. Reported accessions are normalized to each
+gene's canonical UniProt entry through its HGNC ID (HGNC's `uniprot_ids`, then
+UniProt's own HGNC cross-reference) and `gene_identifier_public`, so a gene is
+never split across two entries; the counts are in `studies.json` under
+`accession_normalization`. The build reads `.env` for public D1 credentials.
+
+The files are committed and rebuilt by hand when a new snapshot is
+published. Point `--analysis-ref` at the deliverome-analysis branch that
+holds the snapshot's `method_audit.json`:
+
+```bash
+uv run python scripts/build/build_surface_proteomics_studies.py \
+  --env-file ~/git/deliverome-analysis/.env \
+  --analysis-ref origin/main --snapshot 2026-11-02-sweep-v5
+```
+
 ### Linking to a filtered catalogue
 
 Every catalogue filter, and the sort order, lives in the query string, so a
