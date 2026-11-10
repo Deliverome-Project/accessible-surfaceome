@@ -78,6 +78,10 @@ def main() -> int:
     ap.add_argument("--allow-deletes", action="store_true",
                     help="proceed even when a gene's local JSON has FEWER sites than "
                          "D1 holds (replace-all would delete the difference).")
+    ap.add_argument("--allow-downgrade", action="store_true",
+                    help="overwrite or delete live rows whose tag_sites_version date is "
+                         "LATER than this publish's (default: such rows are left alone "
+                         "and logged, so an old snapshot cannot undo a newer correction).")
     ap.add_argument("--gene", help="sync only this SYMBOL (default: all committed JSON).")
     ap.add_argument("--manifest", help="TSV whose first column is a gene SYMBOL; sync "
                                        "only those genes, leaving the rest of the store "
@@ -167,7 +171,8 @@ def main() -> int:
         for f in files:
             data = json.loads(f.read_text())
             n = tag_sites_d1.publish_tag_sites(
-                data, tag_sites_version=args.version, client=client, provenances=scope
+                data, tag_sites_version=args.version, client=client, provenances=scope,
+                allow_downgrade=args.allow_downgrade,
             )
             grand += n
             log.info("synced %-12s %3d sites", data["gene_symbol"], n)

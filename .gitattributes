@@ -238,3 +238,6 @@ data/analysis/tag_site_gpi_terminal/*.md -filter -merge text
 # 1,068 rows / 76 KB: -diff so it isn't inlined, but un-LFS'd so a reader
 # fetching the raw URL gets the TSV instead of a pointer stub.
 data/analysis/tag_site_gpi_terminal/*.tsv -filter -diff -merge text
+
+# Tag-site literature audit: small, diffable, served through raw GitHub for reanalysis.
+data/analysis/tag_site_corpus_audit/* -filter -diff -merge text

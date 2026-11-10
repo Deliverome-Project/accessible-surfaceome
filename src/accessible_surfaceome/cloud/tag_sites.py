@@ -9,11 +9,11 @@ never leaves a stale row). The Worker serves these at ``/v1/tag-sites/:symbol``.
 
 from __future__ import annotations
 
-import logging
-
 import json
+import logging
+import re
 from collections.abc import Iterable
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from accessible_surfaceome.cloud.d1_client import D1Client
@@ -226,7 +226,12 @@ def flat_row(
         "plddt": site.get("plddt"),
         "conservation_rank": site.get("conservation_rank"),
         "median_conservation": site.get("median_conservation"),
-        "tag_sites_version": version,
+        # A site that records the version it was published under keeps it: a
+        # snapshot refreshed from the served table carries rows from several
+        # publishes (a 2026-10-11 sweep row next to a 2026-11-05 audited one),
+        # and restamping them all with one run version would erase which
+        # correction each row came from. A site without one takes the run's.
+        "tag_sites_version": site.get("tag_sites_version") or version,
         "synced_at": synced_at,
         "validation_level": site.get("validation_level"),
         "position_evidence": site.get("position_evidence"),
@@ -336,12 +341,53 @@ def enrich_sources_with_paper_metadata(
     return n
 
 
+_VERSION_DATE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})")
+
+
+def version_date(version: str | None) -> date | None:
+    """The date a ``tag_sites_version`` stamp starts with, or ``None``.
+
+    Stamps are ``YYYY-MM-DD`` or ``YYYY-MM-DD-<label>`` (``2026-11-05-lit-audit``);
+    ``dev`` and ``literature_enriched_v1`` carry no date and are never compared.
+    """
+    m = _VERSION_DATE.match(version or "")
+    if not m:
+        return None
+    try:
+        return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+    except ValueError:
+        return None
+
+
+def newer_live_rows(
+    live: Iterable[dict[str, Any]], incoming_version_of: dict[str, str], run_version: str
+) -> set[str]:
+    """``site_id`` of every live row stamped with a LATER date than what a publish
+    would write for it: the row's own incoming version when the file carries the
+    site, else the run version (the stamp a deletion is made under).
+
+    Returns the ids to protect. A live stamp or incoming stamp without a date is
+    not comparable and never protects.
+    """
+    protected: set[str] = set()
+    for row in live:
+        live_d = version_date(row.get("tag_sites_version"))
+        if live_d is None:
+            continue
+        incoming = incoming_version_of.get(row["site_id"], run_version)
+        in_d = version_date(incoming)
+        if in_d is not None and live_d > in_d:
+            protected.add(row["site_id"])
+    return protected
+
+
 def publish_tag_sites(
     data: dict[str, Any],
     *,
     tag_sites_version: str,
     client: D1Client | None = None,
     provenances: Iterable[str] | None = None,
+    allow_downgrade: bool = False,
 ) -> int:
     """UPSERT one gene's tag-sites into public D1 and return the row count written.
 
@@ -362,6 +408,16 @@ def publish_tag_sites(
     re-run that legitimately found nothing still has to clear the old literature
     rows); the default infers it from the file, which cannot express that.
 
+    **A newer live row is never overwritten or deleted by an older publish.**
+    The literature audit of 2026-11-05 corrected 178 served rows and withdrew 18
+    in place (``tag_site_public`` has no version axis). A later sync from a
+    snapshot or sweep output stamped with an earlier date would put the wrong
+    residues back, so a live row whose ``tag_sites_version`` date is later than
+    the stamp this publish would give it is left alone — not upserted, not
+    swept by the provenance-scoped delete — and logged. ``allow_downgrade=True``
+    is the explicit override for a deliberate rollback. Stamps without a leading
+    date (``dev``) are not comparable and get no protection.
+
     Idempotent — re-runs converge on the same rows. Caller owns ``client`` when
     passed; otherwise a public client is opened + closed."""
     synced_at = datetime.now(UTC).isoformat()
@@ -379,8 +435,25 @@ def publish_tag_sites(
     try:
         ensure_table(client)
         enrich_sources_with_paper_metadata(rows, client=client)
+        protected: set[str] = set()
+        if not allow_downgrade:
+            live = client.query(
+                "SELECT site_id, tag_sites_version FROM tag_site_public "
+                "WHERE gene_symbol = ?;",
+                [data["gene_symbol"]],
+            )
+            protected = newer_live_rows(
+                live, {r["site_id"]: r["tag_sites_version"] for r in rows}, tag_sites_version
+            )
+            if protected:
+                log.warning(
+                    "%s: %d live row(s) carry a newer tag_sites_version than this "
+                    "publish and are left untouched (pass allow_downgrade to override): %s",
+                    data["gene_symbol"], len(protected), ", ".join(sorted(protected)),
+                )
+                rows = [r for r in rows if r["site_id"] not in protected]
         if scope:
-            keep = [r["site_id"] for r in rows]
+            keep = [r["site_id"] for r in rows] + sorted(protected)
             marks = ", ".join(["?"] * len(scope))
             sql = (
                 f"DELETE FROM tag_site_public WHERE gene_symbol = ? "
