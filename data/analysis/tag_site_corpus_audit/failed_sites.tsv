@@ -1,0 +1,6 @@
+uniprot_acc	gene	insert_after_residue	site_id	pmid	why_failed
+O94856	NFASC	533	NFASC-internal-533-lit	37288813	amber mutant excluded by the authors: poor expression, weak/absent labeling
+O94856	NFASC	570	NFASC-internal-570-lit	37288813	amber mutant excluded by the authors: poor expression, weak/absent labeling
+Q01959	SLC6A3	288	SLC6A3-internal-288-lit	20161733	tetraCys EL3 construct failed to mature and traffic to the cell surface
+Q01959	SLC6A3	387	SLC6A3-internal-387-lit	20161733	tetraCys EL4 construct failed to mature and traffic to the cell surface
+Q8NER1	TRPV1	464	TRPV1-internal-464-lit	37693391	ncAA mutant was not efficiently labelled

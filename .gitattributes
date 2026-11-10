@@ -202,3 +202,6 @@ data/processed/onedb_trim_rescue_v1/README.md -filter -merge text
 data/processed/onedb_trim_rescue_v1/deep_dive_cohort.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/deterministic_gaps.tsv -filter -merge text
 data/processed/onedb_trim_rescue_v1/gene_list_optcut_zerodb.tsv -filter -merge text
+
+# Tag-site literature audit: small, diffable, served through raw GitHub for reanalysis.
+data/analysis/tag_site_corpus_audit/* -filter -diff -merge text
