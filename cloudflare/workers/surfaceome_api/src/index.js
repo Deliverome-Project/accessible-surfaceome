@@ -3596,6 +3596,8 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },
   { group: "Tag sites", method: "GET", path: "/v1/tag-sites/{symbol}", summary: "TaggedSitesFile: engineered epitope/tag insertion points (deterministic loop/disorder/terminal + literature-validated); empty-but-200 when the gene has none. isoform_pins ship static-only." },
+  { group: "Tag sites", method: "GET", path: "/v1/l1-design/{symbol}", summary: "Deliverome L1 library design per member: rung, suggested tag sites (built / proposed / held, with source PR + commit and decided_by / implemented_by / reason) and structures (native model per the payload, plus tagged-construct refolds). Newest complete load; `load: null` when none is loaded." },
+  { group: "Tag sites", method: "GET", path: "/v1/l1-design/{symbol}/{load_version}", summary: "The same, pinned to one content-addressed load (l1d-<16 hex>)" },
   { group: "Utility", method: "GET", path: "/v1/meta/sizes", summary: "Approximate per-endpoint response sizes, computed live from D1" },
   { group: "Utility", method: "GET", path: "/v1", summary: "This index" },
 ];
@@ -4578,6 +4580,163 @@ async function handleCatalogOne(env, symbol) {
   });
 }
 
+// L1 library design overlay: per-member suggested tag sites and folded structures
+// (native model per the structure payload, plus tagged-construct refolds), from the
+// l1_*_public tables (cloudflare/migrations/l1_design_v1.sql, loaded by
+// scripts/cloud/build_l1_design_tables.py). Additive: no existing route or table is
+// read differently.
+//
+// Loads are content-addressed and INSERT-only. The newest load that has a row in
+// l1_design_load_public is served; the loader writes that row last, so a
+// half-applied load is invisible. `/v1/l1-design/{symbol}/{load_version}` pins an
+// older load for auditability.
+//
+// Keyed on the member's OWN gene symbol, COLLATE NOCASE. A cyno ortholog carries
+// its cyno symbol, which for L1 is the human symbol. Short TTL: a new load goes
+// live within a minute with no purge. Missing tables (Worker deployed before the
+// migration) degrade to `load: null` rather than a 500.
+const L1_LOAD_OK = /^l1d-[0-9a-f]{16}$/;
+
+async function handleL1Design(env, symbol, pinnedLoad = null) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return notFound("gene_not_found");
+  if (pinnedLoad != null && !L1_LOAD_OK.test(pinnedLoad)) return badRequest("bad_load_version");
+  let load = null;
+  try {
+    load = pinnedLoad
+      ? await env.DB.prepare(
+          `SELECT load_version, content_sha256, created_at, inputs_json, n_members, n_sites, n_structures
+             FROM l1_design_load_public WHERE load_version = ?`
+        ).bind(pinnedLoad).first()
+      : await env.DB.prepare(
+          `SELECT load_version, content_sha256, created_at, inputs_json, n_members, n_sites, n_structures
+             FROM l1_design_load_public ORDER BY created_at DESC, load_version DESC LIMIT 1`
+        ).first();
+  } catch {
+    load = null;
+  }
+  if (!load) {
+    if (pinnedLoad) return notFound("load_not_found");
+    return json({ gene_symbol: sym, load: null, members: [] }, { ttl: CACHE_TTL_SHORT });
+  }
+  const lv = load.load_version;
+  const q = (sql) => env.DB.prepare(sql).bind(lv, sym).all().then((r) => r?.results ?? []);
+  const [memberRows, siteRows, structRows] = await Promise.all([
+    q(`SELECT member_id, design_id, gene_symbol, species, candidate_set, rung,
+              ordered_length_aa, sequence_sha256, topology_version
+         FROM l1_member_public
+        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+        ORDER BY member_id`),
+    q(`SELECT site_id, member_id, design_id, rung, insert_after_residue, residue_before,
+              residue_after, leader, cassette, cassette_aa, rank, status, status_detail,
+              tagged_protein_sha256, source_pr, source_pr_state, source_commit, source_path,
+              decided_by, implemented_by, reason
+         FROM l1_tag_site_design_public
+        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+        ORDER BY member_id, rank, insert_after_residue, site_id`),
+    q(`SELECT structure_id, member_id, kind, site_id, source, release, s3_uri, r2_key,
+              model_url, proteoform_match, residue_offset, ordered_length_aa,
+              model_length_aa, is_chosen, mean_plddt, cassette_first_model_residue,
+              cassette_last_model_residue, note, decided_by, implemented_by, reason
+         FROM l1_structure_design_public
+        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+        ORDER BY member_id, kind, is_chosen DESC, structure_id`),
+  ]);
+  const num = (v) => (v == null ? null : Number(v));
+  const members = memberRows.map((m) => ({
+    member_id: m.member_id,
+    design_id: m.design_id ?? null,
+    gene_symbol: m.gene_symbol,
+    species: m.species ?? null,
+    candidate_set: m.candidate_set ?? null,
+    rung: m.rung,
+    ordered_length_aa: num(m.ordered_length_aa),
+    sequence_sha256: m.sequence_sha256 ?? null,
+    topology_version: m.topology_version ?? null,
+    sites: siteRows
+      .filter((s) => s.member_id === m.member_id)
+      .map((s) => ({
+        site_id: s.site_id,
+        rung: s.rung,
+        // The member's OWN native numbering; 0 = before residue 1; null = no site chosen.
+        insert_after_residue: num(s.insert_after_residue),
+        residue_before: s.residue_before ?? null,
+        residue_after: s.residue_after ?? null,
+        leader: s.leader ?? null,
+        cassette: s.cassette ?? null,
+        cassette_aa: num(s.cassette_aa),
+        rank: num(s.rank),
+        status: s.status,
+        status_detail: s.status_detail ?? null,
+        tagged_protein_sha256: s.tagged_protein_sha256 ?? null,
+        source: {
+          pr: num(s.source_pr),
+          pr_state: s.source_pr_state ?? null,
+          commit: s.source_commit,
+          path: s.source_path,
+        },
+        decided_by: s.decided_by,
+        implemented_by: s.implemented_by,
+        reason: s.reason ?? null,
+      })),
+    structures: structRows
+      .filter((st) => st.member_id === m.member_id)
+      .map((st) => {
+        const offset = Number(st.residue_offset || 0);
+        const orderedLen = num(st.ordered_length_aa);
+        return {
+          structure_id: st.structure_id,
+          kind: st.kind,
+          site_id: st.site_id ?? null,
+          source: st.source,
+          release: st.release ?? null,
+          s3_uri: st.s3_uri ?? null,
+          r2_key: st.r2_key ?? null,
+          model_url: st.model_url ?? null,
+          proteoform_match: st.proteoform_match ?? null,
+          residue_offset: offset,
+          ordered_length_aa: orderedLen,
+          model_length_aa: num(st.model_length_aa),
+          // Native models only: the model residues the member covers (1-based, inclusive).
+          display_first_model_residue:
+            st.kind === "native" && orderedLen != null ? offset + 1 : null,
+          display_last_model_residue:
+            st.kind === "native" && orderedLen != null ? offset + orderedLen : null,
+          is_chosen: Boolean(Number(st.is_chosen)),
+          mean_plddt: num(st.mean_plddt),
+          cassette_first_model_residue: num(st.cassette_first_model_residue),
+          cassette_last_model_residue: num(st.cassette_last_model_residue),
+          note: st.note ?? null,
+          decided_by: st.decided_by,
+          implemented_by: st.implemented_by,
+          reason: st.reason ?? null,
+        };
+      }),
+  }));
+  let inputs = null;
+  try {
+    inputs = JSON.parse(load.inputs_json || "null");
+  } catch {
+    inputs = null;
+  }
+  return json(
+    {
+      gene_symbol: sym,
+      load: {
+        load_version: lv,
+        content_sha256: load.content_sha256,
+        created_at: load.created_at,
+        n_members: num(load.n_members),
+        n_sites: num(load.n_sites),
+        n_structures: num(load.n_structures),
+        inputs,
+      },
+      members,
+    },
+    { ttl: pinnedLoad ? CACHE_TTL_LONG : CACHE_TTL_SHORT },
+  );
+}
+
 // Tag-insertion sites for one gene (deterministic + literature), from
 // tag_site_public. Returns a TaggedSitesFile (viewer/lib/tag-sites-types.ts) so
 // the viewer's fetchTaggedSites -> parseTaggedSitesFile consumes it unchanged.
@@ -4996,6 +5155,8 @@ async function routeRequest(request, env, ctx) {
     if ((m = path.match(/^\/v1\/catalog\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleCatalogOne(env, m[1]));
     if ((m = path.match(/^\/v1\/internalization\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleInternalization(env, m[1]));
     if ((m = path.match(/^\/v1\/tag-sites\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleTagSites(env, m[1]));
+    if ((m = path.match(/^\/v1\/l1-design\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleL1Design(env, m[1]));
+    if ((m = path.match(/^\/v1\/l1-design\/([^/]+)\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleL1Design(env, m[1], m[2]));
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleOrthologs(env, m[1]));
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
