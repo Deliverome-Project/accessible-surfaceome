@@ -385,6 +385,42 @@ def _nterm_sp(rows, info, R):
     return out
 
 
+def _nterm_decisions(rows, info, R):
+    """N-after-SP decisions (delegated 2026-11-12): one row per member, keyed by design id.
+
+    ``arm`` is native_site / igk_swap (both built) or no_nterm_arm (no tag). The cassette
+    follows ``native_after_residue`` in the member's own numbering; for an Igk swap the
+    leader replaces the native signal peptide (``igk_replaces_residues``).
+    """
+    out = []
+    for r in rows:
+        m = R.get("nterm_decisions", r["design_id"], gene=r["gene_symbol"])
+        if not m:
+            continue
+        arm = r["arm"]
+        res = _int(r.get("native_after_residue") or r.get("insert_after_residue"))
+        built = arm in ("native_site", "igk_swap")
+        verdict = r.get("refold_verdict") or None
+        out.append(_site(
+            info, site_id=f"{m['design_id']}-nsp-{res if res is not None else arm}", m=m,
+            rung="N after SP", insert_after_residue=res if built else None,
+            leader="igk" if arm == "igk_swap" else None,
+            cassette="p003 51-aa tandem" if built else None,
+            status="built" if built else "no_tag", decision=arm,
+            status_detail=f"{arm}; refold verdict {verdict or 'none'}",
+            rejected_alternative=r.get("rejected_alternative") or None,
+            tagged_protein_sha256=r.get("tagged_sha256") or None,
+            rationale_json={
+                "cleavage_site": r.get("cleavage_site"), "inside_predicted_fold": r.get("inside_predicted_fold"),
+                "tagged_cleavage_probability": _float(r.get("tagged_cleavage_probability")),
+                "igk_replaces_residues": r.get("igk_replaces_residues"), "evidence": r.get("evidence"),
+                "refold_verdict": verdict,
+            },
+            decided_by=r["decided_by"], implemented_by=r["implemented_by"], reason=r.get("reason") or None,
+        ))  # fmt: skip
+    return out
+
+
 def _type3(rows, info, R):
     out = []
     for r in rows:
@@ -795,41 +831,63 @@ def _tagged_structures(
 def _tagged_refold_v1(
     spec: dict, index_raw: bytes, metrics_raw: bytes, R, sites_by_design
 ) -> list[dict]:
-    """The tagged-refold run's own layout: ``structures.tsv`` + ``tagged_fold_metrics.tsv``.
+    """The tagged-refold run's own layout: ``structures.tsv`` (+ ``tagged_fold_metrics.tsv``).
 
-    Its candidate_id is an older member numbering, so a model is resolved by the
-    NATIVE sequence sha256 (+ gene), never by id. Untagged controls are skipped. The
-    folded site is the member's site at the metrics' insertion residue, when exactly
-    one site sits there.
+    Two revisions of the index are accepted. The current one has ``kind`` (only
+    ``tagged`` rows load; ``superseded``, ``control`` and ``native`` do not),
+    ``design_id``, ``insert_after_native_residue`` and ``verdict``. The first one had
+    ``tagged`` yes/no and an old member id. Either way a model resolves by design id
+    + native sequence sha256, falling back to native sequence + gene when the row has
+    no design id (loop rows), and never by member id. The folded site is the member's
+    site at the insertion residue, when exactly one site sits there.
     """
-    metrics = {r["fold_id"]: r for r in _rows(metrics_raw)}
+    metrics = {r["fold_id"]: r for r in _rows(metrics_raw)} if metrics_raw else {}
     date = spec["release"]
     out = []
     for r in _rows(index_raw):
-        if r.get("tagged") != "yes" or r.get("rung") in ("control", "sp_control"):
+        if "kind" in r:
+            if r["kind"] != "tagged":
+                continue
+        elif r.get("tagged") != "yes" or r.get("rung") in ("control", "sp_control"):
             continue
-        ms = [
-            m
-            for m in R.by_sha.get(r["native_sha256"], [])
-            if m["gene_symbol"] == r["gene_symbol"]
-        ]
-        if not ms:
-            R.dropped.setdefault("tagged", []).append(
-                f"{r['fold_id']}: no member with that native sequence"
-            )
-            continue
+        gene = r.get("gene_symbol") or r.get("gene")
+        if r.get("design_id"):
+            m = R.get("tagged", r["design_id"], sha=r["native_sha256"], gene=gene)
+            ms = [m] if m else []
+        else:
+            ms = [
+                m
+                for m in R.by_sha.get(r["native_sha256"], [])
+                if m["gene_symbol"] == gene
+            ]
+            if not ms:
+                R.dropped.setdefault("tagged", []).append(
+                    f"{r['fold_id']}: no member with that native sequence"
+                )
         met = metrics.get(r["fold_id"], {})
-        res = _int(met.get("insert_after_residue"))
+        res = _int(
+            r.get("insert_after_native_residue") or met.get("insert_after_residue")
+        )
+        verdict = r.get("verdict") or met.get("verdict") or None
+        plddt = r.get("mean_plddt") or met.get("mean_plddt")
         pdb = r["pdb_key"].rsplit("/", 1)[-1]
         for m in ms:
+            mine = sites_by_design.get(m["design_id"], [])
+            # The folded protein's sha256 names the construct exactly; the residue is the fallback.
             cands = [
                 s
-                for s in sites_by_design.get(m["design_id"], [])
-                if res is not None and s["insert_after_residue"] == res
+                for s in mine
+                if r.get("tagged_sha256")
+                and s["tagged_protein_sha256"] == r["tagged_sha256"]
             ]
+            if not cands:
+                cands = [
+                    s
+                    for s in mine
+                    if res is not None and s["insert_after_residue"] == res
+                ]
             site_id = cands[0]["site_id"] if len(cands) == 1 else None
             row = {c: None for c in STRUCT_COLS}
-            reasons = met.get("verdict_reasons") or ""
             row.update(
                 structure_id=f"{m['design_id']}-tagged-{r['fold_id']}-{date}",
                 member_id=m["member_id"], design_id=m["design_id"], gene_symbol=m["gene_symbol"],
@@ -837,17 +895,17 @@ def _tagged_refold_v1(
                 s3_uri=r["pdb_key"], r2_key=f"{TAGGED_R2_PREFIX}/{date}/{pdb}",
                 proteoform_match="tagged_construct", residue_offset=0,
                 ordered_length_aa=m.get("ordered_length_aa"), model_length_aa=_int(met.get("tagged_aa")),
-                is_chosen=1, mean_plddt=_float(met.get("mean_plddt")),
+                is_chosen=1, mean_plddt=_float(plddt),
                 cassette_first_model_residue=_int(r.get("cassette_start_1based")),
                 cassette_last_model_residue=_int(r.get("cassette_end_1based")),
-                refold_verdict=met.get("verdict") or None,
+                refold_verdict=verdict,
                 note="; ".join(x for x in (
                     f"rung {r['rung']}",
                     f"insert after {res}" if res is not None else "",
                     f"TM to native {met['tm_native']}" if met.get("tm_native") else "",
                     f"site lDDT {met['lddt_site']}" if met.get("lddt_site") else "",
                     f"SP {met['sp_state']}" if met.get("sp_state") else "",
-                    reasons,
+                    met.get("verdict_reasons") or "",
                 ) if x),
                 decided_by=spec["decided_by"], implemented_by=r.get("implemented_by") or spec["implemented_by"],
                 reason=spec.get("reason") or r.get("settings"),
@@ -901,7 +959,12 @@ def build(args) -> int:
 
     sites: list[dict] = []
     sites += _cterm(T["cterm"], inputs["cterm"], R)
-    sites += _nterm_sp(T["nterm_sp"], inputs["nterm_sp"], R)
+    if (
+        "nterm_decisions" in T
+    ):  # the delegated decisions supersede the reviewer-package picks
+        sites += _nterm_decisions(T["nterm_decisions"], inputs["nterm_decisions"], R)
+    else:
+        sites += _nterm_sp(T["nterm_sp"], inputs["nterm_sp"], R)
     sites += _type3(T["type3"], inputs["type3"], R)
     sites += _multipass(T["multipass"], inputs["multipass"], R, lane)
     snorkels = {r["design_id"]: r for r in T.get("snorkel_designs", [])}

@@ -510,6 +510,50 @@ S3_TABLES = {
             ("l1-m0444.control", "control", "no"),
         ]
     ],  # fmt: skip
+    "tagged_index_v2.tsv": [
+        {
+            "fold_id": fid,
+            "kind": kind,
+            "rung": "cterm",
+            "design_id": "l1-p0001",
+            "gene_symbol": "GENEA",
+            "tagged_sha256": "8" * 64,
+            "native_sha256": SHA["A"],
+            "cassette_start_1based": "761",
+            "cassette_end_1based": "811",
+            "insert_after_native_residue": "760",
+            "mean_plddt": "77.0",
+            "verdict": verdict,
+            "pdb_key": f"processed://x/tagged/2026-11-12/{fid}.pdb",
+            "implemented_by": "refold",
+        }
+        for fid, kind, verdict in [
+            ("t.8888", "tagged", "fail"),
+            ("l1-m0077.cterm", "superseded", "pass"),
+        ]
+    ],  # fmt: skip
+    "nterm_decisions.tsv": [
+        {
+            "candidate_id": "l1-m0999",
+            "design_id": "l1-p0003",
+            "gene_symbol": "GENEB",
+            "candidate_set": "library_reference",
+            "arm": "igk_swap",
+            "insert_after_residue": "24",
+            "igk_replaces_residues": "1-22",
+            "native_after_residue": "34",
+            "cleavage_site": "32",
+            "inside_predicted_fold": "0",
+            "tagged_cleavage_probability": "0.97",
+            "tagged_sha256": "7" * 64,
+            "evidence": "SignalP",
+            "refold_verdict": "pass",
+            "decided_by": "nterm session (delegated by the reviewer 2026-11-12)",
+            "implemented_by": "nterm builder",
+            "reason": "native SP weak",
+            "rejected_alternative": "native site 34",
+        },
+    ],  # fmt: skip
     "tagged_metrics.tsv": [
         {
             "fold_id": "l1-m0444.internal",
@@ -576,6 +620,7 @@ PINS = {
 OBJECT_PINS = {
     "internal_decisions": "decisions.tsv", "internal_proposed": "proposed.tsv",
     "loop_evidence": "loops.tsv", "lit_contacts": "contacts.tsv",
+    "nterm_decisions": "nterm_decisions.tsv",
     "snorkel_designs": "snorkel.tsv",
 }  # fmt: skip
 
@@ -610,7 +655,10 @@ def built(tmp_path_factory):
     tagged = [
         {"format": "l1_tag_refold_v1", "object": f"file://{objects / 'tagged_index.tsv'}",
          "metrics": f"file://{objects / 'tagged_metrics.tsv'}", "release": "2026-11-12",
-         "decided_by": "Becca, test", "implemented_by": "refold session"}
+         "decided_by": "Becca, test", "implemented_by": "refold session"},
+        {"format": "l1_tag_refold_v1", "object": f"file://{objects / 'tagged_index_v2.tsv'}",
+         "metrics": f"file://{objects / 'tagged_metrics.tsv'}", "release": "2026-11-12",
+         "decided_by": "Becca, test", "implemented_by": "refold session"},
     ]  # fmt: skip
     pins.write_text(
         json.dumps(
@@ -720,8 +768,14 @@ def test_joins_never_use_member_id_and_drop_stale_rows(built):
 
 def test_tagged_refolds_resolve_by_native_sequence_and_link_their_site(built):
     rows = [r for r in _rows(built["data"], "structures") if r["kind"] == "tagged"]
-    assert len(rows) == 1, "untagged controls are skipped"
-    t = rows[0]
+    assert len(rows) == 2, "untagged controls and superseded models are skipped"
+    v2 = next(r for r in rows if r["member_id"] == "l1-m0001")
+    assert (v2["site_id"], v2["refold_verdict"], v2["mean_plddt"]) == (
+        "l1-p0001-cterm-760",
+        "fail",
+        "77.0",
+    )
+    t = next(r for r in rows if r["member_id"] == "l1-m0006")
     assert (t["member_id"], t["site_id"], t["refold_verdict"]) == (
         "l1-m0006",
         "l1-p0006-internal-94",
@@ -732,6 +786,19 @@ def test_tagged_refolds_resolve_by_native_sequence_and_link_their_site(built):
         "145",
     )
     assert t["r2_key"] == "library-colabfold-tagged/2026-11-12/l1-m0444.internal.pdb"
+
+
+def test_nterm_decisions_supersede_the_reviewer_package_picks(built):
+    s = _sites(built["data"])["l1-p0003-nsp-34"]
+    assert (s["leader"], s["insert_after_residue"], s["status"], s["decision"]) == (
+        "igk",
+        "34",
+        "built",
+        "igk_swap",
+    )
+    assert s["rejected_alternative"] == "native site 34"
+    assert json.loads(s["rationale_json"])["refold_verdict"] == "pass"
+    assert s["decided_by"].startswith("nterm session")
 
 
 def test_snorkel_pick_sits_after_the_native_c_terminus(built):
@@ -802,7 +869,7 @@ def test_sql_is_insert_only_idempotent_and_load_row_last(built):
     db = sqlite3.connect(":memory:")
     db.executescript(MIGRATION.read_text())
     first = _apply(built["sql"], db)
-    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 12, "l1_structure_design_public": 3,
+    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 12, "l1_structure_design_public": 4,
                      "l1_contact_site_public": 4, "l1_design_load_public": 1}  # fmt: skip
     assert _apply(built["sql"], db) == first
 
