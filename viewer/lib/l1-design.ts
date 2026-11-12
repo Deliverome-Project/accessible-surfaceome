@@ -105,6 +105,11 @@ export interface L1Member {
   n_tm?: number | null;
   ordered_length_aa: number | null;
   sequence_sha256?: string | null;
+  /** The proteoform audit's decision for this member, when it has one. */
+  proteoform?: {
+    decision?: string; target?: string; status?: string; flags?: string; reason?: string;
+    alternative_rejected?: string; decided_by?: string; implemented_by?: string;
+  } | null;
   sites: L1Site[];
   structures: L1Structure[];
   contacts?: L1Contact[];

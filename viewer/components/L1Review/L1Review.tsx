@@ -422,6 +422,14 @@ function MemberDetail({
 
   return (
     <div className={styles.detailBody}>
+      {member.proteoform?.decision ? (
+        <p className={styles.caveat}>
+          <strong>Proteoform audit: {member.proteoform.decision}</strong>
+          {member.proteoform.target ? ` → ${member.proteoform.target}` : ""}
+          {member.proteoform.reason ? `. ${member.proteoform.reason}` : ""}
+          {member.proteoform.decided_by ? ` (decided by ${member.proteoform.decided_by})` : ""}
+        </p>
+      ) : null}
       <ReviewPanel
         member={member}
         loadVersion={loadVersion}
