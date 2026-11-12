@@ -361,6 +361,21 @@ GIT_TABLES = {
             ("api_surface_loop", "cand-1", "0"),
         ]
     ],  # fmt: skip
+    "proteoform.tsv": [
+        {
+            "design_id": "l1-p0004",
+            "gene_symbol": "GENEC",
+            "decision": "repair",
+            "target": "start at Met5",
+            "status": "apply",
+            "flags": "",
+            "flag_class": "proposed",
+            "reason": "extension",
+            "alternative_rejected": "keep",
+            "decided_by": "audit session",
+            "implemented_by": "audit",
+        },
+    ],  # fmt: skip
     "agent.tsv": [
         {
             "arm": arm,
@@ -531,6 +546,24 @@ S3_TABLES = {
             ("t.8888", "tagged", "fail"),
             ("l1-m0077.cterm", "superseded", "pass"),
         ]
+    ]
+    + [
+        {
+            "fold_id": "n.cccc",
+            "kind": "native",
+            "rung": "native",
+            "design_id": "l1-p0003",
+            "gene_symbol": "GENEB",
+            "tagged_sha256": SHA["C"],
+            "native_sha256": SHA["C"],
+            "cassette_start_1based": "",
+            "cassette_end_1based": "",
+            "insert_after_native_residue": "",
+            "mean_plddt": "70.1",
+            "verdict": "native_model",
+            "pdb_key": "processed://x/tagged/2026-11-12/n.cccc.pdb",
+            "implemented_by": "refold",
+        },
     ],  # fmt: skip
     "nterm_decisions.tsv": [
         {
@@ -616,6 +649,7 @@ PINS = {
     "renumbering": "renum.tsv", "tag_paths": "paths.tsv", "structure_payload": "payload.tsv",
     "cterm": "cterm.tsv", "nterm_sp": "nsp.tsv", "type3": "t3.tsv", "multipass": "mp.tsv",
     "multipass_lane_check": "lane.tsv", "internal_gate": "gate.tsv", "agent_picks": "agent.tsv",
+    "proteoform_decisions": "proteoform.tsv",
 }  # fmt: skip
 OBJECT_PINS = {
     "internal_decisions": "decisions.tsv", "internal_proposed": "proposed.tsv",
@@ -651,6 +685,7 @@ def built(tmp_path_factory):
         k: {"pr": 2, "ref": "fixture", "object": f"file://{objects / p}"}
         for k, p in OBJECT_PINS.items()
     }
+    sources["cterm"]["pending_note"] = "pending #9 re-push"
     pins = tmp / "pins.json"
     tagged = [
         {"format": "l1_tag_refold_v1", "object": f"file://{objects / 'tagged_index.tsv'}",
@@ -712,9 +747,10 @@ def test_build_maps_every_rung(built):
     c = sites["l1-p0001-cterm-760"]
     assert (c["member_id"], c["status"], c["cassette_aa"]) == (
         "l1-m0001",
-        "built",
+        "pending",
         "51",
     )
+    assert c["status_detail"].startswith("pending #9 re-push; was built")
     assert c["decided_by"].startswith("no individual decision")
     t3 = sites["l1-p0004-type3-r1"]
     assert (t3["leader"], t3["insert_after_residue"], t3["status"]) == (
@@ -801,6 +837,26 @@ def test_nterm_decisions_supersede_the_reviewer_package_picks(built):
     assert s["decided_by"].startswith("nterm session")
 
 
+def test_proteoform_decision_rides_on_the_member(built):
+    m = {r["member_id"]: r for r in _rows(built["data"], "members")}
+    assert json.loads(m["l1-m0004"]["proteoform_json"])["decision"] == "repair"
+    assert m["l1-m0003"]["proteoform_json"] == ""
+
+
+def test_native_only_refold_fills_a_member_with_no_native_model(built):
+    rows = _rows(built["data"], "structures")
+    nat = [r for r in rows if r["kind"] == "native" and r["member_id"] == "l1-m0003"]
+    assert (
+        len(nat) == 1 and nat[0]["source"] == "colabfold" and nat[0]["is_chosen"] == "1"
+    )
+    # GENEA already has a payload model, so no refold native is added for it.
+    assert not any(
+        "native-refold" in r["structure_id"]
+        for r in rows
+        if r["member_id"] == "l1-m0001"
+    )
+
+
 def test_snorkel_pick_sits_after_the_native_c_terminus(built):
     s = _sites(built["data"])["l1-p0008-internal-snorkel"]
     assert (s["status"], s["insert_after_residue"], s["cassette_aa"]) == (
@@ -869,7 +925,7 @@ def test_sql_is_insert_only_idempotent_and_load_row_last(built):
     db = sqlite3.connect(":memory:")
     db.executescript(MIGRATION.read_text())
     first = _apply(built["sql"], db)
-    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 12, "l1_structure_design_public": 4,
+    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 12, "l1_structure_design_public": 5,
                      "l1_contact_site_public": 4, "l1_design_load_public": 1}  # fmt: skip
     assert _apply(built["sql"], db) == first
 
@@ -940,6 +996,8 @@ assert.match(body.load.load_version, /^l1d-[0-9a-f]{16}$/);
 assert.deepEqual(body.members.map((m) => [m.member_id, m.species, m.membrane_class]),
   [["l1-m0001", "human", "single-pass type II"], ["l1-m0002", "cyno", "single-pass type II"]]);
 assert.equal(body.members[0].sites[0].insert_after_residue, 760);
+assert.equal(body.members[0].sites[0].status, "pending");
+assert.equal(body.members[0].proteoform, null);
 assert.equal(body.members[0].structures[0].display_last_model_residue, 760);
 const lv = body.load.load_version;
 

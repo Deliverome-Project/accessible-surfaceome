@@ -4699,7 +4699,7 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
   const q = (sql) => env.DB.prepare(sql).bind(lv, sym).all().then((r) => r?.results ?? []);
   const [memberRows, siteRows, structRows, contactRows] = await Promise.all([
     q(`SELECT member_id, design_id, gene_symbol, species, candidate_set, rung, membrane_class,
-              n_tm, ordered_length_aa, sequence_sha256, topology_version
+              n_tm, ordered_length_aa, sequence_sha256, topology_version, proteoform_json
          FROM l1_member_public
         WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
         ORDER BY member_id`),
@@ -4744,6 +4744,8 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
     ordered_length_aa: num(m.ordered_length_aa),
     sequence_sha256: m.sequence_sha256 ?? null,
     topology_version: m.topology_version ?? null,
+    // The proteoform audit's decision for this member (keep / swap / repair / redraw).
+    proteoform: parse(m.proteoform_json),
     sites: siteRows
       .filter((s) => s.member_id === m.member_id)
       .map((s) => ({

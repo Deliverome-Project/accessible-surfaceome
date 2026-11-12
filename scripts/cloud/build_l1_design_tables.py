@@ -89,6 +89,7 @@ TAGGED_R2_PREFIX = "library-colabfold-tagged"
 MEMBER_COLS = [
     "member_id", "design_id", "gene_symbol", "species", "candidate_set", "rung",
     "membrane_class", "n_tm", "ordered_length_aa", "sequence_sha256", "topology_version",
+    "proteoform_json",
 ]  # fmt: skip
 SITE_COLS = [
     "site_id", "member_id", "design_id", "gene_symbol", "species", "candidate_set",
@@ -178,7 +179,12 @@ def _read(src: dict, repo: Path, base: str) -> tuple[bytes, dict]:
             capture_output=True,
         ).stdout
         where = {"commit": src["commit"], "path": path}
+    got = hashlib.sha256(raw).hexdigest()
+    if src.get("sha256") and src["sha256"] != got:
+        raise SystemExit(f"{src}: content sha256 {got} != pinned {src['sha256']}")
     info = {
+        "pending_note": src.get("pending_note"),
+        "snorkel_pending_note": src.get("snorkel_pending_note"),
         "pr": src.get("pr"),
         "ref": src.get("ref"),
         "pr_state": _pr_state(src),
@@ -310,6 +316,15 @@ def _site(src_info: dict, **kw) -> dict:
         is_primary=1,
     )
     row.update(kw)
+    # A source the coordinator marked as about to be replaced (e.g. "pending #284"):
+    # keep its rows visible, but never as a settled pick.
+    if src_info.get("pending_note") and row["status"] != "alternative":
+        row["status_detail"] = (
+            f"{src_info['pending_note']}; was {row['status']}: {row['status_detail'] or ''}".rstrip(
+                ": "
+            )
+        )
+        row["status"] = "pending"
     if not row["decided_by"]:
         row["decided_by"] = RULE_DECIDER
     if not row["implemented_by"]:
@@ -467,6 +482,8 @@ def _multipass(rows, info, R, lane):
                 continue
             built = r["design"] in ("igk_tag", "tag_alone")
             status = "built" if built and r["status"] == "decided" else "pending"
+            if r["design"] == "moved" and r["status"] == "decided":
+                status = "no_tag"  # moved to another rung; the reason names it
             out.append(_site(
                 # nterm_res1_multipass.py: "The cassette goes after Met1".
                 info, site_id=f"{design_id}-res1-{r['design']}", m=m,
@@ -478,7 +495,9 @@ def _multipass(rows, info, R, lane):
                 status=status if i == 0 else "alternative", decision=r["design"],
                 status_detail=f"{r['status']}; GPCR={r['gpcr']}",
                 tagged_protein_sha256=r["protein_sha256"] or None,
+                rejected_alternative=r.get("rejected_alternative") or None,
                 rationale_json={
+                    "sequence_change": r.get("sequence_change"),
                     "lane_check": {k: chk.get(k) for k in ("lane_ok", "recommended_lane", "confidence", "evidence")}
                     if chk else None,
                     "cassette_decided_by": r.get("cassette_decided_by"),
@@ -561,6 +580,13 @@ def _internal(
                 f"{m['design_id']}: snorkel design is stale"
             )
             snork = None
+        status = INTERNAL_DECISION_STATUS.get(dec, "pending")
+        detail = f"{dec}; refold verdict {r.get('refold_verdict') or 'none'}"
+        if dec == "snorkel" and info_dec.get("snorkel_pending_note"):
+            status, detail = (
+                "pending",
+                f"{info_dec['snorkel_pending_note']}; was decided_not_built: {detail}",
+            )
         out.append(_site(
             info_dec, site_id=f"{m['design_id']}-internal-{res if res is not None else dec}", m=m,
             rung=m["rung"], site_source="ranker",
@@ -571,8 +597,8 @@ def _internal(
             tagged_protein_sha256=(snork or {}).get("snorkel_protein_sha256") or None,
             residue_before=junction.get((r["design_id"], res), "").partition("|")[0][:1] or None,
             residue_after=junction.get((r["design_id"], res), "").partition("|")[2][:1] or None,
-            rank=_int(r["pick_rank"]), status=INTERNAL_DECISION_STATUS.get(dec, "pending"),
-            decision=dec, status_detail=f"{dec}; refold verdict {r.get('refold_verdict') or 'none'}",
+            rank=_int(r["pick_rank"]), status=status,
+            decision=dec, status_detail=detail,
             confidence=r["confidence"] or None, rejected_alternative=r["rejected_alternative"] or None,
             rationale_json={
                 **_ranker_scores(r), "refold_verdict": r.get("refold_verdict"),
@@ -842,10 +868,14 @@ def _tagged_refold_v1(
     site at the insertion residue, when exactly one site sits there.
     """
     metrics = {r["fold_id"]: r for r in _rows(metrics_raw)} if metrics_raw else {}
+    native_rows: list[dict] = []
     date = spec["release"]
     out = []
     for r in _rows(index_raw):
         if "kind" in r:
+            if r["kind"] == "native":
+                native_rows.append(r)
+                continue
             if r["kind"] != "tagged":
                 continue
         elif r.get("tagged") != "yes" or r.get("rung") in ("control", "sp_control"):
@@ -911,6 +941,33 @@ def _tagged_refold_v1(
                 reason=spec.get("reason") or r.get("settings"),
             )  # fmt: skip
             out.append(row)
+    # Native-only folds: the run folded members that had no native model of their own
+    # protein. Loaded as the member's native model only when the payload gave it none.
+    for r in native_rows:
+        gene = r.get("gene_symbol") or r.get("gene")
+        m = (
+            R.get(
+                "tagged_native", r.get("design_id"), sha=r["native_sha256"], gene=gene
+            )
+            if r.get("design_id")
+            else None
+        )
+        if not m or m["design_id"] in (spec.get("_has_native") or set()):
+            continue
+        pdb = r["pdb_key"].rsplit("/", 1)[-1]
+        row = {c: None for c in STRUCT_COLS}
+        row.update(
+            structure_id=f"{m['design_id']}-native-refold-{r['fold_id']}-{date}",
+            member_id=m["member_id"], design_id=m["design_id"], gene_symbol=m["gene_symbol"],
+            kind="native", source="colabfold", release=date, s3_uri=r["pdb_key"],
+            r2_key=f"{TAGGED_R2_PREFIX}/{date}/{pdb}", proteoform_match="ours_by_construction",
+            residue_offset=0, ordered_length_aa=m.get("ordered_length_aa"),
+            model_length_aa=m.get("ordered_length_aa"), is_chosen=1, mean_plddt=_float(r.get("mean_plddt")),
+            note="native fold from the tagged-refold run (no payload model of this protein)",
+            decided_by=spec["decided_by"], implemented_by=r.get("implemented_by") or spec["implemented_by"],
+            reason=spec.get("reason") or r.get("settings"),
+        )  # fmt: skip
+        out.append(row)
     return out
 
 
@@ -947,6 +1004,16 @@ def build(args) -> int:
         m["membrane_class"] = _membrane_class(m, gpcr)
         members[m["member_id"]] = m
     R = Resolver(members)
+    for m in members.values():
+        m["proteoform_json"] = None
+    for r in T.get("proteoform_decisions", []):
+        m = R.get("proteoform_decisions", r["design_id"], gene=r["gene_symbol"])
+        if m:
+            keep = ("decision", "target", "status", "flags", "flag_class", "reason", "alternative_rejected",
+                    "decided_by", "implemented_by")  # fmt: skip
+            m["proteoform_json"] = json.dumps(
+                {k: r.get(k) for k in keep if r.get(k)}, sort_keys=True
+            )
 
     lane = {r["design_id"]: r for r in T["multipass_lane_check"]}
     loops: dict[str, list[dict]] = {}
@@ -1006,10 +1073,21 @@ def build(args) -> int:
     for s in sites:
         by_design.setdefault(s["design_id"], []).append(s)
     tagged_inputs = []
+    has_native = {
+        st["design_id"]
+        for st in structures
+        if st["kind"] == "native" and st["is_chosen"]
+    }
     for spec in pins.get("tagged_structures", []):
         traw, tinfo = _read(spec, repo, base)
         if spec.get("format") == "l1_tag_refold_v1":
-            mraw, minfo = _read({"object": spec["metrics"]}, repo, base)
+            spec = {**spec, "_has_native": has_native}
+            msrc = (
+                {"object": spec["metrics"]}
+                if "metrics" in spec
+                else {"commit": spec["commit"], "path": spec["metrics_path"]}
+            )
+            mraw, minfo = _read(msrc, repo, base)
             tinfo["metrics_sha256"] = minfo["sha256"]
             rows = _tagged_refold_v1(spec, traw, mraw, R, by_design)
         else:

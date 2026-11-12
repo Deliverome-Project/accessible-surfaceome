@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS l1_member_public (
     ordered_length_aa  INTEGER,          -- native ordered protein, member numbering
     sequence_sha256    TEXT,             -- sha256 of the ordered protein (the join key with design_id)
     topology_version   TEXT,
+    proteoform_json    TEXT,             -- the proteoform audit's decision for this member (keep / swap / repair / redraw), if any
     PRIMARY KEY (load_version, member_id)
 );
 CREATE INDEX IF NOT EXISTS idx_l1_member_public_symbol
