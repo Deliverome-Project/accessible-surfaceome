@@ -426,6 +426,20 @@ S3_TABLES = {
             decided_on="",
             refold_verdict="",
         ),
+        _ranker(
+            "l1-p0008",
+            "GENEG",
+            SHA["H"],
+            "",
+            1,
+            pick_rank="",
+            decision="snorkel",
+            confidence="low",
+            reason="no usable loop",
+            rejected_alternative="internal loop 2",
+            decided_on="2026-11-12",
+            refold_verdict="",
+        ),  # fmt: skip
     ],
     "proposed.tsv": [
         _ranker(
@@ -459,6 +473,23 @@ S3_TABLES = {
             refold_priority="3",
         ),
     ],
+    "snorkel.tsv": [
+        {
+            "member_id": "l1-m9",
+            "design_id": "l1-p0008",
+            "gene": "GENEG",
+            "sequence_sha256": SHA["H"],
+            "native_length": "300",
+            "module_length": "106",
+            "snorkel_protein_sha256": "e" * 64,
+            "components": "linker|PDGFRB TM|linker|cassette",
+            "status": "decided",
+            "reason": "C-term snorkel",
+            "rejected_alternative": "",
+            "decided_by": "ranker",
+            "implemented_by": "ranker",
+        },
+    ],  # fmt: skip
     "loops.tsv": [
         {
             "member_id": "l1-m9",
@@ -512,6 +543,7 @@ PINS = {
 OBJECT_PINS = {
     "internal_decisions": "decisions.tsv", "internal_proposed": "proposed.tsv",
     "loop_evidence": "loops.tsv", "lit_contacts": "contacts.tsv",
+    "snorkel_designs": "snorkel.tsv",
 }  # fmt: skip
 
 
@@ -584,6 +616,7 @@ def test_build_maps_every_rung(built):
         "l1-p0005-res1-igk_tag", "l1-p0005-res1-tag_alone", "l1-p0006-internal-94",
         "l1-p0006-v5-r2", "GENEE-F120", "l1-p0007-internal-route_to_nterm_after_sp",
         "l1-p0006-agent-r1",
+        "l1-p0008-internal-snorkel",
     }  # fmt: skip
     c = sites["l1-p0001-cterm-760"]
     assert (c["member_id"], c["status"], c["cassette_aa"]) == (
@@ -639,7 +672,20 @@ def test_joins_never_use_member_id_and_drop_stale_rows(built):
         "l1-p3001: not a member of the pinned universe"
     ]
     assert "stale" in dropped["internal_decisions"]["examples"][0]
-    assert manifest["counts"]["members_without_primary_site"] == ["l1-m0008"]
+    assert manifest["counts"]["members_without_primary_site"] == []
+
+
+def test_snorkel_pick_sits_after_the_native_c_terminus(built):
+    s = _sites(built["data"])["l1-p0008-internal-snorkel"]
+    assert (s["status"], s["insert_after_residue"], s["cassette_aa"]) == (
+        "decided_not_built",
+        "300",
+        "106",
+    )
+    assert s["rejected_alternative"] == "internal loop 2"
+    assert json.loads(s["rationale_json"])["snorkel_design"]["components"].startswith(
+        "linker"
+    )
 
 
 def test_agent_picks_only_where_the_member_is_the_canonical(built):
@@ -697,7 +743,7 @@ def test_sql_is_insert_only_idempotent_and_load_row_last(built):
     db = sqlite3.connect(":memory:")
     db.executescript(MIGRATION.read_text())
     first = _apply(built["sql"], db)
-    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 11, "l1_structure_design_public": 2,
+    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 12, "l1_structure_design_public": 2,
                      "l1_contact_site_public": 4, "l1_design_load_public": 1}  # fmt: skip
     assert _apply(built["sql"], db) == first
 
@@ -786,7 +832,7 @@ assert.deepEqual(e.contacts.map((c) => [c.residue, c.source, c.confidence_tier])
 assert.equal(status, 200);
 assert.equal(body.members.length, 8);
 assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0006").pick_status, ["built", "decided_not_built"]);
-assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0008").pick_status, []);
+assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0008").pick_status, ["decided_not_built"]);
 
 [status] = await call(`/v1/l1-design/GENEA/${lv}`);
 assert.equal(status, 200);
