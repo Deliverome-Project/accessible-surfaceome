@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { SectionCard } from "../SectionCard/SectionCard";
 import {
+  STATUS_HELP,
+  STATUS_LABEL,
+  sortSites,
   fetchL1Design,
   l1SiteLabel,
   l1StructureUrl,
@@ -21,11 +24,6 @@ const API_BASE =
   process.env.NEXT_PUBLIC_SURFACEOME_API_BASE ??
   "https://api.deliverome.org/surfaceome";
 
-const STATUS_TITLE: Record<L1Site["status"], string> = {
-  built: "A tagged construct has been designed and checked for this site.",
-  proposed: "A site (or leader) is chosen; the construct is not built yet.",
-  held: "Held, refused or flagged by the design review; see the detail.",
-};
 
 function setLabel(m: L1Member): string {
   const set = (m.candidate_set ?? "").replace(/_/g, " ");
@@ -39,6 +37,7 @@ function Provenance({ site }: { site: L1Site }) {
       <dl>
         {site.status_detail ? (<><dt>detail</dt><dd>{site.status_detail}</dd></>) : null}
         {site.reason ? (<><dt>reason</dt><dd>{site.reason}</dd></>) : null}
+        {site.rejected_alternative ? (<><dt>rejected alternative</dt><dd>{site.rejected_alternative}</dd></>) : null}
         <dt>decided by</dt><dd>{site.decided_by}</dd>
         <dt>implemented by</dt><dd>{site.implemented_by}</dd>
         <dt>source</dt>
@@ -73,19 +72,19 @@ export function L1MemberBlock({ m }: { m: L1Member }) {
         <span className={styles.badge}>{m.rung}</span>
         {m.ordered_length_aa != null ? <span className={styles.muted}>{m.ordered_length_aa} aa</span> : null}
       </div>
-      {m.sites.length ? (
+      {m.sites.some((s) => s.is_primary !== false) ? (
         <div className={styles.tablewrap}>
           <table className={styles.table}>
             <thead>
               <tr><th>Site</th><th>Insertion</th><th>Leader</th><th>Status</th><th></th></tr>
             </thead>
             <tbody>
-              {m.sites.map((s) => (
+              {sortSites(m.sites).filter((s) => s.is_primary !== false).map((s) => (
                 <tr key={s.site_id}>
                   <td className={styles.mono}>{s.rank != null ? `#${s.rank} ` : ""}{s.site_id}</td>
                   <td>{l1SiteLabel(s, m.ordered_length_aa)}</td>
                   <td>{s.leader === "igk" ? "Igκ" : "—"}</td>
-                  <td><span className={`${styles.pill} ${styles["s_" + s.status]}`} title={STATUS_TITLE[s.status]}>{s.status}</span></td>
+                  <td><span className={`${styles.pill} ${styles["s_" + s.status]}`} title={STATUS_HELP[s.status]}>{STATUS_LABEL[s.status]}</span></td>
                   <td><Provenance site={s} /></td>
                 </tr>
               ))}
@@ -93,7 +92,7 @@ export function L1MemberBlock({ m }: { m: L1Member }) {
           </table>
         </div>
       ) : (
-        <p className={styles.muted}>No tag site suggested for this member yet.</p>
+        <p className={styles.muted}>No tag site recorded for this member yet.</p>
       )}
       {models.length ? (
         <div className={styles.models}>
@@ -140,6 +139,10 @@ export function L1DesignCard({ symbol, n }: { symbol: string; n: number }) {
         {state === "ok" && data && (
           <>
             {data.members.map((m) => <L1MemberBlock key={m.member_id} m={m} />)}
+            <p className={styles.muted}>
+              Alternatives, scores and contact sites:{" "}
+              <a href={`/l1-review/?q=${encodeURIComponent(symbol)}&m=${encodeURIComponent(data.members[0]?.design_id ?? "")}`}>L1 review page</a>
+            </p>
             {data.load ? (
               <p className={`${styles.muted} ${styles.mono}`}>load {data.load.load_version} · {data.load.created_at}</p>
             ) : null}

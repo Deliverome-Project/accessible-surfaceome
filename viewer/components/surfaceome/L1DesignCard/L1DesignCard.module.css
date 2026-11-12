@@ -15,8 +15,10 @@
   font-size: 0.75rem; font-weight: var(--fw-medium); line-height: 1.5; border: 1px solid transparent; white-space: nowrap;
 }
 .s_built { background: var(--teal-soft); color: var(--teal-dark); border-color: color-mix(in srgb, var(--teal-mid) 35%, transparent); }
-.s_proposed { background: var(--amber-soft); color: var(--amber-dark); border-color: color-mix(in srgb, var(--amber-mid) 35%, transparent); }
-.s_held { background: var(--bg-warm); color: var(--muted); border: 1px dashed var(--line); }
+.s_decided_not_built { background: var(--lavender-soft, #ece8f6); color: var(--lavender-dark, #4b3b86); }
+.s_pending { background: var(--amber-soft); color: var(--amber-dark); border-color: color-mix(in srgb, var(--amber-mid) 35%, transparent); }
+.s_no_tag { background: var(--maroon-soft); color: var(--maroon-dark); }
+.s_alternative { background: var(--bg-warm); color: var(--muted); border: 1px dashed var(--line); }
 .tablewrap { overflow-x: auto; }
 .table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
 .table th {

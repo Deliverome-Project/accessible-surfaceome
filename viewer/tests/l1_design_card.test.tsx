@@ -68,7 +68,7 @@ test("site labels name the junction in member numbering", () => {
     l1SiteLabel(site({ insert_after_residue: 34, residue_before: "E", residue_after: "S" }), 894),
     "between E34 and S35",
   );
-  assert.equal(l1SiteLabel(site({ insert_after_residue: null }), 894), "no site chosen");
+  assert.equal(l1SiteLabel(site({ insert_after_residue: null }), 894), "no site");
   assert.equal(l1SiteLabel(site({ insert_after_residue: 0 }), 894), "before residue 1");
 });
 
