@@ -490,7 +490,9 @@ def _ranker_scores(r: dict) -> dict:
     }
 
 
-def _internal(decisions, proposed, info_dec, info_prop, R, loops_by_design):
+def _internal(
+    decisions, proposed, info_dec, info_prop, R, loops_by_design, snorkels=None
+):
     out = []
     chosen: dict[str, int | None] = {}
     # The decisions table carries no junction letters; the ranked table does, for the
@@ -511,9 +513,26 @@ def _internal(decisions, proposed, info_dec, info_prop, R, loops_by_design):
         res = _int(r["insert_after_residue"])
         chosen[m["design_id"]] = res
         dec = r["decision"]
+        # A snorkel construct appends a module (linker + an added TM helix + the
+        # cassette) after the native C-terminus, which puts the tag outside the cell.
+        snork = (snorkels or {}).get(m["design_id"]) if dec == "snorkel" else None
+        if snork and snork.get("sequence_sha256") not in (
+            None,
+            "",
+            m["sequence_sha256"],
+        ):
+            R.dropped.setdefault("snorkel_designs", []).append(
+                f"{m['design_id']}: snorkel design is stale"
+            )
+            snork = None
         out.append(_site(
             info_dec, site_id=f"{m['design_id']}-internal-{res if res is not None else dec}", m=m,
-            rung=m["rung"], site_source="ranker", insert_after_residue=res,
+            rung=m["rung"], site_source="ranker",
+            insert_after_residue=_int(snork["native_length"]) if snork else res,
+            cassette=f"snorkel module, {snork['module_length']} aa (added TM helix + linkers + 51-aa cassette)"
+            if snork else None,
+            cassette_aa=_int(snork["module_length"]) if snork else None,
+            tagged_protein_sha256=(snork or {}).get("snorkel_protein_sha256") or None,
             residue_before=junction.get((r["design_id"], res), "").partition("|")[0][:1] or None,
             residue_after=junction.get((r["design_id"], res), "").partition("|")[2][:1] or None,
             rank=_int(r["pick_rank"]), status=INTERNAL_DECISION_STATUS.get(dec, "pending"),
@@ -522,6 +541,8 @@ def _internal(decisions, proposed, info_dec, info_prop, R, loops_by_design):
             rationale_json={
                 **_ranker_scores(r), "refold_verdict": r.get("refold_verdict"),
                 "decided_on": r.get("decided_on"),
+                "snorkel_design": {k: snork.get(k) for k in ("components", "status", "reason", "rejected_alternative",
+                                                            "decided_by", "implemented_by")} if snork else None,
                 "loop_evidence": _loop_evidence(loops_by_design.get(m["design_id"], []), res),
             },
             decided_by=r["decided_by"], implemented_by=r["implemented_by"], reason=r["reason"] or None,
@@ -819,8 +840,9 @@ def build(args) -> int:
     sites += _nterm_sp(T["nterm_sp"], inputs["nterm_sp"], R)
     sites += _type3(T["type3"], inputs["type3"], R)
     sites += _multipass(T["multipass"], inputs["multipass"], R, lane)
+    snorkels = {r["design_id"]: r for r in T.get("snorkel_designs", [])}
     sites += _internal(T["internal_decisions"], T["internal_proposed"], inputs["internal_decisions"],
-                       inputs["internal_proposed"], R, loops)  # fmt: skip
+                       inputs["internal_proposed"], R, loops, snorkels)  # fmt: skip
     sites += _built_loop_arms(T["internal_gate"], inputs["internal_gate"], R)
     agent, agent_skipped = _agent_picks(
         T["agent_picks"], inputs["agent_picks"], R.by_design, canonical_sha
