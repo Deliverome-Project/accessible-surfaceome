@@ -490,6 +490,39 @@ S3_TABLES = {
             "implemented_by": "ranker",
         },
     ],  # fmt: skip
+    "tagged_index.tsv": [
+        {
+            "fold_id": fid,
+            "candidate_id": "l1-m0444",
+            "gene_symbol": "GENEE",
+            "rung": rung,
+            "tagged": tagged,
+            "tagged_sha256": "9" * 64,
+            "native_sha256": SHA["F"],
+            "cassette_start_1based": "95",
+            "cassette_end_1based": "145",
+            "pdb_key": f"processed://x/tagged/2026-11-12/{fid}.pdb",
+            "settings": "model_1",
+            "implemented_by": "refold session",
+        }
+        for fid, rung, tagged in [
+            ("l1-m0444.internal", "internal", "yes"),
+            ("l1-m0444.control", "control", "no"),
+        ]
+    ],  # fmt: skip
+    "tagged_metrics.tsv": [
+        {
+            "fold_id": "l1-m0444.internal",
+            "insert_after_residue": "94",
+            "tagged_aa": "203",
+            "mean_plddt": "81.5",
+            "tm_native": "0.97",
+            "lddt_site": "0.88",
+            "sp_state": "",
+            "verdict": "pass",
+            "verdict_reasons": "",
+        },
+    ],  # fmt: skip
     "loops.tsv": [
         {
             "member_id": "l1-m9",
@@ -574,9 +607,19 @@ def built(tmp_path_factory):
         for k, p in OBJECT_PINS.items()
     }
     pins = tmp / "pins.json"
+    tagged = [
+        {"format": "l1_tag_refold_v1", "object": f"file://{objects / 'tagged_index.tsv'}",
+         "metrics": f"file://{objects / 'tagged_metrics.tsv'}", "release": "2026-11-12",
+         "decided_by": "Becca, test", "implemented_by": "refold session"}
+    ]  # fmt: skip
     pins.write_text(
         json.dumps(
-            {"analysis_repo": "test/design", "base_dir": BASE, "sources": sources}
+            {
+                "analysis_repo": "test/design",
+                "base_dir": BASE,
+                "sources": sources,
+                "tagged_structures": tagged,
+            }
         )
     )
     data = tmp / "data"
@@ -675,6 +718,22 @@ def test_joins_never_use_member_id_and_drop_stale_rows(built):
     assert manifest["counts"]["members_without_primary_site"] == []
 
 
+def test_tagged_refolds_resolve_by_native_sequence_and_link_their_site(built):
+    rows = [r for r in _rows(built["data"], "structures") if r["kind"] == "tagged"]
+    assert len(rows) == 1, "untagged controls are skipped"
+    t = rows[0]
+    assert (t["member_id"], t["site_id"], t["refold_verdict"]) == (
+        "l1-m0006",
+        "l1-p0006-internal-94",
+        "pass",
+    )
+    assert (t["cassette_first_model_residue"], t["cassette_last_model_residue"]) == (
+        "95",
+        "145",
+    )
+    assert t["r2_key"] == "library-colabfold-tagged/2026-11-12/l1-m0444.internal.pdb"
+
+
 def test_snorkel_pick_sits_after_the_native_c_terminus(built):
     s = _sites(built["data"])["l1-p0008-internal-snorkel"]
     assert (s["status"], s["insert_after_residue"], s["cassette_aa"]) == (
@@ -743,7 +802,7 @@ def test_sql_is_insert_only_idempotent_and_load_row_last(built):
     db = sqlite3.connect(":memory:")
     db.executescript(MIGRATION.read_text())
     first = _apply(built["sql"], db)
-    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 12, "l1_structure_design_public": 2,
+    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 12, "l1_structure_design_public": 3,
                      "l1_contact_site_public": 4, "l1_design_load_public": 1}  # fmt: skip
     assert _apply(built["sql"], db) == first
 
