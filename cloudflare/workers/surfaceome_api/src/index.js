@@ -4596,6 +4596,15 @@ async function handleCatalogOne(env, symbol) {
 // minute with no purge. Missing tables (Worker deployed before the migration) degrade to
 // `load: null` rather than a 500.
 const L1_LOAD_OK = /^l1d-[0-9a-f]{16}$/;
+
+// The unpinned L1 routes must never be served stale: after a new load, a stale index
+// paired with a fresh per-gene response would show two different member numberings.
+// So no stale-while-revalidate (which json() adds to every cacheable response).
+function l1Fresh(data) {
+  const res = json(data, { ttl: 0 });
+  res.headers.set("Cache-Control", "public, max-age=30");
+  return res;
+}
 const L1_LOAD_COLS =
   "load_version, content_sha256, created_at, inputs_json, n_members, n_sites, n_structures, n_contacts";
 
@@ -4638,7 +4647,7 @@ function l1LoadJson(load, withInputs) {
 // rung, membrane class and the status of the member's current pick(s).
 async function handleL1DesignIndex(env) {
   const load = await l1Load(env, null);
-  if (!load) return json({ load: null, members: [] }, { ttl: CACHE_TTL_SHORT });
+  if (!load) return l1Fresh({ load: null, members: [] });
   const lv = load.load_version;
   const [members, picks] = await Promise.all([
     env.DB.prepare(
@@ -4657,7 +4666,7 @@ async function handleL1DesignIndex(env) {
     list.push(p.status);
     statusBy.set(p.member_id, list);
   }
-  return json(
+  return l1Fresh(
     {
       load: l1LoadJson(load, false),
       members: members.map((m) => ({
@@ -4674,7 +4683,6 @@ async function handleL1DesignIndex(env) {
         pick_status: (statusBy.get(m.member_id) ?? []).sort(),
       })),
     },
-    { ttl: CACHE_TTL_SHORT },
   );
 }
 
@@ -4685,7 +4693,7 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
   const load = await l1Load(env, pinnedLoad);
   if (!load) {
     if (pinnedLoad) return notFound("load_not_found");
-    return json({ gene_symbol: sym, load: null, members: [] }, { ttl: CACHE_TTL_SHORT });
+    return l1Fresh({ gene_symbol: sym, load: null, members: [] });
   }
   const lv = load.load_version;
   const q = (sql) => env.DB.prepare(sql).bind(lv, sym).all().then((r) => r?.results ?? []);
@@ -4820,10 +4828,9 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
         pmids: c.pmids ?? null,
       })),
   }));
-  return json(
-    { gene_symbol: sym, load: l1LoadJson(load, true), members },
-    { ttl: pinnedLoad ? CACHE_TTL_LONG : CACHE_TTL_SHORT },
-  );
+  const body = { gene_symbol: sym, load: l1LoadJson(load, true), members };
+  // A pinned load is immutable; the newest load must not be served stale.
+  return pinnedLoad ? json(body, { ttl: CACHE_TTL_IMMUTABLE, immutable: true }) : l1Fresh(body);
 }
 
 // --- L1 review page: verdicts + alternative-tag suggestions (private, token-gated) ---

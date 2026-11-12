@@ -792,6 +792,70 @@ def _tagged_structures(
     return out
 
 
+def _tagged_refold_v1(
+    spec: dict, index_raw: bytes, metrics_raw: bytes, R, sites_by_design
+) -> list[dict]:
+    """The tagged-refold run's own layout: ``structures.tsv`` + ``tagged_fold_metrics.tsv``.
+
+    Its candidate_id is an older member numbering, so a model is resolved by the
+    NATIVE sequence sha256 (+ gene), never by id. Untagged controls are skipped. The
+    folded site is the member's site at the metrics' insertion residue, when exactly
+    one site sits there.
+    """
+    metrics = {r["fold_id"]: r for r in _rows(metrics_raw)}
+    date = spec["release"]
+    out = []
+    for r in _rows(index_raw):
+        if r.get("tagged") != "yes" or r.get("rung") in ("control", "sp_control"):
+            continue
+        ms = [
+            m
+            for m in R.by_sha.get(r["native_sha256"], [])
+            if m["gene_symbol"] == r["gene_symbol"]
+        ]
+        if not ms:
+            R.dropped.setdefault("tagged", []).append(
+                f"{r['fold_id']}: no member with that native sequence"
+            )
+            continue
+        met = metrics.get(r["fold_id"], {})
+        res = _int(met.get("insert_after_residue"))
+        pdb = r["pdb_key"].rsplit("/", 1)[-1]
+        for m in ms:
+            cands = [
+                s
+                for s in sites_by_design.get(m["design_id"], [])
+                if res is not None and s["insert_after_residue"] == res
+            ]
+            site_id = cands[0]["site_id"] if len(cands) == 1 else None
+            row = {c: None for c in STRUCT_COLS}
+            reasons = met.get("verdict_reasons") or ""
+            row.update(
+                structure_id=f"{m['design_id']}-tagged-{r['fold_id']}-{date}",
+                member_id=m["member_id"], design_id=m["design_id"], gene_symbol=m["gene_symbol"],
+                kind="tagged", site_id=site_id, source="colabfold_tagged", release=date,
+                s3_uri=r["pdb_key"], r2_key=f"{TAGGED_R2_PREFIX}/{date}/{pdb}",
+                proteoform_match="tagged_construct", residue_offset=0,
+                ordered_length_aa=m.get("ordered_length_aa"), model_length_aa=_int(met.get("tagged_aa")),
+                is_chosen=1, mean_plddt=_float(met.get("mean_plddt")),
+                cassette_first_model_residue=_int(r.get("cassette_start_1based")),
+                cassette_last_model_residue=_int(r.get("cassette_end_1based")),
+                refold_verdict=met.get("verdict") or None,
+                note="; ".join(x for x in (
+                    f"rung {r['rung']}",
+                    f"insert after {res}" if res is not None else "",
+                    f"TM to native {met['tm_native']}" if met.get("tm_native") else "",
+                    f"site lDDT {met['lddt_site']}" if met.get("lddt_site") else "",
+                    f"SP {met['sp_state']}" if met.get("sp_state") else "",
+                    reasons,
+                ) if x),
+                decided_by=spec["decided_by"], implemented_by=r.get("implemented_by") or spec["implemented_by"],
+                reason=spec.get("reason") or r.get("settings"),
+            )  # fmt: skip
+            out.append(row)
+    return out
+
+
 # --------------------------------------------------------------------------- build
 
 
@@ -881,7 +945,12 @@ def build(args) -> int:
     tagged_inputs = []
     for spec in pins.get("tagged_structures", []):
         traw, tinfo = _read(spec, repo, base)
-        rows = _tagged_structures(spec, traw, tinfo, R, by_design)
+        if spec.get("format") == "l1_tag_refold_v1":
+            mraw, minfo = _read({"object": spec["metrics"]}, repo, base)
+            tinfo["metrics_sha256"] = minfo["sha256"]
+            rows = _tagged_refold_v1(spec, traw, mraw, R, by_design)
+        else:
+            rows = _tagged_structures(spec, traw, tinfo, R, by_design)
         structures += rows
         tagged_inputs.append({**tinfo, "release": spec["release"], "n": len(rows)})
     inputs["tagged_structures"] = tagged_inputs
