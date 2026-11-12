@@ -559,6 +559,14 @@ export function L1Review() {
     };
   }, [current?.gene_symbol]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // A detail from a newer load than the index means a load landed while the page was
+  // open: refresh the index so both describe the same library.
+  const detailLoad = detail?.load?.load_version;
+  const indexLoad = index && index !== "loading" ? index.load?.load_version : undefined;
+  useEffect(() => {
+    if (detailLoad && indexLoad && detailLoad !== indexLoad) fetchL1Index(API_BASE).then((d) => setIndex(d));
+  }, [detailLoad, indexLoad]);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
@@ -573,7 +581,10 @@ export function L1Review() {
   if (index === "loading") return <p className={styles.muted}>Loading the library…</p>;
   if (!index || !index.load) return <p className={styles.muted}>No L1 design is published on this API yet.</p>;
 
-  const member = detail?.members.find((m) => m.member_id === current?.member_id);
+  // Match on design id: member ids are renumbered between loads, design ids are not.
+  const member = detail?.members.find((m) =>
+    current?.design_id ? m.design_id === current.design_id : m.member_id === current?.member_id,
+  );
   const rungCounts = countBy(members.filter((m) => !filters.cls || m.membrane_class === filters.cls), (m) => m.rung);
   const classCounts = countBy(members.filter((m) => !filters.rung || m.rung === filters.rung), (m) => m.membrane_class);
   const reviewedN = new Set((reviews?.reviews ?? []).map((r) => r.design_id)).size;
