@@ -7556,14 +7556,6 @@
         }
       ]
     },
-    "EPPIN": {
-      "tier": "T1",
-      "surface_isoform_ids": [
-        "O95925-2",
-        "O95925-3"
-      ],
-      "surface_orthologs": []
-    },
     "ERBB2": {
       "tier": "T1",
       "surface_isoform_ids": [
@@ -24946,6 +24938,11 @@
           "species": "cyno"
         }
       ]
+    },
+    "SLC67A1": {
+      "tier": "T2",
+      "surface_isoform_ids": [],
+      "surface_orthologs": []
     },
     "SLC68A1": {
       "tier": "T3",
