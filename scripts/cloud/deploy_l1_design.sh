@@ -7,6 +7,7 @@
 # wrangler.toml (copied from the canonical checkout; it is gitignored).
 #
 #   bash scripts/cloud/deploy_l1_design.sh --data-dir DIR [--redacted] [--skip-r2] [--execute]
+#   (--base REF replaces origin/main in the checks, for a dry run before merge only)
 #
 # DIR is the loader's --data-dir: it holds l1_design_load.sql (full provenance) and
 # l1_design_load.redacted.sql (--redacted: provenance columns withheld on the public API).
@@ -25,7 +26,7 @@
 # l1-viewer-tag-sites, which is not permitted to write production itself.
 set -euo pipefail
 
-DATA_DIR=""; REDACTED=0; SKIP_R2=0; EXECUTE=0
+DATA_DIR=""; REDACTED=0; SKIP_R2=0; EXECUTE=0; BASE="origin/main"
 TAGGED_S3="s3://deliverome-processed/sprint4/s4e9-orf-design-fg-panel/predicted-structures/tagged/2026-11-12/"
 TAGGED_RELEASE="2026-11-12"
 while [ $# -gt 0 ]; do
@@ -34,6 +35,7 @@ while [ $# -gt 0 ]; do
     --redacted) REDACTED=1; shift ;;
     --skip-r2) SKIP_R2=1; shift ;;
     --execute) EXECUTE=1; shift ;;
+    --base) BASE="$2"; shift 2 ;;  # dry-run testing only; a real deploy uses origin/main
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -52,11 +54,12 @@ run() {
 echo "== 1. shared-API checks (read-only)"
 [ -f "$WORKER_DIR/wrangler.toml" ] || { echo "no $WORKER_DIR/wrangler.toml; copy it from the canonical checkout" >&2; exit 1; }
 git -C "$ROOT" fetch -q origin
-if ! git -C "$ROOT" diff --quiet origin/main -- cloudflare/workers/surfaceome_api/src; then
+if [ "$EXECUTE" = 1 ] && [ "$BASE" != "origin/main" ]; then echo "--execute requires --base origin/main" >&2; exit 2; fi
+if ! git -C "$ROOT" diff --quiet "$BASE" -- cloudflare/workers/surfaceome_api/src; then
   echo "HEAD's Worker source differs from origin/main: deploy from main (CLAUDE.md shared-API rule)" >&2; exit 1
 fi
 routes() { git -C "$ROOT" show "$1:cloudflare/workers/surfaceome_api/src/index.js" | grep -oE 'path\.match\(/[^)]*\)|path === "[^"]*"' | sort -u; }
-DEV_ONLY="$(comm -13 <(routes origin/main) <(routes origin/dev) || true)"
+DEV_ONLY="$(comm -13 <(routes "$BASE") <(routes origin/dev) || true)"
 if [ -n "$DEV_ONLY" ]; then echo "routes only on origin/dev; port them first:" >&2; echo "$DEV_ONLY" >&2; exit 1; fi
 (cd "$ROOT" && REQUIRE_WORKER_NODE=1 uv run pytest -q tests/test_worker_*.py tests/test_l1_design.py)
 echo "load: $(head -1 "$LOAD")"
