@@ -543,6 +543,8 @@ def _multipass(rows, info, R, lane):
                     "lane_check": {k: chk.get(k) for k in ("lane_ok", "recommended_lane", "confidence", "evidence")}
                     if chk else None,
                     "cassette_decided_by": r.get("cassette_decided_by"),
+                    # The refold folds the mature protein (leader cleaved): its sha256.
+                    "mature_sha256": r.get("mature_sha256"),
                 },
                 decided_by=r["decided_by"], implemented_by=r["implemented_by"], reason=r["reason"] or None,
             ))  # fmt: skip
@@ -946,8 +948,23 @@ def _tagged_structures(
     return out
 
 
+def _mature_sha(site: dict) -> str | None:
+    """The mature tagged protein's sha256 a source recorded for a site (Igk constructs)."""
+    try:
+        return (json.loads(site.get("rationale_json") or "{}") or {}).get(
+            "mature_sha256"
+        )
+    except TypeError, ValueError:
+        return None
+
+
 def _tagged_refold_v1(
-    spec: dict, index_raw: bytes, metrics_raw: bytes, R, sites_by_design
+    spec: dict,
+    index_raw: bytes,
+    metrics_raw: bytes,
+    R,
+    sites_by_design,
+    manifest_raw: bytes | None = None,
 ) -> list[dict]:
     """The tagged-refold run's own layout: ``structures.tsv`` (+ ``tagged_fold_metrics.tsv``).
 
@@ -960,6 +977,9 @@ def _tagged_refold_v1(
     site at the insertion residue, when exactly one site sits there.
     """
     metrics = {r["fold_id"]: r for r in _rows(metrics_raw)} if metrics_raw else {}
+    # The run's final per-construct verdicts (viewer manifest), keyed by the folded
+    # protein's sha256; they override the index's verdict when present.
+    final = {r["tagged_sha256"]: r for r in _rows(manifest_raw)} if manifest_raw else {}
     native_rows: list[dict] = []
     date = spec["release"]
     out = []
@@ -990,7 +1010,8 @@ def _tagged_refold_v1(
         res = _int(
             r.get("insert_after_native_residue") or met.get("insert_after_residue")
         )
-        verdict = r.get("verdict") or met.get("verdict") or None
+        fin = final.get(r.get("tagged_sha256") or "", {})
+        verdict = fin.get("verdict") or r.get("verdict") or met.get("verdict") or None
         plddt = r.get("mean_plddt") or met.get("mean_plddt")
         pdb = r["pdb_key"].rsplit("/", 1)[-1]
         for m in ms:
@@ -1000,7 +1021,7 @@ def _tagged_refold_v1(
                 s
                 for s in mine
                 if r.get("tagged_sha256")
-                and s["tagged_protein_sha256"] == r["tagged_sha256"]
+                and r["tagged_sha256"] in (s["tagged_protein_sha256"], _mature_sha(s))
             ]
             if not cands:
                 cands = [
@@ -1027,7 +1048,9 @@ def _tagged_refold_v1(
                     f"TM to native {met['tm_native']}" if met.get("tm_native") else "",
                     f"site lDDT {met['lddt_site']}" if met.get("lddt_site") else "",
                     f"SP {met['sp_state']}" if met.get("sp_state") else "",
-                    met.get("verdict_reasons") or "",
+                    f"SpyTag003 RSA {fin['spytag003_rsa']}" if fin.get("spytag003_rsa") else "",
+                    f"ALFA RSA {fin['alfa_rsa']}" if fin.get("alfa_rsa") else "",
+                    fin.get("verdict_reasons") or met.get("verdict_reasons") or "",
                 ) if x),
                 decided_by=spec["decided_by"], implemented_by=r.get("implemented_by") or spec["implemented_by"],
                 reason=spec.get("reason") or r.get("settings"),
@@ -1196,7 +1219,15 @@ def build(args) -> int:
             )
             mraw, minfo = _read(msrc, repo, base)
             tinfo["metrics_sha256"] = minfo["sha256"]
-            rows = _tagged_refold_v1(spec, traw, mraw, R, by_design)
+            fraw = None
+            if spec.get("manifest_path"):
+                fraw, finfo = _read(
+                    {"commit": spec["commit"], "path": spec["manifest_path"]},
+                    repo,
+                    base,
+                )
+                tinfo["manifest_sha256"] = finfo["sha256"]
+            rows = _tagged_refold_v1(spec, traw, mraw, R, by_design, fraw)
         else:
             rows = _tagged_structures(spec, traw, tinfo, R, by_design)
         structures += rows
