@@ -596,6 +596,7 @@ def _internal(
     loops_by_design,
     snorkels=None,
     snorkel_built=None,
+    loop_built=None,
 ):
     out = []
     chosen: dict[str, int | None] = {}
@@ -636,6 +637,18 @@ def _internal(
         built_snork = (
             (snorkel_built or {}).get(m["design_id"]) if dec == "snorkel" else None
         )
+        # An internal loop arm the builder already built at this residue: the pick is built.
+        built_loop = (loop_built or {}).get(m["design_id"])
+        if built_loop and _int(built_loop["cassette_after_residue"]) != res:
+            built_loop = (
+                None  # built at another site: the decision is not what was built
+            )
+        if built_loop:
+            status = "built"
+            verdict = (
+                built_loop.get("refold_verdict") or r.get("refold_verdict") or "none"
+            )
+            detail = f"{dec}; built ({built_loop.get('built_by') or 'internal builder'}); refold verdict {verdict}"
         if built_snork:
             status = "built"
             detail = f"{dec}; built as {built_snork['placement']}; refold verdict {r.get('refold_verdict') or 'none'}"
@@ -654,20 +667,23 @@ def _internal(
                 else _int(snork["native_length"]) if snork else res
             ),
             cassette=(
-                "snorkel: added TM module, then the 51-aa cassette" if built_snork
+                "p003 51-aa tandem (internal loop arm)" if built_loop
+                else "snorkel: added TM module, then the 51-aa cassette" if built_snork
                 else f"snorkel module, {snork['module_length']} aa (added TM helix + linkers + 51-aa cassette)"
                 if snork else None
             ),
             cassette_aa=(
-                _diff(built_snork["protein_aa"], built_snork["native_aa"]) if built_snork
+                _diff(built_loop["protein_aa"], built_loop["native_aa"]) if built_loop
+                else _diff(built_snork["protein_aa"], built_snork["native_aa"]) if built_snork
                 else _int(snork["module_length"]) if snork else None
             ),
             tagged_protein_sha256=(
                 built_snork["protein_sha256"] if built_snork
+                else built_loop["protein_sha256"] if built_loop
                 else (snork or {}).get("snorkel_protein_sha256")
             ) or None,
-            residue_before=junction.get((r["design_id"], res), "").partition("|")[0][:1] or None,
-            residue_after=junction.get((r["design_id"], res), "").partition("|")[2][:1] or None,
+            residue_before=((built_loop or {}).get("junction") or junction.get((r["design_id"], res), "")).partition("|")[0][:1] or None,
+            residue_after=((built_loop or {}).get("junction") or junction.get((r["design_id"], res), "")).partition("|")[2][:1] or None,
             rank=_int(r["pick_rank"]), status=status,
             decision=dec, status_detail=detail,
             confidence=r["confidence"] or None, rejected_alternative=r["rejected_alternative"] or None,
@@ -1110,6 +1126,8 @@ def build(args) -> int:
     sites += _cterm(
         T["cterm"], inputs["cterm"], R, _cterm_decisions(T.get("cterm_decisions", []))
     )
+    # Built internal loop arms (the integration build of the ranker's decisions).
+    loop_built = {r["design_id"]: r for r in T.get("internal_constructs", [])}
     snorkel_built = {
         r["design_id"]: r
         for r in T["cterm"]
@@ -1125,7 +1143,7 @@ def build(args) -> int:
     sites += _multipass(T["multipass"], inputs["multipass"], R, lane)
     snorkels = {r["design_id"]: r for r in T.get("snorkel_designs", [])}
     sites += _internal(T["internal_decisions"], T["internal_proposed"], inputs["internal_decisions"],
-                       inputs["internal_proposed"], R, loops, snorkels, snorkel_built)  # fmt: skip
+                       inputs["internal_proposed"], R, loops, snorkels, snorkel_built, loop_built)  # fmt: skip
     sites += _built_loop_arms(T["internal_gate"], inputs["internal_gate"], R)
     agent, agent_skipped = _agent_picks(
         T["agent_picks"], inputs["agent_picks"], R.by_design, canonical_sha

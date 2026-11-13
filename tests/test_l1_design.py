@@ -409,6 +409,19 @@ GIT_TABLES = {
             ("api_surface_loop", "cand-1", "0"),
         ]
     ],  # fmt: skip
+    "internal_constructs.tsv": [
+        # Built at 26, but the decision is 94: the decision must NOT show as built.
+        {
+            "design_id": "l1-p0006",
+            "cassette_after_residue": "26",
+            "junction": "G26|T27",
+            "native_aa": "152",
+            "protein_aa": "203",
+            "protein_sha256": "4" * 64,
+            "refold_verdict": "pass",
+            "built_by": "integration",
+        },
+    ],  # fmt: skip
     "proteoform.tsv": [
         {
             "design_id": "l1-p0004",
@@ -698,6 +711,7 @@ PINS = {
     "cterm": "cterm.tsv", "nterm_sp": "nsp.tsv", "type3": "t3.tsv", "multipass": "mp.tsv",
     "multipass_lane_check": "lane.tsv", "internal_gate": "gate.tsv", "agent_picks": "agent.tsv",
     "proteoform_decisions": "proteoform.tsv", "cterm_decisions": "cterm_decisions.tsv",
+    "internal_constructs": "internal_constructs.tsv",
 }  # fmt: skip
 OBJECT_PINS = {
     "internal_decisions": "decisions.tsv", "internal_proposed": "proposed.tsv",
@@ -1180,3 +1194,29 @@ def test_worker_routes_against_sqlite(built):
     )
     assert res.returncode == 0, res.stdout + res.stderr
     assert "ok" in res.stdout
+
+
+def test_internal_decision_is_built_only_when_built_at_that_residue():
+    L = _loader()
+    member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
+              "candidate_set": "library_reference", "rung": "internal", "ordered_length_aa": 200,
+              "sequence_sha256": "a" * 64}  # fmt: skip
+    R = L.Resolver({"l1-m0001": member})
+    dec = {"design_id": "l1-p0001", "gene": "G", "sequence_sha256": "a" * 64, "decision": "internal_loop",
+           "insert_after_residue": "94.0", "pick_rank": "1", "rank_score": "0.8", "absolute_score": "0.7",
+           "best_region_pct_of_published_regions": "0.5", "this_region_length": "19", "snorkel_candidate": "False",
+           "confidence": "medium", "reason": "r", "rejected_alternative": "x", "decided_by": "ranker",
+           "implemented_by": "ranker", "refold_verdict": "pending"}  # fmt: skip
+    info = {"pr": 1, "pr_state": "open", "commit": "c" * 40, "path": "decisions.tsv"}
+    built = {"l1-p0001": {"design_id": "l1-p0001", "cassette_after_residue": "94", "junction": "V94|S95",
+                          "native_aa": "200", "protein_aa": "251", "protein_sha256": "4" * 64,
+                          "refold_verdict": "pass", "built_by": "integration"}}  # fmt: skip
+    (site,) = L._internal([dec], [], info, info, R, {}, loop_built=built)
+    assert (site["status"], site["residue_before"], site["cassette_aa"]) == (
+        "built",
+        "V",
+        51,
+    )
+    assert site["tagged_protein_sha256"] == "4" * 64
+    (site,) = L._internal([dec], [], info, info, R, {}, loop_built={})
+    assert site["status"] == "decided_not_built"
