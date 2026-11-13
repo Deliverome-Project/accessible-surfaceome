@@ -164,6 +164,7 @@ id = "REPLACE_WITH_FEEDBACK_RATELIMIT_KV_ID"
 #   npx wrangler secret put TURNSTILE_SECRET_KEY
 #   npx wrangler secret put MAGIC_LINK_SECRET
 #   npx wrangler secret put MAINTAINER_EMAIL
+#   npx wrangler secret put L1_REVIEW_TOKEN   # L1 review page (/v1/l1-review*); unset = disabled
 # Values come from the root .env (RESEND_API_KEY, TURNSTILE_SECRET_KEY,
 # MAGIC_LINK_SECRET, MAINTAINER_EMAIL respectively).
 
