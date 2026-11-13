@@ -478,7 +478,15 @@ def _nterm_decisions(rows, info, R):
     return out
 
 
-def _type3(rows, info, R):
+#: The Igk leader the type III and multipass Igk constructs carry; it is cleaved, so the
+#: refold folds the protein without it (mature = built protein minus these residues).
+IGK_LEADER_AA = 20
+
+
+def _type3(rows, info, R, proteins=None):
+    """``proteins``: built protein sequences by sha256 (constructs_l1_type3_proteins.tsv
+    ``precursor``), used to compute the mature (leader-cleaved) sha256 of Igk arms."""
+    proteins = proteins or {}
     out = []
     for r in rows:
         m = R.get("type3", r["design_id"], gene=r["gene_symbol"])
@@ -498,7 +506,12 @@ def _type3(rows, info, R):
             status_detail=f"{design} ({r['subgroup']})",
             tagged_protein_sha256=r["protein_sha256"] or None,
             rationale_json={"subgroup": r["subgroup"], "cassette_decided_by": r.get("cassette_decided_by"),
-                            "reviewed_by": r.get("reviewed_by")},
+                            "reviewed_by": r.get("reviewed_by"),
+                            "mature_sha256": hashlib.sha256(
+                                proteins[r["protein_sha256"]][IGK_LEADER_AA:].encode()
+                            ).hexdigest() if design == "igk_tag" and r["protein_sha256"] in proteins else None,
+                            "mature_sha_basis": "computed: built protein minus the 20-aa Igk leader"
+                            if design == "igk_tag" and r["protein_sha256"] in proteins else None},
             decided_by=r["decided_by"], implemented_by=r["implemented_by"], reason=r["reason"] or None,
         ))  # fmt: skip
     return out
@@ -733,7 +746,10 @@ def _internal(
 
 
 def _built_loop_arms(rows, info, R):
-    """The loop arms already built (membrane-side gate table, source built_loop_arm)."""
+    """Loop arms built for the earlier panel (membrane-side gate table, built_loop_arm).
+
+    Shown as alternatives, not as the member's current pick: the current pick is the
+    member's rung decision. They are real constructs, so the detail says so."""
     out = []
     for r in rows:
         if r["source"] != "built_loop_arm" or r["shipped"] != "1":
@@ -742,10 +758,10 @@ def _built_loop_arms(rows, info, R):
         if not m:
             continue
         out.append(_site(
-            info, site_id=r["site_id"], m=m, rung=m["rung"], is_primary=1,
+            info, site_id=r["site_id"], m=m, rung=m["rung"], is_primary=0,
             insert_after_residue=_int(r["insert_after_residue"]),
             residue_before=r["residue_before"] or None, residue_after=r["residue_after"] or None,
-            status="built", decision="built_loop_arm",
+            status="alternative", decision="built loop arm (earlier panel construct)",
             status_detail=f"membrane-side gate: {r['verdict']}",
             rationale_json={"height_A": _float(r["height_A"]), "plddt": _float(r["plddt"]),
                             "gate_verdict": r["verdict"]},
@@ -965,6 +981,7 @@ def _tagged_refold_v1(
     R,
     sites_by_design,
     manifest_raw: bytes | None = None,
+    twin_sites: dict | None = None,
 ) -> list[dict]:
     """The tagged-refold run's own layout: ``structures.tsv`` (+ ``tagged_fold_metrics.tsv``).
 
@@ -993,7 +1010,17 @@ def _tagged_refold_v1(
         elif r.get("tagged") != "yes" or r.get("rung") in ("control", "sp_control"):
             continue
         gene = r.get("gene_symbol") or r.get("gene")
-        if r.get("design_id"):
+        twin = None
+        if (
+            r.get("design_id")
+            and r["design_id"] not in R.by_design
+            and r.get("tagged_sha256") in (twin_sites or {})
+        ):
+            # A design no longer in the library (e.g. a retired rescue arm) whose folded
+            # protein IS a current member's built construct: link the fold to that member.
+            twin = (twin_sites or {})[r["tagged_sha256"]]
+            ms = [R.by_design[twin["design_id"]]]
+        elif r.get("design_id"):
             m = R.get("tagged", r["design_id"], sha=r["native_sha256"], gene=gene)
             ms = [m] if m else []
         else:
@@ -1023,6 +1050,8 @@ def _tagged_refold_v1(
                 if r.get("tagged_sha256")
                 and r["tagged_sha256"] in (s["tagged_protein_sha256"], _mature_sha(s))
             ]
+            if twin:
+                cands = [twin]
             if not cands:
                 cands = [
                     s
@@ -1043,6 +1072,7 @@ def _tagged_refold_v1(
                 cassette_last_model_residue=_int(r.get("cassette_end_1based")),
                 refold_verdict=verdict,
                 note="; ".join(x for x in (
+                    f"fold of retired rescue twin {r['design_id']}, same mature protein" if twin else "",
                     f"rung {r['rung']}",
                     f"insert after {res}" if res is not None else "",
                     f"TM to native {met['tm_native']}" if met.get("tm_native") else "",
@@ -1162,7 +1192,16 @@ def build(args) -> int:
         sites += _nterm_decisions(T["nterm_decisions"], inputs["nterm_decisions"], R)
     else:
         sites += _nterm_sp(T["nterm_sp"], inputs["nterm_sp"], R)
-    sites += _type3(T["type3"], inputs["type3"], R)
+    type3_proteins = {}
+    for r in T.get("type3_proteins", []):
+        seq = r.get("precursor") or ""
+        if seq and hashlib.sha256(seq.encode()).hexdigest() == r.get(
+            "precursor_sha256"
+        ):
+            type3_proteins[r["precursor_sha256"]] = (
+                seq  # only a sequence whose hash checks out
+            )
+    sites += _type3(T["type3"], inputs["type3"], R, type3_proteins)
     sites += _multipass(T["multipass"], inputs["multipass"], R, lane)
     snorkels = {r["design_id"]: r for r in T.get("snorkel_designs", [])}
     sites += _internal(T["internal_decisions"], T["internal_proposed"], inputs["internal_decisions"],
@@ -1227,7 +1266,15 @@ def build(args) -> int:
                     base,
                 )
                 tinfo["manifest_sha256"] = finfo["sha256"]
-            rows = _tagged_refold_v1(spec, traw, mraw, R, by_design, fraw)
+            # Built primary picks by tagged and mature sha256: lets a fold of a retired
+            # design attach to the current member that builds the same protein.
+            twin_sites = {}
+            for site in sites:
+                if site["is_primary"] and site["status"] == "built":
+                    for h in (site["tagged_protein_sha256"], _mature_sha(site)):
+                        if h:
+                            twin_sites[h] = site
+            rows = _tagged_refold_v1(spec, traw, mraw, R, by_design, fraw, twin_sites)
         else:
             rows = _tagged_structures(spec, traw, tinfo, R, by_design)
         structures += rows
