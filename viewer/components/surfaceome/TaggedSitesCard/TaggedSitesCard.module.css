@@ -292,3 +292,7 @@
   font-size: 0.88rem;
   line-height: 1.5;
 }
+
+/* Legacy computed candidates: collapsed by default, superseded by the L1 design. */
+.legacy { margin-top: var(--space-4); }
+.legacy > summary { cursor: pointer; }

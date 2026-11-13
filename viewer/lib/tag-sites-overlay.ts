@@ -119,3 +119,14 @@ function collapseBySpan(rows: RenderableTagSite[]): RenderableTagSite[] {
   }
   return out;
 }
+
+/**
+ * Retire the legacy computed candidates (the disorder / surface-loop pipeline) for an
+ * L1 library member: its tag site is now the L1 design's current pick, by rung, and
+ * showing the old computed positions beside it reads as a second recommendation.
+ * Literature, screen-validated and isoform-control sites are kept.
+ */
+export function withoutComputedCandidates<T extends { sites: { provenance: string }[] }>(file: T | null): T | null {
+  if (!file) return file;
+  return { ...file, sites: file.sites.filter((s) => s.provenance !== "deterministic_computed") };
+}

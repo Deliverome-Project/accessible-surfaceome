@@ -80,7 +80,7 @@ test("renders both provenance groups with counts, residues, and a source link", 
   );
   assert.match(html, /Tag sites/);
   assert.match(html, /Literature-validated \(1\)/);
-  assert.match(html, /Computed candidates \(1\)/);
+  assert.match(html, /Legacy computed candidates \(1\)/);
   assert.match(html, /F760/);
   assert.match(html, /V108/);
   assert.match(html, /C89-R120/);
@@ -115,7 +115,7 @@ test("deterministic table collapses to one representative row per loop", () => {
       taggedSites={file([mk("d1", 39, "E39"), mk("d2", 91, "P91"), mk("d3", 145, "A145")])}
     />,
   );
-  assert.match(html, /Computed candidates \(1\)/);
+  assert.match(html, /Legacy computed candidates \(1\)/);
   assert.match(html, /P91/);
   assert.doesNotMatch(html, /E39/);
   assert.doesNotMatch(html, /A145/);
@@ -126,4 +126,15 @@ test("renders an empty state when there are no rendered sites", () => {
     <TaggedSitesCard taggedSites={{ has_data: false, gene_symbol: "X", uniprot_acc: "Q0", sites: [] }} />,
   );
   assert.match(html, /No tag-site suggestions/);
+});
+
+test("on an L1 member the card points to the L1 design instead of computed candidates", async () => {
+  const { withoutComputedCandidates } = await import("../lib/tag-sites-overlay");
+  const file = {
+    gene_symbol: "GENEX", uniprot_acc: "P0", has_data: true,
+    sites: [{ provenance: "deterministic_computed" }, { provenance: "literature_retrieved" }],
+  };
+  const kept = withoutComputedCandidates(file);
+  assert.deepEqual(kept!.sites.map((s) => s.provenance), ["literature_retrieved"]);
+  assert.equal(withoutComputedCandidates(null), null);
 });
