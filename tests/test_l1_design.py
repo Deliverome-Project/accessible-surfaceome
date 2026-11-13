@@ -1220,3 +1220,22 @@ def test_internal_decision_is_built_only_when_built_at_that_residue():
     assert site["tagged_protein_sha256"] == "4" * 64
     (site,) = L._internal([dec], [], info, info, R, {}, loop_built={})
     assert site["status"] == "decided_not_built"
+
+
+def test_final_refold_manifest_overrides_the_index_verdict():
+    L = _loader()
+    member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
+              "candidate_set": "library_reference", "rung": "C-terminal", "ordered_length_aa": 200,
+              "sequence_sha256": "a" * 64}  # fmt: skip
+    R = L.Resolver({"l1-m0001": member})
+    head = ("fold_id\tkind\trung\tdesign_id\tgene_symbol\ttagged_sha256\tnative_sha256\tcassette_start_1based\t"
+            "cassette_end_1based\tinsert_after_native_residue\tmean_plddt\tverdict\tpdb_key\n")  # fmt: skip
+    row = f"t.1\ttagged\tcterm\tl1-p0001\tG\t{'9' * 64}\t{'a' * 64}\t201\t251\t200\t80\tpass\tprocessed://x/t.1.pdb\n"
+    manifest = ("tagged_sha256\tverdict\tverdict_reasons\tspytag003_rsa\talfa_rsa\n"
+                f"{'9' * 64}\tfail\tepitope packed\t0.12\t0.40\n").encode()  # fmt: skip
+    spec = {"release": "2026-11-12", "decided_by": "d", "implemented_by": "i"}
+    (t,) = L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {}, manifest)
+    assert t["refold_verdict"] == "fail"
+    assert "SpyTag003 RSA 0.12" in t["note"] and "epitope packed" in t["note"]
+    (t,) = L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {})
+    assert t["refold_verdict"] == "pass"
