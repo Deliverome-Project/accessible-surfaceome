@@ -10,6 +10,7 @@ import { Shell } from "../../Shell/Shell";
 import { AccessibilityRisksCard } from "../AccessibilityRisksCard/AccessibilityRisksCard";
 import { InternalizationCard } from "../InternalizationCard/InternalizationCard";
 import { TaggedSitesCard } from "../TaggedSitesCard/TaggedSitesCard";
+import { L1DesignCard } from "../L1DesignCard/L1DesignCard";
 import { BenchmarkRow } from "../BenchmarkRow/BenchmarkRow";
 import { BiologicalContextCard } from "../BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../CommunityNotesCard/CommunityNotesCard";
@@ -273,6 +274,18 @@ export function GeneDetail({
             kind: "tag-sites",
             label: "Tag sites",
             render: (n: number) => <TaggedSitesCard taggedSites={taggedSites} n={n} />,
+          },
+        ]
+      : []),
+    // L1 library design (suggested tag sites + folded models per member), fetched
+    // client-side from /v1/l1-design. Only on library genes: the card answers "how
+    // will we tag the protein we order", which no other gene has.
+    ...(inFgLibrary
+      ? [
+          {
+            kind: "l1-design",
+            label: "L1 design",
+            render: (n: number) => <L1DesignCard symbol={rec.gene.hgnc_symbol} n={n} />,
           },
         ]
       : []),

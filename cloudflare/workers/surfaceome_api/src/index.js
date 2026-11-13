@@ -102,7 +102,7 @@ function cacheControl(ttl, { immutable = false } = {}) {
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, X-L1-Review-Token",
   // Let cross-origin clients read the record-history / degraded headers the
   // API docs tell them to act on (browsers hide non-safelisted headers).
   "Access-Control-Expose-Headers": "ETag, X-Surfaceome-Degraded, X-Surfaceome-Revision, X-Surfaceome-Content-Hash",
@@ -3596,6 +3596,9 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },
   { group: "Tag sites", method: "GET", path: "/v1/tag-sites/{symbol}", summary: "TaggedSitesFile: engineered epitope/tag insertion points (deterministic loop/disorder/terminal + literature-validated); empty-but-200 when the gene has none. isoform_pins ship static-only." },
+  { group: "Tag sites", method: "GET", path: "/v1/l1-design/{symbol}", summary: "Deliverome L1 library design per member: rung, tag sites (current picks + alternatives; built / decided_not_built / no_tag / pending / alternative, with rationale, rejected alternative, source PR + commit and decided_by / implemented_by / reason), structures (native model per the payload, plus tagged-construct refolds) and contact sites (literature-agent and UniProt). Newest complete load; `load: null` when none is loaded." },
+  { group: "Tag sites", method: "GET", path: "/v1/l1-design", summary: "Every L1 member in the newest load, one compact row each: rung, rule-based membrane class and the status of its current pick(s)" },
+  { group: "Tag sites", method: "GET", path: "/v1/l1-design/{symbol}/{load_version}", summary: "The same, pinned to one content-addressed load (l1d-<16 hex>)" },
   { group: "Utility", method: "GET", path: "/v1/meta/sizes", summary: "Approximate per-endpoint response sizes, computed live from D1" },
   { group: "Utility", method: "GET", path: "/v1", summary: "This index" },
 ];
@@ -4578,6 +4581,384 @@ async function handleCatalogOne(env, symbol) {
   });
 }
 
+// L1 library design overlay: per-member tag sites (current picks + alternatives, with
+// the rationale for each), folded structures (native model per the structure payload,
+// plus tagged-construct refolds) and contact sites, from the l1_*_public tables
+// (cloudflare/migrations/l1_design_v1.sql, loaded by
+// scripts/cloud/build_l1_design_tables.py). Additive: no existing route or table is
+// read differently.
+//
+// Loads are content-addressed and INSERT-only. The newest load that has a row in
+// l1_design_load_public is served; the loader writes that row last, so a
+// half-applied load is invisible. `/v1/l1-design/{symbol}/{load_version}` pins an
+// older load for auditability (immutable, so edge-cached). The unpinned routes skip
+// the edge/KV cache and carry a 60 s browser TTL: a new load goes live within a
+// minute with no purge. Missing tables (Worker deployed before the migration) degrade to
+// `load: null` rather than a 500.
+const L1_LOAD_OK = /^l1d-[0-9a-f]{16}$/;
+
+// The unpinned L1 routes must never be served stale: after a new load, a stale index
+// paired with a fresh per-gene response would show two different member numberings.
+// So no stale-while-revalidate (which json() adds to every cacheable response).
+function l1Fresh(data) {
+  const res = json(data, { ttl: 0 });
+  res.headers.set("Cache-Control", "public, max-age=30");
+  return res;
+}
+const L1_LOAD_COLS =
+  "load_version, content_sha256, created_at, inputs_json, n_members, n_sites, n_structures, n_contacts";
+
+async function l1Load(env, pinnedLoad) {
+  try {
+    return pinnedLoad
+      ? await env.DB.prepare(`SELECT ${L1_LOAD_COLS} FROM l1_design_load_public WHERE load_version = ?`)
+          .bind(pinnedLoad).first()
+      : await env.DB.prepare(
+          `SELECT ${L1_LOAD_COLS} FROM l1_design_load_public ORDER BY created_at DESC, load_version DESC LIMIT 1`
+        ).first();
+  } catch {
+    return null;
+  }
+}
+
+function l1LoadJson(load, withInputs) {
+  const num = (v) => (v == null ? null : Number(v));
+  let inputs = null;
+  if (withInputs) {
+    try {
+      inputs = JSON.parse(load.inputs_json || "null");
+    } catch {
+      inputs = null;
+    }
+  }
+  return {
+    load_version: load.load_version,
+    content_sha256: load.content_sha256,
+    created_at: load.created_at,
+    n_members: num(load.n_members),
+    n_sites: num(load.n_sites),
+    n_structures: num(load.n_structures),
+    n_contacts: num(load.n_contacts),
+    ...(withInputs ? { inputs } : {}),
+  };
+}
+
+// The whole library, one compact row per member, for the L1 review page's browser:
+// rung, membrane class and the status of the member's current pick(s).
+async function handleL1DesignIndex(env) {
+  const load = await l1Load(env, null);
+  if (!load) return l1Fresh({ load: null, members: [] });
+  const lv = load.load_version;
+  const [members, picks] = await Promise.all([
+    env.DB.prepare(
+      `SELECT member_id, design_id, gene_symbol, species, candidate_set, rung, membrane_class,
+              n_tm, ordered_length_aa, sequence_sha256
+         FROM l1_member_public WHERE load_version = ? ORDER BY member_id`
+    ).bind(lv).all().then((r) => r?.results ?? []),
+    env.DB.prepare(
+      `SELECT member_id, status, COUNT(*) AS n FROM l1_tag_site_design_public
+        WHERE load_version = ? AND is_primary = 1 GROUP BY member_id, status`
+    ).bind(lv).all().then((r) => r?.results ?? []),
+  ]);
+  const statusBy = new Map();
+  for (const p of picks) {
+    const list = statusBy.get(p.member_id) ?? [];
+    list.push(p.status);
+    statusBy.set(p.member_id, list);
+  }
+  return l1Fresh(
+    {
+      load: l1LoadJson(load, false),
+      members: members.map((m) => ({
+        member_id: m.member_id,
+        design_id: m.design_id ?? null,
+        gene_symbol: m.gene_symbol,
+        species: m.species ?? null,
+        candidate_set: m.candidate_set ?? null,
+        rung: m.rung,
+        membrane_class: m.membrane_class,
+        n_tm: m.n_tm == null ? null : Number(m.n_tm),
+        ordered_length_aa: m.ordered_length_aa == null ? null : Number(m.ordered_length_aa),
+        sequence_sha256: m.sequence_sha256 ?? null,
+        pick_status: (statusBy.get(m.member_id) ?? []).sort(),
+      })),
+    },
+  );
+}
+
+async function handleL1Design(env, symbol, pinnedLoad = null) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return notFound("gene_not_found");
+  if (pinnedLoad != null && !L1_LOAD_OK.test(pinnedLoad)) return badRequest("bad_load_version");
+  const load = await l1Load(env, pinnedLoad);
+  if (!load) {
+    if (pinnedLoad) return notFound("load_not_found");
+    return l1Fresh({ gene_symbol: sym, load: null, members: [] });
+  }
+  const lv = load.load_version;
+  const q = (sql) => env.DB.prepare(sql).bind(lv, sym).all().then((r) => r?.results ?? []);
+  const [memberRows, siteRows, structRows, contactRows] = await Promise.all([
+    q(`SELECT member_id, design_id, gene_symbol, species, candidate_set, rung, membrane_class,
+              n_tm, ordered_length_aa, sequence_sha256, topology_version, proteoform_json
+         FROM l1_member_public
+        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+        ORDER BY member_id`),
+    q(`SELECT site_id, member_id, design_id, rung, site_source, is_primary, insert_after_residue,
+              residue_before, residue_after, leader, cassette, cassette_aa, rank, status, decision,
+              status_detail, confidence, rejected_alternative, rationale_json, tagged_protein_sha256,
+              source_pr, source_pr_state, source_commit, source_path, decided_by, implemented_by, reason
+         FROM l1_tag_site_design_public
+        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+        ORDER BY member_id, is_primary DESC, site_source, rank, insert_after_residue, site_id`),
+    q(`SELECT structure_id, member_id, kind, site_id, source, release, s3_uri, r2_key,
+              model_url, proteoform_match, residue_offset, ordered_length_aa,
+              model_length_aa, is_chosen, mean_plddt, cassette_first_model_residue,
+              cassette_last_model_residue, refold_verdict, note, decided_by, implemented_by, reason
+         FROM l1_structure_design_public
+        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+        ORDER BY member_id, kind, is_chosen DESC, structure_id`),
+    q(`SELECT member_id, residue, aa, canonical_residue, source, evidence_types, contact_classes,
+              confidence_tier, ion_site, additive_only, in_extracellular, topology_state, ligands, pmids
+         FROM l1_contact_site_public
+        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+        ORDER BY member_id, residue, source`),
+  ]);
+  const num = (v) => (v == null ? null : Number(v));
+  const parse = (s) => {
+    if (!s) return null;
+    try {
+      return JSON.parse(s);
+    } catch {
+      return null;
+    }
+  };
+  const members = memberRows.map((m) => ({
+    member_id: m.member_id,
+    design_id: m.design_id ?? null,
+    gene_symbol: m.gene_symbol,
+    species: m.species ?? null,
+    candidate_set: m.candidate_set ?? null,
+    rung: m.rung,
+    membrane_class: m.membrane_class,
+    n_tm: num(m.n_tm),
+    ordered_length_aa: num(m.ordered_length_aa),
+    sequence_sha256: m.sequence_sha256 ?? null,
+    topology_version: m.topology_version ?? null,
+    // The proteoform audit's decision for this member (keep / swap / repair / redraw).
+    proteoform: parse(m.proteoform_json),
+    sites: siteRows
+      .filter((s) => s.member_id === m.member_id)
+      .map((s) => ({
+        site_id: s.site_id,
+        rung: s.rung,
+        site_source: s.site_source,
+        is_primary: Boolean(Number(s.is_primary)),
+        // The member's OWN native numbering; 0 = before residue 1; null = no site.
+        insert_after_residue: num(s.insert_after_residue),
+        residue_before: s.residue_before ?? null,
+        residue_after: s.residue_after ?? null,
+        leader: s.leader ?? null,
+        cassette: s.cassette ?? null,
+        cassette_aa: num(s.cassette_aa),
+        rank: num(s.rank),
+        status: s.status,
+        decision: s.decision ?? null,
+        status_detail: s.status_detail ?? null,
+        confidence: s.confidence ?? null,
+        rejected_alternative: s.rejected_alternative ?? null,
+        rationale: parse(s.rationale_json),
+        tagged_protein_sha256: s.tagged_protein_sha256 ?? null,
+        source: {
+          pr: num(s.source_pr),
+          pr_state: s.source_pr_state ?? null,
+          commit: s.source_commit,
+          path: s.source_path,
+        },
+        decided_by: s.decided_by,
+        implemented_by: s.implemented_by,
+        reason: s.reason ?? null,
+      })),
+    structures: structRows
+      .filter((st) => st.member_id === m.member_id)
+      .map((st) => {
+        const offset = Number(st.residue_offset || 0);
+        const orderedLen = num(st.ordered_length_aa);
+        return {
+          structure_id: st.structure_id,
+          kind: st.kind,
+          site_id: st.site_id ?? null,
+          source: st.source,
+          release: st.release ?? null,
+          s3_uri: st.s3_uri ?? null,
+          r2_key: st.r2_key ?? null,
+          model_url: st.model_url ?? null,
+          proteoform_match: st.proteoform_match ?? null,
+          residue_offset: offset,
+          ordered_length_aa: orderedLen,
+          model_length_aa: num(st.model_length_aa),
+          // Native models only: the model residues the member covers (1-based, inclusive).
+          display_first_model_residue:
+            st.kind === "native" && orderedLen != null ? offset + 1 : null,
+          display_last_model_residue:
+            st.kind === "native" && orderedLen != null ? offset + orderedLen : null,
+          is_chosen: Boolean(Number(st.is_chosen)),
+          mean_plddt: num(st.mean_plddt),
+          cassette_first_model_residue: num(st.cassette_first_model_residue),
+          cassette_last_model_residue: num(st.cassette_last_model_residue),
+          refold_verdict: st.refold_verdict ?? null,
+          note: st.note ?? null,
+          decided_by: st.decided_by,
+          implemented_by: st.implemented_by,
+          reason: st.reason ?? null,
+        };
+      }),
+    contacts: contactRows
+      .filter((c) => c.member_id === m.member_id)
+      .map((c) => ({
+        residue: num(c.residue),
+        aa: c.aa ?? null,
+        canonical_residue: num(c.canonical_residue),
+        source: c.source,
+        evidence_types: c.evidence_types ?? null,
+        contact_classes: c.contact_classes ?? null,
+        confidence_tier: c.confidence_tier,
+        ion_site: Boolean(Number(c.ion_site)),
+        additive_only: Boolean(Number(c.additive_only)),
+        in_extracellular: Boolean(Number(c.in_extracellular)),
+        topology_state: c.topology_state ?? null,
+        ligands: c.ligands ?? null,
+        pmids: c.pmids ?? null,
+      })),
+  }));
+  const body = { gene_symbol: sym, load: l1LoadJson(load, true), members };
+  // A pinned load is immutable; the newest load must not be served stale.
+  return pinnedLoad ? json(body, { ttl: CACHE_TTL_IMMUTABLE, immutable: true }) : l1Fresh(body);
+}
+
+// --- L1 review page: verdicts + alternative-tag suggestions (private, token-gated) ---
+//
+// Stored append-only in the PRIVATE agents database (FEEDBACK_DB binding; DDL in
+// cloudflare/migrations/l1_review_v1.sql), never in the public mirror. Every
+// request must carry `X-L1-Review-Token` equal to the L1_REVIEW_TOKEN secret; with
+// the secret unset the endpoints answer 503 rather than run open. Never edge-cached.
+const L1_REVIEW_HEADER = "X-L1-Review-Token";
+const L1_PLACEMENTS = new Set(["rung_default", "n_term", "c_term", "internal", "after_sp", "igk_tag"]);
+const L1_ID_OK = /^l1-[mp]\d{4,5}$/;
+
+async function l1ReviewAuth(request, env) {
+  if (!env.L1_REVIEW_TOKEN || !env.FEEDBACK_DB) {
+    return json({ error: "review_disabled" }, { status: 503, ttl: 0 });
+  }
+  const got = request.headers.get(L1_REVIEW_HEADER) ?? "";
+  const [a, b] = await Promise.all([sha256Hex(got), sha256Hex(env.L1_REVIEW_TOKEN)]);
+  if (a !== b) return json({ error: "unauthorized" }, { status: 401, ttl: 0 });
+  return null;
+}
+
+function l1Str(v, max) {
+  if (v == null) return null;
+  const s = String(v).trim();
+  return s ? s.slice(0, max) : null;
+}
+
+async function handleL1ReviewSubmit(request, env) {
+  const denied = await l1ReviewAuth(request, env);
+  if (denied) return denied;
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return badRequest("invalid_json");
+  }
+  const reviewer = l1Str(body.reviewer, 80);
+  const memberId = l1Str(body.member_id, 12);
+  const designId = l1Str(body.design_id, 12);
+  const gene = l1Str(body.gene_symbol, 30);
+  const loadVersion = l1Str(body.load_version, 24);
+  if (!reviewer) return badRequest("invalid_reviewer");
+  if (!memberId || !L1_ID_OK.test(memberId) || !designId || !L1_ID_OK.test(designId)) {
+    return badRequest("invalid_member");
+  }
+  if (!gene || !SYMBOL_OK.test(gene)) return badRequest("invalid_gene");
+  if (!loadVersion || !L1_LOAD_OK.test(loadVersion)) return badRequest("invalid_load_version");
+  const sha = l1Str(body.sequence_sha256, 64);
+  const reason = l1Str(body.reason, 4000);
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  if (body.kind === "verdict") {
+    if (body.verdict !== "good" && body.verdict !== "no") return badRequest("invalid_verdict");
+    if (body.verdict === "no" && !reason) return badRequest("reason_required");
+    await env.FEEDBACK_DB.prepare(
+      `INSERT INTO l1_review (review_id, created_at, reviewer, member_id, design_id, sequence_sha256,
+                              gene_symbol, site_id, verdict, reason, load_version)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(id, now, reviewer, memberId, designId, sha, gene, l1Str(body.site_id, 80), body.verdict,
+      reason, loadVersion).run();
+    return json({ ok: true, review_id: id, created_at: now }, { status: 201, ttl: 0 });
+  }
+  if (body.kind === "alt_tag") {
+    const placement = String(body.placement ?? "");
+    if (!L1_PLACEMENTS.has(placement)) return badRequest("invalid_placement");
+    const residue = body.insert_after_residue == null || body.insert_after_residue === ""
+      ? null : Number(body.insert_after_residue);
+    if (residue != null && (!Number.isInteger(residue) || residue < 0 || residue > 40000)) {
+      return badRequest("invalid_residue");
+    }
+    if (residue == null && (placement === "internal" || placement === "after_sp")) {
+      return badRequest("residue_required");
+    }
+    await env.FEEDBACK_DB.prepare(
+      `INSERT INTO l1_alt_tag (suggestion_id, created_at, reviewer, member_id, design_id, sequence_sha256,
+                               gene_symbol, insert_after_residue, placement, cassette_variant, reason,
+                               load_version)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(id, now, reviewer, memberId, designId, sha, gene, residue, placement,
+      l1Str(body.cassette_variant, 120), reason, loadVersion).run();
+    return json({ ok: true, suggestion_id: id, created_at: now }, { status: 201, ttl: 0 });
+  }
+  return badRequest("invalid_kind");
+}
+
+async function l1ReviewRows(env) {
+  const [reviews, alts] = await Promise.all([
+    env.FEEDBACK_DB.prepare(`SELECT * FROM l1_review ORDER BY created_at, review_id`).all(),
+    env.FEEDBACK_DB.prepare(`SELECT * FROM l1_alt_tag ORDER BY created_at, suggestion_id`).all(),
+  ]);
+  return { reviews: reviews?.results ?? [], alt_tags: alts?.results ?? [] };
+}
+
+async function handleL1ReviewList(request, env) {
+  const denied = await l1ReviewAuth(request, env);
+  if (denied) return denied;
+  return json(await l1ReviewRows(env), { ttl: 0 });
+}
+
+const L1_EXPORT_COLS = [
+  "kind", "id", "created_at", "reviewer", "member_id", "design_id", "sequence_sha256", "gene_symbol",
+  "site_id", "verdict", "insert_after_residue", "placement", "cassette_variant", "reason", "load_version",
+];
+
+async function handleL1ReviewExport(request, env) {
+  const denied = await l1ReviewAuth(request, env);
+  if (denied) return denied;
+  const { reviews, alt_tags } = await l1ReviewRows(env);
+  const rows = [
+    ...reviews.map((r) => ({ ...r, kind: "verdict", id: r.review_id })),
+    ...alt_tags.map((r) => ({ ...r, kind: "alt_tag", id: r.suggestion_id })),
+  ].sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)));
+  const cell = (v) => (v == null ? "" : String(v).replace(/[\t\r\n]+/g, " "));
+  const tsv = [L1_EXPORT_COLS.join("\t"), ...rows.map((r) => L1_EXPORT_COLS.map((c) => cell(r[c])).join("\t"))]
+    .join("\n") + "\n";
+  return new Response(tsv, {
+    headers: {
+      "Content-Type": "text/tab-separated-values; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="l1_reviews.tsv"',
+      "Cache-Control": "no-store",
+      ...CORS_HEADERS,
+    },
+  });
+}
+
 // Tag-insertion sites for one gene (deterministic + literature), from
 // tag_site_public. Returns a TaggedSitesFile (viewer/lib/tag-sites-types.ts) so
 // the viewer's fetchTaggedSites -> parseTaggedSitesFile consumes it unchanged.
@@ -4853,6 +5234,7 @@ async function routeRequest(request, env, ctx) {
       if (path === "/v1/feedback/submit") {
         return handleFeedbackSubmit(request, env, url);
       }
+      if (path === "/v1/l1-review") return handleL1ReviewSubmit(request, env);
       return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
     }
     if (request.method !== "GET") {
@@ -4922,6 +5304,13 @@ async function routeRequest(request, env, ctx) {
     if ((m = path.match(/^\/v1\/catalog\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleCatalogOne(env, m[1]));
     if ((m = path.match(/^\/v1\/internalization\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleInternalization(env, m[1]));
     if ((m = path.match(/^\/v1\/tag-sites\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleTagSites(env, m[1]));
+    if (path === "/v1/l1-review") return handleL1ReviewList(request, env);
+    if (path === "/v1/l1-review/export.tsv") return handleL1ReviewExport(request, env);
+    // Not behind withEdgeCache: its KV tier holds a read for up to an hour, and a new
+    // L1 load must show within a minute (overnight reloads). Indexed, small queries.
+    if (path === "/v1/l1-design") return handleL1DesignIndex(env);
+    if ((m = path.match(/^\/v1\/l1-design\/([^/]+)$/))) return handleL1Design(env, m[1]);
+    if ((m = path.match(/^\/v1\/l1-design\/([^/]+)\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleL1Design(env, m[1], m[2]));
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleOrthologs(env, m[1]));
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare

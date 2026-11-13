@@ -1,0 +1,36 @@
+/* L1 design card — site design tokens only, same table idiom as the Internalization card. */
+.root { color: var(--ink); font-size: 0.95rem; line-height: var(--lh-body); display: flex; flex-direction: column; gap: var(--space-5); }
+.muted { color: var(--muted); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+.member { border-top: 1px solid var(--line-soft); padding-top: var(--space-3); }
+.memberHead { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); margin-bottom: var(--space-2); }
+.memberId { font-family: var(--font-mono); font-weight: var(--fw-medium); }
+.badge {
+  display: inline-block; padding: 0.1rem 0.5rem; border-radius: var(--radius-pill);
+  font-size: 0.74rem; font-weight: var(--fw-medium); white-space: nowrap; line-height: 1.5;
+  background: var(--bg-warm); border: 1px solid var(--line-soft); color: var(--ink);
+}
+.pill {
+  display: inline-block; padding: 0.06rem 0.5rem; border-radius: var(--radius-pill);
+  font-size: 0.75rem; font-weight: var(--fw-medium); line-height: 1.5; border: 1px solid transparent; white-space: nowrap;
+}
+.s_built { background: var(--teal-soft); color: var(--teal-dark); border-color: color-mix(in srgb, var(--teal-mid) 35%, transparent); }
+.s_decided_not_built { background: var(--lavender-soft, #ece8f6); color: var(--lavender-dark, #4b3b86); }
+.s_pending { background: var(--amber-soft); color: var(--amber-dark); border-color: color-mix(in srgb, var(--amber-mid) 35%, transparent); }
+.s_no_tag { background: var(--maroon-soft); color: var(--maroon-dark); }
+.s_alternative { background: var(--bg-warm); color: var(--muted); border: 1px dashed var(--line); }
+.tablewrap { overflow-x: auto; }
+.table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+.table th {
+  text-align: left; color: var(--muted); font-weight: var(--fw-medium); text-transform: uppercase;
+  letter-spacing: 0.05em; font-size: 0.72rem; padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-soft); white-space: nowrap;
+}
+.table td { padding: var(--space-2) var(--space-3) var(--space-2) 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.table tbody tr:last-child td { border-bottom: 0; }
+.prov summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; }
+.prov dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.15rem var(--space-2); margin: 0.3rem 0 0; font-size: 0.82rem; }
+.prov dt { color: var(--muted); }
+.prov dd { margin: 0; }
+.models { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); font-size: 0.85rem; }
+.models a { color: var(--accent); }

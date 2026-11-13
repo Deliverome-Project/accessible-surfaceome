@@ -42,6 +42,7 @@ KEY_PREFIX = "library-colabfold"
 CONTENT_TYPE = "chemical/x-pdb"
 CACHE_CONTROL = "public, max-age=31536000, immutable"
 
+
 def _env(name: str) -> str:
     value = os.environ.get(name, "")
     if not value:
@@ -70,14 +71,14 @@ def _r2_put(acct: str, tok: str, key: str, body: bytes) -> tuple[bool, str]:
         return False, repr(exc)[:160]
 
 
-def _r2_list_existing(acct: str, tok: str) -> dict[str, int]:
+def _r2_list_existing(acct: str, tok: str, prefix: str = KEY_PREFIX) -> dict[str, int]:
     """``{key: size}`` for everything already under the prefix, in one paginated LIST."""
     out: dict[str, int] = {}
     cursor = ""
     while True:
         url = (
             f"https://api.cloudflare.com/client/v4/accounts/{acct}/r2/buckets/{BUCKET}/objects"
-            f"?prefix={KEY_PREFIX}/&per_page=1000"
+            f"?prefix={prefix}/&per_page=1000"
         )
         if cursor:
             url += f"&cursor={cursor}"
@@ -94,22 +95,37 @@ def _r2_list_existing(acct: str, tok: str) -> dict[str, int]:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--from-dir", type=Path, required=True,
-                    help="directory of published .pdb files for one release")
-    ap.add_argument("--release", required=True,
-                    help="release folder under the R2 prefix, e.g. 2026-10-14")
+    ap.add_argument(
+        "--from-dir",
+        type=Path,
+        required=True,
+        help="directory of published .pdb files for one release",
+    )
+    ap.add_argument(
+        "--release",
+        required=True,
+        help="release folder under the R2 prefix, e.g. 2026-10-14",
+    )
+    ap.add_argument(
+        "--prefix",
+        default=KEY_PREFIX,
+        choices=[KEY_PREFIX, "library-colabfold-tagged"],
+        help="R2 prefix. Tagged-construct refolds go under library-colabfold-tagged/ "
+        "(scripts/cloud/build_l1_design_tables.py) so they can never land on a "
+        "native model's key.",
+    )
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--concurrency", type=int, default=8)
     args = ap.parse_args(argv)
 
     acct, tok = _env("CLOUDFLARE_ACCOUNT_ID"), _env("CLOUDFLARE_API_TOKEN")
     pairs = [
-        (path, f"{KEY_PREFIX}/{args.release}/{path.name}")
+        (path, f"{args.prefix}/{args.release}/{path.name}")
         for path in sorted(args.from_dir.glob("*.pdb"))
     ]
     if not pairs:
         raise SystemExit(f"no .pdb under {args.from_dir} — nothing to ingest")
-    existing = {} if args.dry_run else _r2_list_existing(acct, tok)
+    existing = {} if args.dry_run else _r2_list_existing(acct, tok, args.prefix)
     todo = [(s3, r2) for s3, r2 in pairs if r2 not in existing]
     print(
         f"{len(pairs)} published prediction(s); {len(existing)} already in R2; "
@@ -135,7 +151,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"uploaded {len(todo) - len(failed)}/{len(todo)}; {len(failed)} failed")
     if failed:
         return 1
-    print(f"public prefix: r2://{BUCKET}/{KEY_PREFIX}/")
+    print(f"public prefix: r2://{BUCKET}/{args.prefix}/")
     return 0
 
 
