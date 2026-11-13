@@ -57,6 +57,7 @@ import hashlib
 import io
 import json
 import posixpath
+import re
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -89,7 +90,7 @@ TAGGED_R2_PREFIX = "library-colabfold-tagged"
 MEMBER_COLS = [
     "member_id", "design_id", "gene_symbol", "species", "candidate_set", "rung",
     "membrane_class", "n_tm", "ordered_length_aa", "sequence_sha256", "topology_version",
-    "proteoform_json",
+    "uniprot_acc", "proteoform_json",
 ]  # fmt: skip
 SITE_COLS = [
     "site_id", "member_id", "design_id", "gene_symbol", "species", "candidate_set",
@@ -345,29 +346,70 @@ def _diff(a, b) -> int | None:
     return None if a_i is None or b_i is None else a_i - b_i
 
 
-def _cterm(rows, info, R):
+SNORKEL_PLACEMENT = "snorkel"
+
+
+def _cterm_decisions(rows) -> dict[str, dict]:
+    """Per-member C-terminal decisions, keyed by the design id inside ``scope``
+    ("l1-m0474 (l1-p0156) ATP1B1 human")."""
+    out = {}
+    for r in rows:
+        m = re.search(r"\((l1-p\d+)\)", r.get("scope", ""))
+        if m:
+            out[m.group(1)] = r
+    return out
+
+
+def _cterm(rows, info, R, decisions=None):
+    """C-terminal arms (incl. stalk and furin moves). Snorkel rows are skipped here:
+    they are the internal member's pick and load through ``_internal``."""
+    decisions = decisions or {}
     out = []
     for r in rows:
+        if r["placement"].startswith(SNORKEL_PLACEMENT):
+            continue
         m = R.get("cterm", r["design_id"], gene=r["gene_symbol"])
         if not m:
             continue
         res = _int(r["cassette_after_residue"])
         native = _int(r["native_aa"])
+        d = decisions.get(m["design_id"], {})
         out.append(_site(
             info, site_id=f"{m['design_id']}-cterm-{res}", m=m,
-            rung="C-terminal", insert_after_residue=res,
+            rung=m["rung"], insert_after_residue=res,
             cassette="p003 51-aa tandem (issued encoding)",
             cassette_aa=_diff(r["protein_aa"], r["native_aa"]),
-            status="built", decision=r["placement"],
+            status="built", decision=d.get("decision") or r["placement"],
             status_detail=r["placement"] if res == native else f"{r['placement']}; native length {native}",
+            rejected_alternative=d.get("rejected_alternatives") or None,
             tagged_protein_sha256=r["protein_sha256"] or None,
             rationale_json={
+                "question": d.get("question"), "evidence": d.get("evidence"),
+                "would_change_it": d.get("would_change_it"),
                 "review_flags": r["review_flags"], "junction_edit": r["junction_edit"],
                 "worst_partner_tract_nt": r["worst_partner_tract_nt"],
                 "worst_partner": r["worst_partner"], "cassette_features": r["cassette_features"],
             },
-            decided_by=r["decided_by"], implemented_by=r["implemented_by"],
-            reason=r["reason"] or r["review_flags"] or None,
+            decided_by=d.get("decided_by") or r["decided_by"],
+            implemented_by=d.get("implemented_by") or r["implemented_by"],
+            reason=d.get("reason") or r["reason"] or r["review_flags"] or None,
+        ))  # fmt: skip
+    # A decision with no construct (e.g. "hold (not built)" after a failed refold) still
+    # shows: the member has been decided, it just has no tag on this rung.
+    built = {r["design_id"] for r in rows}
+    for design_id, d in decisions.items():
+        if design_id in built:
+            continue
+        m = R.get("cterm_decisions", design_id)
+        if not m:
+            continue
+        out.append(_site(
+            info, site_id=f"{m['design_id']}-cterm-held", m=m, rung=m["rung"],
+            insert_after_residue=None, status="no_tag", decision=d.get("decision"),
+            status_detail=d.get("question") or None,
+            rejected_alternative=d.get("rejected_alternatives") or None,
+            rationale_json={"evidence": d.get("evidence"), "would_change_it": d.get("would_change_it")},
+            decided_by=d.get("decided_by"), implemented_by=d.get("implemented_by"), reason=d.get("reason") or None,
         ))  # fmt: skip
     return out
 
@@ -546,7 +588,14 @@ def _ranker_scores(r: dict) -> dict:
 
 
 def _internal(
-    decisions, proposed, info_dec, info_prop, R, loops_by_design, snorkels=None
+    decisions,
+    proposed,
+    info_dec,
+    info_prop,
+    R,
+    loops_by_design,
+    snorkels=None,
+    snorkel_built=None,
 ):
     out = []
     chosen: dict[str, int | None] = {}
@@ -582,6 +631,14 @@ def _internal(
             snork = None
         status = INTERNAL_DECISION_STATUS.get(dec, "pending")
         detail = f"{dec}; refold verdict {r.get('refold_verdict') or 'none'}"
+        # A snorkel the C-terminal builder already built: the member's pick is that
+        # construct (native C-terminus, then the TM module and the cassette).
+        built_snork = (
+            (snorkel_built or {}).get(m["design_id"]) if dec == "snorkel" else None
+        )
+        if built_snork:
+            status = "built"
+            detail = f"{dec}; built as {built_snork['placement']}; refold verdict {r.get('refold_verdict') or 'none'}"
         if dec == "snorkel" and info_dec.get("snorkel_pending_note"):
             status, detail = (
                 "pending",
@@ -590,11 +647,25 @@ def _internal(
         out.append(_site(
             info_dec, site_id=f"{m['design_id']}-internal-{res if res is not None else dec}", m=m,
             rung=m["rung"], site_source="ranker",
-            insert_after_residue=_int(snork["native_length"]) if snork else res,
-            cassette=f"snorkel module, {snork['module_length']} aa (added TM helix + linkers + 51-aa cassette)"
-            if snork else None,
-            cassette_aa=_int(snork["module_length"]) if snork else None,
-            tagged_protein_sha256=(snork or {}).get("snorkel_protein_sha256") or None,
+            insert_after_residue=(
+                # Member numbering: the module (and the cassette after it) follows the
+                # native C-terminus. cassette_after_residue counts the added module.
+                _int(built_snork["native_aa"]) if built_snork
+                else _int(snork["native_length"]) if snork else res
+            ),
+            cassette=(
+                "snorkel: added TM module, then the 51-aa cassette" if built_snork
+                else f"snorkel module, {snork['module_length']} aa (added TM helix + linkers + 51-aa cassette)"
+                if snork else None
+            ),
+            cassette_aa=(
+                _diff(built_snork["protein_aa"], built_snork["native_aa"]) if built_snork
+                else _int(snork["module_length"]) if snork else None
+            ),
+            tagged_protein_sha256=(
+                built_snork["protein_sha256"] if built_snork
+                else (snork or {}).get("snorkel_protein_sha256")
+            ) or None,
             residue_before=junction.get((r["design_id"], res), "").partition("|")[0][:1] or None,
             residue_after=junction.get((r["design_id"], res), "").partition("|")[2][:1] or None,
             rank=_int(r["pick_rank"]), status=status,
@@ -603,6 +674,11 @@ def _internal(
             rationale_json={
                 **_ranker_scores(r), "refold_verdict": r.get("refold_verdict"),
                 "decided_on": r.get("decided_on"),
+                "snorkel_construct": {
+                    "placement": built_snork["placement"],
+                    "cassette_after_construct_residue": built_snork["cassette_after_residue"],
+                    "native_aa": built_snork["native_aa"], "protein_aa": built_snork["protein_aa"],
+                } if built_snork else None,
                 "snorkel_design": {k: snork.get(k) for k in ("components", "status", "reason", "rejected_alternative",
                                                             "decided_by", "implemented_by")} if snork else None,
                 "loop_evidence": _loop_evidence(loops_by_design.get(m["design_id"], []), res),
@@ -1004,8 +1080,14 @@ def build(args) -> int:
         m["membrane_class"] = _membrane_class(m, gpcr)
         members[m["member_id"]] = m
     R = Resolver(members)
+    payload_acc = {
+        r["candidate_id"]: r.get("uniprot_acc") or None
+        for r in T["structure_payload"]
+        if r.get("is_chosen") == "1"
+    }
     for m in members.values():
         m["proteoform_json"] = None
+        m["uniprot_acc"] = payload_acc.get(m["member_id"])
     for r in T.get("proteoform_decisions", []):
         m = R.get("proteoform_decisions", r["design_id"], gene=r["gene_symbol"])
         if m:
@@ -1025,7 +1107,14 @@ def build(args) -> int:
             canonical_sha[m["design_id"]] = r["canonical_sequence_sha256"]
 
     sites: list[dict] = []
-    sites += _cterm(T["cterm"], inputs["cterm"], R)
+    sites += _cterm(
+        T["cterm"], inputs["cterm"], R, _cterm_decisions(T.get("cterm_decisions", []))
+    )
+    snorkel_built = {
+        r["design_id"]: r
+        for r in T["cterm"]
+        if r["placement"].startswith(SNORKEL_PLACEMENT)
+    }
     if (
         "nterm_decisions" in T
     ):  # the delegated decisions supersede the reviewer-package picks
@@ -1036,7 +1125,7 @@ def build(args) -> int:
     sites += _multipass(T["multipass"], inputs["multipass"], R, lane)
     snorkels = {r["design_id"]: r for r in T.get("snorkel_designs", [])}
     sites += _internal(T["internal_decisions"], T["internal_proposed"], inputs["internal_decisions"],
-                       inputs["internal_proposed"], R, loops, snorkels)  # fmt: skip
+                       inputs["internal_proposed"], R, loops, snorkels, snorkel_built)  # fmt: skip
     sites += _built_loop_arms(T["internal_gate"], inputs["internal_gate"], R)
     agent, agent_skipped = _agent_picks(
         T["agent_picks"], inputs["agent_picks"], R.by_design, canonical_sha
