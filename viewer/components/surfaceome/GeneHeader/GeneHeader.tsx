@@ -523,7 +523,13 @@ export function GeneHeader({
                 this gene is in the Deliverome library. Same chip style as the
                 sub-facet chip; gated on the fetched membership overlay. */}
             {inFgLibrary || oversized ? (
-              <span className={styles.tierFacetChip}>In library</span>
+              <a
+                className={styles.tierFacetChip}
+                href={`/l1-review/?q=${encodeURIComponent(rec.gene.hgnc_symbol)}`}
+                title="Open this gene's L1 members on the L1 library review page"
+              >
+                In library
+              </a>
             ) : null}
             {oversized ? (
               <span className={styles.oversizedChip}>

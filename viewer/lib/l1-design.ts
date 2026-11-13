@@ -105,6 +105,8 @@ export interface L1Member {
   n_tm?: number | null;
   ordered_length_aa: number | null;
   sequence_sha256?: string | null;
+  /** UniProt accession of the member's chosen native model. */
+  uniprot_acc?: string | null;
   /** The proteoform audit's decision for this member, when it has one. */
   proteoform?: {
     decision?: string; target?: string; status?: string; flags?: string; reason?: string;
@@ -358,4 +360,45 @@ export function latestVerdicts(rows: readonly L1ReviewRow[]): Map<string, L1Revi
 export function modelToMemberResidue(modelResidue: number, structure: Pick<L1Structure, "kind" | "residue_offset">): number | null {
   if (structure.kind !== "native") return null;
   return modelResidue - (structure.residue_offset ?? 0);
+}
+
+/**
+ * Curated contact sites (structures and databases, the gene page's contact overview)
+ * are numbered on a UniProt reference sequence. They can be drawn on a member only when
+ * the member's ordered protein IS that sequence; otherwise they are listed, not drawn.
+ */
+export function curatedContactsAlign(
+  memberSha: string | null | undefined,
+  referenceSha: string | null | undefined,
+): boolean {
+  return Boolean(memberSha && referenceSha && memberSha === referenceSha);
+}
+
+export interface CuratedContacts {
+  uniprot_acc: string;
+  release_id: string;
+  reference_sequence_sha256: string | null;
+  sites: { source: string; partner: string; partner_label?: string; positions?: number[]; context?: string;
+           reference?: string; observation_id?: string }[];
+}
+
+const CONTACT_API =
+  process.env.NEXT_PUBLIC_CONTACT_API_BASE ?? "https://api.deliverome.org/surfaceome";
+
+/** The curated contact sites for one accession, straight from the contact API's current
+ *  release (extracellular scope). No offline snapshot fallback: the snapshot carries no
+ *  reference-sequence hash, and without one a member can never be shown as aligned. */
+export async function fetchCuratedContacts(acc: string, signal?: AbortSignal): Promise<CuratedContacts | null> {
+  try {
+    const rel = await fetch(`${CONTACT_API}/v1/contact-sites/releases/current`, { signal });
+    if (!rel.ok) return null;
+    const { release_id } = (await rel.json()) as { release_id: string };
+    const res = await fetch(`${CONTACT_API}/v1/contact-sites/releases/${release_id}/proteins/${encodeURIComponent(acc)}`, { signal });
+    if (!res.ok) return null;
+    const g = (await res.json()) as CuratedContacts;
+    if (g.release_id !== release_id || !Array.isArray(g.sites)) return null;
+    return { ...g, uniprot_acc: acc, reference_sequence_sha256: g.reference_sequence_sha256 ?? null };
+  } catch {
+    return null;
+  }
 }

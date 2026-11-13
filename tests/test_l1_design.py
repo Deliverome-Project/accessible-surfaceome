@@ -256,9 +256,57 @@ GIT_TABLES = {
             # The member id here is deliberately wrong (renumbered since): the loader
             # must resolve on design id.
             ("l1-m0077", "l1-p0001", "library_reference", "human", 760),
-            ("l1-m0002", "l1-p0002", "ortholog", "cyno", 732),
+            # l1-p0002 has no construct: its decision is a hold (cterm_decisions.tsv).
             ("l1-m0099", "l1-p3001", "ortholog", "cyno", 500),  # not in the universe
         ]
+    ]
+    + [
+        # A snorkel built by the C-terminal builder for an internal-rung member; its
+        # cassette_after_residue counts the added 55-aa TM module.
+        {
+            "candidate_id": "l1-m0008",
+            "design_id": "l1-p0008",
+            "gene_symbol": "GENEG",
+            "candidate_set": "ortholog",
+            "species": "cyno",
+            "native_aa": "300",
+            "protein_aa": "406",
+            "placement": "snorkel (TM module, then cassette)",
+            "cassette_after_residue": "355",
+            "junction_edit": "",
+            "worst_partner_tract_nt": "",
+            "worst_partner": "",
+            "cassette_features": "",
+            "review_flags": "",
+            "decided_by": "",
+            "implemented_by": "",
+            "reason": "",
+            "protein_sha256": "5" * 64,
+        },
+    ],  # fmt: skip
+    "cterm_decisions.tsv": [
+        {
+            "scope": "l1-m0001 (l1-p0001) GENEA human",
+            "question": "terminus inside a fold",
+            "decision": "keep the cassette at the C-terminus",
+            "rejected_alternatives": "stalk site 700",
+            "evidence": "terminal pLDDT 86",
+            "decided_by": "cterm session (delegated by the reviewer 2026-11-12)",
+            "implemented_by": "cterm builder",
+            "reason": "no stalk",
+            "would_change_it": "a failed refold",
+        },
+        {
+            "scope": "l1-m0002 (l1-p0002) GENEA cyno",
+            "question": "tagged refold failed",
+            "decision": "hold (not built)",
+            "rejected_alternatives": "keep the C-terminal tag",
+            "evidence": "site lDDT 0.39",
+            "decided_by": "cterm session (delegated by the reviewer 2026-11-12)",
+            "implemented_by": "cterm builder",
+            "reason": "a failed fold is held",
+            "would_change_it": "a passing alternative site",
+        },
     ],  # fmt: skip
     "nsp.tsv": [
         {
@@ -360,6 +408,19 @@ GIT_TABLES = {
             ("built_loop_arm", "GENEE-F120", "1"),
             ("api_surface_loop", "cand-1", "0"),
         ]
+    ],  # fmt: skip
+    "internal_constructs.tsv": [
+        # Built at 26, but the decision is 94: the decision must NOT show as built.
+        {
+            "design_id": "l1-p0006",
+            "cassette_after_residue": "26",
+            "junction": "G26|T27",
+            "native_aa": "152",
+            "protein_aa": "203",
+            "protein_sha256": "4" * 64,
+            "refold_verdict": "pass",
+            "built_by": "integration",
+        },
     ],  # fmt: skip
     "proteoform.tsv": [
         {
@@ -649,7 +710,8 @@ PINS = {
     "renumbering": "renum.tsv", "tag_paths": "paths.tsv", "structure_payload": "payload.tsv",
     "cterm": "cterm.tsv", "nterm_sp": "nsp.tsv", "type3": "t3.tsv", "multipass": "mp.tsv",
     "multipass_lane_check": "lane.tsv", "internal_gate": "gate.tsv", "agent_picks": "agent.tsv",
-    "proteoform_decisions": "proteoform.tsv",
+    "proteoform_decisions": "proteoform.tsv", "cterm_decisions": "cterm_decisions.tsv",
+    "internal_constructs": "internal_constructs.tsv",
 }  # fmt: skip
 OBJECT_PINS = {
     "internal_decisions": "decisions.tsv", "internal_proposed": "proposed.tsv",
@@ -685,7 +747,7 @@ def built(tmp_path_factory):
         k: {"pr": 2, "ref": "fixture", "object": f"file://{objects / p}"}
         for k, p in OBJECT_PINS.items()
     }
-    sources["cterm"]["pending_note"] = "pending #9 re-push"
+    sources["type3"]["pending_note"] = "pending #9 re-push"
     pins = tmp / "pins.json"
     tagged = [
         {"format": "l1_tag_refold_v1", "object": f"file://{objects / 'tagged_index.tsv'}",
@@ -738,7 +800,7 @@ def _sites(data: Path) -> dict[str, dict]:
 def test_build_maps_every_rung(built):
     sites = _sites(built["data"])
     assert set(sites) == {
-        "l1-p0001-cterm-760", "l1-p0002-cterm-732", "l1-p0003-nsp-34", "l1-p0004-type3-r1",
+        "l1-p0001-cterm-760", "l1-p0002-cterm-held", "l1-p0003-nsp-34", "l1-p0004-type3-r1",
         "l1-p0005-res1-igk_tag", "l1-p0005-res1-tag_alone", "l1-p0006-internal-94",
         "l1-p0006-v5-r2", "GENEE-F120", "l1-p0007-internal-route_to_nterm_after_sp",
         "l1-p0006-agent-r1",
@@ -747,17 +809,17 @@ def test_build_maps_every_rung(built):
     c = sites["l1-p0001-cterm-760"]
     assert (c["member_id"], c["status"], c["cassette_aa"]) == (
         "l1-m0001",
-        "pending",
+        "built",
         "51",
     )
-    assert c["status_detail"].startswith("pending #9 re-push; was built")
-    assert c["decided_by"].startswith("no individual decision")
     t3 = sites["l1-p0004-type3-r1"]
+    # The type III source is pinned with a pending note: visible, never a settled pick.
     assert (t3["leader"], t3["insert_after_residue"], t3["status"]) == (
         "igk",
         "1",
-        "built",
+        "pending",
     )
+    assert t3["status_detail"].startswith("pending #9 re-push; was built")
     igk, alone = sites["l1-p0005-res1-igk_tag"], sites["l1-p0005-res1-tag_alone"]
     assert (igk["is_primary"], igk["status"]) == ("1", "built")
     assert (alone["is_primary"], alone["status"]) == ("0", "alternative")
@@ -859,14 +921,33 @@ def test_native_only_refold_fills_a_member_with_no_native_model(built):
 
 def test_snorkel_pick_sits_after_the_native_c_terminus(built):
     s = _sites(built["data"])["l1-p0008-internal-snorkel"]
+    # Built by the C-terminal builder: shown after the native C-terminus (300), not at
+    # the construct position (355) that counts the added module.
     assert (s["status"], s["insert_after_residue"], s["cassette_aa"]) == (
-        "decided_not_built",
+        "built",
         "300",
         "106",
     )
     assert s["rejected_alternative"] == "internal loop 2"
-    assert json.loads(s["rationale_json"])["snorkel_design"]["components"].startswith(
-        "linker"
+    why = json.loads(s["rationale_json"])
+    assert why["snorkel_construct"]["cassette_after_construct_residue"] == "355"
+    assert why["snorkel_design"]["components"].startswith("linker")
+    assert not any(k.startswith("l1-p0008-cterm") for k in _sites(built["data"]))
+
+
+def test_cterm_decisions_attach_and_holds_show(built):
+    sites = _sites(built["data"])
+    c = sites["l1-p0001-cterm-760"]
+    assert (c["decision"], c["rejected_alternative"]) == (
+        "keep the cassette at the C-terminus",
+        "stalk site 700",
+    )
+    assert c["decided_by"].startswith("cterm session")
+    held = sites["l1-p0002-cterm-held"]
+    assert (held["status"], held["insert_after_residue"], held["decision"]) == (
+        "no_tag",
+        "",
+        "hold (not built)",
     )
 
 
@@ -996,14 +1077,16 @@ assert.match(body.load.load_version, /^l1d-[0-9a-f]{16}$/);
 assert.deepEqual(body.members.map((m) => [m.member_id, m.species, m.membrane_class]),
   [["l1-m0001", "human", "single-pass type II"], ["l1-m0002", "cyno", "single-pass type II"]]);
 assert.equal(body.members[0].sites[0].insert_after_residue, 760);
-assert.equal(body.members[0].sites[0].status, "pending");
+assert.equal(body.members[0].sites[0].status, "built");
 assert.equal(body.members[0].proteoform, null);
 assert.equal(body.members[0].structures[0].display_last_model_residue, 760);
 const lv = body.load.load_version;
 
 [status, body] = await call("/v1/l1-design/genee");
 const e = body.members[0];
-assert.deepEqual(e.sites.filter((s) => s.is_primary).map((s) => s.status).sort(), ["built", "decided_not_built"]);
+assert.deepEqual(e.sites.filter((s) => s.is_primary).map((s) => s.status).sort(), ["decided_not_built"]);
+// The earlier panel's built loop arm is shown, as an alternative, never as the current pick.
+assert.ok(e.sites.some((s) => s.site_id === "GENEE-F120" && !s.is_primary && s.status === "alternative"));
 const dec = e.sites.find((s) => s.site_id === "l1p".replace("l1p", "l1-p0006-internal-94"));
 assert.equal(dec.rejected_alternative, "v5 rank-2 pick");
 assert.equal(dec.rationale.loop_evidence.glycan_n, "100");
@@ -1015,8 +1098,8 @@ assert.deepEqual(e.contacts.map((c) => [c.residue, c.source, c.confidence_tier])
 [status, body] = await call("/v1/l1-design");
 assert.equal(status, 200);
 assert.equal(body.members.length, 8);
-assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0006").pick_status, ["built", "decided_not_built"]);
-assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0008").pick_status, ["decided_not_built"]);
+assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0006").pick_status, ["decided_not_built"]);
+assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0008").pick_status, ["built"]);
 
 [status] = await call(`/v1/l1-design/GENEA/${lv}`);
 assert.equal(status, 200);
@@ -1113,3 +1196,96 @@ def test_worker_routes_against_sqlite(built):
     )
     assert res.returncode == 0, res.stdout + res.stderr
     assert "ok" in res.stdout
+
+
+def test_internal_decision_is_built_only_when_built_at_that_residue():
+    L = _loader()
+    member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
+              "candidate_set": "library_reference", "rung": "internal", "ordered_length_aa": 200,
+              "sequence_sha256": "a" * 64}  # fmt: skip
+    R = L.Resolver({"l1-m0001": member})
+    dec = {"design_id": "l1-p0001", "gene": "G", "sequence_sha256": "a" * 64, "decision": "internal_loop",
+           "insert_after_residue": "94.0", "pick_rank": "1", "rank_score": "0.8", "absolute_score": "0.7",
+           "best_region_pct_of_published_regions": "0.5", "this_region_length": "19", "snorkel_candidate": "False",
+           "confidence": "medium", "reason": "r", "rejected_alternative": "x", "decided_by": "ranker",
+           "implemented_by": "ranker", "refold_verdict": "pending"}  # fmt: skip
+    info = {"pr": 1, "pr_state": "open", "commit": "c" * 40, "path": "decisions.tsv"}
+    built = {"l1-p0001": {"design_id": "l1-p0001", "cassette_after_residue": "94", "junction": "V94|S95",
+                          "native_aa": "200", "protein_aa": "251", "protein_sha256": "4" * 64,
+                          "refold_verdict": "pass", "built_by": "integration"}}  # fmt: skip
+    (site,) = L._internal([dec], [], info, info, R, {}, loop_built=built)
+    assert (site["status"], site["residue_before"], site["cassette_aa"]) == (
+        "built",
+        "V",
+        51,
+    )
+    assert site["tagged_protein_sha256"] == "4" * 64
+    (site,) = L._internal([dec], [], info, info, R, {}, loop_built={})
+    assert site["status"] == "decided_not_built"
+
+
+def test_final_refold_manifest_overrides_the_index_verdict():
+    L = _loader()
+    member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
+              "candidate_set": "library_reference", "rung": "C-terminal", "ordered_length_aa": 200,
+              "sequence_sha256": "a" * 64}  # fmt: skip
+    R = L.Resolver({"l1-m0001": member})
+    head = ("fold_id\tkind\trung\tdesign_id\tgene_symbol\ttagged_sha256\tnative_sha256\tcassette_start_1based\t"
+            "cassette_end_1based\tinsert_after_native_residue\tmean_plddt\tverdict\tpdb_key\n")  # fmt: skip
+    row = f"t.1\ttagged\tcterm\tl1-p0001\tG\t{'9' * 64}\t{'a' * 64}\t201\t251\t200\t80\tpass\tprocessed://x/t.1.pdb\n"
+    manifest = ("tagged_sha256\tverdict\tverdict_reasons\tspytag003_rsa\talfa_rsa\n"
+                f"{'9' * 64}\tfail\tepitope packed\t0.12\t0.40\n").encode()  # fmt: skip
+    spec = {"release": "2026-11-12", "decided_by": "d", "implemented_by": "i"}
+    (t,) = L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {}, manifest)
+    assert t["refold_verdict"] == "fail"
+    assert "SpyTag003 RSA 0.12" in t["note"] and "epitope packed" in t["note"]
+    (t,) = L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {})
+    assert t["refold_verdict"] == "pass"
+
+
+def test_type3_igk_mature_sha_is_the_built_protein_minus_the_leader():
+    import hashlib
+
+    L = _loader()
+    member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
+              "candidate_set": "library_reference", "rung": "N at residue 1, single-pass (type III)",
+              "ordered_length_aa": 100, "sequence_sha256": "a" * 64}  # fmt: skip
+    R = L.Resolver({"l1-m0001": member})
+    precursor = "METDTLLLWVLLLWVPGSTG" + "DM" + "G" * 60
+    sha = hashlib.sha256(precursor.encode()).hexdigest()
+    row = {"design_id": "l1-p0001", "gene_symbol": "G", "design": "igk_tag", "native_aa": "100",
+           "mature_aa": "151", "cassette": "51", "subgroup": "long_tail", "protein_sha256": sha,
+           "decided_by": "d", "implemented_by": "i", "reason": "r"}  # fmt: skip
+    info = {"pr": 1, "pr_state": "open", "commit": "c" * 40, "path": "t3.tsv"}
+    (site,) = L._type3([row], info, R, {sha: precursor})
+    why = json.loads(site["rationale_json"])
+    assert why["mature_sha256"] == hashlib.sha256(precursor[20:].encode()).hexdigest()
+    (site,) = L._type3([row], info, R, {})
+    assert "mature_sha256" not in json.loads(site["rationale_json"])
+
+
+def test_fold_of_a_retired_twin_links_to_the_member_building_the_same_protein():
+    L = _loader()
+    member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
+              "candidate_set": "library_reference", "rung": "N at residue 1, multipass", "ordered_length_aa": 300,
+              "sequence_sha256": "a" * 64}  # fmt: skip
+    R = L.Resolver({"l1-m0001": member})
+    site = {"site_id": "l1-p0001-res1-igk_tag", "design_id": "l1-p0001", "is_primary": 1, "status": "built",
+            "insert_after_residue": 1, "tagged_protein_sha256": "1" * 64,
+            "rationale_json": json.dumps({"mature_sha256": "9" * 64})}  # fmt: skip
+    head = ("fold_id\tkind\trung\tdesign_id\tgene_symbol\ttagged_sha256\tnative_sha256\tcassette_start_1based\t"
+            "cassette_end_1based\tinsert_after_native_residue\tmean_plddt\tverdict\tpdb_key\n")  # fmt: skip
+    # Folded under the retired rescue design l1-p2370, which is not a member any more.
+    row = f"t.9\ttagged\tmultipass\tl1-p2370\tG\t{'9' * 64}\t{'a' * 64}\t2\t52\t0\t80\tpass\tprocessed://x/t.9.pdb\n"
+    spec = {"release": "2026-11-12", "decided_by": "d", "implemented_by": "i"}
+    (t,) = L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {"l1-p0001": [site]}, None,
+                               {"9" * 64: site})  # fmt: skip
+    assert (t["member_id"], t["site_id"]) == ("l1-m0001", "l1-p0001-res1-igk_tag")
+    assert t["note"].startswith(
+        "fold of retired rescue twin l1-p2370, same mature protein"
+    )
+    # Without the twin map the fold has no member and is dropped.
+    assert (
+        L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {"l1-p0001": [site]})
+        == []
+    )

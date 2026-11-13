@@ -599,6 +599,9 @@ function IsoformControlTable({ pins }: { pins: IsoformTagPin[] }) {
 export interface TaggedSitesCardProps {
   taggedSites: TaggedSitesFile | null;
   n?: number;
+  /** The gene is an L1 library member: computed candidates were removed upstream and
+   *  the card says where the current pick lives instead. */
+  computedRetiredForL1?: boolean;
 }
 
 /**
@@ -616,7 +619,7 @@ export interface TaggedSitesCardProps {
  * All columns are sortable; tag/compartment/confidence render as chips.
  * `validated_literature` provenance is validation-only and never rendered.
  */
-export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
+export function TaggedSitesCard({ taggedSites, n, computedRetiredForL1 = false }: TaggedSitesCardProps) {
   const sites = taggedSites?.sites ?? [];
   // Surface-accessible literature sites only (N-terminal tags are extracellular
   // by construction — placed after signal-peptide cleavage — even if the residue
@@ -683,7 +686,7 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
     <SectionCard
       n={n}
       title="Tag sites"
-      lede="Engineered epitope/tag insertion points — literature-validated tags and computed candidate positions. Highlighted on the structure viewer above. Click any column header to sort."
+      lede="Engineered epitope/tag insertion points — literature-validated and screen-validated tags. Highlighted on the structure viewer above. Click any column header to sort."
     >
       <p className={styles.legend}>
         {legendCategories.map((c) => (
@@ -716,8 +719,7 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
             The literature agent searched and found no paper that pins a tag to a
             specific extracellular position
             {searchedOn ? ` (last searched ${searchedOn})` : null}. This is a
-            result, not a gap — the computed candidates below are the starting
-            point.
+            result, not a gap.
           </p>
         </>
       ) : null}
@@ -738,11 +740,22 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
         </>
       ) : null}
 
+      {computedRetiredForL1 ? (
+        <p className={styles.lede}>
+          This protein is in the L1 library: its tag site is the L1 design&rsquo;s current
+          pick (see the <a href="#section-l1-design">L1 design</a> section and the{" "}
+          <a href="/l1-review/">L1 review page</a>). The legacy computed candidates from the
+          disorder / surface-loop pipeline are retired for L1 members.
+        </p>
+      ) : null}
       {det.length > 0 ? (
-        <>
-          <h3 className={styles.subhead}>Computed candidates ({det.length})</h3>
+        <details className={styles.legacy}>
+          <summary className={styles.subhead}>
+            Legacy computed candidates ({det.length}) — disorder / surface-loop pipeline,
+            superseded by the L1 tag-site design
+          </summary>
           <SortableTable sites={det} columns={DET_COLUMNS} />
-        </>
+        </details>
       ) : null}
 
       {otherPositions.length > 0 ? (

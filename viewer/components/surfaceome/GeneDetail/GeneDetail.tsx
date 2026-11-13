@@ -11,6 +11,7 @@ import { AccessibilityRisksCard } from "../AccessibilityRisksCard/AccessibilityR
 import { InternalizationCard } from "../InternalizationCard/InternalizationCard";
 import { TaggedSitesCard } from "../TaggedSitesCard/TaggedSitesCard";
 import { L1DesignCard } from "../L1DesignCard/L1DesignCard";
+import { withoutComputedCandidates } from "../../../lib/tag-sites-overlay";
 import { BenchmarkRow } from "../BenchmarkRow/BenchmarkRow";
 import { BiologicalContextCard } from "../BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../CommunityNotesCard/CommunityNotesCard";
@@ -144,6 +145,10 @@ export function GeneDetail({
   revisions,
 }: GeneDetailProps) {
   const router = useRouter();
+  // On an L1 library member the legacy computed candidates are retired everywhere on
+  // the page (table, structure overlay, isoform pins): the L1 design's current pick
+  // is the recommendation. Other genes keep them, labelled as legacy.
+  const shownTagSites = inFgLibrary ? withoutComputedCandidates(taggedSites) : taggedSites;
 
   // Prev/next navigation across the FG library, alphabetically. The FG-only
   // ordered list is the deep-dive genes (each has a `/[symbol]` page) that are
@@ -258,25 +263,6 @@ export function GeneDetail({
       label: "Internalization",
       render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
-    // Tag sites — its OWN tab (distinct from Internalization). Shown only
-    // when the gene has at least one RENDERED tag site (any literature pass,
-    // deterministic_computed, or screen_validated); validated_literature is
-    // validation-only and never rendered, matching `renderableTagSites`.
-    ...(taggedSites?.has_data &&
-    taggedSites.sites.some(
-      (s) =>
-        isLiteratureProvenance(s.provenance) ||
-        s.provenance === "deterministic_computed" ||
-        s.provenance === "screen_validated",
-    )
-      ? [
-          {
-            kind: "tag-sites",
-            label: "Tag sites",
-            render: (n: number) => <TaggedSitesCard taggedSites={taggedSites} n={n} />,
-          },
-        ]
-      : []),
     // L1 library design (suggested tag sites + folded models per member), fetched
     // client-side from /v1/l1-design. Only on library genes: the card answers "how
     // will we tag the protein we order", which no other gene has.
@@ -286,6 +272,27 @@ export function GeneDetail({
             kind: "l1-design",
             label: "L1 design",
             render: (n: number) => <L1DesignCard symbol={rec.gene.hgnc_symbol} n={n} />,
+          },
+        ]
+      : []),
+    // Tag sites — its OWN tab (distinct from Internalization). Shown only
+    // when the gene has at least one RENDERED tag site (any literature pass,
+    // deterministic_computed, or screen_validated); validated_literature is
+    // validation-only and never rendered, matching `renderableTagSites`.
+    ...(shownTagSites?.has_data &&
+    shownTagSites.sites.some(
+      (s) =>
+        isLiteratureProvenance(s.provenance) ||
+        s.provenance === "deterministic_computed" ||
+        s.provenance === "screen_validated",
+    )
+      ? [
+          {
+            kind: "tag-sites",
+            label: "Tag sites",
+            render: (n: number) => (
+              <TaggedSitesCard taggedSites={shownTagSites} n={n} computedRetiredForL1={inFgLibrary} />
+            ),
           },
         ]
       : []),
@@ -313,7 +320,7 @@ export function GeneDetail({
     {
       kind: "isoforms",
       label: "Isoforms & homologs",
-      render: (n) => <IsoformsCard rec={rec} n={n} fgLibrary={fgLibrary} taggedSites={taggedSites} />,
+      render: (n) => <IsoformsCard rec={rec} n={n} fgLibrary={fgLibrary} taggedSites={shownTagSites} />,
     },
     {
       kind: "ledger",
@@ -437,7 +444,7 @@ export function GeneDetail({
             rec={rec}
             geneName={geneName}
             structureData={structureData}
-            taggedSites={taggedSites}
+            taggedSites={shownTagSites}
             schwekeHomomer={schwekeHomomer}
             catalogRow={catalogRow}
             triageHeadline={triageHeadline}
