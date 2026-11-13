@@ -1084,7 +1084,9 @@ const lv = body.load.load_version;
 
 [status, body] = await call("/v1/l1-design/genee");
 const e = body.members[0];
-assert.deepEqual(e.sites.filter((s) => s.is_primary).map((s) => s.status).sort(), ["built", "decided_not_built"]);
+assert.deepEqual(e.sites.filter((s) => s.is_primary).map((s) => s.status).sort(), ["decided_not_built"]);
+// The earlier panel's built loop arm is shown, as an alternative, never as the current pick.
+assert.ok(e.sites.some((s) => s.site_id === "GENEE-F120" && !s.is_primary && s.status === "alternative"));
 const dec = e.sites.find((s) => s.site_id === "l1p".replace("l1p", "l1-p0006-internal-94"));
 assert.equal(dec.rejected_alternative, "v5 rank-2 pick");
 assert.equal(dec.rationale.loop_evidence.glycan_n, "100");
@@ -1096,7 +1098,7 @@ assert.deepEqual(e.contacts.map((c) => [c.residue, c.source, c.confidence_tier])
 [status, body] = await call("/v1/l1-design");
 assert.equal(status, 200);
 assert.equal(body.members.length, 8);
-assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0006").pick_status, ["built", "decided_not_built"]);
+assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0006").pick_status, ["decided_not_built"]);
 assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0008").pick_status, ["built"]);
 
 [status] = await call(`/v1/l1-design/GENEA/${lv}`);
@@ -1239,3 +1241,51 @@ def test_final_refold_manifest_overrides_the_index_verdict():
     assert "SpyTag003 RSA 0.12" in t["note"] and "epitope packed" in t["note"]
     (t,) = L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {})
     assert t["refold_verdict"] == "pass"
+
+
+def test_type3_igk_mature_sha_is_the_built_protein_minus_the_leader():
+    import hashlib
+
+    L = _loader()
+    member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
+              "candidate_set": "library_reference", "rung": "N at residue 1, single-pass (type III)",
+              "ordered_length_aa": 100, "sequence_sha256": "a" * 64}  # fmt: skip
+    R = L.Resolver({"l1-m0001": member})
+    precursor = "METDTLLLWVLLLWVPGSTG" + "DM" + "G" * 60
+    sha = hashlib.sha256(precursor.encode()).hexdigest()
+    row = {"design_id": "l1-p0001", "gene_symbol": "G", "design": "igk_tag", "native_aa": "100",
+           "mature_aa": "151", "cassette": "51", "subgroup": "long_tail", "protein_sha256": sha,
+           "decided_by": "d", "implemented_by": "i", "reason": "r"}  # fmt: skip
+    info = {"pr": 1, "pr_state": "open", "commit": "c" * 40, "path": "t3.tsv"}
+    (site,) = L._type3([row], info, R, {sha: precursor})
+    why = json.loads(site["rationale_json"])
+    assert why["mature_sha256"] == hashlib.sha256(precursor[20:].encode()).hexdigest()
+    (site,) = L._type3([row], info, R, {})
+    assert "mature_sha256" not in json.loads(site["rationale_json"])
+
+
+def test_fold_of_a_retired_twin_links_to_the_member_building_the_same_protein():
+    L = _loader()
+    member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
+              "candidate_set": "library_reference", "rung": "N at residue 1, multipass", "ordered_length_aa": 300,
+              "sequence_sha256": "a" * 64}  # fmt: skip
+    R = L.Resolver({"l1-m0001": member})
+    site = {"site_id": "l1-p0001-res1-igk_tag", "design_id": "l1-p0001", "is_primary": 1, "status": "built",
+            "insert_after_residue": 1, "tagged_protein_sha256": "1" * 64,
+            "rationale_json": json.dumps({"mature_sha256": "9" * 64})}  # fmt: skip
+    head = ("fold_id\tkind\trung\tdesign_id\tgene_symbol\ttagged_sha256\tnative_sha256\tcassette_start_1based\t"
+            "cassette_end_1based\tinsert_after_native_residue\tmean_plddt\tverdict\tpdb_key\n")  # fmt: skip
+    # Folded under the retired rescue design l1-p2370, which is not a member any more.
+    row = f"t.9\ttagged\tmultipass\tl1-p2370\tG\t{'9' * 64}\t{'a' * 64}\t2\t52\t0\t80\tpass\tprocessed://x/t.9.pdb\n"
+    spec = {"release": "2026-11-12", "decided_by": "d", "implemented_by": "i"}
+    (t,) = L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {"l1-p0001": [site]}, None,
+                               {"9" * 64: site})  # fmt: skip
+    assert (t["member_id"], t["site_id"]) == ("l1-m0001", "l1-p0001-res1-igk_tag")
+    assert t["note"].startswith(
+        "fold of retired rescue twin l1-p2370, same mature protein"
+    )
+    # Without the twin map the fold has no member and is dropped.
+    assert (
+        L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {"l1-p0001": [site]})
+        == []
+    )
