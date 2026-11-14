@@ -15,6 +15,8 @@ import {
   surfaceOrthologKeys,
   type FgLibraryData,
 } from "../../../lib/fg-library";
+import { isLibraryTrancheVisible } from "../../../lib/library-tranches";
+import { libraryMembersByAccession } from "../../../lib/structure-viewer-types";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { isoformNumber } from "../GeneHeader/GeneHeader";
 import { SectionCard } from "../SectionCard/SectionCard";
@@ -481,6 +483,19 @@ export function IsoformsCard({ rec, n, fgLibrary, taggedSites }: Props) {
   const librarySymbol = rec.gene.hgnc_symbol;
   const libIsoformIds = surfaceIsoformIds(fgLibrary, librarySymbol);
   const libOrthologKeys = surfaceOrthologKeys(fgLibrary, librarySymbol);
+  // fg-library.json predates the tranches: its surface-competent isoforms and orthologs
+  // are mostly L2 candidates, which are still being designed. While L2 is hidden
+  // (lib/library-tranches.ts) the pill comes from the record's own library members
+  // instead, already filtered to the visible tranches and matched on the accession of
+  // the ordered sequence, so only an ordered L1 isoform or ortholog is marked.
+  const l2Shown = isLibraryTrancheVisible("l2");
+  const visibleMembers = libraryMembersByAccession(rec);
+  const isoformInLibrary = (isoformId: string) =>
+    l2Shown ? libIsoformIds.has(isoformId) : visibleMembers.has(isoformId.toUpperCase());
+  const orthologInLibrary = (e: OrthologEntry, species: "Mouse" | "Cyno") =>
+    l2Shown
+      ? libOrthologKeys.has(orthologKey(e.ortholog_symbol, species))
+      : !!e.ortholog_uniprot_acc && visibleMembers.has(e.ortholog_uniprot_acc.toUpperCase());
   // Close paralogs (>80% on the colored identity — ECD when present, else
   // full-length) that carry real DeepTMHMM topology get promoted to full
   // rows in the variants table — the "multitarget likely" set (HPA antigen
@@ -695,7 +710,7 @@ export function IsoformsCard({ rec, n, fgLibrary, taggedSites }: Props) {
                         >
                           <span className={styles.mono}>{iso.isoform_id}</span>
                         </a>
-                        {libIsoformIds.has(iso.isoform_id)
+                        {isoformInLibrary(iso.isoform_id)
                           ? inLibraryPill()
                           : null}
                       </div>
@@ -741,7 +756,7 @@ export function IsoformsCard({ rec, n, fgLibrary, taggedSites }: Props) {
                   `mouse-${i}`,
                   "Mouse",
                   maxResidues,
-                  libOrthologKeys.has(orthologKey(e.ortholog_symbol, "Mouse")),
+                  orthologInLibrary(e, "Mouse"),
                 ),
               )}
               {orthologs.cynomolgus.map((e, i) =>
@@ -750,7 +765,7 @@ export function IsoformsCard({ rec, n, fgLibrary, taggedSites }: Props) {
                   `cyno-${i}`,
                   "Cyno",
                   maxResidues,
-                  libOrthologKeys.has(orthologKey(e.ortholog_symbol, "Cyno")),
+                  orthologInLibrary(e, "Cyno"),
                 ),
               )}
               {/* Close paralogs (>=80% full-length) — within-species, with

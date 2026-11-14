@@ -19,6 +19,13 @@ import {
   STRUCTURES_BASE,
   structureViewerDataFromLibraryMember,
 } from "../lib/structure-viewer-types";
+import {
+  isLibraryTrancheVisible,
+  VISIBLE_LIBRARY_TRANCHES,
+  visibleLibraryRows,
+} from "../lib/library-tranches";
+
+const BOTH_TRANCHES: ReadonlySet<string> = new Set(["l1", "l2"]);
 
 const TOPO = "SSSSSSSSMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOIIIIIIIIII"; // 50 residues
 
@@ -284,7 +291,7 @@ test("members: an isoform-sequence construct marks the isoform, not the canonica
 
 test("members: no chosen structure is still membership (L2 isoforms and orthologs)", () => {
   const l2 = { ...topology, candidate_id: "l2-p2461", library: "l2", candidate_set: "ortholog", topology_acc: "A0A2K5UMA1" };
-  const m = libraryMembersByAccession(rec([l2], []));
+  const m = libraryMembersByAccession(rec([l2], []), BOTH_TRANCHES);
   assert.equal(m.get("A0A2K5UMA1")?.[0].library, "l2");
 });
 
@@ -302,7 +309,35 @@ test("members: several members on one gene each mark their own tab (SLC3A2)", ()
     ["l2-p1433", "l2", "P08195-1"],
     ["l2-p1434", "l2", "P08195-3"],
   ].map(([candidate_id, library, topology_acc]) => ({ ...topology, candidate_id, library, topology_acc }));
-  const m = libraryMembersByAccession(rec(rows, []));
+  const m = libraryMembersByAccession(rec(rows, []), BOTH_TRANCHES);
   assert.equal(m.size, 3);
   assert.equal(m.get("P08195-1")?.[0].library, "l2");
+});
+
+// The tranche switch (lib/library-tranches.ts). L2 is still being designed, so the
+// default build shows L1 only; NEXT_PUBLIC_LIBRARY_TRANCHES=l1,l2 turns L2 back on.
+
+test("tranches: the default build hides L2 members and keeps L1 (SLC3A2)", () => {
+  const rows = [
+    ["l1-p1954", "l1", "P08195-2"],
+    ["l2-p1433", "l2", "P08195-1"],
+    ["l2-p2786", "l2", "A0A2K5V118"],
+  ].map(([candidate_id, library, topology_acc]) => ({ ...topology, candidate_id, library, topology_acc }));
+  assert.deepEqual([...VISIBLE_LIBRARY_TRANCHES], ["l1"]);
+  const m = libraryMembersByAccession(rec(rows, []));
+  assert.deepEqual([...m.keys()], ["P08195-2"]);
+});
+
+test("tranches: a hidden-tranche member gets no Ordered tab, an L1 one still does", () => {
+  const l2 = { ...topology, library: "l2" };
+  assert.deepEqual(libraryStructureVariants(rec([l2], [structure])), []);
+  assert.equal(libraryStructureVariants(rec([l2], [structure]), [], BOTH_TRANCHES).length, 1);
+  assert.equal(libraryStructureVariants(rec([topology], [structure])).length, 1);
+});
+
+test("tranches: a row without a tranche is hidden; a bare number never matches", () => {
+  assert.equal(isLibraryTrancheVisible(null), false);
+  assert.equal(isLibraryTrancheVisible("1"), false);
+  assert.equal(isLibraryTrancheVisible("L1"), true);
+  assert.deepEqual(visibleLibraryRows([{ library: "l1" }, { library: "l2" }, { library: null }]), [{ library: "l1" }]);
 });
