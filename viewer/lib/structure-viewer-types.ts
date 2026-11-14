@@ -11,6 +11,8 @@
  * for ``viewer.setStyle({resi: "start-end"})``.
  */
 
+import { VISIBLE_LIBRARY_TRANCHES, visibleLibraryRows } from "./library-tranches";
+
 export type DeepTMHMMState = "M" | "O" | "I" | "S" | "B";
 
 export type DeepTMHMMType = "TM" | "SP+TM" | "SP" | "BETA" | "GLOB";
@@ -499,11 +501,18 @@ export function libraryStructureVariants(
    * library construct" says more than a duplicate tab does.
    */
   shownAccessions: Iterable<string> = [],
+  /** Tranches to show; defaults to the build's switch (`l1` only until L2 is final). */
+  visibleTranches: ReadonlySet<string> = VISIBLE_LIBRARY_TRANCHES,
 ): StructureVariantLibraryInput[] {
   const shown = new Set(
     Array.from(shownAccessions, (a) => String(a).toUpperCase()).filter(Boolean),
   );
-  const topo = record?.deterministic_features?.library_designed_topology ?? [];
+  // Hidden tranches drop here, on the topology half: a structure only becomes a tab
+  // through its topology row, so this is the one filter both halves need.
+  const topo = visibleLibraryRows(
+    record?.deterministic_features?.library_designed_topology,
+    visibleTranches,
+  );
   const struct = record?.deterministic_features?.library_designed_structure ?? [];
   if (!topo.length || !struct.length) return [];
 
@@ -578,9 +587,12 @@ export function libraryMembersByAccession(record: {
   deterministic_features?: {
     library_designed_topology?: LibraryTopologyRow[] | null;
   } | null;
-}): Map<string, LibraryMembership[]> {
+}, visibleTranches: ReadonlySet<string> = VISIBLE_LIBRARY_TRANCHES): Map<string, LibraryMembership[]> {
   const out = new Map<string, LibraryMembership[]>();
-  for (const trow of record?.deterministic_features?.library_designed_topology ?? []) {
+  for (const trow of visibleLibraryRows(
+    record?.deterministic_features?.library_designed_topology,
+    visibleTranches,
+  )) {
     const cid = trow.candidate_id;
     const acc = trow.topology_acc;
     if (!cid || !acc) continue;
