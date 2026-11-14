@@ -109,7 +109,8 @@ test("TFRC: the retired 81-aa design drops, the reference shows its whole tagged
   assert.equal(t.display_range, null); // the whole model is drawn
   assert.deepEqual(t.cassette_range, [761, 811]);
   assert.match(t.pdb_url, /library-colabfold-tagged\/2026-11-12\/l1-m2051\.cterm\.pdb$/);
-  assert.equal(t.label, "Canonical + tag");
+  assert.equal(t.label, "Designed ORF (L1)");
+  assert.equal(t.sublabel, "l1-p2131 · Canonical");
 });
 
 test("without the load the tabs are unchanged", () => {
@@ -117,11 +118,13 @@ test("without the load the tabs are unchanged", () => {
   assert.equal(withL1DesignVariants(before, null, []), before);
 });
 
-test("library marks drop retired L1 designs only", () => {
+test("library marks drop retired designs and members shown as their own Designed ORF entry", () => {
   const byAcc = new Map([
     ["F8WBE5", [{ candidate_id: "l1-p2520", library: "l1", candidate_set: "isoform" }]],
     ["P02786", [{ candidate_id: "l1-p2131", library: "l1", candidate_set: "library_reference" }]],
     ["Q62351", [{ candidate_id: "l2-p4210", library: "l2", candidate_set: "ortholog" }]],
   ]);
-  assert.deepEqual([...currentL1Memberships(byAcc, tfrc).keys()], ["P02786", "Q62351"]);
+  // l1-p2520 is retired; l1-p2131 has its own Designed ORF (L1) entry, so the canonical
+  // tab is not also badged L1. L2 marks pass through.
+  assert.deepEqual([...currentL1Memberships(byAcc, tfrc).keys()], ["Q62351"]);
 });

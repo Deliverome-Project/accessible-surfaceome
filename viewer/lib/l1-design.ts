@@ -419,6 +419,9 @@ export async function fetchCuratedContacts(acc: string, signal?: AbortSignal): P
 }
 
 
+/** The one name for an L1 member's ordered design, everywhere it is shown. */
+export const L1_DESIGNED_ORF_LABEL = "Designed ORF (L1)";
+
 /** Where a tagged refold's residues come from, in the model's own numbering. */
 export interface TaggedModelLayout {
   /** member residue r is model residue r + offset, for unpLo <= r <= unpHi. */
@@ -500,15 +503,20 @@ export function l1TaggedStructureVariants(
       cassetteLast: fold.cassette_last_model_residue,
       modelLength: fold.model_length_aa,
     });
-    if (!url || !topo?.per_residue_topology || !layout) continue;
+    if (!url || !layout || !m.ordered_length_aa) continue;
+    // No v1 topology for this exact sequence (newer designs are not in the topology
+    // table yet): draw the native chain uncoloured rather than drop the tab, so every
+    // built pick still shows its tag. "?" is no topology state, so nothing paints it.
+    const topology = topo?.per_residue_topology ?? "?".repeat(m.ordered_length_aa);
+    const type = topo?.per_residue_topology ? deepTMHMMType(topology) : (m.n_tm ?? 0) > 0 ? "TM" : "SP";
     const verdict = fold.refold_verdict ? `, refold ${fold.refold_verdict}` : "";
     out.push({
       source: "library",
       id: `library-tagged-${m.design_id}`,
-      label: `${libraryVariantLabel(topo)} + tag`,
-      sublabel: m.design_id,
-      topology: topo.per_residue_topology,
-      deeptmhmm_type: deepTMHMMType(topo.per_residue_topology),
+      label: L1_DESIGNED_ORF_LABEL,
+      sublabel: `${m.design_id}${topo ? ` · ${libraryVariantLabel(topo)}` : ""}`,
+      topology,
+      deeptmhmm_type: type,
       pdb_url: url,
       candidate_id: m.design_id,
       tranche: "l1",
@@ -521,7 +529,8 @@ export function l1TaggedStructureVariants(
         `The ordered tagged protein (${m.rung}, ${m.member_id}), folded whole: ` +
         `the ${layout.cassette[1] - layout.cassette[0] + 1}-aa cassette is charcoal` +
         (layout.nonNative.length ? ", other non-native residues olive" : "") +
-        `${verdict}.`,
+        `${verdict}.` +
+        (topo ? "" : " No topology for this exact sequence yet, so the native chain is uncoloured."),
       segments: layout.segments,
       cassette_range: layout.cassette,
       nonnative_ranges: layout.nonNative,
@@ -555,17 +564,23 @@ export function withL1DesignVariants(
   return [...tagged, ...kept];
 }
 
-/** Library-membership marks keep only current L1 members once the load is in hand, so
- *  an AFDB tab is not labelled as a retired design's construct. */
+/** Library-membership marks once the load is in hand: a retired L1 design marks no tab,
+ *  and a member with its own Designed ORF (L1) entry marks only that entry. */
 export function currentL1Memberships<T extends { candidate_id: string; library: string | null }>(
   byAcc: Map<string, T[]>,
   file: L1DesignFile | null,
 ): Map<string, T[]> {
   if (!file || !file.members.length) return byAcc;
   const current = new Set(file.members.map((m) => m.design_id).filter(Boolean) as string[]);
+  // A member shown as its own Designed ORF (L1) entry is not ALSO badged "L1" on the
+  // canonical / isoform tab of the same sequence: one entry for the construct.
+  const designed = new Set(l1TaggedStructureVariants(file, []).map((v) => v.candidate_id));
   const out = new Map<string, T[]>();
   for (const [acc, ms] of byAcc) {
-    const keep = ms.filter((m) => (m.library ?? "").toLowerCase() !== "l1" || current.has(m.candidate_id));
+    const keep = ms.filter((m) => {
+      if ((m.library ?? "").toLowerCase() !== "l1") return true;
+      return current.has(m.candidate_id) && !designed.has(m.candidate_id);
+    });
     if (keep.length) out.set(acc, keep);
   }
   return out;

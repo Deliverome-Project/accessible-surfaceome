@@ -2947,11 +2947,19 @@ export function StructureViewer({
             const vUnavail =
               v.source === "afdb" &&
               afdbAvail[(v as StructureVariantAfdb).uniprot_acc] === false;
+            // The ordered L1 design (its whole tagged refold) is the one entry for the
+            // construct: drawn first, ahead of Canonical, and named once ("Designed ORF
+            // (L1)") rather than carrying a separate L1 badge. Flex `order` moves it
+            // visually without renumbering the tabs the effects and shortcuts index.
+            const isDesigned =
+              v.source === "library" && Boolean((v as StructureVariantLibrary).cassette_range);
             return (
               <button
                 key={v.id}
                 type="button"
                 role="tab"
+                style={isDesigned ? { order: -1 } : undefined}
+                data-designed-orf={isDesigned || undefined}
                 className={`${styles.variantTab} ${vUnavail ? styles.variantTabUnavailable : ""}`.trim()}
                 data-active={isActive}
                 onClick={() => {
@@ -2963,7 +2971,9 @@ export function StructureViewer({
                     ? `AlphaFold DB has no model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
                     : v.source === "schweke-homomer"
                       ? `Schweke 2024 AF2 homo-oligomer prediction for ${geneSymbol} — predicted dimer of UniProt ${data.uniprot_acc}.`
-                      : v.source === "experimental"
+                      : isDesigned
+                        ? `The ordered L1 design ${(v as StructureVariantLibrary).candidate_id}, refolded whole with its tag cassette (charcoal).`
+                        : v.source === "experimental"
                         ? `Experimental structure ${(v as StructureVariantExperimental).pdb_id.toUpperCase()} (chain ${(v as StructureVariantExperimental).chain_id}) from the PDB.`
                         : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
                 }${_libraryTitle(tabLibraryMembers[i + 1], geneHasLibrary)}`}
@@ -2972,7 +2982,7 @@ export function StructureViewer({
                 <span className={styles.variantTabLabel}>
                   {v.label.replace(/ ortholog$/i, "")}
                   {i + 2 <= 9 ? ` [${i + 2}]` : ""}
-                  <LibraryTabMark members={tabLibraryMembers[i + 1]} />
+                  {isDesigned ? null : <LibraryTabMark members={tabLibraryMembers[i + 1]} />}
                 </span>
                 {v.sublabel ? (
                   <span className={styles.variantTabSub}>{v.sublabel}</span>
