@@ -97,3 +97,11 @@ test("the site card shows who decided, why, the rejected alternative and the sco
   assert.match(html, /glycan n/);
   assert.match(html, /design PR 7 \(open\)/);
 });
+
+test("curated contacts are drawn only on a member whose protein is the reference sequence", async () => {
+  const { curatedContactsAlign } = await import("../lib/l1-design");
+  assert.equal(curatedContactsAlign("a".repeat(64), "a".repeat(64)), true);
+  assert.equal(curatedContactsAlign("a".repeat(64), "b".repeat(64)), false);
+  assert.equal(curatedContactsAlign(null, "a".repeat(64)), false);
+  assert.equal(curatedContactsAlign("a".repeat(64), undefined), false);
+});

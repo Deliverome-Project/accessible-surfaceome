@@ -57,6 +57,7 @@ import hashlib
 import io
 import json
 import posixpath
+import re
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -89,7 +90,7 @@ TAGGED_R2_PREFIX = "library-colabfold-tagged"
 MEMBER_COLS = [
     "member_id", "design_id", "gene_symbol", "species", "candidate_set", "rung",
     "membrane_class", "n_tm", "ordered_length_aa", "sequence_sha256", "topology_version",
-    "proteoform_json",
+    "uniprot_acc", "proteoform_json",
 ]  # fmt: skip
 SITE_COLS = [
     "site_id", "member_id", "design_id", "gene_symbol", "species", "candidate_set",
@@ -345,29 +346,70 @@ def _diff(a, b) -> int | None:
     return None if a_i is None or b_i is None else a_i - b_i
 
 
-def _cterm(rows, info, R):
+SNORKEL_PLACEMENT = "snorkel"
+
+
+def _cterm_decisions(rows) -> dict[str, dict]:
+    """Per-member C-terminal decisions, keyed by the design id inside ``scope``
+    ("l1-m0474 (l1-p0156) ATP1B1 human")."""
+    out = {}
+    for r in rows:
+        m = re.search(r"\((l1-p\d+)\)", r.get("scope", ""))
+        if m:
+            out[m.group(1)] = r
+    return out
+
+
+def _cterm(rows, info, R, decisions=None):
+    """C-terminal arms (incl. stalk and furin moves). Snorkel rows are skipped here:
+    they are the internal member's pick and load through ``_internal``."""
+    decisions = decisions or {}
     out = []
     for r in rows:
+        if r["placement"].startswith(SNORKEL_PLACEMENT):
+            continue
         m = R.get("cterm", r["design_id"], gene=r["gene_symbol"])
         if not m:
             continue
         res = _int(r["cassette_after_residue"])
         native = _int(r["native_aa"])
+        d = decisions.get(m["design_id"], {})
         out.append(_site(
             info, site_id=f"{m['design_id']}-cterm-{res}", m=m,
-            rung="C-terminal", insert_after_residue=res,
+            rung=m["rung"], insert_after_residue=res,
             cassette="p003 51-aa tandem (issued encoding)",
             cassette_aa=_diff(r["protein_aa"], r["native_aa"]),
-            status="built", decision=r["placement"],
+            status="built", decision=d.get("decision") or r["placement"],
             status_detail=r["placement"] if res == native else f"{r['placement']}; native length {native}",
+            rejected_alternative=d.get("rejected_alternatives") or None,
             tagged_protein_sha256=r["protein_sha256"] or None,
             rationale_json={
+                "question": d.get("question"), "evidence": d.get("evidence"),
+                "would_change_it": d.get("would_change_it"),
                 "review_flags": r["review_flags"], "junction_edit": r["junction_edit"],
                 "worst_partner_tract_nt": r["worst_partner_tract_nt"],
                 "worst_partner": r["worst_partner"], "cassette_features": r["cassette_features"],
             },
-            decided_by=r["decided_by"], implemented_by=r["implemented_by"],
-            reason=r["reason"] or r["review_flags"] or None,
+            decided_by=d.get("decided_by") or r["decided_by"],
+            implemented_by=d.get("implemented_by") or r["implemented_by"],
+            reason=d.get("reason") or r["reason"] or r["review_flags"] or None,
+        ))  # fmt: skip
+    # A decision with no construct (e.g. "hold (not built)" after a failed refold) still
+    # shows: the member has been decided, it just has no tag on this rung.
+    built = {r["design_id"] for r in rows}
+    for design_id, d in decisions.items():
+        if design_id in built:
+            continue
+        m = R.get("cterm_decisions", design_id)
+        if not m:
+            continue
+        out.append(_site(
+            info, site_id=f"{m['design_id']}-cterm-held", m=m, rung=m["rung"],
+            insert_after_residue=None, status="no_tag", decision=d.get("decision"),
+            status_detail=d.get("question") or None,
+            rejected_alternative=d.get("rejected_alternatives") or None,
+            rationale_json={"evidence": d.get("evidence"), "would_change_it": d.get("would_change_it")},
+            decided_by=d.get("decided_by"), implemented_by=d.get("implemented_by"), reason=d.get("reason") or None,
         ))  # fmt: skip
     return out
 
@@ -436,7 +478,15 @@ def _nterm_decisions(rows, info, R):
     return out
 
 
-def _type3(rows, info, R):
+#: The Igk leader the type III and multipass Igk constructs carry; it is cleaved, so the
+#: refold folds the protein without it (mature = built protein minus these residues).
+IGK_LEADER_AA = 20
+
+
+def _type3(rows, info, R, proteins=None):
+    """``proteins``: built protein sequences by sha256 (constructs_l1_type3_proteins.tsv
+    ``precursor``), used to compute the mature (leader-cleaved) sha256 of Igk arms."""
+    proteins = proteins or {}
     out = []
     for r in rows:
         m = R.get("type3", r["design_id"], gene=r["gene_symbol"])
@@ -456,7 +506,12 @@ def _type3(rows, info, R):
             status_detail=f"{design} ({r['subgroup']})",
             tagged_protein_sha256=r["protein_sha256"] or None,
             rationale_json={"subgroup": r["subgroup"], "cassette_decided_by": r.get("cassette_decided_by"),
-                            "reviewed_by": r.get("reviewed_by")},
+                            "reviewed_by": r.get("reviewed_by"),
+                            "mature_sha256": hashlib.sha256(
+                                proteins[r["protein_sha256"]][IGK_LEADER_AA:].encode()
+                            ).hexdigest() if design == "igk_tag" and r["protein_sha256"] in proteins else None,
+                            "mature_sha_basis": "computed: built protein minus the 20-aa Igk leader"
+                            if design == "igk_tag" and r["protein_sha256"] in proteins else None},
             decided_by=r["decided_by"], implemented_by=r["implemented_by"], reason=r["reason"] or None,
         ))  # fmt: skip
     return out
@@ -501,6 +556,8 @@ def _multipass(rows, info, R, lane):
                     "lane_check": {k: chk.get(k) for k in ("lane_ok", "recommended_lane", "confidence", "evidence")}
                     if chk else None,
                     "cassette_decided_by": r.get("cassette_decided_by"),
+                    # The refold folds the mature protein (leader cleaved): its sha256.
+                    "mature_sha256": r.get("mature_sha256"),
                 },
                 decided_by=r["decided_by"], implemented_by=r["implemented_by"], reason=r["reason"] or None,
             ))  # fmt: skip
@@ -546,7 +603,15 @@ def _ranker_scores(r: dict) -> dict:
 
 
 def _internal(
-    decisions, proposed, info_dec, info_prop, R, loops_by_design, snorkels=None
+    decisions,
+    proposed,
+    info_dec,
+    info_prop,
+    R,
+    loops_by_design,
+    snorkels=None,
+    snorkel_built=None,
+    loop_built=None,
 ):
     out = []
     chosen: dict[str, int | None] = {}
@@ -582,6 +647,26 @@ def _internal(
             snork = None
         status = INTERNAL_DECISION_STATUS.get(dec, "pending")
         detail = f"{dec}; refold verdict {r.get('refold_verdict') or 'none'}"
+        # A snorkel the C-terminal builder already built: the member's pick is that
+        # construct (native C-terminus, then the TM module and the cassette).
+        built_snork = (
+            (snorkel_built or {}).get(m["design_id"]) if dec == "snorkel" else None
+        )
+        # An internal loop arm the builder already built at this residue: the pick is built.
+        built_loop = (loop_built or {}).get(m["design_id"])
+        if built_loop and _int(built_loop["cassette_after_residue"]) != res:
+            built_loop = (
+                None  # built at another site: the decision is not what was built
+            )
+        if built_loop:
+            status = "built"
+            verdict = (
+                built_loop.get("refold_verdict") or r.get("refold_verdict") or "none"
+            )
+            detail = f"{dec}; built ({built_loop.get('built_by') or 'internal builder'}); refold verdict {verdict}"
+        if built_snork:
+            status = "built"
+            detail = f"{dec}; built as {built_snork['placement']}; refold verdict {r.get('refold_verdict') or 'none'}"
         if dec == "snorkel" and info_dec.get("snorkel_pending_note"):
             status, detail = (
                 "pending",
@@ -590,19 +675,41 @@ def _internal(
         out.append(_site(
             info_dec, site_id=f"{m['design_id']}-internal-{res if res is not None else dec}", m=m,
             rung=m["rung"], site_source="ranker",
-            insert_after_residue=_int(snork["native_length"]) if snork else res,
-            cassette=f"snorkel module, {snork['module_length']} aa (added TM helix + linkers + 51-aa cassette)"
-            if snork else None,
-            cassette_aa=_int(snork["module_length"]) if snork else None,
-            tagged_protein_sha256=(snork or {}).get("snorkel_protein_sha256") or None,
-            residue_before=junction.get((r["design_id"], res), "").partition("|")[0][:1] or None,
-            residue_after=junction.get((r["design_id"], res), "").partition("|")[2][:1] or None,
+            insert_after_residue=(
+                # Member numbering: the module (and the cassette after it) follows the
+                # native C-terminus. cassette_after_residue counts the added module.
+                _int(built_snork["native_aa"]) if built_snork
+                else _int(snork["native_length"]) if snork else res
+            ),
+            cassette=(
+                "p003 51-aa tandem (internal loop arm)" if built_loop
+                else "snorkel: added TM module, then the 51-aa cassette" if built_snork
+                else f"snorkel module, {snork['module_length']} aa (added TM helix + linkers + 51-aa cassette)"
+                if snork else None
+            ),
+            cassette_aa=(
+                _diff(built_loop["protein_aa"], built_loop["native_aa"]) if built_loop
+                else _diff(built_snork["protein_aa"], built_snork["native_aa"]) if built_snork
+                else _int(snork["module_length"]) if snork else None
+            ),
+            tagged_protein_sha256=(
+                built_snork["protein_sha256"] if built_snork
+                else built_loop["protein_sha256"] if built_loop
+                else (snork or {}).get("snorkel_protein_sha256")
+            ) or None,
+            residue_before=((built_loop or {}).get("junction") or junction.get((r["design_id"], res), "")).partition("|")[0][:1] or None,
+            residue_after=((built_loop or {}).get("junction") or junction.get((r["design_id"], res), "")).partition("|")[2][:1] or None,
             rank=_int(r["pick_rank"]), status=status,
             decision=dec, status_detail=detail,
             confidence=r["confidence"] or None, rejected_alternative=r["rejected_alternative"] or None,
             rationale_json={
                 **_ranker_scores(r), "refold_verdict": r.get("refold_verdict"),
                 "decided_on": r.get("decided_on"),
+                "snorkel_construct": {
+                    "placement": built_snork["placement"],
+                    "cassette_after_construct_residue": built_snork["cassette_after_residue"],
+                    "native_aa": built_snork["native_aa"], "protein_aa": built_snork["protein_aa"],
+                } if built_snork else None,
                 "snorkel_design": {k: snork.get(k) for k in ("components", "status", "reason", "rejected_alternative",
                                                             "decided_by", "implemented_by")} if snork else None,
                 "loop_evidence": _loop_evidence(loops_by_design.get(m["design_id"], []), res),
@@ -639,7 +746,10 @@ def _internal(
 
 
 def _built_loop_arms(rows, info, R):
-    """The loop arms already built (membrane-side gate table, source built_loop_arm)."""
+    """Loop arms built for the earlier panel (membrane-side gate table, built_loop_arm).
+
+    Shown as alternatives, not as the member's current pick: the current pick is the
+    member's rung decision. They are real constructs, so the detail says so."""
     out = []
     for r in rows:
         if r["source"] != "built_loop_arm" or r["shipped"] != "1":
@@ -648,10 +758,10 @@ def _built_loop_arms(rows, info, R):
         if not m:
             continue
         out.append(_site(
-            info, site_id=r["site_id"], m=m, rung=m["rung"], is_primary=1,
+            info, site_id=r["site_id"], m=m, rung=m["rung"], is_primary=0,
             insert_after_residue=_int(r["insert_after_residue"]),
             residue_before=r["residue_before"] or None, residue_after=r["residue_after"] or None,
-            status="built", decision="built_loop_arm",
+            status="alternative", decision="built loop arm (earlier panel construct)",
             status_detail=f"membrane-side gate: {r['verdict']}",
             rationale_json={"height_A": _float(r["height_A"]), "plddt": _float(r["plddt"]),
                             "gate_verdict": r["verdict"]},
@@ -854,8 +964,24 @@ def _tagged_structures(
     return out
 
 
+def _mature_sha(site: dict) -> str | None:
+    """The mature tagged protein's sha256 a source recorded for a site (Igk constructs)."""
+    try:
+        return (json.loads(site.get("rationale_json") or "{}") or {}).get(
+            "mature_sha256"
+        )
+    except TypeError, ValueError:
+        return None
+
+
 def _tagged_refold_v1(
-    spec: dict, index_raw: bytes, metrics_raw: bytes, R, sites_by_design
+    spec: dict,
+    index_raw: bytes,
+    metrics_raw: bytes,
+    R,
+    sites_by_design,
+    manifest_raw: bytes | None = None,
+    twin_sites: dict | None = None,
 ) -> list[dict]:
     """The tagged-refold run's own layout: ``structures.tsv`` (+ ``tagged_fold_metrics.tsv``).
 
@@ -868,6 +994,9 @@ def _tagged_refold_v1(
     site at the insertion residue, when exactly one site sits there.
     """
     metrics = {r["fold_id"]: r for r in _rows(metrics_raw)} if metrics_raw else {}
+    # The run's final per-construct verdicts (viewer manifest), keyed by the folded
+    # protein's sha256; they override the index's verdict when present.
+    final = {r["tagged_sha256"]: r for r in _rows(manifest_raw)} if manifest_raw else {}
     native_rows: list[dict] = []
     date = spec["release"]
     out = []
@@ -881,7 +1010,17 @@ def _tagged_refold_v1(
         elif r.get("tagged") != "yes" or r.get("rung") in ("control", "sp_control"):
             continue
         gene = r.get("gene_symbol") or r.get("gene")
-        if r.get("design_id"):
+        twin = None
+        if (
+            r.get("design_id")
+            and r["design_id"] not in R.by_design
+            and r.get("tagged_sha256") in (twin_sites or {})
+        ):
+            # A design no longer in the library (e.g. a retired rescue arm) whose folded
+            # protein IS a current member's built construct: link the fold to that member.
+            twin = (twin_sites or {})[r["tagged_sha256"]]
+            ms = [R.by_design[twin["design_id"]]]
+        elif r.get("design_id"):
             m = R.get("tagged", r["design_id"], sha=r["native_sha256"], gene=gene)
             ms = [m] if m else []
         else:
@@ -898,7 +1037,8 @@ def _tagged_refold_v1(
         res = _int(
             r.get("insert_after_native_residue") or met.get("insert_after_residue")
         )
-        verdict = r.get("verdict") or met.get("verdict") or None
+        fin = final.get(r.get("tagged_sha256") or "", {})
+        verdict = fin.get("verdict") or r.get("verdict") or met.get("verdict") or None
         plddt = r.get("mean_plddt") or met.get("mean_plddt")
         pdb = r["pdb_key"].rsplit("/", 1)[-1]
         for m in ms:
@@ -908,8 +1048,10 @@ def _tagged_refold_v1(
                 s
                 for s in mine
                 if r.get("tagged_sha256")
-                and s["tagged_protein_sha256"] == r["tagged_sha256"]
+                and r["tagged_sha256"] in (s["tagged_protein_sha256"], _mature_sha(s))
             ]
+            if twin:
+                cands = [twin]
             if not cands:
                 cands = [
                     s
@@ -930,12 +1072,15 @@ def _tagged_refold_v1(
                 cassette_last_model_residue=_int(r.get("cassette_end_1based")),
                 refold_verdict=verdict,
                 note="; ".join(x for x in (
+                    f"fold of retired rescue twin {r['design_id']}, same mature protein" if twin else "",
                     f"rung {r['rung']}",
                     f"insert after {res}" if res is not None else "",
                     f"TM to native {met['tm_native']}" if met.get("tm_native") else "",
                     f"site lDDT {met['lddt_site']}" if met.get("lddt_site") else "",
                     f"SP {met['sp_state']}" if met.get("sp_state") else "",
-                    met.get("verdict_reasons") or "",
+                    f"SpyTag003 RSA {fin['spytag003_rsa']}" if fin.get("spytag003_rsa") else "",
+                    f"ALFA RSA {fin['alfa_rsa']}" if fin.get("alfa_rsa") else "",
+                    fin.get("verdict_reasons") or met.get("verdict_reasons") or "",
                 ) if x),
                 decided_by=spec["decided_by"], implemented_by=r.get("implemented_by") or spec["implemented_by"],
                 reason=spec.get("reason") or r.get("settings"),
@@ -1004,8 +1149,14 @@ def build(args) -> int:
         m["membrane_class"] = _membrane_class(m, gpcr)
         members[m["member_id"]] = m
     R = Resolver(members)
+    payload_acc = {
+        r["candidate_id"]: r.get("uniprot_acc") or None
+        for r in T["structure_payload"]
+        if r.get("is_chosen") == "1"
+    }
     for m in members.values():
         m["proteoform_json"] = None
+        m["uniprot_acc"] = payload_acc.get(m["member_id"])
     for r in T.get("proteoform_decisions", []):
         m = R.get("proteoform_decisions", r["design_id"], gene=r["gene_symbol"])
         if m:
@@ -1025,18 +1176,36 @@ def build(args) -> int:
             canonical_sha[m["design_id"]] = r["canonical_sequence_sha256"]
 
     sites: list[dict] = []
-    sites += _cterm(T["cterm"], inputs["cterm"], R)
+    sites += _cterm(
+        T["cterm"], inputs["cterm"], R, _cterm_decisions(T.get("cterm_decisions", []))
+    )
+    # Built internal loop arms (the integration build of the ranker's decisions).
+    loop_built = {r["design_id"]: r for r in T.get("internal_constructs", [])}
+    snorkel_built = {
+        r["design_id"]: r
+        for r in T["cterm"]
+        if r["placement"].startswith(SNORKEL_PLACEMENT)
+    }
     if (
         "nterm_decisions" in T
     ):  # the delegated decisions supersede the reviewer-package picks
         sites += _nterm_decisions(T["nterm_decisions"], inputs["nterm_decisions"], R)
     else:
         sites += _nterm_sp(T["nterm_sp"], inputs["nterm_sp"], R)
-    sites += _type3(T["type3"], inputs["type3"], R)
+    type3_proteins = {}
+    for r in T.get("type3_proteins", []):
+        seq = r.get("precursor") or ""
+        if seq and hashlib.sha256(seq.encode()).hexdigest() == r.get(
+            "precursor_sha256"
+        ):
+            type3_proteins[r["precursor_sha256"]] = (
+                seq  # only a sequence whose hash checks out
+            )
+    sites += _type3(T["type3"], inputs["type3"], R, type3_proteins)
     sites += _multipass(T["multipass"], inputs["multipass"], R, lane)
     snorkels = {r["design_id"]: r for r in T.get("snorkel_designs", [])}
     sites += _internal(T["internal_decisions"], T["internal_proposed"], inputs["internal_decisions"],
-                       inputs["internal_proposed"], R, loops, snorkels)  # fmt: skip
+                       inputs["internal_proposed"], R, loops, snorkels, snorkel_built, loop_built)  # fmt: skip
     sites += _built_loop_arms(T["internal_gate"], inputs["internal_gate"], R)
     agent, agent_skipped = _agent_picks(
         T["agent_picks"], inputs["agent_picks"], R.by_design, canonical_sha
@@ -1089,7 +1258,23 @@ def build(args) -> int:
             )
             mraw, minfo = _read(msrc, repo, base)
             tinfo["metrics_sha256"] = minfo["sha256"]
-            rows = _tagged_refold_v1(spec, traw, mraw, R, by_design)
+            fraw = None
+            if spec.get("manifest_path"):
+                fraw, finfo = _read(
+                    {"commit": spec["commit"], "path": spec["manifest_path"]},
+                    repo,
+                    base,
+                )
+                tinfo["manifest_sha256"] = finfo["sha256"]
+            # Built primary picks by tagged and mature sha256: lets a fold of a retired
+            # design attach to the current member that builds the same protein.
+            twin_sites = {}
+            for site in sites:
+                if site["is_primary"] and site["status"] == "built":
+                    for h in (site["tagged_protein_sha256"], _mature_sha(site)):
+                        if h:
+                            twin_sites[h] = site
+            rows = _tagged_refold_v1(spec, traw, mraw, R, by_design, fraw, twin_sites)
         else:
             rows = _tagged_structures(spec, traw, tinfo, R, by_design)
         structures += rows

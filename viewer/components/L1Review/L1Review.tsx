@@ -29,6 +29,7 @@ import {
   type L1Structure,
 } from "../../lib/l1-design";
 import { L1Structure3D, type L1Mark } from "./L1Structure3D";
+import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
 import styles from "./L1Review.module.css";
 
 // Same Worker base the other client-fetched pages use; NEXT_PUBLIC_L1_DESIGN_API_BASE
@@ -46,6 +47,7 @@ export const COLORS = {
   litLower: "#7CC9BA",
   uniprot: "#6B7280",
   suggestion: "#FF1F8F",
+  curated: "#E8590C",
 };
 
 const store = {
@@ -353,6 +355,39 @@ function ContactsTable({ contacts, showHidden }: { contacts: L1Contact[]; showHi
   );
 }
 
+function CuratedContacts({ gene, aligned, acc }: { gene: CuratedContactsData | null | "loading"; aligned: boolean; acc: string | null }) {
+  if (!acc) return <p className={styles.muted}>No UniProt accession for this member&rsquo;s model, so no curated contacts.</p>;
+  if (gene === "loading") return <p className={styles.muted}>Loading curated contact sites…</p>;
+  if (!gene || !gene.sites.length) return <p className={styles.muted}>No curated contact sites for {acc}.</p>;
+  return (
+    <>
+      <p className={styles.muted}>
+        {gene.sites.length} curated extracellular contact site{gene.sites.length === 1 ? "" : "s"} for {acc}{" "}
+        (structures and databases, the gene page&rsquo;s contact set, release {gene.release_id}).{" "}
+        {aligned
+          ? "This member's protein is that reference sequence, so they are drawn on the structure."
+          : `This member's protein differs from ${acc}'s reference sequence, so they are listed, not drawn.`}
+      </p>
+      <div className={styles.tablewrap}>
+        <table className={styles.table}>
+          <thead><tr><th>Partner</th><th>Source</th><th>Residues</th><th>Context</th><th>Reference</th></tr></thead>
+          <tbody>
+            {gene.sites.map((c, i) => (
+              <tr key={`${c.observation_id ?? i}`}>
+                <td><span className={styles.swatch} style={{ background: COLORS.curated }} />{c.partner_label ?? c.partner}</td>
+                <td>{c.source}</td>
+                <td className={styles.mono}>{(c.positions ?? []).length} ({(c.positions ?? []).slice(0, 8).join(", ")}{(c.positions ?? []).length > 8 ? ", …" : ""})</td>
+                <td>{c.context ?? "—"}</td>
+                <td>{c.reference ? <a href={c.reference} target="_blank" rel="noreferrer">link</a> : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  );
+}
+
 function MemberDetail({
   member,
   loadVersion,
@@ -375,6 +410,20 @@ function MemberDetail({
   const [showContacts, setShowContacts] = useState(true);
   const [showHidden, setShowHidden] = useState(false);
   const [picked, setPicked] = useState<number | null>(null);
+  const [curated, setCurated] = useState<CuratedContactsData | null | "loading">(null);
+  const acc = member.uniprot_acc && /^[A-Z0-9]{6,10}$/.test(member.uniprot_acc) ? member.uniprot_acc : null;
+  useEffect(() => {
+    if (!acc) {
+      setCurated(null);
+      return;
+    }
+    const ctl = new AbortController();
+    setCurated("loading");
+    fetchCuratedContacts(acc, ctl.signal).then((g) => !ctl.signal.aborted && setCurated(g));
+    return () => ctl.abort();
+  }, [acc]);
+  const curatedGene: CuratedContactsData | null = curated && curated !== "loading" ? curated : null;
+  const curatedAligned = curatedContactsAlign(member.sequence_sha256, curatedGene?.reference_sequence_sha256);
   useEffect(() => {
     setModelId(models.find((m) => m.kind === "native")?.structure_id ?? models[0]?.structure_id ?? "");
     setPicked(null);
@@ -386,6 +435,11 @@ function MemberDetail({
 
   const marks: L1Mark[] = [];
   if (model?.kind === "native") {
+    if (showContacts && curatedAligned && curatedGene) {
+      for (const c of curatedGene.sites) {
+        for (const p of c.positions ?? []) marks.push({ resi: p + offset, color: COLORS.curated, radius: 1.3 });
+      }
+    }
     if (showContacts) {
       for (const c of visibleContacts(member.contacts ?? [], showHidden)) {
         marks.push({ resi: c.residue + offset, color: contactColor(c), radius: 1.5 });
@@ -464,7 +518,7 @@ function MemberDetail({
         <div className={styles.legend}>
           <span><i style={{ background: COLORS.pick }} /> current pick</span>
           <label><input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} /> <i style={{ background: COLORS.ranker }} /> ranker alternatives <i style={{ background: COLORS.agent }} /> agent proposals</label>
-          <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.litHigh }} /> literature contacts (agent-extracted; lighter = modeling/homology only) <i style={{ background: COLORS.uniprot }} /> UniProt binding</label>
+          <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.litHigh }} /> literature contacts (agent-extracted; lighter = modeling/homology only) <i style={{ background: COLORS.uniprot }} /> UniProt binding <i style={{ background: COLORS.curated }} /> curated (structures / databases)</label>
           <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
           {model?.kind === "tagged" ? <span><i style={{ background: "#7C5CBF" }} /> cassette</span> : null}
           <span><i style={{ background: COLORS.suggestion }} /> your suggested residue (click the model)</span>
@@ -490,6 +544,9 @@ function MemberDetail({
           measured only on a 20-protein pilot against structural contacts (precision 0.47, recall 0.40); the
           library-scale set is not scored against any truth set. Never use these as training labels.
         </p>
+        <h4 className={styles.h4}>Curated contacts (structures and databases)</h4>
+        <CuratedContacts gene={curated} aligned={curatedAligned} acc={acc} />
+        <h4 className={styles.h4}>Literature contacts (agent-extracted) and UniProt binding sites</h4>
         <ContactsTable contacts={member.contacts ?? []} showHidden={showHidden} />
       </section>
     </div>
