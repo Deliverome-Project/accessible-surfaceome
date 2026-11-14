@@ -8,7 +8,13 @@
  * Residue numbers are in each MEMBER's own native numbering, which is not the gene's
  * canonical numbering when the member is an isoform or an ortholog.
  */
-import { STRUCTURES_BASE } from "./structure-viewer-types";
+import {
+  STRUCTURES_BASE,
+  deepTMHMMType,
+  libraryVariantLabel,
+  type LibraryTopologyRow,
+  type StructureVariantLibraryInput,
+} from "./structure-viewer-types";
 
 export type L1SiteStatus = "built" | "decided_not_built" | "no_tag" | "pending" | "alternative";
 export type L1SiteSource = "rung_builder" | "ranker" | "agent_proposer";
@@ -74,6 +80,8 @@ export interface L1Structure {
   mean_plddt: number | null;
   cassette_first_model_residue: number | null;
   cassette_last_model_residue: number | null;
+  /** Residues in the model file (tagged: native + cassette, mature chain for Igk). */
+  model_length_aa?: number | null;
   refold_verdict?: string | null;
   note: string | null;
 }
@@ -243,6 +251,13 @@ export function countBy<T>(rows: readonly T[], key: (r: T) => string): [string, 
   return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 }
 
+/** Worker base for the L1 design load. NEXT_PUBLIC_L1_DESIGN_API_BASE points only the
+ *  L1 surfaces elsewhere (a local `wrangler dev` holding a candidate load). */
+export const L1_DESIGN_API_BASE =
+  process.env.NEXT_PUBLIC_L1_DESIGN_API_BASE ??
+  process.env.NEXT_PUBLIC_SURFACEOME_API_BASE ??
+  "https://api.deliverome.org/surfaceome";
+
 export async function fetchL1Design(symbol: string, apiBase: string): Promise<L1DesignFile | null> {
   try {
     const res = await fetch(`${apiBase}/v1/l1-design/${encodeURIComponent(symbol)}`);
@@ -401,4 +416,172 @@ export async function fetchCuratedContacts(acc: string, signal?: AbortSignal): P
   } catch {
     return null;
   }
+}
+
+
+/** The one name for an L1 member's ordered design, everywhere it is shown. */
+export const L1_DESIGNED_ORF_LABEL = "Designed ORF (L1)";
+
+/** Where a tagged refold's residues come from, in the model's own numbering. */
+export interface TaggedModelLayout {
+  /** member residue r is model residue r + offset, for unpLo <= r <= unpHi. */
+  segments: { unpLo: number; unpHi: number; offset: number }[];
+  cassette: [number, number];
+  /** Model residues that are neither the member's native chain nor the cassette:
+   *  the residues an Igk leader leaves after cleavage, or a snorkel's TM module. */
+  nonNative: [number, number][];
+}
+
+/**
+ * Lay a tagged refold out against the member's native numbering.
+ *
+ * The model is [prefix][cassette][tail]. The tail is always the member's C-terminal
+ * end, so it is aligned from the end; the prefix is the member's own residues 1..k
+ * unless an Igk leader replaced them (then the prefix is the leader's remnant, not
+ * native). Whatever prefix residue is not native (a leader remnant, a snorkel module)
+ * is reported as non-native rather than painted as protein. Returns null when the
+ * numbers cannot describe one construct, so a wrong map never reaches the viewer.
+ */
+export function taggedModelLayout(a: {
+  memberLength: number | null | undefined;
+  insertAfter: number | null | undefined;
+  leader: string | null | undefined;
+  cassetteFirst: number | null | undefined;
+  cassetteLast: number | null | undefined;
+  modelLength: number | null | undefined;
+}): TaggedModelLayout | null {
+  const L = a.memberLength, ins = a.insertAfter, cf = a.cassetteFirst, cl = a.cassetteLast, ml = a.modelLength;
+  if (![L, ins, cf, cl, ml].every((v) => Number.isInteger(v))) return null;
+  const [len, after, first, last, model] = [L, ins, cf, cl, ml] as number[];
+  if (len < 1 || after < 0 || after > len || first < 1 || last < first || last > model) return null;
+  const tail = model - last;
+  if (tail > len) return null;
+  const prefix = a.leader ? 0 : Math.max(0, Math.min(after, first - 1, len - tail));
+  const segments: TaggedModelLayout["segments"] = [];
+  if (prefix > 0) segments.push({ unpLo: 1, unpHi: prefix, offset: 0 });
+  if (tail > 0) segments.push({ unpLo: len - tail + 1, unpHi: len, offset: last - (len - tail) });
+  const nonNative: [number, number][] = prefix + 1 <= first - 1 ? [[prefix + 1, first - 1]] : [];
+  return { segments, cassette: [first, last], nonNative };
+}
+
+/**
+ * One gene-page structure tab per current L1 member with a built pick: the refold of
+ * the WHOLE ordered tagged protein, its cassette laid out for its own colour.
+ *
+ * Paired with the member's v1 topology by design id AND ordered-length (and sequence
+ * sha when both carry one), for the same reason libraryStructureVariants pairs by
+ * candidate id: a model coloured with another proteoform's topology looks plausible.
+ */
+export function l1TaggedStructureVariants(
+  file: L1DesignFile | null,
+  topologyRows: readonly LibraryTopologyRow[] | null | undefined,
+): StructureVariantLibraryInput[] {
+  if (!file) return [];
+  const out: StructureVariantLibraryInput[] = [];
+  for (const m of file.members) {
+    if (!m.design_id) continue;
+    const site = m.sites.find((s) => s.is_primary && s.status === "built");
+    if (!site) continue;
+    const fold =
+      m.structures.find((st) => st.kind === "tagged" && st.site_id === site.site_id && st.is_chosen) ??
+      m.structures.find((st) => st.kind === "tagged" && st.site_id === site.site_id);
+    if (!fold) continue;
+    const url = l1StructureUrl(fold);
+    const topo = (topologyRows ?? []).find(
+      (t) =>
+        t.candidate_id === m.design_id &&
+        (t.per_residue_topology ?? "").length === m.ordered_length_aa &&
+        (!m.sequence_sha256 ||
+          !(t as { sequence_sha256?: string | null }).sequence_sha256 ||
+          (t as { sequence_sha256?: string | null }).sequence_sha256 === m.sequence_sha256),
+    );
+    const layout = taggedModelLayout({
+      memberLength: m.ordered_length_aa,
+      insertAfter: site.insert_after_residue,
+      leader: site.leader,
+      cassetteFirst: fold.cassette_first_model_residue,
+      cassetteLast: fold.cassette_last_model_residue,
+      modelLength: fold.model_length_aa,
+    });
+    if (!url || !layout || !m.ordered_length_aa) continue;
+    // No v1 topology for this exact sequence (newer designs are not in the topology
+    // table yet): draw the native chain uncoloured rather than drop the tab, so every
+    // built pick still shows its tag. "?" is no topology state, so nothing paints it.
+    const topology = topo?.per_residue_topology ?? "?".repeat(m.ordered_length_aa);
+    const type = topo?.per_residue_topology ? deepTMHMMType(topology) : (m.n_tm ?? 0) > 0 ? "TM" : "SP";
+    const verdict = fold.refold_verdict ? `, refold ${fold.refold_verdict}` : "";
+    out.push({
+      source: "library",
+      id: `library-tagged-${m.design_id}`,
+      label: L1_DESIGNED_ORF_LABEL,
+      sublabel: `${m.design_id}${topo ? ` · ${libraryVariantLabel(topo)}` : ""}`,
+      topology,
+      deeptmhmm_type: type,
+      pdb_url: url,
+      candidate_id: m.design_id,
+      tranche: "l1",
+      candidate_set: m.candidate_set,
+      model_source: fold.source,
+      proteoform_match: "tagged_construct",
+      residue_offset: 0,
+      display_range: null,
+      note:
+        `The ordered tagged protein (${m.rung}, ${m.member_id}), folded whole: ` +
+        `the ${layout.cassette[1] - layout.cassette[0] + 1}-aa cassette is charcoal` +
+        (layout.nonNative.length ? ", other non-native residues olive" : "") +
+        `${verdict}.` +
+        (topo ? "" : " No topology for this exact sequence yet, so the native chain is uncoloured."),
+      segments: layout.segments,
+      cassette_range: layout.cassette,
+      nonnative_ranges: layout.nonNative,
+      refold_verdict: fold.refold_verdict ?? null,
+    });
+  }
+  return out;
+}
+
+/**
+ * The library tabs the gene page shows once the L1 design load is in hand: each current
+ * L1 member's tagged refold replaces its native tab, and a tab for an L1 design that is
+ * no longer a member is dropped (TFRC's retired 81-aa isoform l1-p2520 was the case:
+ * the stale native tab read as "a tiny fragment"). Non-L1 tabs pass through. Without
+ * the load nothing changes.
+ */
+export function withL1DesignVariants(
+  libraryTabs: StructureVariantLibraryInput[],
+  file: L1DesignFile | null,
+  topologyRows: readonly LibraryTopologyRow[] | null | undefined,
+): StructureVariantLibraryInput[] {
+  if (!file || !file.members.length) return libraryTabs;
+  const current = new Set(file.members.map((m) => m.design_id).filter(Boolean) as string[]);
+  const tagged = l1TaggedStructureVariants(file, topologyRows);
+  const replaced = new Set(tagged.map((t) => t.candidate_id));
+  const kept = libraryTabs.filter((t) => {
+    const isL1 = (t.tranche ?? "").toLowerCase() === "l1" || t.candidate_id.startsWith("l1-");
+    if (!isL1) return true;
+    return current.has(t.candidate_id) && !replaced.has(t.candidate_id);
+  });
+  return [...tagged, ...kept];
+}
+
+/** Library-membership marks once the load is in hand: a retired L1 design marks no tab,
+ *  and a member with its own Designed ORF (L1) entry marks only that entry. */
+export function currentL1Memberships<T extends { candidate_id: string; library: string | null }>(
+  byAcc: Map<string, T[]>,
+  file: L1DesignFile | null,
+): Map<string, T[]> {
+  if (!file || !file.members.length) return byAcc;
+  const current = new Set(file.members.map((m) => m.design_id).filter(Boolean) as string[]);
+  // A member shown as its own Designed ORF (L1) entry is not ALSO badged "L1" on the
+  // canonical / isoform tab of the same sequence: one entry for the construct.
+  const designed = new Set(l1TaggedStructureVariants(file, []).map((v) => v.candidate_id));
+  const out = new Map<string, T[]>();
+  for (const [acc, ms] of byAcc) {
+    const keep = ms.filter((m) => {
+      if ((m.library ?? "").toLowerCase() !== "l1") return true;
+      return current.has(m.candidate_id) && !designed.has(m.candidate_id);
+    });
+    if (keep.length) out.set(acc, keep);
+  }
+  return out;
 }

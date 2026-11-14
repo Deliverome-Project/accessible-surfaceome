@@ -256,7 +256,7 @@ function topologyRanges(
   return ranges;
 }
 
-function deepTMHMMType(topology: string): DeepTMHMMType {
+export function deepTMHMMType(topology: string): DeepTMHMMType {
   const hasM = topology.includes("M");
   const hasS = topology.includes("S");
   if (hasM && hasS) return "SP+TM";
@@ -456,7 +456,7 @@ export interface LibraryStructureRow {
  * mapping: those 158 proteoforms have no UniProt record at all, so both words would be
  * false for them. They get named for what they are.
  */
-function libraryVariantLabel(row: LibraryTopologyRow): string {
+export function libraryVariantLabel(row: LibraryTopologyRow): string {
   const cohort = (row.cohort ?? "").toLowerCase();
   if (cohort.startsWith("human_isoform")) {
     // Same "Isoform N" form the AFDB isoform tabs use, so a reader comparing them is
@@ -616,7 +616,25 @@ export interface StructureVariantLibraryInput {
   residue_offset: number;
   display_range: [number, number] | null;
   note: string | null;
+  /** Tagged refolds only (L1 design load): member residue -> model residue, piecewise,
+   *  because the cassette sits inside the model. Overrides the single linear segment
+   *  that `residue_offset` describes. */
+  segments?: { unpLo: number; unpHi: number; offset: number }[] | null;
+  /** Tagged refolds only: the inserted cassette, in MODEL numbering. */
+  cassette_range?: [number, number] | null;
+  /** Tagged refolds only: other non-native model residues (an Igk leader remnant, a
+   *  snorkel TM module), in MODEL numbering. */
+  nonnative_ranges?: [number, number][] | null;
+  refold_verdict?: string | null;
 }
+
+/** The tag cassette (linkers + SpyTag003 + ALFA) on a tagged refold. Charcoal: no
+ *  topology, pLDDT, tag-site or contact palette uses it, and it reads as "not this
+ *  protein" against every one of them. */
+export const L1_CASSETTE_COLOR = "#2F3437";
+/** Other non-native residues in a tagged refold (Igk leader remnant, snorkel TM
+ *  module). Olive, also unused by every other palette. */
+export const L1_NONNATIVE_COLOR = "#8A8F3C";
 
 /** Highlight color for a reader-selected residue (the 3D viewer's
  *  "Highlight residue" box and the topology strip's marker). Hot pink,
