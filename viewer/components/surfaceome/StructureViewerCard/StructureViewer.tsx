@@ -19,6 +19,8 @@ import type { RenderedProvenance } from "../../../lib/tag-sites-overlay";
 import {
   MEMBRANE_COLOR,
   RESIDUE_HIGHLIGHT_COLOR,
+  L1_CASSETTE_COLOR,
+  L1_NONNATIVE_COLOR,
   TOPOLOGY_COLORS,
   alphafoldPdbUrl,
   alphafoldPredictionApiUrl,
@@ -222,6 +224,12 @@ export interface StructureVariantLibrary extends StructureVariantBase {
   display_range: [number, number] | null;
   /** Why this model is not the member's own proteoform, when it is an alternate. */
   note: string | null;
+  /** Tagged refolds (L1 design load): piecewise member -> model map, the cassette and
+   *  any other non-native span, in model numbering. See StructureVariantLibraryInput. */
+  segments?: ProjSegment[] | null;
+  cassette_range?: [number, number] | null;
+  nonnative_ranges?: [number, number][] | null;
+  refold_verdict?: string | null;
 }
 
 /** Per-variant AFDB metadata fetched at runtime from
@@ -2026,13 +2034,17 @@ export function StructureViewer({
         // One linear segment is the whole story here, unlike an experimental chain:
         // the model IS the ordered protein (ours) or contains it contiguously (AFDB's,
         // verified residue-exact offline), so there are no gaps to map piecewise.
-        projSegments = [
-          {
-            unpLo: 1,
-            unpHi: libVariant.topology.length,
-            offset: libVariant.residue_offset,
-          },
-        ];
+        // A tagged refold has the cassette inside the model, so its map is two pieces
+        // (before / after the insert) rather than one shift.
+        projSegments = libVariant.segments?.length
+          ? libVariant.segments
+          : [
+              {
+                unpLo: 1,
+                unpHi: libVariant.topology.length,
+                offset: libVariant.residue_offset,
+              },
+            ];
       } else if (expVariant) {
         const resolved = await resolveExperimentalChain(
           {
@@ -2316,6 +2328,23 @@ export function StructureViewer({
             }
           });
         });
+      }
+
+      // Tagged refold: paint the cassette (and any other non-native span) last, in
+      // every view mode, so the tag always reads as distinct from the native chain and
+      // from whichever palette the mode is using.
+      if (libVariant?.cassette_range) {
+        for (const [lo, hi] of libVariant.nonnative_ranges ?? []) {
+          viewer.setStyle(
+            { resi: `${lo}-${hi}` },
+            { cartoon: { color: L1_NONNATIVE_COLOR }, line: { color: L1_NONNATIVE_COLOR, linewidth: 1.2 } },
+          );
+        }
+        const [lo, hi] = libVariant.cassette_range;
+        viewer.setStyle(
+          { resi: `${lo}-${hi}` },
+          { cartoon: { color: L1_CASSETTE_COLOR }, line: { color: L1_CASSETTE_COLOR, linewidth: 1.2 } },
+        );
       }
 
       // SURFACE-Bind anchor overlay — one sphere per scored site at
@@ -3294,6 +3323,25 @@ export function StructureViewer({
           globular={activeDeepTMHMMType === "GLOB"}
         />
       )}
+      {isLibraryActive && (activeVariant as StructureVariantLibrary).cassette_range ? (
+        <ul className={styles.sitesLegend} aria-label="Tagged construct legend">
+          <li className={styles.sitesLegendItem}>
+            <span className={styles.sitesLegendSwatch} style={{ background: L1_CASSETTE_COLOR }} aria-hidden="true" />
+            <span className={styles.sitesLegendLabel}>
+              Tag cassette (linkers + SpyTag003 + ALFA,{" "}
+              {(activeVariant as StructureVariantLibrary).cassette_range![1] -
+                (activeVariant as StructureVariantLibrary).cassette_range![0] + 1}{" "}
+              aa)
+            </span>
+          </li>
+          {(activeVariant as StructureVariantLibrary).nonnative_ranges?.length ? (
+            <li className={styles.sitesLegendItem}>
+              <span className={styles.sitesLegendSwatch} style={{ background: L1_NONNATIVE_COLOR }} aria-hidden="true" />
+              <span className={styles.sitesLegendLabel}>Other non-native (Igκ leader remnant / snorkel TM module)</span>
+            </li>
+          ) : null}
+        </ul>
+      ) : null}
     </div>
   );
 }

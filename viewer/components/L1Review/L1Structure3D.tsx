@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { L1_CASSETTE_COLOR } from "../../lib/structure-viewer-types";
 import styles from "./L1Review.module.css";
 
 /** One residue to mark, in MODEL numbering. */
@@ -89,7 +90,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick }: Props) 
     v.removeAllLabels();
     v.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 1 } });
     if (span) v.setStyle({ resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
-    if (cassette) v.setStyle({ resi: `${cassette[0]}-${cassette[1]}` }, { cartoon: { color: "#7C5CBF" } });
+    if (cassette) v.setStyle({ resi: `${cassette[0]}-${cassette[1]}` }, { cartoon: { color: L1_CASSETTE_COLOR } });
     for (const m of marks) {
       v.addStyle({ resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
       if (m.label) {

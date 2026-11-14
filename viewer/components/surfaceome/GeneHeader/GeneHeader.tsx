@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import type { CatalogRow, DeepDiveFilters } from "../../../lib/surfaceome";
 import {
@@ -21,6 +21,13 @@ import {
   libraryStructureVariants,
 } from "../../../lib/structure-viewer-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
+import {
+  L1_DESIGN_API_BASE,
+  currentL1Memberships,
+  fetchL1Design,
+  withL1DesignVariants,
+  type L1DesignFile,
+} from "../../../lib/l1-design";
 import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import { renderableTagSites } from "../../../lib/tag-sites-overlay";
 import { prettyEnum } from "../../../lib/enums";
@@ -368,6 +375,21 @@ export function GeneHeader({
   // The viewer's active tab, so the strip under it draws that tab's sequence
   // rather than always the canonical one. Null until the viewer reports in.
   const [activeTopology, setActiveTopology] = useState<ActiveTopology | null>(null);
+  // The L1 design load (current members, their built picks and tagged refolds). When it
+  // is in hand, each current L1 member's structure tab shows its whole tagged refold and
+  // tabs for retired L1 designs are dropped; without it the tabs are as before.
+  const [l1Design, setL1Design] = useState<L1DesignFile | null>(null);
+  const symbol = rec.gene.hgnc_symbol;
+  useEffect(() => {
+    if (!inFgLibrary) return;
+    let live = true;
+    fetchL1Design(symbol, L1_DESIGN_API_BASE).then((f) => {
+      if (live) setL1Design(f);
+    });
+    return () => {
+      live = false;
+    };
+  }, [symbol, inFgLibrary]);
   const tagSiteRows =
     taggedSites?.has_data && structureData
       ? renderableTagSites(taggedSites.sites, structureData.topology.length)
@@ -834,7 +856,7 @@ export function GeneHeader({
               onActiveTopologyChange={setActiveTopology}
               // Marks every tab whose sequence a library member orders, and
               // says under the strip whether the open tab is one of them.
-              libraryMembers={libraryMembersByAccession(rec)}
+              libraryMembers={currentL1Memberships(libraryMembersByAccession(rec), l1Design)}
               // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
               // model when this gene is in the manifest. Renders as a
               // "Homo-oligomer" tab right after Canonical and before
@@ -990,7 +1012,7 @@ export function GeneHeader({
                 // tab instead (libraryMembersByAccession), which also reads better --
                 // "Canonical is the library construct" rather than two tabs that are the
                 // same coordinates.
-                ...libraryStructureVariants(rec, [
+                ...withL1DesignVariants(libraryStructureVariants(rec, [
                   rec.gene.uniprot_acc,
                   ...rec.deterministic_features.isoform_topologies.map(
                     (iso) => iso.uniprot_acc,
@@ -1005,7 +1027,7 @@ export function GeneHeader({
                       (o) => o.ortholog_uniprot_acc,
                     ),
                   ),
-                ]),
+                ]), l1Design, rec.deterministic_features.library_designed_topology),
                 // Cap the 3D tab strip at the 3 LOWEST-NUMBERED isoforms —
                 // the major ones — sorting the suffix as a number rather
                 // than relying on the order the API returns. That order is
