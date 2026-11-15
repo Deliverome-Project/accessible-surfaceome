@@ -24,6 +24,11 @@ __pycache__/
 
 # Local secrets/runtime
 .env
+# Only `.env` was ignored, so a `.env.local` / `.env.bak` / `.env.production`
+# copy was committable in a PUBLIC repository. Ignore every variant and
+# re-include the committed template.
+.env.*
+!.env.example
 *.log
 
 # Wrangler.toml for the public Worker carries the surfaceome_public D1 UUID
