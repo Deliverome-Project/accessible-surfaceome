@@ -1,4 +1,6 @@
 import type { CatalogRow } from "../../../lib/surfaceome";
+import { tooltips } from "../../../lib/tooltips";
+import { InfoTip } from "../../InfoTip/InfoTip";
 import styles from "./DatabasePresenceCard.module.css";
 
 interface Props {
@@ -62,6 +64,9 @@ export function DatabasePresenceStrip({ row }: Props) {
       <span className={`label-mono ${styles.stripLabel}`}>
         Sources · {yes}/{total}
       </span>
+      <InfoTip label="About the source database votes" wide align="start">
+        {tooltips.db_votes}
+      </InfoTip>
       <ul className={styles.stripRow} aria-label="Source database votes">
         {DB_LABELS.map((d) => {
           const present = row.db[d.key] === 1;

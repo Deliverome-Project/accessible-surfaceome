@@ -34,6 +34,7 @@ import {
 import { ProteinLookup } from "./ProteinLookup";
 import { HoverTip } from "../surfaceome/_shared/HoverTip";
 import { InfoTip } from "../InfoTip/InfoTip";
+import { tooltips } from "../../lib/tooltips";
 import { statusTone } from "../surfaceome/ExpressionCard/StudyPresence";
 import { SortableHeader } from "../surfaceome/_shared/SortableHeader";
 import { SortResetButton } from "../surfaceome/_shared/SortResetButton";
@@ -1189,7 +1190,7 @@ function SelectionPanel({
             <tr>
               {pHeader("protein", "Protein")}
               {pHeader("name", "Name")}
-              {pHeader("votes", "DB votes", true)}
+              {pHeader("votes", "DB votes", true, tooltips.db_votes)}
               {pHeader("tier", "Surfaceome tier")}
               {pHeader("counted", `Counted datasets (of ${countedIdx.length})`)}
               {pHeader(

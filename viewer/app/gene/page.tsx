@@ -46,10 +46,11 @@ import styles from "./page.module.css";
  * Under `output: "export"` a `[symbol]` dynamic route forces one static
  * file per gene (via `generateStaticParams`) — at ~5.1k genes that blows
  * Cloudflare Pages' 20k-file cap and nothing deploys. This single static
- * route (`out/gene/index.html`) is served for every `/{SYMBOL}/` URL via
- * `public/_redirects` (`/*  /gene/index.html  200`, URL preserved), reads
- * the symbol from the path, and fetches the record from the Worker at
- * runtime. File count is now independent of gene count.
+ * route (`out/gene/index.html`) is served with a 200 for every published
+ * `/{SYMBOL}/` URL by the Pages Function `functions/[[path]].js` (URL
+ * preserved; other paths keep their 404), reads the symbol from the path,
+ * and fetches the record from the Worker at runtime. File count is now
+ * independent of gene count.
  */
 
 // Public Worker base the browser talks to. Same Worker the JSON download
