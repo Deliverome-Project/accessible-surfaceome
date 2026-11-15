@@ -2123,6 +2123,7 @@ export function CatalogTable({
             onClick={setSort}
             align="center"
             title="Count of DB sources voting surface (0-5)"
+            info={tooltips.db_votes}
           />
           {DB_KEYS.map((d) => (
             <SortableHeader
