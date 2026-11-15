@@ -1,0 +1,92 @@
+{
+ "added": [
+  "GABRA5-internal-35-lit",
+  "GABRG1-internal-39-lit",
+  "GABRG2-internal-43-lit",
+  "GABRG3-internal-21-lit",
+  "KCNK3-internal-214-lit"
+ ],
+ "added_skipped_existing": [
+  "GABRA4-internal-39-lit",
+  "GABRA6-internal-23-lit"
+ ],
+ "by_action": {
+  "add": 5,
+  "delete": 18,
+  "keep": 94,
+  "skip_existing": 2,
+  "update": 79
+ },
+ "by_verdict": {
+  "confirmed_exact": 129,
+  "confirmed_shifted": 27,
+  "not_supported": 8,
+  "region_only": 17,
+  "terminal_misfiled": 5,
+  "wrong_species_numbering": 5
+ },
+ "deleted": [
+  "ABCC2-internal-163-lit",
+  "ABCC2-internal-574-lit",
+  "ADGRG6-internal-550-lit",
+  "CDH13-internal-138-lit",
+  "CFC1-internal-191-lit",
+  "CNR1-internal-25-lit",
+  "GABRA2-internal-212-lit",
+  "GABRA2-internal-232-lit",
+  "GABRP-internal-27-lit",
+  "KCNK5-internal-214-lit",
+  "TEK-internal-442-lit",
+  "TLCD1-internal-201-lit",
+  "TMEM225-internal-125-lit",
+  "TMPRSS9-internal-270-lit",
+  "TRIL-internal-499-lit",
+  "ZP2-internal-641-lit",
+  "ZP2-internal-643-lit",
+  "ZP4-internal-468-lit"
+ ],
+ "largest_shifts": [
+  {
+   "from": 110,
+   "shift": 34,
+   "site_id": "SORCS1-internal-110-lit",
+   "to": 144
+  },
+  {
+   "from": 824,
+   "shift": 26,
+   "site_id": "ANO1-internal-824-lit",
+   "to": 850
+  },
+  {
+   "from": 23,
+   "shift": 19,
+   "site_id": "ITGB7-internal-23-lit",
+   "to": 42
+  },
+  {
+   "from": 29,
+   "shift": 19,
+   "site_id": "ITGB7-internal-29-lit",
+   "to": 48
+  },
+  {
+   "from": 427,
+   "shift": 19,
+   "site_id": "ITGB7-internal-427-lit",
+   "to": 446
+  }
+ ],
+ "n_audited": 191,
+ "tag_sites_version": "2026-11-05-lit-audit",
+ "validation_level_changes": {
+  "function_only -> function_perturbed": 1,
+  "function_perturbed -> detected_only": 1,
+  "surface_and_function -> detected_only": 6,
+  "surface_and_function -> function_only": 8,
+  "surface_and_function -> surface_only": 11,
+  "surface_only -> detected_only": 13,
+  "surface_only -> function_only": 2,
+  "surface_only -> function_perturbed": 4
+ }
+}

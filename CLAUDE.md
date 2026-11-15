@@ -153,7 +153,7 @@ Commits). A title that doesn't match fails the check and blocks merge.
 
 - **Format**: `<type>(<scope>): <subject>` — scope is optional.
 - **Allowed types**: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`.
-- **Allowed scopes**: `surface-proteome`, `sources`, `merge`, `audit`, `agents`, `tools`, `data`, `docs`, `ci`, `deps`, `viewer`, `paper`.
+- **Allowed scopes**: shared across Deliverome repos (from `Deliverome-Project/.github/actions/pr-title`): `data`, `docs`, `ci`, `deps`, `deps-dev`, `infra`; this repo's own: `surface-proteome`, `sources`, `merge`, `audit`, `agents`, `tools`, `viewer`, `paper`.
 - **Pick a scope by what the PR mostly touches**: `sources/` → `sources`,
   `merge/` → `merge`, `audit/` → `audit`, `agents/` (Managed Agent
   orchestrator, system prompt, agent definition) → `agents`, `tools/`
@@ -162,7 +162,8 @@ Commits). A title that doesn't match fails the check and blocks merge.
   manuscript build chain: pandoc filters, print/web CSS, figure
   swap) → `paper`, project-wide /
   cross-cutting → `surface-proteome`. If you need a scope that isn't
-  listed, update the workflow's `scopes:` block in the same PR — don't
+  listed, add it to the workflow's `extra-scopes:` block in the same PR (or, if every repo
+  should accept it, to `Deliverome-Project/.github/actions/pr-title`) — don't
   invent a new one.
 
 ## Gene identifier resolution

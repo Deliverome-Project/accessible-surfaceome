@@ -130,3 +130,90 @@ def polish_print_html(html_path: Path) -> None:
         ).rstrip(b"\n")
         + b"\n"
     )
+
+
+FIGURE_BLOCK_XPATH = ".//div[contains(concat(' ', normalize-space(@class), ' '), ' figure-block ')]"
+
+
+def semantic_captions(body) -> tuple[int, int]:
+    """Give the web edition real figure and table captions.
+
+    The .docx styles captions as Heading 5, so pandoc emits ``<h5>``, and
+    the print sheet styles that heading as the caption card. On the web a
+    caption that is a heading puts every figure into the document outline
+    and breaks it (an h5 straight after an h2), which screen readers
+    announce as a jump and Lighthouse fails as ``heading-order``.
+
+    Each ``div.figure-block`` (from filters/figures.lua) becomes a
+    ``<figure>`` and its caption a ``<figcaption>``. Each table caption
+    (``h5.table-caption``, already above its table via
+    ``captions_above_tables``) is wrapped with its table in
+    ``<figure class="table-block">``. Classes, ids and children are kept,
+    so only the tag names change. Web only: the print and JATS builds keep
+    their ``<h5>``.
+
+    Raises ``ValueError`` if a figure block has more than one caption or an
+    ``<h5>`` is left over afterwards, since either means the generator has
+    started emitting a caption shape this function does not know about.
+
+    Returns (figures converted, tables converted).
+    """
+    figures = 0
+    for block in body.xpath(FIGURE_BLOCK_XPATH):
+        captions = block.xpath("./h5")
+        if len(captions) > 1:
+            raise ValueError(
+                f"figure block has {len(captions)} <h5> captions; a <figure> takes one"
+            )
+        block.tag = "figure"
+        for caption in captions:
+            caption.tag = "figcaption"
+        figures += 1
+
+    tables = 0
+    for caption in list(body.iter("h5")):
+        if "table-caption" not in (caption.get("class") or "").split():
+            continue
+        table = caption.getnext()
+        if table is None or table.tag != "table":
+            continue
+        wrapper = lxml_html.Element("figure")
+        wrapper.set("class", "table-block")
+        caption.addprevious(wrapper)
+        caption.tag = "figcaption"
+        wrapper.append(caption)
+        wrapper.append(table)
+        tables += 1
+
+    leftover = [
+        " ".join((h.text_content() or "").split())[:60] for h in body.iter("h5")
+    ]
+    if leftover:
+        raise ValueError(f"<h5> left after caption conversion: {leftover}")
+    return figures, tables
+
+
+def close_heading_gaps(body) -> int:
+    """Re-level headings that skip a level, e.g. an h6 directly under an h4.
+
+    A few Methods sub-subsections are Heading 6 in the .docx directly under
+    a Heading 4. Run after ``semantic_captions``, so captions are out of
+    the outline and h5 is free. Each heading deeper than one level below
+    the heading before it is renamed to that level; the web sheet styles h5
+    and h6 alike, so nothing looks different. Returns the number renamed.
+    """
+    renamed = 0
+    # (original level, output level) of each open ancestor heading. Siblings
+    # are re-levelled together: the second of two h6s under an h4 must
+    # become h5 like the first, not a child of it.
+    open_headings: list[tuple[int, int]] = []
+    for heading in body.xpath(".//h1 | .//h2 | .//h3 | .//h4 | .//h5 | .//h6"):
+        original = int(heading.tag[1])
+        while open_headings and open_headings[-1][0] >= original:
+            open_headings.pop()
+        level = open_headings[-1][1] + 1 if open_headings else original
+        if level != original:
+            heading.tag = f"h{level}"
+            renamed += 1
+        open_headings.append((original, level))
+    return renamed

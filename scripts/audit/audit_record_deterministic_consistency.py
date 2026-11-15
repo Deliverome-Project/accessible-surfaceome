@@ -258,7 +258,8 @@ def compara_pairs_without_ecd_row(
     return sorted(out)
 
 
-def _chunks(seq: list, n: int = CHUNK):
+def _chunks(seq: list, n: int | None = None):
+    n = CHUNK if n is None else n
     for i in range(0, len(seq), n):
         yield seq[i : i + n]
 
@@ -340,8 +341,20 @@ def source_integrity(
 
 
 def main() -> int:
+    global CHUNK
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument(
+        "--genes-file",
+        type=Path,
+        help="scope record checks to a JSON list of published gene symbols",
+    )
+    ap.add_argument(
+        "--chunk-size",
+        type=int,
+        default=CHUNK,
+        help="records per query (1..90); lower on a busy D1",
+    )
     ap.add_argument(
         "--pause",
         type=float,
@@ -349,6 +362,9 @@ def main() -> int:
         help="seconds between chunk queries (0 when nothing else is using D1)",
     )
     args = ap.parse_args()
+    if not 1 <= args.chunk_size <= 90:
+        ap.error("--chunk-size must be between 1 and 90")
+    CHUNK = args.chunk_size
     load_env()
     topo_v = dd._latest_topology_version_for_cohort("human_canonical")
     iso_v = dd._latest_topology_version_for_cohort("human_isoforms")
@@ -364,6 +380,12 @@ def main() -> int:
             r["g"]
             for r in d1.query("SELECT gene_symbol g FROM surface_annotation;", [])
         ]
+        if args.genes_file:
+            requested = set(json.loads(args.genes_file.read_text()))
+            syms = [s for s in syms if s in requested]
+            print(
+                f"scoped record audit: {len(syms)} published genes of {len(requested)} requested"
+            )
 
         def _one_label(sql: str, params: list) -> str:
             labels = [r["v"] for r in d1.query(sql, params)]

@@ -186,9 +186,10 @@ REVEAL_BOOTSTRAP_SCRIPT = (
 #
 # Every heading level, too: the manuscript uses h4 for Methods
 # subsections ("UniProt", "SURFY", "CSPA") and h6 below that, so an
-# h2/h3-only selector left 31 headings static. h5 is the figure-caption
-# level, but captions live inside a .figure-block and are excluded with
-# it, so the only h5 reached here is a table caption.
+# h2/h3-only selector left 31 headings static. This runs before
+# html_polish.semantic_captions, so captions are still <h5> here: figure
+# captions are excluded with their .figure-block, and the only h5 reached
+# is a table caption.
 REVEAL_SELECTOR = "h2 | h3 | h4 | h5 | h6 | p | table | blockquote"
 
 # Delay index is capped so a long block (the reference list runs to
