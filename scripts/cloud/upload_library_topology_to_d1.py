@@ -21,28 +21,46 @@ needs a DeepTMHMM run and must not be shown the canonical instead.
     uv run python scripts/cloud/upload_library_topology_to_d1.py --dry-run
     uv run python scripts/cloud/upload_library_topology_to_d1.py
 
-The table is additive: nothing reads it until the Worker is taught to, and the Worker
-deploy is a separate manual step that ships to production.
+REPLACE IN PLACE. The Worker now reads this table and its join carries no ``release``
+filter, so every row is live the moment it is written and a half-applied load is visible on
+the public gene page. The load is therefore staged in a scratch table and swapped in one
+request; see ``_d1_library_index.staged_replace``. No Worker deploy is needed or wanted --
+the Worker already reads this table.
+
+Re-running it is how a member retired from the panel loses its row: the payload is built
+from deliverome-analysis's ``candidate_manifest_tranches.tsv``, the order of record, and
+carries active members only.
+AFTER LOADING, PURGE THE RECORD CACHE. The gene record is served through two cache tiers
+(``caches.default`` and the ``RECORD_CACHE`` KV mirror), and a KV hit is answered before
+the handler ever reads D1 -- so a correct D1 table is invisible until the cached records
+are evicted. Both tiers, for the genes whose rows changed, not just the one you
+spot-checked::
+
+    uv run python scripts/cloud/purge_gene_cache.py --surfaces record \\
+        --genes <affected symbols> --execute
+
+``CLOUDFLARE_KV_RECORD_CACHE_ID`` must be set or the KV tier soft-skips and the mirror
+keeps serving the old record for up to a day. Verify with the archive bypass
+(``X-Archive-Bypass: $ARCHIVE_BYPASS_TOKEN``) to read past both tiers, and then again
+without it to confirm the public answer actually changed.
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
-import json
 import os
-import urllib.error
-import urllib.request
+import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from _d1_library_index import ddl_from_schema, query, rows_of, staged_replace  # noqa: E402
+
 PAYLOAD = REPO / "data/external/library_structures/library_topology_index.tsv"
 SCHEMA = REPO / "cloudflare/d1_public_schema.sql"
 TABLE = "library_topology_public"
-API_ROOT = "https://api.cloudflare.com/client/v4"
-#: Rows per INSERT. D1 caps bound parameters per query at 100, and each row binds one
-#: per column, so 50 rows (800 variables) is rejected with "too many SQL variables".
-BATCH = 100 // 12
 
 COLS = [
     "release",
@@ -58,48 +76,6 @@ COLS = [
     "ordered_length_aa",
     "sequence_sha256",
 ]
-
-
-def _query(
-    account: str, db: str, token: str, sql: str, params: list | None = None
-) -> dict:
-    body = json.dumps({"sql": sql, "params": params or []}).encode()
-    req = urllib.request.Request(
-        f"{API_ROOT}/accounts/{account}/d1/database/{db}/query",
-        data=body,
-        method="POST",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        },
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            return json.load(resp)
-    except urllib.error.HTTPError as exc:
-        raise SystemExit(
-            f"D1 query failed: {exc.code} {exc.read().decode()[:400]}"
-        ) from exc
-
-
-def _create_table_sql() -> str:
-    """The CREATE statements for this table, read from the committed schema file.
-
-    Taking them from the schema rather than restating them here is what keeps the file
-    and the database from drifting -- the repo's rule is to fix the records and re-sync,
-    never to let a loader carry its own private idea of the shape.
-    """
-    text = SCHEMA.read_text()
-    start = text.index(f"CREATE TABLE IF NOT EXISTS {TABLE}")
-    tail = text[start:]
-    end = tail.rindex("CREATE INDEX IF NOT EXISTS idx_library_topology_public_target")
-    end = tail.index(";", end) + 1
-    block = tail[:end]
-    # Strip `--` comments before the caller splits on ";". The column comments contain
-    # semicolons of their own ("-- denormalized; never a join key"), and splitting the
-    # raw text chopped the CREATE TABLE into four fragments that D1 rejected as
-    # "incomplete input".
-    return "\n".join(line.split("--")[0].rstrip() for line in block.splitlines())
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -137,51 +113,64 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(
             f"expected deeptmhmm_v1 only (it is the topology of record); got {sorted(tools)}"
         )
+    # What this load takes away, named before it happens: these rows are live to the
+    # public page, and a member evicted here is one the panel no longer orders.
+    members = {r["candidate_id"] for r in rows}
+    live = {
+        r["candidate_id"]
+        for r in rows_of(
+            query(account, db, token, f"SELECT DISTINCT candidate_id FROM {TABLE}")
+        )
+    }
+    evicted = sorted(live - members)
+    print(
+        f"  in D1 now: {len(live)} members; this load evicts {len(evicted)}, adds {len(members - live)}"
+    )
+    if evicted:
+        print(f"    e.g. {evicted[:8]}")
+
     if args.dry_run:
         print("dry run — nothing written")
         return 0
 
-    for stmt in _create_table_sql().split(";"):
+    for stmt in ddl_from_schema(
+        SCHEMA.read_text(),
+        TABLE,
+        "CREATE INDEX IF NOT EXISTS idx_library_topology_public_target",
+    ).split(";"):
         if stmt.strip():
-            _query(account, db, token, stmt)
+            query(account, db, token, stmt)
     print(f"  {TABLE} ensured")
 
-    # Replace this release wholesale: a refold is a new set of rows, not an edit of the
-    # old ones, and a half-replaced release would mix two answers for one member.
-    for release in sorted(releases):
-        _query(account, db, token, f"DELETE FROM {TABLE} WHERE release = ?", [release])
-    # Multi-row INSERT: one statement per BATCH rows rather than one per row, which is
-    # the difference between ~60 round trips and ~2,900.
-    one = "(" + ", ".join("?" for _ in COLS) + ")"
-    written = 0
-    for i in range(0, len(rows), BATCH):
-        chunk = rows[i : i + BATCH]
-        sql = f"INSERT INTO {TABLE} ({', '.join(COLS)}) VALUES " + ", ".join(
-            one for _ in chunk
-        )
-        params: list = []
-        for r in chunk:
-            params.extend((r[c] if r[c] != "" else None) for c in COLS)
-        _query(account, db, token, sql, params)
-        written += len(chunk)
-        print(f"  {written}/{len(rows)}", end="\r", flush=True)
-    print(f"\nwrote {written} row(s) to {TABLE}")
+    # Replace these releases wholesale: a new resolve is a new set of pointers, not an
+    # edit of the old ones, and a half-replaced release would mix two answers for one
+    # member. Staged and swapped in one request so the public page never sees the gap.
+    window = staged_replace(
+        account, db, token, table=TABLE, cols=COLS, rows=rows, releases=sorted(releases)
+    )
+    print(f"  swap completed in {window * 1000:.0f} ms")
 
     # Post-check the invariant that actually matters here: every stored pointer aims at
     # a v1 run. A dtm2 version among these would mean the resolver regressed to selecting
     # on "has a per_residue_topology" -- which a dtm2 row also has, as the lossy back
     # projection -- and the index would claim v1 while meaning v2.
-    got = _query(
-        account,
-        db,
-        token,
-        f"SELECT COUNT(*) AS n, COUNT(DISTINCT topology_version) AS versions, "
-        f"SUM(CASE WHEN topology_version LIKE '%dtm2%' THEN 1 ELSE 0 END) AS dtm2_pointers, "
-        f"SUM(CASE WHEN topology_version LIKE '%test%' THEN 1 ELSE 0 END) AS test_pointers "
-        f"FROM {TABLE}",
+    stats_rows = rows_of(
+        query(
+            account,
+            db,
+            token,
+            f"SELECT COUNT(*) AS n, COUNT(DISTINCT topology_version) AS versions, "
+            f"SUM(CASE WHEN topology_version LIKE '%dtm2%' THEN 1 ELSE 0 END) AS dtm2_pointers, "
+            f"SUM(CASE WHEN topology_version LIKE '%test%' THEN 1 ELSE 0 END) AS test_pointers "
+            f"FROM {TABLE}",
+        )
     )
-    stats = ((got.get("result") or [{}])[0].get("results") or [{}])[0]
+    stats = (stats_rows or [{}])[0]
     print("  in D1 now:", stats)
+    if int(stats.get("n") or 0) != len(rows):
+        raise SystemExit(
+            f"post-check failed: {stats.get('n')} rows in D1 but the payload has {len(rows)}"
+        )
     if stats.get("dtm2_pointers") or stats.get("test_pointers"):
         raise SystemExit(
             f"refusing to leave the index in this state: "
