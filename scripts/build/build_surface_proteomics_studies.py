@@ -98,7 +98,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-07-sweep-v10"
+SNAPSHOT = "2026-11-15-sweep-v11"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -326,6 +326,11 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "mcquade-hesc-membrane-2009",
     ),
     "other_normal": (
+        "mesidor-cf-s1-2026",
+        "mesidor-cf-s2-2026",
+        "mesidor-cf-s3-2026",
+        "mesidor-cf-s4-2026",
+        "mesidor-cf-s5-2026",
         "dusailly-ec-2026",
         "rethore-huvec-2026",
         "mazzone-rpe1-2026",
