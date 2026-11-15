@@ -6,7 +6,8 @@
 # that contains the L1 Worker changes, with the real cloudflare/workers/surfaceome_api/
 # wrangler.toml (copied from the canonical checkout; it is gitignored).
 #
-#   bash scripts/cloud/deploy_l1_design.sh --data-dir DIR [--redacted] [--skip-r2] [--execute]
+#   bash scripts/cloud/deploy_l1_design.sh --data-dir DIR [--redacted] [--skip-r2]
+#                                          [--skip-token] [--execute]
 #   (--base REF replaces origin/main in the checks, for a dry run before merge only)
 #
 # DIR is the loader's --data-dir: it holds l1_design_load.sql (full provenance) and
@@ -26,7 +27,7 @@
 # l1-viewer-tag-sites, which is not permitted to write production itself.
 set -euo pipefail
 
-DATA_DIR=""; REDACTED=0; SKIP_R2=0; EXECUTE=0; BASE="origin/main"
+DATA_DIR=""; REDACTED=0; SKIP_R2=0; SKIP_TOKEN=0; EXECUTE=0; BASE="origin/main"
 TAGGED_S3="s3://deliverome-processed/sprint4/s4e9-orf-design-fg-panel/predicted-structures/tagged/2026-11-12/"
 TAGGED_RELEASE="2026-11-12"
 while [ $# -gt 0 ]; do
@@ -34,6 +35,10 @@ while [ $# -gt 0 ]; do
     --data-dir) DATA_DIR="$2"; shift 2 ;;
     --redacted) REDACTED=1; shift ;;
     --skip-r2) SKIP_R2=1; shift ;;
+    # Step 6 prompts for a production secret. An agent session must not invent or type
+    # one, so it deploys with --skip-token and leaves the value to a person; the read
+    # routes (/v1/l1-design) serve without it, only review writes stay closed.
+    --skip-token) SKIP_TOKEN=1; shift ;;
     --execute) EXECUTE=1; shift ;;
     --base) BASE="$2"; shift 2 ;;  # dry-run testing only; a real deploy uses origin/main
     *) echo "unknown argument: $1" >&2; exit 2 ;;
@@ -81,6 +86,10 @@ fi
 echo "== 6. review token secret"
 if (cd "$WORKER_DIR" && $WRANGLER secret list 2>/dev/null | grep -q L1_REVIEW_TOKEN); then
   echo "L1_REVIEW_TOKEN already set"
+elif [ "$SKIP_TOKEN" = 1 ]; then
+  echo "L1_REVIEW_TOKEN NOT set, skipped (--skip-token): /v1/l1-design reads work;"
+  echo "  review writes return an error until a person runs, in $WORKER_DIR:"
+  echo "    npx wrangler secret put L1_REVIEW_TOKEN"
 else
   run "$WRANGLER secret put L1_REVIEW_TOKEN"
 fi
