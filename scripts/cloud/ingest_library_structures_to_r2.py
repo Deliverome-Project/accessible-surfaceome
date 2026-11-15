@@ -31,7 +31,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import random
 import sys
+import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -41,6 +43,9 @@ BUCKET = "surfaceome-structures"
 KEY_PREFIX = "library-colabfold"
 CONTENT_TYPE = "chemical/x-pdb"
 CACHE_CONTROL = "public, max-age=31536000, immutable"
+#: R2 rate-limits a bulk ingest; retry a 429 with exponential backoff and jitter.
+RETRIES = 6
+BACKOFF_S = 1.5
 
 
 def _env(name: str) -> str:
@@ -138,8 +143,16 @@ def main(argv: list[str] | None = None) -> int:
 
     def work(pair: tuple[Path, str]) -> tuple[str, bool, str]:
         src, r2_key = pair
-        ok, msg = _r2_put(acct, tok, r2_key, src.read_bytes())
-        return r2_key, ok, msg
+        body = src.read_bytes()
+        # R2 answers a bulk ingest with 429 ("consider throttling") long before the set
+        # is done -- 2,630 of 4,661 objects on 2026-11-15. It is transient, so back off
+        # and retry rather than failing the key and, with it, the deploy step.
+        for attempt in range(RETRIES):
+            ok, msg = _r2_put(acct, tok, r2_key, body)
+            if ok or "429" not in msg:
+                return r2_key, ok, msg
+            time.sleep(BACKOFF_S * 2**attempt + random.uniform(0, BACKOFF_S))
+        return r2_key, False, f"{RETRIES} attempts, last: {msg}"
 
     failed = []
     with ThreadPoolExecutor(args.concurrency) as pool:

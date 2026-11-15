@@ -442,8 +442,11 @@ GIT_TABLES = {
             "arm": arm,
             "gene": gene,
             "uniprot_acc": "PX",
-            "rank": "1",
-            "insert_after_residue": "88",
+            # Rank 2 at 40, not rank 1 at 88: this row exists to test the canonical-member
+            # join, so it has to clear the alternatives rule (ranks 2-3, 10 aa from the
+            # pick at 94) instead of being dropped by it.
+            "rank": "2",
+            "insert_after_residue": "40",
             "residue_before": "K",
             "residue_after": "D",
             "loop_index": "0",
@@ -797,13 +800,60 @@ def _sites(data: Path) -> dict[str, dict]:
     return {r["site_id"]: r for r in _rows(data, "sites")}
 
 
+def test_alternatives_are_ranks_2_3_and_clear_of_every_pick():
+    """Becca Carlson, 2026-11-15: only ranked runners-up 2-3, at least 10 aa away.
+
+    The separation is measured against *every* pick the member carries, so a runner-up
+    that lands on a second arm is dropped as that arm rather than shown as an
+    alternative to the first.
+    """
+    keep = _loader()._keep_alternatives
+
+    def row(sid, status, rank, res, primary=0, member="m1", source="ranker"):
+        return {
+            "site_id": sid, "member_id": member, "status": status, "rank": rank,
+            "insert_after_residue": res, "is_primary": primary, "site_source": source,
+        }  # fmt: skip
+
+    sites = [
+        row("pick-a", "built", None, 100, primary=1),
+        row("pick-b", "built", None, 300, primary=1),
+        row("r1", "alternative", 1, 500),  # rank below the window
+        row("r2-far", "alternative", 2, 200),  # 100 aa clear of both picks
+        row("r3-far", "alternative", 3, 460),  # 160 aa clear
+        row("r4", "alternative", 4, 700),  # rank above the window
+        row("r2-near-a", "alternative", 2, 109),  # 9 aa from pick-a
+        row("r2-near-b", "alternative", 2, 291),  # 9 aa from the *second* pick
+        row("r2-edge", "alternative", 2, 110),  # exactly 10 aa: far enough
+        row("r2-nores", "alternative", 2, None),  # nothing to compare
+        row("unranked", "alternative", None, 800),
+        # A pick with no position of its own cannot exclude anything; another member's
+        # picks never constrain this one.
+        row("other-pick", "built", None, 205, primary=1, member="m2"),
+    ]
+    kept, dropped = keep(sites)
+    assert [s["site_id"] for s in kept] == [
+        "pick-a", "pick-b", "r2-far", "r3-far", "r2-edge", "other-pick",
+    ]  # fmt: skip
+    assert sum(dropped.values()) == 6
+    assert dropped["ranker: within 10 aa of a pick"] == 2
+    assert dropped["ranker: unranked"] == 1
+    assert dropped["ranker: no insert position to compare"] == 1
+    assert dropped["ranker: rank 1 outside 2-3"] == 1
+    assert dropped["ranker: rank 4 outside 2-3"] == 1
+
+
 def test_build_maps_every_rung(built):
     sites = _sites(built["data"])
+    # Alternatives are ranks 2-3 at least 10 aa from the pick (_keep_alternatives), so
+    # the rank-3 runner-up at 60 loads while three unranked or rank-1 rows do not:
+    # l1-p0005-res1-tag_alone (cassette variant at the same residue), GENEE-F120 (built
+    # loop arm, no rank) and l1-p0006-agent-r1 (now a rank-2 row at 40, so it loads as l1-p0006-agent-r2).
     assert set(sites) == {
         "l1-p0001-cterm-760", "l1-p0002-cterm-held", "l1-p0003-nsp-34", "l1-p0004-type3-r1",
-        "l1-p0005-res1-igk_tag", "l1-p0005-res1-tag_alone", "l1-p0006-internal-94",
-        "l1-p0006-v5-r2", "GENEE-F120", "l1-p0007-internal-route_to_nterm_after_sp",
-        "l1-p0006-agent-r1",
+        "l1-p0005-res1-igk_tag", "l1-p0006-internal-94",
+        "l1-p0006-v5-r2", "l1-p0006-v5-r3", "l1-p0006-agent-r2",
+        "l1-p0007-internal-route_to_nterm_after_sp",
         "l1-p0008-internal-snorkel",
     }  # fmt: skip
     c = sites["l1-p0001-cterm-760"]
@@ -820,9 +870,8 @@ def test_build_maps_every_rung(built):
         "pending",
     )
     assert t3["status_detail"].startswith("pending #9 re-push; was built")
-    igk, alone = sites["l1-p0005-res1-igk_tag"], sites["l1-p0005-res1-tag_alone"]
+    igk = sites["l1-p0005-res1-igk_tag"]
     assert (igk["is_primary"], igk["status"]) == ("1", "built")
-    assert (alone["is_primary"], alone["status"]) == ("0", "alternative")
     assert json.loads(igk["rationale_json"])["lane_check"]["lane_ok"] == "yes"
 
 
@@ -844,14 +893,16 @@ def test_internal_decision_carries_rationale_and_rejected_alternative(built):
     )  # from the ranked table's junction
     route = sites["l1-p0007-internal-route_to_nterm_after_sp"]
     assert (route["status"], route["insert_after_residue"]) == ("no_tag", "")
-    # The runner-up loads as an alternative; rank 3 and the decided pick itself do not.
+    # Ranks 2 and 3 load as alternatives, numbered by their rank; the decided pick
+    # itself never loads a second time as its own runner-up.
     alt = sites["l1-p0006-v5-r2"]
     assert (alt["status"], alt["is_primary"], alt["residue_before"]) == (
         "alternative",
         "0",
         "G",
     )
-    assert "l1-p0006-v5-r1" not in sites and "l1-p0006-v5-r3" not in sites
+    assert (sites["l1-p0006-v5-r3"]["rank"], alt["rank"]) == ("3", "2")
+    assert "l1-p0006-v5-r1" not in sites
 
 
 def test_joins_never_use_member_id_and_drop_stale_rows(built):
@@ -953,7 +1004,7 @@ def test_cterm_decisions_attach_and_holds_show(built):
 
 def test_agent_picks_only_where_the_member_is_the_canonical(built):
     sites = _sites(built["data"])
-    a = sites["l1-p0006-agent-r1"]
+    a = sites["l1-p0006-agent-r2"]
     assert (a["site_source"], a["status"], a["is_primary"]) == (
         "agent_proposer",
         "alternative",
@@ -1006,7 +1057,7 @@ def test_sql_is_insert_only_idempotent_and_load_row_last(built):
     db = sqlite3.connect(":memory:")
     db.executescript(MIGRATION.read_text())
     first = _apply(built["sql"], db)
-    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 12, "l1_structure_design_public": 5,
+    assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 11, "l1_structure_design_public": 5,
                      "l1_contact_site_public": 4, "l1_design_load_public": 1}  # fmt: skip
     assert _apply(built["sql"], db) == first
 
@@ -1086,7 +1137,11 @@ const lv = body.load.load_version;
 const e = body.members[0];
 assert.deepEqual(e.sites.filter((s) => s.is_primary).map((s) => s.status).sort(), ["decided_not_built"]);
 // The earlier panel's built loop arm is shown, as an alternative, never as the current pick.
-assert.ok(e.sites.some((s) => s.site_id === "GENEE-F120" && !s.is_primary && s.status === "alternative"));
+// A built loop arm from an earlier panel carries no rank, so the alternatives rule
+// (ranks 2-3 only) keeps it out of the load. Pinned so that bringing it back is a
+// deliberate change to ALT_* in build_l1_design_tables.py, not an accident.
+assert.ok(!e.sites.some((s) => s.site_id === "GENEE-F120"));
+assert.ok(e.sites.every((s) => s.status !== "alternative" || [2, 3].includes(s.rank)));
 const dec = e.sites.find((s) => s.site_id === "l1p".replace("l1p", "l1-p0006-internal-94"));
 assert.equal(dec.rejected_alternative, "v5 rank-2 pick");
 assert.equal(dec.rationale.loop_evidence.glycan_n, "100");
