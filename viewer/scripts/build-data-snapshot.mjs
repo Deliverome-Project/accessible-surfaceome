@@ -187,18 +187,18 @@ async function snapshotRecords() {
   // the WAF/rate-limiter blocks.
   const listUrl = `${API_BASE}/v1/genes`;
   console.log(`[snapshot] fetching ${listUrl}`);
-  let listRes;
-  try {
-    listRes = await fetch(listUrl);
-  } catch (e) {
-    console.error(`[snapshot] /v1/genes → fetch failed: ${e.message}`);
-    process.exit(1);
-  }
+  // Same retry as the endpoints above: a bare fetch() here failed the dev
+  // Pages builds of 2026-11-15 on a single transient Worker 503, after the
+  // catalog and benchmark fetches had just succeeded.
+  const listRes = await fetchWithRetry(listUrl, { maxAttempts: 5 });
   if (!listRes.ok) {
-    console.error(`[snapshot] /v1/genes → HTTP ${listRes.status}`);
+    console.error(
+      `[snapshot] /v1/genes → failed after retries ` +
+        `(status=${listRes.status ?? "network"}${listRes.degraded ? `, degraded=${listRes.degraded}` : ""})`,
+    );
     process.exit(1);
   }
-  const listBody = await listRes.json();
+  const listBody = JSON.parse(listRes.body);
   const symbols = (listBody.genes ?? [])
     .map((g) => g.gene_symbol)
     .filter(Boolean);
