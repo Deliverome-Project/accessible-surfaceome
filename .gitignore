@@ -168,3 +168,8 @@ paper/*.xml
 
 # audit_record_deterministic_consistency.py report + stale-gene list (regenerated per run)
 data/analysis/deterministic_consistency/
+
+# Library index payloads: built in the private design repository (deliverome-analysis)
+# by build_library_structure_payload.py / build_library_topology_index.py, staged here
+# for the two D1 loaders. This repository is public; the built tables are not kept in it.
+data/external/library_structures/
