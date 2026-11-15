@@ -1,0 +1,24 @@
+/* Same fills as GeneHeader's .tierCanonical … .tierNo. */
+.tier {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  white-space: nowrap;
+  color: #fff;
+}
+
+.canonical { background: #2e7a55; }
+.likely { background: #3d6b60; }
+.low { background: #c99a5b; }
+.uncertain { background: #9a8f88; }
+.no { background: #8a7b77; }
+
+.none {
+  background: transparent;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+}
