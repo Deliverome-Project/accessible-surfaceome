@@ -105,7 +105,8 @@ def test_filters_and_rationale() -> None:
     assert m["rationale"] == "Imputed matrix."
     assert (
         m["method_source"]
-        == "Summarized from PMC1 during our 2026-10-28/29 literature sweep"
+        == "Method summarized from the paper (PMC1) during our 2026-10-28/29"
+        " literature search."
     )
     assert m["beads"] == "not recorded (not audited)"
     assert "S3E8" not in json.dumps(m) and KEY not in json.dumps(m)
@@ -124,3 +125,45 @@ def test_published_methods_carry_no_storage_paths() -> None:
         "sweep_sources.json",
     ):
         assert bad not in text, bad
+
+
+def test_source_sentences() -> None:
+    assert b.method_source_sentence(
+        "Mol Cell Proteomics 2026, PMC13202573, Experimental Procedures"
+    ) == (
+        "Method as described in the paper's Experimental Procedures"
+        " (Mol Cell Proteomics 2026; full text PMC13202573)."
+    )
+    assert (
+        b.instrument_source_sentence("ProteomeXchange record PXD068779")
+        == "Instrument as listed in the ProteomeXchange record PXD068779."
+    )
+    assert (
+        b.instrument_source_sentence("ProteomeXchange record PXD1, PXD2")
+        == "Instrument as listed in the ProteomeXchange records PXD1 and PXD2."
+    )
+    audit = b.instrument_source_sentence(
+        "methods as recorded in this audit (verified_method)"
+    )
+    assert audit and "audit" not in audit and "verified_method" not in audit
+    assert (
+        b.instrument_source_sentence("PMC5341332 Methods (Europe PMC XML)")
+        == "Instrument as named in the paper's Methods (full text PMC5341332)."
+    )
+    note = b.instrument_source_sentence(
+        "ACS 403; Europe PMC abstract has no instrument; no PMC record"
+    )
+    assert note and "403" not in note and note.endswith(".")
+    assert b.method_source_sentence(None) is None
+
+
+def test_published_sources_are_sentences() -> None:
+    path = ROOT / "viewer" / "public" / "data" / "surface-proteomics" / "methods.json"
+    if not path.exists():
+        return
+    for arm, m in json.loads(path.read_text()).items():
+        for key in ("method_source", "instrument_source"):
+            text = m.get(key)
+            if text:
+                assert text.endswith("."), (arm, key, text)
+                assert "verified_method" not in text and "this audit" not in text, arm
