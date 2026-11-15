@@ -1,98 +1,98 @@
 {
  "_generated_by": "scripts/build/build_surface_proteomics_studies.py",
  "generated_at": "2026-11-06",
- "snapshot": "2026-11-06-sweep-v9",
- "source": "S3E8 cross-method surfaceome compendium, processed snapshot 2026-11-06-sweep-v9",
+ "snapshot": "2026-11-07-sweep-v10",
+ "source": "S3E8 cross-method surfaceome compendium, processed snapshot 2026-11-07-sweep-v10",
  "n_shards": 32,
  "n_arms": 247,
  "n_publications": 223,
  "n_admitted_arms": 84,
  "n_admitted_publications": 76,
- "n_accessions": 18641,
- "n_accessions_admitted": 10181,
+ "n_accessions": 18601,
+ "n_accessions_admitted": 10185,
  "counted_detection_hist": [
   0,
-  2818,
-  1348,
-  826,
+  2823,
+  1343,
+  822,
   649,
-  487,
+  491,
   405,
-  311,
-  308,
-  240,
-  251,
-  204,
-  191,
-  178,
-  144,
+  312,
+  305,
+  241,
+  248,
+  205,
+  193,
+  177,
+  147,
   135,
-  117,
-  107,
-  105,
-  96,
-  89,
-  68,
-  76,
-  76,
-  72,
-  61,
+  114,
+  108,
+  106,
+  97,
+  87,
+  70,
   74,
-  51,
-  47,
+  79,
+  69,
   58,
+  78,
+  51,
   43,
-  37,
-  41,
-  42,
+  61,
+  46,
   36,
-  34,
-  17,
-  21,
-  20,
-  16,
+  43,
+  41,
+  36,
+  33,
   18,
-  17,
+  22,
+  20,
   15,
-  13,
+  19,
   17,
+  16,
+  10,
+  19,
   11,
   10,
   11,
-  12,
+  13,
   10,
   9,
   8,
   5,
-  5,
-  9,
-  4,
-  7,
-  9,
-  8,
   4,
   8,
   4,
-  6,
-  5,
+  9,
+  8,
   7,
   6,
+  6,
+  6,
+  6,
+  4,
+  6,
+  6,
+  4,
   3,
-  2,
+  5,
+  5,
   6,
-  4,
-  6,
   2,
   4,
-  2,
+  1,
   4,
-  2,
+  3,
   2,
   1,
   0,
-  2,
-  2,
   1,
+  2,
+  2,
   0,
   0,
   1
@@ -101,105 +101,192 @@
   "reference": "ProCan (Goncalves et al. 2022, PMID 35839778), mean log2 intensity across 949 cancer cell lines",
   "min_surface_values": 5,
   "min_membrane_values": 3,
-  "n_scored": 3958,
+  "n_scored": 3923,
   "auroc_canonical_vs_low_or_not": {
-   "vs_procan": 0.835,
-   "vs_membrane": 0.79
+   "vs_procan": 0.834,
+   "vs_membrane": 0.793
   }
  },
  "cohort_detection_hist": {
   "all": [
-   2089,
-   624,
-   307,
-   228,
+   2087,
+   626,
+   305,
+   229,
    185,
-   138,
-   125,
-   110,
-   104,
+   139,
+   124,
+   111,
+   103,
    77,
-   93,
+   91,
    71,
-   62,
+   64,
    69,
-   49,
+   50,
    46,
-   44,
-   44,
+   41,
+   46,
    49,
    36,
-   43,
-   33,
-   36,
+   42,
    34,
-   31,
+   34,
+   36,
    30,
-   33,
    29,
-   26,
+   34,
    27,
-   22,
-   21,
+   27,
+   28,
    24,
+   19,
+   25,
    21,
    22,
-   20,
-   10,
-   13,
-   15,
+   21,
+   9,
+   14,
+   14,
+   14,
    15,
    14,
    14,
-   13,
-   13,
-   15,
+   10,
+   17,
    7,
    9,
    10,
-   10,
+   11,
    9,
    9,
    8,
    5,
-   5,
-   8,
    4,
    7,
+   4,
    9,
    8,
-   4,
-   8,
-   4,
-   6,
-   5,
    7,
    6,
+   6,
+   6,
+   6,
+   4,
+   6,
+   6,
+   4,
    3,
-   2,
+   5,
+   5,
    6,
-   4,
-   6,
    2,
    4,
-   2,
+   1,
    4,
-   2,
+   3,
    2,
    1,
    0,
-   2,
-   2,
    1,
+   2,
+   2,
    0,
    0,
    1
   ],
+  "no": [
+   524,
+   158,
+   83,
+   63,
+   55,
+   22,
+   37,
+   24,
+   22,
+   23,
+   19,
+   11,
+   12,
+   14,
+   16,
+   13,
+   7,
+   10,
+   6,
+   6,
+   6,
+   6,
+   10,
+   5,
+   5,
+   6,
+   2,
+   6,
+   5,
+   3,
+   3,
+   3,
+   6,
+   4,
+   3,
+   1,
+   1,
+   2,
+   2,
+   0,
+   3,
+   2,
+   2,
+   2,
+   1,
+   1,
+   1,
+   0,
+   0,
+   1,
+   1,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
   "canonical": [
    374,
    178,
-   120,
-   76,
+   118,
+   78,
    73,
    53,
    49,
@@ -207,157 +294,157 @@
    38,
    35,
    40,
-   29,
-   29,
-   29,
+   27,
+   30,
+   30,
    23,
    20,
-   20,
-   22,
+   19,
+   23,
    25,
    18,
    23,
    14,
-   21,
-   15,
+   19,
+   17,
    16,
    15,
    21,
-   17,
-   13,
+   16,
+   14,
    18,
    12,
    9,
-   15,
-   12,
+   14,
    13,
-   10,
-   7,
-   10,
-   7,
-   11,
-   9,
    12,
-   6,
-   8,
    11,
-   4,
-   5,
-   6,
+   7,
+   10,
+   7,
+   11,
    8,
+   12,
+   7,
+   6,
+   12,
+   4,
+   5,
+   6,
+   9,
    7,
    5,
    6,
    4,
-   4,
-   7,
-   4,
+   3,
    6,
-   6,
+   4,
    8,
-   3,
+   5,
    7,
+   5,
+   5,
+   6,
+   5,
    4,
    5,
-   5,
-   6,
-   6,
-   3,
-   2,
    6,
    4,
+   3,
+   5,
+   5,
    5,
    2,
    3,
+   1,
    2,
-   2,
-   2,
+   3,
    2,
    1,
    0,
-   2,
-   2,
    1,
+   2,
+   2,
    0,
    0,
    1
   ],
-  "no": [
-   525,
-   157,
-   83,
-   64,
-   54,
-   22,
-   37,
-   24,
-   22,
+  "likely": [
+   548,
+   171,
+   69,
+   65,
+   32,
+   50,
    23,
-   20,
-   10,
-   12,
-   15,
-   15,
+   28,
+   28,
+   9,
+   19,
+   14,
    13,
-   9,
+   11,
+   10,
+   7,
+   11,
+   5,
    8,
+   6,
+   6,
    7,
+   4,
+   10,
+   5,
+   3,
+   7,
+   4,
+   5,
    5,
    7,
    6,
-   9,
    5,
-   6,
-   6,
-   2,
-   6,
-   5,
-   2,
    3,
-   5,
+   3,
    4,
+   1,
+   2,
+   3,
+   1,
+   3,
+   0,
+   3,
+   1,
    4,
-   3,
    1,
-   2,
-   1,
-   2,
-   1,
-   2,
-   2,
    2,
    3,
+   2,
+   1,
+   3,
+   1,
+   0,
+   1,
+   1,
    0,
    1,
    1,
    0,
    0,
    1,
-   1,
    0,
    1,
    0,
    0,
    0,
    0,
+   0,
+   0,
+   0,
    1,
    0,
+   1,
    0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
+   2,
    0,
    0,
    0,
@@ -379,9 +466,9 @@
    15,
    9,
    15,
-   11,
-   14,
-   17,
+   10,
+   13,
+   19,
    9,
    14,
    1,
@@ -389,22 +476,22 @@
    4,
    6,
    10,
-   7,
-   7,
    6,
-   2,
+   7,
+   7,
+   1,
    4,
    4,
    5,
-   3,
+   4,
    1,
    2,
-   3,
-   1,
+   2,
+   2,
    1,
    0,
-   2,
-   3,
+   1,
+   4,
    5,
    0,
    0,
@@ -445,93 +532,6 @@
    0,
    0,
    0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0
-  ],
-  "likely": [
-   549,
-   170,
-   69,
-   65,
-   33,
-   49,
-   24,
-   27,
-   29,
-   8,
-   19,
-   15,
-   12,
-   11,
-   10,
-   7,
-   11,
-   6,
-   7,
-   6,
-   6,
-   7,
-   4,
-   10,
-   5,
-   4,
-   7,
-   5,
-   5,
-   4,
-   6,
-   6,
-   5,
-   3,
-   3,
-   4,
-   1,
-   2,
-   4,
-   1,
-   2,
-   0,
-   3,
-   1,
-   4,
-   1,
-   2,
-   3,
-   2,
-   1,
-   3,
-   1,
-   0,
-   1,
-   1,
-   0,
-   1,
-   1,
-   0,
-   0,
-   1,
-   0,
-   1,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   1,
-   0,
-   1,
-   0,
-   2,
    0,
    0,
    0,
@@ -632,11 +632,11 @@
   ]
  },
  "accession_normalization": {
-  "n_reported": 25668,
-  "n_already_canonical": 16659,
-  "n_mapped_to_canonical": 6817,
-  "n_ambiguous_kept": 1,
-  "n_unmapped_kept": 2191,
+  "n_reported": 18871,
+  "n_already_canonical": 16721,
+  "n_mapped_to_canonical": 5,
+  "n_ambiguous_kept": 3,
+  "n_unmapped_kept": 2142,
   "uniprot_release": "2026_04",
   "resolver_version": "5d4f9842d0d36f72f0221f5b7bbfd4964f587c9e"
  },
@@ -725,7 +725,7 @@
    "id": "srivastava-tnbc-cm-2026",
    "name": "Cisplatin-sensitive and -resistant TNBC line, crude membrane DIA",
    "publication": "PXD064232",
-   "first_author": "Srivastava S (lab head; submitter Shashwati)",
+   "first_author": "Srivastava S",
    "year": 2026,
    "journal": "unpublished (repository deposit)",
    "title": "Quantitative Mass Spectrometry-Based Profiling of Cell Surface and Crude Membrane Proteins in Cisplatin-Resistant Triple-Negative Breast Cancer (jPOST JPST003825; no publication)",
@@ -741,7 +741,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 4368,
-   "reference_overlap": 0.09132524605172808,
+   "reference_overlap": 0.09134615384615384,
    "repository": "jPOST / ProteomeXchange",
    "repository_ids": [
     "PXD064232",
@@ -756,7 +756,7 @@
    "id": "srivastava-tnbc-csp-2026",
    "name": "Cisplatin-sensitive and -resistant TNBC line, surface biotinylation DIA",
    "publication": "PXD064232",
-   "first_author": "Srivastava S (lab head; submitter Shashwati)",
+   "first_author": "Srivastava S",
    "year": 2026,
    "journal": "unpublished (repository deposit)",
    "title": "Quantitative Mass Spectrometry-Based Profiling of Cell Surface and Crude Membrane Proteins in Cisplatin-Resistant Triple-Negative Breast Cancer (jPOST JPST003825; no publication)",
@@ -772,7 +772,7 @@
    "status_reason": "per-protein detection can't be recovered from the table",
    "admitted": false,
    "n_proteins": 3830,
-   "reference_overlap": 0.09188201513965022,
+   "reference_overlap": 0.09190600522193211,
    "repository": "jPOST / ProteomeXchange",
    "repository_ids": [
     "PXD064232",
@@ -833,7 +833,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 3020,
-   "reference_overlap": 0.11346344690704598,
+   "reference_overlap": 0.11357615894039735,
    "repository": "none found",
    "repository_ids": [],
    "cell_group": "other_normal"
@@ -858,7 +858,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 4665,
-   "reference_overlap": 0.11096829477292203,
+   "reference_overlap": 0.11103965702036442,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD058999"
@@ -866,7 +866,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 12)",
-   "n_quantified": 4665
+   "n_quantified": 4667
   },
   {
    "id": "glyco-pdx-csc-2026",
@@ -887,7 +887,7 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 834,
+   "n_proteins": 833,
    "reference_overlap": 0.7144549763033176,
    "repository": null,
    "repository_ids": [],
@@ -945,8 +945,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2899,
-   "reference_overlap": 0.10693342531907554,
+   "n_proteins": 2915,
+   "reference_overlap": 0.10668953687821613,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD072355"
@@ -954,7 +954,7 @@
    "cell_group": "other_normal",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 2899
+   "n_quantified": 2915
   },
   {
    "id": "cohenyaron-hela-2026",
@@ -1036,7 +1036,7 @@
    "status_reason": "12% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 3526,
-   "reference_overlap": 0.11738020981003686,
+   "reference_overlap": 0.11741349971639252,
    "repository": "MassIVE / PRIDE",
    "repository_ids": [
     "MSV000102332",
@@ -1067,7 +1067,7 @@
    "status_reason": "8% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 4964,
-   "reference_overlap": 0.07672170761175996,
+   "reference_overlap": 0.07675261885576148,
    "repository": "MassIVE / PRIDE",
    "repository_ids": [
     "MSV000102332",
@@ -1076,7 +1076,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 4964
+   "n_quantified": 4965
   },
   {
    "id": "ho-k562-wgaey-2026",
@@ -1098,7 +1098,7 @@
    "status_reason": "8% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 4963,
-   "reference_overlap": 0.07653575025176233,
+   "reference_overlap": 0.076566592786621,
    "repository": "MassIVE / PRIDE",
    "repository_ids": [
     "MSV000102332",
@@ -1107,7 +1107,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 4963
+   "n_quantified": 4964
   },
   {
    "id": "ho-k562-choley-2026",
@@ -1129,7 +1129,7 @@
    "status_reason": "7% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 5398,
-   "reference_overlap": 0.07353213558066309,
+   "reference_overlap": 0.0735457576880326,
    "repository": "MassIVE / PRIDE",
    "repository_ids": [
     "MSV000102332",
@@ -1160,7 +1160,7 @@
    "status_reason": "7% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 5077,
-   "reference_overlap": 0.07480314960629922,
+   "reference_overlap": 0.07484735079771519,
    "repository": "MassIVE / PRIDE",
    "repository_ids": [
     "MSV000102332",
@@ -1169,7 +1169,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 5077
+   "n_quantified": 5079
   },
   {
    "id": "ho-k562-cscey-2026",
@@ -1191,7 +1191,7 @@
    "status_reason": "7% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 5620,
-   "reference_overlap": 0.0711490572749911,
+   "reference_overlap": 0.0711743772241993,
    "repository": "MassIVE / PRIDE",
    "repository_ids": [
     "MSV000102332",
@@ -1200,7 +1200,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 5620
+   "n_quantified": 5621
   },
   {
    "id": "ho-k562-snhs-2026",
@@ -1222,7 +1222,7 @@
    "status_reason": "9% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 4393,
-   "reference_overlap": 0.08532423208191127,
+   "reference_overlap": 0.08536307762349192,
    "repository": "MassIVE / PRIDE",
    "repository_ids": [
     "MSV000102332",
@@ -1231,7 +1231,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 4393
+   "n_quantified": 4394
   },
   {
    "id": "ho-k562-wgahrp-2026",
@@ -1253,7 +1253,7 @@
    "status_reason": "8% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 5498,
-   "reference_overlap": 0.07634975459007454,
+   "reference_overlap": 0.07639141506002183,
    "repository": "MassIVE / PRIDE",
    "repository_ids": [
     "MSV000102332",
@@ -1262,7 +1262,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 5498
+   "n_quantified": 5500
   },
   {
    "id": "bruno-mcf10a-yipf5-2026",
@@ -1283,7 +1283,7 @@
    "status": "below_screen",
    "status_reason": "15% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 4151,
+   "n_proteins": 4152,
    "reference_overlap": 0.15149325626204238,
    "repository": "MassIVE",
    "repository_ids": [
@@ -1293,7 +1293,7 @@
    "cell_group": "other_normal",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 4156
+   "n_quantified": 4159
   },
   {
    "id": "stehn-mpnst-2026",
@@ -1314,14 +1314,14 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 2667,
-   "reference_overlap": 0.2785901762279715,
+   "n_proteins": 2674,
+   "reference_overlap": 0.2782348541510845,
    "repository": "none (raw data on request)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 7)",
-   "n_quantified": 2667
+   "n_quantified": 2674
   },
   {
    "id": "cattaneo-crc-2026",
@@ -1342,8 +1342,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 8251,
-   "reference_overlap": 0.06203271028037383,
+   "n_proteins": 8287,
+   "reference_overlap": 0.082780258235791,
    "repository": "PRIDE (raw only)",
    "repository_ids": [
     "PXD066343"
@@ -1351,7 +1351,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 12)",
-   "n_quantified": 8253
+   "n_quantified": 8600
   },
   {
    "id": "mooney-os-2026",
@@ -1403,7 +1403,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 5712,
-   "reference_overlap": 0.08629441624365482,
+   "reference_overlap": 0.08630952380952381,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD077611"
@@ -1411,7 +1411,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "PSMs",
    "quant_note": "as reported",
-   "n_quantified": 5712
+   "n_quantified": 5714
   },
   {
    "id": "laurent-gsc-2026",
@@ -1432,8 +1432,8 @@
    "status": "below_screen",
    "status_reason": "15% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 4707,
-   "reference_overlap": 0.15211387295517315,
+   "n_proteins": 4708,
+   "reference_overlap": 0.15250637213254037,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD075844"
@@ -1441,7 +1441,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 12)",
-   "n_quantified": 4709
+   "n_quantified": 4712
   },
   {
    "id": "kuffa-crcpolar-2026",
@@ -1460,16 +1460,16 @@
    "intact_cell_verified": true,
    "sample": "CRC cell lines (polarized)",
    "status": "below_screen",
-   "status_reason": "16% Canonical or Likely proteins, under 20%",
+   "status_reason": "17% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 2974,
-   "reference_overlap": 0.16275998679432155,
+   "reference_overlap": 0.17484868863483524,
    "repository": "none found (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 48)",
-   "n_quantified": 2974
+   "n_quantified": 3028
   },
   {
    "id": "sucam-jhh4-carboxyl-2026",
@@ -1608,7 +1608,7 @@
    "status_reason": "conditions are pooled in one list, with no separable baseline",
    "admitted": false,
    "n_proteins": 3526,
-   "reference_overlap": 0.16165626772546796,
+   "reference_overlap": 0.16222348269994327,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD069080"
@@ -1638,7 +1638,7 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 548,
-   "reference_overlap": 0.801094890510949,
+   "reference_overlap": 0.8029197080291971,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD053647",
@@ -1668,8 +1668,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 4848,
-   "reference_overlap": 0.0914262494920764,
+   "n_proteins": 4858,
+   "reference_overlap": 0.1113627006998765,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD071351"
@@ -1677,7 +1677,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 12)",
-   "n_quantified": 4848
+   "n_quantified": 4933
   },
   {
    "id": "choi-u2os-memper-2026",
@@ -1699,7 +1699,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 6579,
-   "reference_overlap": 0.10015197568389057,
+   "reference_overlap": 0.10031919744642043,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD068879"
@@ -1707,7 +1707,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 6)",
-   "n_quantified": 6579
+   "n_quantified": 6581
   },
   {
    "id": "mazzone-rpe1-2026",
@@ -1728,14 +1728,14 @@
    "status": "held",
    "status_reason": "the no-label control recovers the same signal",
    "admitted": false,
-   "n_proteins": 2001,
-   "reference_overlap": 0.22808764940239043,
+   "n_proteins": 2005,
+   "reference_overlap": 0.2314214463840399,
    "repository": "none found (no ProteomeXchange identifier in the preprint)",
    "repository_ids": [],
    "cell_group": "other_normal",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 4)",
-   "n_quantified": 2005
+   "n_quantified": 2015
   },
   {
    "id": "nash-i3neuron-2026",
@@ -1757,7 +1757,7 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 2094,
-   "reference_overlap": 0.31679389312977096,
+   "reference_overlap": 0.31757402101241644,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD076394"
@@ -1765,7 +1765,7 @@
    "cell_group": "neural",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 4)",
-   "n_quantified": 2094
+   "n_quantified": 2096
   },
   {
    "id": "kasap-myeloma-csc-2025",
@@ -1787,7 +1787,7 @@
    "status_reason": "11% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 4886,
-   "reference_overlap": 0.11377122979332924,
+   "reference_overlap": 0.11379451494064674,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD048492"
@@ -1817,7 +1817,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 7616,
-   "reference_overlap": 0.10431701876394174,
+   "reference_overlap": 0.10438550420168068,
    "repository": "MassIVE / PRIDE",
    "repository_ids": [
     "MSV000096107",
@@ -1826,7 +1826,7 @@
    "cell_group": "other_normal",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 6)",
-   "n_quantified": 7616
+   "n_quantified": 7621
   },
   {
    "id": "alvarez-bmec-2025",
@@ -1848,7 +1848,7 @@
    "status_reason": "10% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 4250,
-   "reference_overlap": 0.10279934133145142,
+   "reference_overlap": 0.1028235294117647,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD059899"
@@ -1886,7 +1886,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 1376
+   "n_quantified": 1378
   },
   {
    "id": "martins-crc3d-2025",
@@ -1907,8 +1907,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2800,
-   "reference_overlap": 0.07872340425531915,
+   "n_proteins": 2810,
+   "reference_overlap": 0.09572953736654805,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD059013"
@@ -1916,7 +1916,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 12)",
-   "n_quantified": 2811
+   "n_quantified": 2843
   },
   {
    "id": "furan-biotin",
@@ -1996,7 +1996,7 @@
    "status_reason": "8% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 4163,
-   "reference_overlap": 0.08093179634966378,
+   "reference_overlap": 0.080951237088638,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD052910"
@@ -2026,7 +2026,7 @@
    "status_reason": "10% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 4653,
-   "reference_overlap": 0.10010741138560687,
+   "reference_overlap": 0.10015044057597249,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD058992"
@@ -2034,7 +2034,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 24)",
-   "n_quantified": 4653
+   "n_quantified": 4654
   },
   {
    "id": "laccid-2025",
@@ -2055,7 +2055,7 @@
    "status": "below_screen",
    "status_reason": "10% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 5117,
+   "n_proteins": 5116,
    "reference_overlap": 0.09824902723735408,
    "repository": "PRIDE",
    "repository_ids": [
@@ -2065,7 +2065,7 @@
    "cell_group": "immune",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 5117
+   "n_quantified": 5139
   },
   {
    "id": "holmes-2025",
@@ -2144,7 +2144,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 3485,
-   "reference_overlap": 0.12019506597819851,
+   "reference_overlap": 0.12022955523672883,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD054019"
@@ -2173,8 +2173,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 3715,
-   "reference_overlap": 0.08011789924973205,
+   "n_proteins": 3730,
+   "reference_overlap": 0.10428954423592493,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD054008"
@@ -2182,7 +2182,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 3716
+   "n_quantified": 3747
   },
   {
    "id": "breyer-2025",
@@ -2282,8 +2282,8 @@
    "status": "held",
    "status_reason": "the sample-to-condition map is unpublished",
    "admitted": false,
-   "n_proteins": 2714,
-   "reference_overlap": 0.2656364974245769,
+   "n_proteins": 2716,
+   "reference_overlap": 0.26620029455081,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD064632"
@@ -2291,7 +2291,7 @@
    "cell_group": "neural",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 30)",
-   "n_quantified": 2714
+   "n_quantified": 2721
   },
   {
    "id": "cd38-myeloma-2024",
@@ -2342,8 +2342,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 4107,
-   "reference_overlap": 0.1654501216545012,
+   "n_proteins": 4109,
+   "reference_overlap": 0.1657337551715746,
    "repository": "MassIVE",
    "repository_ids": [
     "MSV000089171"
@@ -2351,7 +2351,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 12)",
-   "n_quantified": 4117
+   "n_quantified": 4125
   },
   {
    "id": "mooney-ewing-2024",
@@ -2373,7 +2373,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 2504,
-   "reference_overlap": 0.1968063872255489,
+   "reference_overlap": 0.1968849840255591,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD043375"
@@ -2433,7 +2433,7 @@
    "status_reason": "per-protein detection can't be recovered from the table",
    "admitted": false,
    "n_proteins": 1292,
-   "reference_overlap": 0.04058192955589587,
+   "reference_overlap": 0.06191950464396285,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD046280"
@@ -2441,7 +2441,7 @@
    "cell_group": "other_normal",
    "quant_unit": "unique peptides",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 1292
+   "n_quantified": 1306
   },
   {
    "id": "hunter-hfff-pmp-2024",
@@ -2463,7 +2463,7 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 1535,
-   "reference_overlap": 0.36807817589576547,
+   "reference_overlap": 0.36872964169381106,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD050878"
@@ -2492,14 +2492,14 @@
    "status": "below_screen",
    "status_reason": "12% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 2584,
+   "n_proteins": 2583,
    "reference_overlap": 0.11856652687762105,
    "repository": null,
    "repository_ids": [],
    "cell_group": "immune",
    "quant_unit": "log2 TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 2608
+   "n_quantified": 2622
   },
   {
    "id": "hypoxic-gbm-2024",
@@ -2520,7 +2520,7 @@
    "status": "below_screen",
    "status_reason": "15% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 4426,
+   "n_proteins": 4424,
    "reference_overlap": 0.1528216704288939,
    "repository": "PRIDE",
    "repository_ids": [
@@ -2547,7 +2547,7 @@
    "status": "held",
    "status_reason": "values are imputed, so detection can't be read per protein",
    "admitted": false,
-   "n_proteins": 3054,
+   "n_proteins": 3053,
    "reference_overlap": 0.15796344647519583,
    "repository": "PRIDE",
    "repository_ids": [
@@ -2575,7 +2575,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 6904,
-   "reference_overlap": 0.13621887666473653,
+   "reference_overlap": 0.13644264194669756,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD047474"
@@ -2583,7 +2583,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 56)",
-   "n_quantified": 6911
+   "n_quantified": 6914
   },
   {
    "id": "herhaus-8988t-2024",
@@ -2720,7 +2720,7 @@
    "status_reason": "8% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 2902,
-   "reference_overlap": 0.08241758241758242,
+   "reference_overlap": 0.08442453480358374,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD041387"
@@ -2728,7 +2728,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 5)",
-   "n_quantified": 2903
+   "n_quantified": 2912
   },
   {
    "id": "tuomivaara-u2os-csc-2024",
@@ -2750,7 +2750,7 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 1161,
-   "reference_overlap": 0.27639484978540774,
+   "reference_overlap": 0.2842377260981912,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD041387"
@@ -2758,7 +2758,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 5)",
-   "n_quantified": 1161
+   "n_quantified": 1165
   },
   {
    "id": "yin-u937-pm-itraq-2024",
@@ -2779,7 +2779,7 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2974,
+   "n_proteins": 2975,
    "reference_overlap": 0.1492436974789916,
    "repository": "iProX",
    "repository_ids": [
@@ -2917,7 +2917,7 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 1231,
+   "n_proteins": 1230,
    "reference_overlap": 0.239642567018684,
    "repository": "PRIDE",
    "repository_ids": [
@@ -2947,14 +2947,14 @@
    "status": "held",
    "status_reason": "values are imputed, so detection can't be read per protein",
    "admitted": false,
-   "n_proteins": 2952,
-   "reference_overlap": 0.32750504371217215,
+   "n_proteins": 2956,
+   "reference_overlap": 0.34100135317997293,
    "repository": "none (surface data not deposited)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "peptides",
    "quant_note": "as reported",
-   "n_quantified": 2966
+   "n_quantified": 2991
   },
   {
    "id": "oates-macrophage-2023",
@@ -2973,10 +2973,10 @@
    "intact_cell_verified": true,
    "sample": "Primary cells (blood monocyte-derived macrophages)",
    "status": "below_screen",
-   "status_reason": "10% Canonical or Likely proteins, under 20%",
+   "status_reason": "12% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 1378,
-   "reference_overlap": 0.1020260492040521,
+   "n_proteins": 1384,
+   "reference_overlap": 0.1199421965317919,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD032823",
@@ -2986,7 +2986,7 @@
    "cell_group": "immune",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 1378
+   "n_quantified": 1388
   },
   {
    "id": "jiang-hela-mol-fusion-2023",
@@ -3008,7 +3008,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 9701,
-   "reference_overlap": 0.0946154638113868,
+   "reference_overlap": 0.09473250180393773,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD044945"
@@ -3034,8 +3034,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2130,
-   "reference_overlap": 0.12435008665511266,
+   "n_proteins": 2133,
+   "reference_overlap": 0.17205813408345053,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD039990"
@@ -3043,7 +3043,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 9)",
-   "n_quantified": 2130
+   "n_quantified": 2312
   },
   {
    "id": "li-hepg2-pecsl-insulin-2023",
@@ -3065,7 +3065,7 @@
    "status_reason": "12% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 2787,
-   "reference_overlap": 0.11621233859397417,
+   "reference_overlap": 0.116254036598493,
    "repository": "jPOST / ProteomeXchange",
    "repository_ids": [
     "PXD036376",
@@ -3096,7 +3096,7 @@
    "status_reason": "13% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 5413,
-   "reference_overlap": 0.13114148503878834,
+   "reference_overlap": 0.131165712174395,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD035404",
@@ -3124,8 +3124,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 3701,
-   "reference_overlap": 0.07943798973250472,
+   "n_proteins": 3721,
+   "reference_overlap": 0.07954850846546627,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD037378"
@@ -3133,7 +3133,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 3701
+   "n_quantified": 3721
   },
   {
    "id": "wang-prostate-primary-2023",
@@ -3155,7 +3155,7 @@
    "status_reason": "13% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 3989,
-   "reference_overlap": 0.12756892230576442,
+   "reference_overlap": 0.127600902481825,
    "repository": "jPOST",
    "repository_ids": [
     "PXD031476",
@@ -3185,8 +3185,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 551,
-   "reference_overlap": 0.4316546762589928,
+   "n_proteins": 555,
+   "reference_overlap": 0.47927927927927927,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD040703"
@@ -3194,7 +3194,7 @@
    "cell_group": "immune",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 6)",
-   "n_quantified": 551
+   "n_quantified": 560
   },
   {
    "id": "vit-ppgl-hptc-2023",
@@ -3245,8 +3245,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2890,
-   "reference_overlap": 0.1694915254237288,
+   "n_proteins": 2892,
+   "reference_overlap": 0.169432918395574,
    "repository": "iProX",
    "repository_ids": [
     "PXD036208",
@@ -3274,7 +3274,7 @@
    "status_reason": "8% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 2894,
-   "reference_overlap": 0.07734806629834254,
+   "reference_overlap": 0.07740152038700761,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD039517",
@@ -3304,14 +3304,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 6612,
+   "n_proteins": 6610,
    "reference_overlap": 0.11608222490931076,
    "repository": null,
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 48)",
-   "n_quantified": 6613
+   "n_quantified": 6615
   },
   {
    "id": "harant-sma-srm-2023",
@@ -3333,7 +3333,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 3727,
-   "reference_overlap": 0.10501066098081023,
+   "reference_overlap": 0.10651998926750737,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD031828"
@@ -3341,7 +3341,7 @@
    "cell_group": "multi",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 9)",
-   "n_quantified": 3727
+   "n_quantified": 3751
   },
   {
    "id": "vilen-apex-2022",
@@ -3416,7 +3416,7 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 1409,
+   "n_proteins": 1408,
    "reference_overlap": 0.30092264017033354,
    "repository": "PRIDE",
    "repository_ids": [
@@ -3443,8 +3443,8 @@
    "status": "below_screen",
    "status_reason": "15% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 4929,
-   "reference_overlap": 0.14721941354903945,
+   "n_proteins": 4930,
+   "reference_overlap": 0.14766734279918864,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD025000"
@@ -3452,7 +3452,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 4929
+   "n_quantified": 4945
   },
   {
    "id": "capdeville-daoy-2022",
@@ -3473,8 +3473,8 @@
    "status": "below_screen",
    "status_reason": "10% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 4308,
-   "reference_overlap": 0.096961261888193,
+   "n_proteins": 4310,
+   "reference_overlap": 0.09698375870069606,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD030597"
@@ -3482,7 +3482,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 4)",
-   "n_quantified": 4313
+   "n_quantified": 4319
   },
   {
    "id": "sheikh-hap1-seel-2022",
@@ -3504,7 +3504,7 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 227,
-   "reference_overlap": 0.2794759825327511,
+   "reference_overlap": 0.3788546255506608,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD024251"
@@ -3512,7 +3512,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 227
+   "n_quantified": 229
   },
   {
    "id": "depierreux-hfff-pmp-2022",
@@ -3533,7 +3533,7 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 2614,
+   "n_proteins": 2615,
    "reference_overlap": 0.2711281070745698,
    "repository": "PRIDE",
    "repository_ids": [
@@ -3542,7 +3542,7 @@
    "cell_group": "other_normal",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 5)",
-   "n_quantified": 2621
+   "n_quantified": 2623
   },
   {
    "id": "lango-hl60-2022",
@@ -3590,7 +3590,7 @@
    "status": "provisional",
    "status_reason": "within 2 points of the 20% screen (19.6%)",
    "admitted": true,
-   "n_proteins": 1791,
+   "n_proteins": 1792,
    "reference_overlap": 0.19587053571428573,
    "repository": "jPOST",
    "repository_ids": [
@@ -3600,7 +3600,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 1792
+   "n_quantified": 1793
   },
   {
    "id": "mori-liver-pm-2022",
@@ -3621,8 +3621,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 1227,
-   "reference_overlap": 0.1491442542787286,
+   "n_proteins": 1228,
+   "reference_overlap": 0.1490228013029316,
    "repository": "jPOST / ProteomeXchange",
    "repository_ids": [
     "PXD034402",
@@ -3707,7 +3707,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 1765,
-   "reference_overlap": 0.19109357384441938,
+   "reference_overlap": 0.19320113314447593,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD028434"
@@ -3715,7 +3715,7 @@
    "cell_group": "immune",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 10)",
-   "n_quantified": 1765
+   "n_quantified": 1773
   },
   {
    "id": "kirkemo-2022",
@@ -3766,7 +3766,7 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 5032,
+   "n_proteins": 5027,
    "reference_overlap": 0.20310047095761383,
    "repository": "PRIDE",
    "repository_ids": [
@@ -3775,7 +3775,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 20)",
-   "n_quantified": 5066
+   "n_quantified": 5094
   },
   {
    "id": "gangras-shsy5y-2022",
@@ -3803,7 +3803,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "log2 peptide AUC",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 885
+   "n_quantified": 886
   },
   {
    "id": "lazar-skbr3shaving-2022",
@@ -3825,7 +3825,7 @@
    "status_reason": "conditions are pooled in one list, with no separable baseline",
    "admitted": false,
    "n_proteins": 1962,
-   "reference_overlap": 0.06775343861436577,
+   "reference_overlap": 0.06778797145769623,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD028978"
@@ -3939,7 +3939,7 @@
    "status": "provisional",
    "status_reason": "within 2 points of the 20% screen (19.7%)",
    "admitted": true,
-   "n_proteins": 3785,
+   "n_proteins": 3783,
    "reference_overlap": 0.19738562091503267,
    "repository": null,
    "repository_ids": [],
@@ -4026,7 +4026,7 @@
    "status_reason": "17% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 1631,
-   "reference_overlap": 0.17463235294117646,
+   "reference_overlap": 0.1747394236664623,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD027110"
@@ -4083,11 +4083,11 @@
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
    "sample": "Cervical adenocarcinoma cell line",
-   "status": "provisional",
-   "status_reason": "within 2 points of the 20% screen (19.5%)",
+   "status": "core",
+   "status_reason": null,
    "admitted": true,
-   "n_proteins": 2296,
-   "reference_overlap": 0.19452757588713127,
+   "n_proteins": 2310,
+   "reference_overlap": 0.22987012987012986,
    "repository": "PRIDE (cited by the paper; not public as of 2026-11-06)",
    "repository_ids": [
     "PXD014925"
@@ -4095,7 +4095,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 6)",
-   "n_quantified": 2303
+   "n_quantified": 2359
   },
   {
    "id": "soday-2021",
@@ -4116,7 +4116,7 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 1231,
+   "n_proteins": 1229,
    "reference_overlap": 0.3504,
    "repository": "PRIDE",
    "repository_ids": [
@@ -4146,14 +4146,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 473,
-   "reference_overlap": 0.3705263157894737,
+   "n_proteins": 477,
+   "reference_overlap": 0.41509433962264153,
    "repository": "none (supporting information only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 473
+   "n_quantified": 479
   },
   {
    "id": "sun-mcf7-xlink-gao-2021",
@@ -4174,8 +4174,8 @@
    "status": "held",
    "status_reason": "the sample-to-condition map is unpublished",
    "admitted": false,
-   "n_proteins": 3221,
-   "reference_overlap": 0.2330246913580247,
+   "n_proteins": 3223,
+   "reference_overlap": 0.23425380080670183,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer"
@@ -4224,8 +4224,8 @@
    "status": "held",
    "status_reason": "the sample-to-condition map is unpublished",
    "admitted": false,
-   "n_proteins": 1397,
-   "reference_overlap": 0.14459556191839656,
+   "n_proteins": 1398,
+   "reference_overlap": 0.14449213161659513,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD018244"
@@ -4233,7 +4233,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 1405
+   "n_quantified": 1407
   },
   {
    "id": "lu-molm14-2021",
@@ -4255,7 +4255,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 5973,
-   "reference_overlap": 0.10659303882195448,
+   "reference_overlap": 0.10664657625983592,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD022721"
@@ -4263,7 +4263,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 24)",
-   "n_quantified": 5991
+   "n_quantified": 5992
   },
   {
    "id": "myc-wells-2021",
@@ -4284,7 +4284,7 @@
    "status": "held",
    "status_reason": "conditions are pooled in one list, with no separable baseline",
    "admitted": false,
-   "n_proteins": 1230,
+   "n_proteins": 1229,
    "reference_overlap": 0.48109412711182625,
    "repository": "MassIVE",
    "repository_ids": [
@@ -4312,14 +4312,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2336,
-   "reference_overlap": 0.11702127659574468,
+   "n_proteins": 2341,
+   "reference_overlap": 0.11832550192225545,
    "repository": "none (supplementary table only; raw data on request per Data Availability)",
    "repository_ids": [],
    "cell_group": "stem_stromal",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 4)",
-   "n_quantified": 2343
+   "n_quantified": 2365
   },
   {
    "id": "kaczmarczyk-h23-2021",
@@ -4340,14 +4340,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 4762,
+   "n_proteins": 4765,
    "reference_overlap": 0.08247639034627492,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 4768
+   "n_quantified": 4776
   },
   {
    "id": "li-npc-2021",
@@ -4366,16 +4366,16 @@
    "intact_cell_verified": true,
    "sample": "NPC cell lines",
    "status": "below_screen",
-   "status_reason": "9% Canonical or Likely proteins, under 20%",
+   "status_reason": "11% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 2449,
-   "reference_overlap": 0.09061357171881348,
+   "n_proteins": 2473,
+   "reference_overlap": 0.10756166599272139,
    "repository": "none found (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "unique peptides",
    "quant_note": "mean over the samples where it was detected (of 7)",
-   "n_quantified": 2449
+   "n_quantified": 2484
   },
   {
    "id": "ehlers-ampd2-2021",
@@ -4396,8 +4396,8 @@
    "status": "held",
    "status_reason": "per-protein detection can't be recovered from the table",
    "admitted": false,
-   "n_proteins": 3767,
-   "reference_overlap": 0.06705385427666315,
+   "n_proteins": 3806,
+   "reference_overlap": 0.07750919600630583,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD022350"
@@ -4405,7 +4405,7 @@
    "cell_group": "other_normal",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 3770
+   "n_quantified": 3828
   },
   {
    "id": "zurli-bcell-pmp-2020",
@@ -4426,8 +4426,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 1201,
-   "reference_overlap": 0.492089925062448,
+   "n_proteins": 1203,
+   "reference_overlap": 0.4912718204488778,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD013840"
@@ -4435,7 +4435,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 10)",
-   "n_quantified": 1216
+   "n_quantified": 1218
   },
   {
    "id": "beguin-boec-2020",
@@ -4456,8 +4456,8 @@
    "status": "held",
    "status_reason": "the sample-to-condition map is unpublished",
    "admitted": false,
-   "n_proteins": 283,
-   "reference_overlap": 0.38741721854304634,
+   "n_proteins": 286,
+   "reference_overlap": 0.5244755244755245,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD014526"
@@ -4564,8 +4564,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 1254,
-   "reference_overlap": 0.5031897926634769,
+   "n_proteins": 1255,
+   "reference_overlap": 0.502788844621514,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD021351"
@@ -4573,7 +4573,7 @@
    "cell_group": "other_normal",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "one sample",
-   "n_quantified": 1258
+   "n_quantified": 1259
   },
   {
    "id": "mahameed-hepg2-2020",
@@ -4622,10 +4622,10 @@
    "intact_cell_verified": true,
    "sample": "NSCLC cell lines",
    "status": "below_screen",
-   "status_reason": "6% Canonical or Likely proteins, under 20%",
+   "status_reason": "8% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 2743,
-   "reference_overlap": 0.06293197526373226,
+   "n_proteins": 2786,
+   "reference_overlap": 0.08183776022972003,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD016912"
@@ -4633,7 +4633,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 6)",
-   "n_quantified": 2750
+   "n_quantified": 2800
   },
   {
    "id": "ravenhill-2020",
@@ -4654,7 +4654,7 @@
    "status": "provisional",
    "status_reason": "author pre-filtered to membrane- or surface-annotated proteins",
    "admitted": true,
-   "n_proteins": 513,
+   "n_proteins": 511,
    "reference_overlap": 0.6608527131782945,
    "repository": "PRIDE",
    "repository_ids": [
@@ -4681,7 +4681,7 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 677,
+   "n_proteins": 676,
    "reference_overlap": 0.5172413793103449,
    "repository": "MassIVE",
    "repository_ids": [
@@ -4708,7 +4708,7 @@
    "status": "below_screen",
    "status_reason": "16% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 5869,
+   "n_proteins": 5865,
    "reference_overlap": 0.1555366269165247,
    "repository": "PRIDE",
    "repository_ids": [
@@ -4766,8 +4766,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 1083,
-   "reference_overlap": 0.29491833030852993,
+   "n_proteins": 1096,
+   "reference_overlap": 0.39233576642335766,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD011490"
@@ -4775,7 +4775,7 @@
    "cell_group": "immune",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 6)",
-   "n_quantified": 1090
+   "n_quantified": 1121
   },
   {
    "id": "beguin-boec-inflam-2019",
@@ -4796,8 +4796,8 @@
    "status": "held",
    "status_reason": "the sample-to-condition map is unpublished",
    "admitted": false,
-   "n_proteins": 483,
-   "reference_overlap": 0.27720739219712526,
+   "n_proteins": 485,
+   "reference_overlap": 0.3752577319587629,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD009174"
@@ -4805,7 +4805,7 @@
    "cell_group": "other_normal",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 485
+   "n_quantified": 491
   },
   {
    "id": "matta-2019",
@@ -4853,14 +4853,14 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 1030,
-   "reference_overlap": 0.6135922330097088,
+   "n_proteins": 1031,
+   "reference_overlap": 0.6139670223084384,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "multi",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 16)",
-   "n_quantified": 1044
+   "n_quantified": 1046
   },
   {
    "id": "li-hela-biotin-2019",
@@ -4882,7 +4882,7 @@
    "status_reason": "15% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 2919,
-   "reference_overlap": 0.1533721328312222,
+   "reference_overlap": 0.15347721822541965,
    "repository": "jPOST / ProteomeXchange",
    "repository_ids": [
     "PXD039794",
@@ -4910,7 +4910,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 1717,
-   "reference_overlap": 0.10884749708963912,
+   "reference_overlap": 0.10891089108910891,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD012647"
@@ -4964,8 +4964,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 923,
-   "reference_overlap": 0.16251354279523295,
+   "n_proteins": 925,
+   "reference_overlap": 0.1643243243243243,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD010226"
@@ -4973,7 +4973,7 @@
    "cell_group": "other_normal",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 6)",
-   "n_quantified": 926
+   "n_quantified": 929
   },
   {
    "id": "higginbotham-adbrain-2019",
@@ -4995,7 +4995,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 1739,
-   "reference_overlap": 0.13283496262219666,
+   "reference_overlap": 0.13341000575043127,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD014376"
@@ -5033,7 +5033,7 @@
    "cell_group": "other_normal",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 18)",
-   "n_quantified": 1247
+   "n_quantified": 1249
   },
   {
    "id": "wang-bcell-pmp-2019",
@@ -5054,8 +5054,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 658,
-   "reference_overlap": 0.43288084464555054,
+   "n_proteins": 661,
+   "reference_overlap": 0.4341906202723147,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD013034"
@@ -5063,7 +5063,7 @@
    "cell_group": "immune",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "one sample",
-   "n_quantified": 681
+   "n_quantified": 691
   },
   {
    "id": "autocsc-2019",
@@ -5112,7 +5112,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 2356,
-   "reference_overlap": 0.14000848536274926,
+   "reference_overlap": 0.14049235993208828,
    "repository": "jPOST",
    "repository_ids": [
     "JPST000531",
@@ -5121,7 +5121,7 @@
    "cell_group": "other_normal",
    "quant_unit": "peak area",
    "quant_note": "mean over the samples where it was detected (of 6)",
-   "n_quantified": 2356
+   "n_quantified": 2357
   },
   {
    "id": "schmidt-aml-2018",
@@ -5142,8 +5142,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 965,
-   "reference_overlap": 0.0827300930713547,
+   "n_proteins": 966,
+   "reference_overlap": 0.08281573498964803,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD008378"
@@ -5151,7 +5151,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 10)",
-   "n_quantified": 988
+   "n_quantified": 994
   },
   {
    "id": "egan-rbc-pmp-2018",
@@ -5172,8 +5172,8 @@
    "status": "held",
    "status_reason": "the sample-to-condition map is unpublished",
    "admitted": false,
-   "n_proteins": 682,
-   "reference_overlap": 0.44379562043795623,
+   "n_proteins": 684,
+   "reference_overlap": 0.44590643274853803,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD008752"
@@ -5199,14 +5199,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 5720,
-   "reference_overlap": 0.1312937062937063,
+   "n_proteins": 5746,
+   "reference_overlap": 0.13104768534632788,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 5)",
-   "n_quantified": 5720
+   "n_quantified": 5746
   },
   {
    "id": "furniss-hela-pmp-2018",
@@ -5227,8 +5227,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 956,
-   "reference_overlap": 0.3068893528183716,
+   "n_proteins": 959,
+   "reference_overlap": 0.3680917622523462,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD010361"
@@ -5236,7 +5236,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "peptides",
    "quant_note": "as reported",
-   "n_quantified": 956
+   "n_quantified": 961
   },
   {
    "id": "liu-hela-pda-2018",
@@ -5257,8 +5257,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 1793,
-   "reference_overlap": 0.07027328499721137,
+   "n_proteins": 1795,
+   "reference_overlap": 0.0701949860724234,
    "repository": "none (supplementary table only)",
    "repository_ids": [],
    "cell_group": "solid_cancer"
@@ -5282,8 +5282,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 7791,
-   "reference_overlap": 0.13263211903540276,
+   "n_proteins": 7796,
+   "reference_overlap": 0.1327603899435608,
    "repository": "jPOST",
    "repository_ids": [
     "JPST000421",
@@ -5292,7 +5292,7 @@
    "cell_group": "stem_stromal",
    "quant_unit": "PSMs",
    "quant_note": "as reported",
-   "n_quantified": 7810
+   "n_quantified": 7824
   },
   {
    "id": "murphy-mdamb468-pmp-2018",
@@ -5313,8 +5313,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 1312,
-   "reference_overlap": 0.4143396226415094,
+   "n_proteins": 1314,
+   "reference_overlap": 0.4178082191780822,
    "repository": "PRIDE; Mendeley Data",
    "repository_ids": [
     "PXD007791",
@@ -5323,7 +5323,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 1316
+   "n_quantified": 1333
   },
   {
    "id": "perna-2017",
@@ -5369,16 +5369,16 @@
    "intact_cell_verified": true,
    "sample": "Glioblastoma cell lines, cancer stem cells and neural stem cells",
    "status": "below_screen",
-   "status_reason": "14% Canonical or Likely proteins, under 20%",
+   "status_reason": "16% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 1178,
-   "reference_overlap": 0.14434643143544507,
+   "reference_overlap": 0.16044142614601017,
    "repository": "GPM (thegpm.org model IDs; no PRIDE/ProteomeXchange deposit)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 12)",
-   "n_quantified": 1178
+   "n_quantified": 1247
   },
   {
    "id": "fielding-hfff-us12-2017",
@@ -5399,8 +5399,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 2940,
-   "reference_overlap": 0.26657599455967357,
+   "n_proteins": 2948,
+   "reference_overlap": 0.2662822252374491,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD005883"
@@ -5408,7 +5408,7 @@
    "cell_group": "other_normal",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 2945
+   "n_quantified": 2956
   },
   {
    "id": "tharkeshwar-hela-pm-2017",
@@ -5429,8 +5429,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2359,
-   "reference_overlap": 0.1409822184589331,
+   "n_proteins": 2360,
+   "reference_overlap": 0.14110169491525423,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD004273",
@@ -5439,7 +5439,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 2365
+   "n_quantified": 2370
   },
   {
    "id": "hepatic-endoderm-2017",
@@ -5516,13 +5516,13 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 360,
-   "reference_overlap": 0.2585034013605442,
+   "reference_overlap": 0.38055555555555554,
    "repository": "none (spectra on a Protein Prospector server; no ProteomeXchange deposit)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 363
+   "n_quantified": 445
   },
   {
    "id": "kalxdorf-2017",
@@ -5543,7 +5543,7 @@
    "status": "held",
    "status_reason": "conditions are pooled in one list, with no separable baseline",
    "admitted": false,
-   "n_proteins": 1389,
+   "n_proteins": 1388,
    "reference_overlap": 0.7223021582733813,
    "repository": null,
    "repository_ids": [],
@@ -5618,7 +5618,7 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 5263,
+   "n_proteins": 5265,
    "reference_overlap": 0.11358024691358025,
    "repository": "PRIDE",
    "repository_ids": [
@@ -5627,7 +5627,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 14)",
-   "n_quantified": 5276
+   "n_quantified": 5281
   },
   {
    "id": "glisovic-molm14-biotin-2017",
@@ -5678,8 +5678,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 998,
-   "reference_overlap": 0.3016983016983017,
+   "n_proteins": 1000,
+   "reference_overlap": 0.304,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD006317"
@@ -5687,7 +5687,7 @@
    "cell_group": "blood_cancer",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 1001
+   "n_quantified": 1005
   },
   {
    "id": "kim-wi38-mempn-2017",
@@ -5715,7 +5715,7 @@
    "cell_group": "other_normal",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 1107
+   "n_quantified": 1108
   },
   {
    "id": "kim-wi38-surface-2017",
@@ -5743,7 +5743,7 @@
    "cell_group": "other_normal",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 1282
+   "n_quantified": 1283
   },
   {
    "id": "niehage-dpsc-2016",
@@ -5765,13 +5765,13 @@
    "status_reason": "per-protein detection can't be recovered from the table",
    "admitted": false,
    "n_proteins": 3326,
-   "reference_overlap": 0.16862037871956717,
+   "reference_overlap": 0.16897173782321107,
    "repository": "none found",
    "repository_ids": [],
    "cell_group": "stem_stromal",
    "quant_unit": "unique peptides",
    "quant_note": "mean over the samples where it was detected (of 6)",
-   "n_quantified": 3339
+   "n_quantified": 3344
   },
   {
    "id": "chhuon-hela-raft-2016",
@@ -5792,14 +5792,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 330,
-   "reference_overlap": 0.23939393939393938,
+   "n_proteins": 331,
+   "reference_overlap": 0.23867069486404835,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 330
+   "n_quantified": 332
   },
   {
    "id": "sun-hela-seel-chase-2016",
@@ -5821,13 +5821,13 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 456,
-   "reference_overlap": 0.5228758169934641,
+   "reference_overlap": 0.5285087719298246,
    "repository": "none (supporting information PDF only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "one sample",
-   "n_quantified": 456
+   "n_quantified": 461
   },
   {
    "id": "sun-hela-seel-2016",
@@ -5849,13 +5849,13 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 315,
-   "reference_overlap": 0.707936507936508,
+   "reference_overlap": 0.7111111111111111,
    "repository": "none (supporting information PDF only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 315
+   "n_quantified": 317
   },
   {
    "id": "xiao-hepg2-galnaz-2016",
@@ -5951,8 +5951,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 134,
-   "reference_overlap": 0.15671641791044777,
+   "n_proteins": 136,
+   "reference_overlap": 0.19117647058823528,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD002554"
@@ -5960,7 +5960,7 @@
    "cell_group": "other_normal",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 134
+   "n_quantified": 136
   },
   {
    "id": "hoare-imr90-pmp-2016",
@@ -5981,8 +5981,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 463,
-   "reference_overlap": 0.6094420600858369,
+   "n_proteins": 486,
+   "reference_overlap": 0.6131687242798354,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD004168"
@@ -5990,7 +5990,7 @@
    "cell_group": "other_normal",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 4)",
-   "n_quantified": 464
+   "n_quantified": 491
   },
   {
    "id": "ye-mcf10a-membrane-2016",
@@ -6011,14 +6011,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 4273,
-   "reference_overlap": 0.08327485380116958,
+   "n_proteins": 4278,
+   "reference_overlap": 0.08321645628798503,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
    "quant_unit": "PSMs",
    "quant_note": "one sample",
-   "n_quantified": 4276
+   "n_quantified": 4284
   },
   {
    "id": "ye-mcf10a-csc-2016",
@@ -6068,7 +6068,7 @@
    "status_reason": "only the authors' pre-selected surface list is public",
    "admitted": false,
    "n_proteins": 521,
-   "reference_overlap": 0.5777351247600768,
+   "reference_overlap": 0.5796545105566219,
    "repository": "none (list from the Veneer reanalysis, Table S1 of Gundry lab JPR 2024)",
    "repository_ids": [],
    "cell_group": "neural"
@@ -6117,14 +6117,14 @@
    "status": "held",
    "status_reason": "per-protein detection can't be recovered from the table",
    "admitted": false,
-   "n_proteins": 4145,
-   "reference_overlap": 0.07525295109612141,
+   "n_proteins": 4176,
+   "reference_overlap": 0.09075670498084291,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "one sample",
-   "n_quantified": 4177
+   "n_quantified": 4952
   },
   {
    "id": "ross-arpe19-2015",
@@ -6145,14 +6145,14 @@
    "status": "below_screen",
    "status_reason": "11% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 556,
-   "reference_overlap": 0.10971223021582734,
+   "n_proteins": 554,
+   "reference_overlap": 0.11010830324909747,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
    "quant_unit": "peptides",
    "quant_note": "one sample",
-   "n_quantified": 556
+   "n_quantified": 554
   },
   {
    "id": "holley-msc-2015",
@@ -6173,8 +6173,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 5429,
-   "reference_overlap": 0.12120095781911955,
+   "n_proteins": 5462,
+   "reference_overlap": 0.12101794214573416,
    "repository": "not verified",
    "repository_ids": [],
    "cell_group": "stem_stromal"
@@ -6195,11 +6195,11 @@
    "intact_cell_labeling": "yes",
    "intact_cell_verified": true,
    "sample": "T-cell leukemia line",
-   "status": "provisional",
-   "status_reason": "within 2 points of the 20% screen (19.0%)",
+   "status": "core",
+   "status_reason": null,
    "admitted": true,
-   "n_proteins": 2091,
-   "reference_overlap": 0.18995736617716721,
+   "n_proteins": 2183,
+   "reference_overlap": 0.22583600549702246,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD002934"
@@ -6225,7 +6225,7 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 1446,
+   "n_proteins": 1444,
    "reference_overlap": 0.6161073825503356,
    "repository": "PRIDE",
    "repository_ids": [
@@ -6252,14 +6252,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 483,
-   "reference_overlap": 0.16115702479338842,
+   "n_proteins": 490,
+   "reference_overlap": 0.1816326530612245,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "one sample",
-   "n_quantified": 483
+   "n_quantified": 491
   },
   {
    "id": "smeekens-hek293t-galnaz-2015",
@@ -6305,8 +6305,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 191,
-   "reference_overlap": 0.4027777777777778,
+   "n_proteins": 196,
+   "reference_overlap": 0.7295918367346939,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal"
@@ -6358,14 +6358,14 @@
    "status": "below_screen",
    "status_reason": "16% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 2267,
+   "n_proteins": 2268,
    "reference_overlap": 0.15696649029982362,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 5)",
-   "n_quantified": 2267
+   "n_quantified": 2271
   },
   {
    "id": "gomesalves-hcsc-2015",
@@ -6386,8 +6386,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2964,
-   "reference_overlap": 0.16363636363636364,
+   "n_proteins": 2971,
+   "reference_overlap": 0.16391787277011108,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD001117"
@@ -6395,7 +6395,7 @@
    "cell_group": "stem_stromal",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 2969
+   "n_quantified": 2986
   },
   {
    "id": "sharma-fetal-cm-2015",
@@ -6416,8 +6416,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 1342,
-   "reference_overlap": 0.10506706408345752,
+   "n_proteins": 1343,
+   "reference_overlap": 0.10498883097542815,
    "repository": "PRIDE (deposited with Lee 2020 Sci Data, PMID 33262348)",
    "repository_ids": [
     "PXD017732"
@@ -6425,7 +6425,7 @@
    "cell_group": "other_normal",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 1343
+   "n_quantified": 1345
   },
   {
    "id": "vildhede-liver-2015",
@@ -6446,8 +6446,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 4684,
-   "reference_overlap": 0.11229264142917907,
+   "n_proteins": 4827,
+   "reference_overlap": 0.1160140874249016,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD002235"
@@ -6455,7 +6455,7 @@
    "cell_group": "other_normal",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 36)",
-   "n_quantified": 4710
+   "n_quantified": 4880
   },
   {
    "id": "chen-breast-sialo-2015",
@@ -6476,8 +6476,8 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 273,
-   "reference_overlap": 0.7985347985347986,
+   "n_proteins": 274,
+   "reference_overlap": 0.8029197080291971,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer"
@@ -6501,8 +6501,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 4593,
-   "reference_overlap": 0.1869016536118364,
+   "n_proteins": 4599,
+   "reference_overlap": 0.1867797347249402,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD002224"
@@ -6510,7 +6510,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 13)",
-   "n_quantified": 4619
+   "n_quantified": 4639
   },
   {
    "id": "jung-colonorg-2015",
@@ -6531,14 +6531,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 1795,
-   "reference_overlap": 0.09121245828698554,
+   "n_proteins": 1890,
+   "reference_overlap": 0.09788359788359788,
    "repository": "none",
    "repository_ids": [],
    "cell_group": "other_normal",
    "quant_unit": "MS intensity",
    "quant_note": "one sample",
-   "n_quantified": 1797
+   "n_quantified": 1898
   },
   {
    "id": "ducret-liver-csc-2015",
@@ -6590,7 +6590,7 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 72,
-   "reference_overlap": 0.64,
+   "reference_overlap": 0.7083333333333334,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD001432"
@@ -6598,7 +6598,7 @@
    "cell_group": "immune",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 8)",
-   "n_quantified": 72
+   "n_quantified": 75
   },
   {
    "id": "autelitano-gbm-sialo-2014",
@@ -6619,14 +6619,14 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 834,
-   "reference_overlap": 0.6726618705035972,
+   "n_proteins": 838,
+   "reference_overlap": 0.6718377088305489,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 7)",
-   "n_quantified": 834
+   "n_quantified": 838
   },
   {
    "id": "weekes-hfff-qtv-2014",
@@ -6647,14 +6647,14 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 2535,
-   "reference_overlap": 0.2941640378548896,
+   "n_proteins": 2539,
+   "reference_overlap": 0.2938164631744781,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 4)",
-   "n_quantified": 2538
+   "n_quantified": 2546
   },
   {
    "id": "vanderpost-colon-2014",
@@ -6675,8 +6675,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2599,
-   "reference_overlap": 0.1789149672951135,
+   "n_proteins": 2602,
+   "reference_overlap": 0.1787086856264412,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD000987"
@@ -6684,7 +6684,7 @@
    "cell_group": "other_normal",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 16)",
-   "n_quantified": 2618
+   "n_quantified": 2627
   },
   {
    "id": "boheler-2014",
@@ -6731,7 +6731,7 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 213,
-   "reference_overlap": 0.5305164319248826,
+   "reference_overlap": 0.539906103286385,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
@@ -6759,13 +6759,13 @@
    "status_reason": null,
    "admitted": true,
    "n_proteins": 438,
-   "reference_overlap": 0.30068337129840544,
+   "reference_overlap": 0.3059360730593607,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 4)",
-   "n_quantified": 438
+   "n_quantified": 439
   },
   {
    "id": "yokoyama-endometrial-2013",
@@ -6781,7 +6781,7 @@
    "family_label": "Amine biotinylation",
    "method_class": "intact_cell",
    "intact_cell_labeling": "yes",
-   "intact_cell_verified": false,
+   "intact_cell_verified": true,
    "sample": "Cancer and normal endometrial cell lines",
    "status": "held",
    "status_reason": "conditions are pooled in one list, with no separable baseline",
@@ -6793,7 +6793,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "peptides",
    "quant_note": "as reported",
-   "n_quantified": 269
+   "n_quantified": 270
   },
   {
    "id": "yan-hnscc-spheres-2013",
@@ -6821,7 +6821,7 @@
    "cell_group": "solid_cancer",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 372
+   "n_quantified": 375
   },
   {
    "id": "petrareanu-heparg-2013",
@@ -6871,13 +6871,13 @@
    "status_reason": "12% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 2698,
-   "reference_overlap": 0.11962962962962963,
+   "reference_overlap": 0.12083024462564863,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 18)",
-   "n_quantified": 2698
+   "n_quantified": 2699
   },
   {
    "id": "posthumadeboer-os-2013",
@@ -6898,14 +6898,14 @@
    "status": "provisional",
    "status_reason": "within 2 points of the 20% screen (19.3%)",
    "admitted": true,
-   "n_proteins": 2729,
-   "reference_overlap": 0.19311102968120192,
+   "n_proteins": 2740,
+   "reference_overlap": 0.19343065693430658,
    "repository": "none",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 8)",
-   "n_quantified": 2729
+   "n_quantified": 2740
   },
   {
    "id": "wang-placenta-2013",
@@ -6926,8 +6926,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 524,
-   "reference_overlap": 0.4484732824427481,
+   "n_proteins": 538,
+   "reference_overlap": 0.46096654275092935,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal"
@@ -6951,8 +6951,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 7596,
-   "reference_overlap": 0.14842105263157895,
+   "n_proteins": 7607,
+   "reference_overlap": 0.14828447482581833,
    "repository": "PRIDE",
    "repository_ids": [
     "PXD000066",
@@ -6979,14 +6979,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 6360,
-   "reference_overlap": 0.13144654088050314,
+   "n_proteins": 6336,
+   "reference_overlap": 0.13257575757575757,
    "repository": "ProteomeCommons Tranche (hash in paper; service retired)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 4)",
-   "n_quantified": 6360
+   "n_quantified": 6336
   },
   {
    "id": "rorvig-neutrophil-2013",
@@ -7037,14 +7037,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 1102,
-   "reference_overlap": 0.07767857142857143,
+   "n_proteins": 1130,
+   "reference_overlap": 0.08230088495575222,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 3)",
-   "n_quantified": 1105
+   "n_quantified": 1158
   },
   {
    "id": "weekes-thp1-ul138-2013",
@@ -7065,14 +7065,14 @@
    "status": "core",
    "status_reason": null,
    "admitted": true,
-   "n_proteins": 606,
-   "reference_overlap": 0.693069306930693,
+   "n_proteins": 612,
+   "reference_overlap": 0.6911764705882353,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
    "quant_unit": "unique peptides",
    "quant_note": "one sample",
-   "n_quantified": 609
+   "n_quantified": 615
   },
   {
    "id": "kani-a431-gefitinib-2012",
@@ -7093,8 +7093,8 @@
    "status": "below_screen",
    "status_reason": "16% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 686,
-   "reference_overlap": 0.16034985422740525,
+   "n_proteins": 693,
+   "reference_overlap": 0.15873015873015872,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer"
@@ -7143,8 +7143,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 269,
-   "reference_overlap": 0.3159851301115242,
+   "n_proteins": 270,
+   "reference_overlap": 0.31851851851851853,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer"
@@ -7197,13 +7197,13 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 1130,
-   "reference_overlap": 0.11915269196822595,
+   "reference_overlap": 0.11946902654867257,
    "repository": "none",
    "repository_ids": [],
    "cell_group": "neural",
    "quant_unit": "protein matches",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 1130
+   "n_quantified": 1131
   },
   {
    "id": "ponnusamy-fnrbc-membrane-2012",
@@ -7277,14 +7277,14 @@
    "status": "below_screen",
    "status_reason": "10% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 510,
-   "reference_overlap": 0.1,
+   "n_proteins": 511,
+   "reference_overlap": 0.09980430528375733,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
-   "n_quantified": 510
+   "n_quantified": 513
   },
   {
    "id": "qattan-mcf7-sucrose-2010",
@@ -7305,14 +7305,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 1448,
-   "reference_overlap": 0.12430939226519337,
+   "n_proteins": 1451,
+   "reference_overlap": 0.12405237767057202,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "spectral counts",
    "quant_note": "one sample",
-   "n_quantified": 1448
+   "n_quantified": 1456
   },
   {
    "id": "zhang-os-2010",
@@ -7333,8 +7333,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 283,
-   "reference_overlap": 0.3674911660777385,
+   "n_proteins": 287,
+   "reference_overlap": 0.3623693379790941,
    "repository": "none",
    "repository_ids": [],
    "cell_group": "solid_cancer"
@@ -7386,14 +7386,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 2233,
-   "reference_overlap": 0.13121361397223466,
+   "n_proteins": 2236,
+   "reference_overlap": 0.13148479427549195,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "stem_stromal",
    "quant_unit": "peptides",
    "quant_note": "one sample",
-   "n_quantified": 2234
+   "n_quantified": 2240
   },
   {
    "id": "lethlarsen-mda-pm-2009",
@@ -7414,8 +7414,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 885,
-   "reference_overlap": 0.13472070098576122,
+   "n_proteins": 913,
+   "reference_overlap": 0.13910186199342825,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer"
@@ -7440,13 +7440,13 @@
    "status_reason": "10% Canonical or Likely proteins, under 20%",
    "admitted": false,
    "n_proteins": 2316,
-   "reference_overlap": 0.10138050043140638,
+   "reference_overlap": 0.10189982728842832,
    "repository": "none (supplementary tables only; search results cited at the FHCRC CPAS server)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "spectral counts",
    "quant_note": "one sample",
-   "n_quantified": 2316
+   "n_quantified": 2317
   },
   {
    "id": "adam-lncap-drm-2008",
@@ -7468,7 +7468,7 @@
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
    "n_proteins": 503,
-   "reference_overlap": 0.09126984126984126,
+   "reference_overlap": 0.09145129224652088,
    "repository": "none (supplementary table only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
@@ -7495,14 +7495,14 @@
    "status": "below_screen",
    "status_reason": "16% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 2994,
-   "reference_overlap": 0.15531062124248496,
+   "n_proteins": 3009,
+   "reference_overlap": 0.15520106347623797,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 4)",
-   "n_quantified": 2994
+   "n_quantified": 3009
   },
   {
    "id": "dormeyer-hesc-hecc-pm-2008",
@@ -7551,8 +7551,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 815,
-   "reference_overlap": 0.12392638036809817,
+   "n_proteins": 1085,
+   "reference_overlap": 0.13179723502304147,
    "repository": "none (supporting information PDF only)",
    "repository_ids": [],
    "cell_group": "solid_cancer"
@@ -7632,8 +7632,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 221,
-   "reference_overlap": 0.23076923076923078,
+   "n_proteins": 224,
+   "reference_overlap": 0.23214285714285715,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "immune"
@@ -7657,14 +7657,14 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 417,
-   "reference_overlap": 0.328537170263789,
+   "n_proteins": 526,
+   "reference_overlap": 0.28517110266159695,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "peptides",
    "quant_note": "one sample",
-   "n_quantified": 417
+   "n_quantified": 537
   },
   {
    "id": "zhao-lung-bdap-2004",
@@ -7683,16 +7683,16 @@
    "intact_cell_verified": true,
    "sample": "Lung cancer cell line",
    "status": "provisional",
-   "status_reason": "within 2 points of the 20% screen (19.8%)",
+   "status_reason": "within 2 points of the 20% screen (19.9%)",
    "admitted": true,
-   "n_proteins": 642,
-   "reference_overlap": 0.19751166407465007,
+   "n_proteins": 644,
+   "reference_overlap": 0.19875776397515527,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
    "quant_unit": "peptides",
    "quant_note": "one sample",
-   "n_quantified": 642
+   "n_quantified": 646
   },
   {
    "id": "blonder-epidermis-pm-2004",
@@ -7713,8 +7713,8 @@
    "status": "comparator",
    "status_reason": "membrane fractionation, not intact-cell labeling",
    "admitted": false,
-   "n_proteins": 1003,
-   "reference_overlap": 0.22432701894317048,
+   "n_proteins": 1258,
+   "reference_overlap": 0.20270270270270271,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal"
@@ -7738,8 +7738,8 @@
    "status": "below_screen",
    "status_reason": "13% Canonical or Likely proteins, under 20%",
    "admitted": false,
-   "n_proteins": 661,
-   "reference_overlap": 0.12556732223903178,
+   "n_proteins": 662,
+   "reference_overlap": 0.12537764350453173,
    "repository": "none (supporting information only)",
    "repository_ids": [],
    "cell_group": "other_normal"

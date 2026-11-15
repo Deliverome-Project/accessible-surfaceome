@@ -1,0 +1,138 @@
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper, transparent);
+}
+
+.summary {
+  cursor: pointer;
+  font-weight: var(--fw-medium);
+  color: var(--maroon-mid);
+}
+
+.hint {
+  font-weight: var(--fw-regular, 400);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.h {
+  margin: 0 0 var(--space-2);
+  font-size: 0.78rem;
+  font-weight: var(--fw-semibold, 600);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.dl {
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-2);
+}
+
+.dl dt {
+  color: var(--muted);
+}
+
+.dl dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .dl {
+    grid-template-columns: 1fr;
+  }
+  .dl dd {
+    margin-bottom: var(--space-1);
+  }
+}
+
+.p {
+  margin: 0 0 var(--space-2);
+}
+
+.files {
+  margin: 0 0 var(--space-2);
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rules {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.hash {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+.body a {
+  color: var(--maroon-mid);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.82rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.table th {
+  color: var(--muted);
+  font-weight: var(--fw-medium);
+}
+
+.caption {
+  caption-side: top;
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.82rem;
+  padding-bottom: var(--space-1);
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}

@@ -7,6 +7,7 @@
  *     (`arms[i]` has index `i`).
  *   - `presence/{NN}.json` — base UniProt accession → symbol, deep-dive flag
  *     and the arm indices it was listed in, sharded by `shardOf`.
+ *   - `methods.json` — per-arm methods and source detail, keyed by arm id.
  *
  * Joins are on UniProt accession (isoform suffix stripped), never on symbol.
  * Only `core` / `provisional` arms count as surface detections; the rest are
@@ -267,7 +268,71 @@ export const FAMILY_ORDER = [
 export const DOWNLOADS = {
   matrix: `/data/surface-proteomics/surface_proteomics_matrix.tsv`,
   datasets: `/data/surface-proteomics/surface_proteomics_datasets.tsv`,
+  methods: `/data/surface-proteomics/surface_proteomics_methods.tsv`,
 };
+
+/** One source table. Linked only through a public URL (or the page it was
+ *  downloaded from); otherwise the reader goes through the paper or deposit. */
+export interface SourceFile {
+  file?: string;
+  sheet?: string | number;
+  /** Archive (and nested archives) the file was read from. */
+  archive?: string;
+  url?: string;
+  page?: string;
+  repository_path?: string;
+  /** Tables this one was rebuilt from, when it is a derived table. */
+  derived_from?: SourceFile[];
+  derivation?: string;
+  note?: string;
+  sha256?: string;
+}
+
+export interface SampleGroup {
+  cell_type?: string;
+  condition?: string;
+  columns: string[];
+  scale?: string;
+  min_observed?: number;
+  detection_floor?: number;
+  replicate_kind?: string;
+  use_for_membership?: boolean;
+}
+
+export interface Extraction {
+  file?: string;
+  accession_column?: string;
+  gene_column?: string;
+  filters?: string[];
+  sample_groups?: SampleGroup[];
+}
+
+/** Per-arm methods and source detail (methods.json, keyed by arm id). */
+export interface ArmMethods {
+  method?: string;
+  method_source?: string;
+  beads?: string;
+  lot?: string;
+  instrument?: string;
+  instrument_detail?: string;
+  instrument_source?: string;
+  cell_or_tissue?: string;
+  sample_scope?: string;
+  source_files?: SourceFile[];
+  extractions?: Extraction[];
+  parent_study?: string;
+  annotation_filter?: string;
+  filter_universe?: string;
+  n_total_ids?: number;
+  n_in_reference?: number;
+  overlap_cutoff?: number;
+  borderline_margin?: number;
+  rationale?: string;
+  target_species?: string;
+  species_note?: string;
+  n_species_excluded?: number;
+  n_species_unresolved?: number;
+}
 
 /** "11,900" / "0.042" / "23.4": a value at three significant figures, readable. */
 export function formatQuant(v: number): string {
@@ -334,6 +399,15 @@ export function paperUrl(arm: StudyArm): string | null {
   return null;
 }
 
+/** Landing page for a ProteomeXchange / MassIVE / jPOST / PRIDE accession, or null. */
+export function repositoryUrl(id: string): string | null {
+  const v = id.trim();
+  if (/^R?PXD\d+$/.test(v)) return `https://proteomecentral.proteomexchange.org/cgi/GetDataset?ID=${v}`;
+  if (/^MSV\d+$/.test(v)) return `https://massive.ucsd.edu/ProteoSAFe/dataset.jsp?accession=${v}`;
+  if (/^JPST\d+$/.test(v)) return `https://repository.jpostdb.org/entry/${v}`;
+  return null;
+}
+
 export function shortCitation(arm: StudyArm): string {
   const author = (arm.first_author ?? "").split(" ")[0];
   return [author, arm.year].filter(Boolean).join(" ") || arm.name;
@@ -369,6 +443,19 @@ export function loadShard(i: number): Promise<PresenceShard> {
     _shards.set(i, p);
   }
   return p;
+}
+
+let _methods: Promise<Record<string, ArmMethods>> | null = null;
+
+/** Methods and source detail for every arm (~0.8 MB), loaded on first open. */
+export function loadMethods(): Promise<Record<string, ArmMethods>> {
+  if (!_methods) {
+    _methods = getJson<Record<string, ArmMethods>>(`${BASE}/methods.json`).catch((e) => {
+      _methods = null;
+      throw e;
+    });
+  }
+  return _methods;
 }
 
 /** Arm indices an accession was listed in (empty when never listed). */
