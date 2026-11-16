@@ -1518,15 +1518,14 @@ _AUDIT_METHOD = "methods as recorded in this audit (verified_method)"
 
 
 def instrument_source_sentence(text: str | None) -> str | None:
-    """Where the instrument was read, as a sentence for the panel."""
+    """Where the instrument was read, as a sentence for the panel.
+
+    None when the instrument came from the same source as the method: the
+    method-source line already says where it was read.
+    """
     text = public_wording(text)
-    if not text:
+    if not text or text == _AUDIT_METHOD:
         return None
-    if text == _AUDIT_METHOD:
-        return (
-            "Instrument taken from our verified summary of the paper's methods,"
-            " read from the same source as the method."
-        )
     if m := _PX_RECORD.match(text):
         ids = m.group("ids").split(", ")
         listed = ids[0] if len(ids) == 1 else ", ".join(ids[:-1]) + f" and {ids[-1]}"

@@ -142,10 +142,13 @@ def test_source_sentences() -> None:
         b.instrument_source_sentence("ProteomeXchange record PXD1, PXD2")
         == "Instrument as listed in the ProteomeXchange records PXD1 and PXD2."
     )
-    audit = b.instrument_source_sentence(
-        "methods as recorded in this audit (verified_method)"
+    # Read from the same source as the method: no separate instrument line.
+    assert (
+        b.instrument_source_sentence(
+            "methods as recorded in this audit (verified_method)"
+        )
+        is None
     )
-    assert audit and "audit" not in audit and "verified_method" not in audit
     assert (
         b.instrument_source_sentence("PMC5341332 Methods (Europe PMC XML)")
         == "Instrument as named in the paper's Methods (full text PMC5341332)."
@@ -167,3 +170,4 @@ def test_published_sources_are_sentences() -> None:
             if text:
                 assert text.endswith("."), (arm, key, text)
                 assert "verified_method" not in text and "this audit" not in text, arm
+                assert "same source as the method" not in text, arm

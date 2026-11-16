@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { CITATIONS, doiUrl, pubmedUrl } from "./citations";
+import { STATUS_DEFINITION, STATUS_LABEL, type ArmStatus } from "./surface-proteomics";
 
 /**
  * Field-provenance tooltip text — one place to edit, shared across
@@ -489,6 +490,23 @@ export const tooltips: Record<string, ReactNode> = {
       candidate-universe build. A high count means the databases agree; a
       low count doesn&apos;t rule a protein out, since every database misses
       some surface proteins.
+    </>
+  ),
+
+  // What each surface-proteomics dataset status means — shown beside every
+  // Status field (studies table and filter, methods panel, gene-page list).
+  arm_status: (
+    <>
+      <strong>Status</strong> says whether a dataset counts as surface
+      evidence in the cross-study comparison.
+      <ul style={{ margin: "0.35rem 0 0", paddingLeft: "1.1rem" }}>
+        {(["core", "provisional", "held", "below_screen", "comparator"] as ArmStatus[]).map((s) => (
+          <li key={s}>
+            <strong>{STATUS_LABEL[s]}{s === "below_screen" ? " (below screen)" : ""}:</strong>{" "}
+            {STATUS_DEFINITION[s]}
+          </li>
+        ))}
+      </ul>
     </>
   ),
 

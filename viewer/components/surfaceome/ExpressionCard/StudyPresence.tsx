@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   isCounted,
   loadPresence,
   METHOD_CLASS_LABEL,
   paperUrl,
   shortCitation,
+  STATUS_DEFINITION,
   STATUS_HELP,
   STATUS_LABEL,
   STUDIES_PATH,
@@ -25,6 +26,7 @@ import {
   type StudyIndex,
 } from "../../../lib/surface-proteomics";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { tooltips } from "../../../lib/tooltips";
 import { HoverTip } from "../_shared/HoverTip";
 import tip from "../../InfoTip/InfoTip.module.css";
 import { FamilyChip } from "../../StudiesExplorer/FamilyChip";
@@ -385,11 +387,18 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           sample: (r) => r.arm.sample ?? "",
           status: (r) => STATUS_ORDER.indexOf(r.arm.status),
         } satisfies Record<RowSort, (r: (typeof filtered)[number]) => SortValue>);
-  const th = (key: RowSort, text: string) => (
+  const th = (key: RowSort, text: string, info?: ReactNode) => (
     <th aria-sort={ariaSort(key)}>
-      <SortableHeader k={key} active={sortKey === key} direction={sortDir} onSort={onSort}>
-        {text}
-      </SortableHeader>
+      <span className={styles.headWithTip}>
+        <SortableHeader k={key} active={sortKey === key} direction={sortDir} onSort={onSort}>
+          {text}
+        </SortableHeader>
+        {info ? (
+          <InfoTip wide align="end" label={`About ${text}`}>
+            {info}
+          </InfoTip>
+        ) : null}
+      </span>
     </th>
   );
 
@@ -514,7 +523,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
               {th("method", "Method")}
               {th("family", "Chemistry")}
               {th("sample", "Cell type / sample")}
-              {th("status", "Status")}
+              {th("status", "Status", tooltips.arm_status)}
             </tr>
           </thead>
           <tbody>
@@ -629,8 +638,8 @@ function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number
           </span>
         ) : null}
         <span className={styles.tipLine}>
-          <span className={styles.tipMuted}>Status:</span> {STATUS_LABEL[arm.status]},{" "}
-          {counted ? "counted as surface evidence" : "not counted"}
+          <span className={styles.tipMuted}>Status:</span> {STATUS_LABEL[arm.status]}.{" "}
+          {STATUS_DEFINITION[arm.status]}
         </span>
         <span className={`${styles.tipLine} ${styles.tipMuted}`}>
           Click to open this dataset&apos;s protein list.

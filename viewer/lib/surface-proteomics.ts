@@ -165,6 +165,22 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
     "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
 };
 
+/**
+ * One-line meaning of each status, for the Status ⓘ. Rules from the S3E8
+ * study (deliverome-analysis, s3e8-cross-method-surfaceome: README,
+ * CALIBRATED_INCLUSION.md, FRACTIONATION.md).
+ */
+export const STATUS_DEFINITION: Record<ArmStatus, string> = {
+  core: "Counted. Intact-cell labeling, and at least 20% of its proteins are known surface proteins (Canonical or Likely).",
+  provisional:
+    "Counted, with the caveat shown next to it: the authors pre-filtered the list (so it must clear a higher bar), it is a partial export, or it falls within 2 points below 20%.",
+  held: "Shown, not counted until a data problem is resolved, such as imputed values or pooled conditions; the reason is shown next to it.",
+  below_screen:
+    "Shown, not counted: too few of its proteins are known surface proteins (under 20%, or under the higher bar for a pre-filtered list).",
+  comparator:
+    "Shown for comparison, never counted: membrane fractionation, or labeling that reaches inside the cell, can't show a protein faces outward.",
+};
+
 export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {
   intact_cell: "Intact-cell labeling",
   fractionation: "Membrane fractionation",

@@ -10,6 +10,8 @@ import {
   type SourceFile,
   type StudyArm,
 } from "../../lib/surface-proteomics";
+import { tooltips } from "../../lib/tooltips";
+import { InfoTip } from "../InfoTip/InfoTip";
 import styles from "./MethodsPanel.module.css";
 
 const pct = (x: number | null | undefined) => (x == null ? null : `${(x * 100).toFixed(1)}%`);
@@ -53,7 +55,12 @@ export function MethodsBody({ arm, m }: { arm: StudyArm; m: ArmMethods }) {
       <section>
         <h3 className={styles.h}>Review decision</h3>
         <dl className={styles.dl}>
-          <dt>Status</dt>
+          <dt>
+            Status{" "}
+            <InfoTip wide align="start" label="About Status">
+              {tooltips.arm_status}
+            </InfoTip>
+          </dt>
           <dd>
             {STATUS_LABEL[arm.status]}
             {arm.status_reason ? `: ${arm.status_reason}` : ""}

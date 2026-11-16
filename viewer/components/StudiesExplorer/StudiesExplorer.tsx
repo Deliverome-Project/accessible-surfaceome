@@ -272,11 +272,18 @@ export function StudiesExplorer({ index }: Props) {
   const maxN = Math.max(...arms.map((a) => a.n_proteins));
   const letterOf = new Map(selected.map((i, k) => [i, letter(k)]));
 
-  const header = (k: StudySort, label: string, num = false) => (
+  const header = (k: StudySort, label: string, num = false, info?: ReactNode) => (
     <th aria-sort={ariaSort(k)} className={num ? styles.num : undefined}>
-      <SortableHeader k={k} active={sortKey === k} direction={sortDir} onSort={onSort}>
-        {label}
-      </SortableHeader>
+      <span className={styles.headWithTip}>
+        <SortableHeader k={k} active={sortKey === k} direction={sortDir} onSort={onSort}>
+          {label}
+        </SortableHeader>
+        {info ? (
+          <InfoTip wide align="end" label={`About ${label}`}>
+            {info}
+          </InfoTip>
+        ) : null}
+      </span>
     </th>
   );
 
@@ -336,6 +343,7 @@ export function StudiesExplorer({ index }: Props) {
         />
         <ChipGroup
           label="Status"
+          info={tooltips.arm_status}
           options={STATUS_ORDER}
           labelOf={(s) => STATUS_LABEL[s]}
           titleOf={(s) => STATUS_HELP[s]}
@@ -384,7 +392,7 @@ export function StudiesExplorer({ index }: Props) {
               {header("sample", "Cell type / sample")}
               {header("n", "Proteins", true)}
               {header("overlap", "Surface overlap")}
-              {header("status", "Status")}
+              {header("status", "Status", false, tooltips.arm_status)}
             </tr>
           </thead>
           <tbody>
@@ -568,6 +576,7 @@ function OverlapBar({
 
 function ChipGroup<T extends string>({
   label,
+  info,
   options,
   labelOf,
   titleOf,
@@ -576,6 +585,7 @@ function ChipGroup<T extends string>({
   onChange,
 }: {
   label: string;
+  info?: ReactNode;
   options: T[];
   labelOf: (v: T) => string;
   titleOf?: (v: T) => string;
@@ -586,6 +596,11 @@ function ChipGroup<T extends string>({
   return (
     <fieldset className={styles.chips}>
       <legend className="label-mono">{label}</legend>
+      {info ? (
+        <InfoTip wide align="start" label={`About ${label}`}>
+          {info}
+        </InfoTip>
+      ) : null}
       {options.map((o) => {
         const on = value.has(o);
         const chip = (

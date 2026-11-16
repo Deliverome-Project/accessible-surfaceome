@@ -459,3 +459,9 @@ a.dot:focus-visible {
   color: var(--ink-soft);
   font-size: 0.85rem;
 }
+
+.headWithTip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
