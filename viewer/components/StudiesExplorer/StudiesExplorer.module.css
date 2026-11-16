@@ -337,6 +337,31 @@
   overflow: hidden;
 }
 
+/* Proteins column: the bar sits left of the number on one line, matching the
+   Surface overlap column, so both bars line up row by row. */
+.countInline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.countInlineNum {
+  min-width: 3.2rem;
+  text-align: right;
+}
+
+.barInline {
+  display: inline-block;
+  height: 8px;
+  margin: 0;
+  border-radius: 4px;
+}
+
+.barInline > span {
+  border-radius: 4px;
+}
+
 .bar > span {
   display: block;
   height: 100%;

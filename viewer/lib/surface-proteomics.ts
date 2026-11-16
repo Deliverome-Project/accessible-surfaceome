@@ -23,6 +23,10 @@ export interface StudyArm {
   name: string;
   publication: string;
   first_author: string | null;
+  /** "George et al. 2026", "A and B 2020" or "A 2020" (surname only), built
+   *  from the PubMed author list; "et al." when the author count is unknown. */
+  citation?: string | null;
+  n_authors?: number | null;
   year: number | null;
   journal: string | null;
   title: string | null;
@@ -163,6 +167,22 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
     "High background: intact-cell labeling, but fewer than 20% of the list are Canonical or Likely Surfaceome proteins, so it is mostly intracellular contamination. Listed, not counted.",
   comparator:
     "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
+};
+
+/**
+ * One-line meaning of each status, for the Status ⓘ. Rules from the S3E8
+ * study (deliverome-analysis, s3e8-cross-method-surfaceome: README,
+ * CALIBRATED_INCLUSION.md, FRACTIONATION.md).
+ */
+export const STATUS_DEFINITION: Record<ArmStatus, string> = {
+  core: "Counted. Intact-cell labeling, and at least 20% of its proteins are known surface proteins (Canonical or Likely).",
+  provisional:
+    "Counted, with the caveat shown next to it: the authors pre-filtered the list (so it must clear a higher bar), it is a partial export, or it falls within 2 points below 20%.",
+  held: "Shown, not counted until a data problem is resolved, such as imputed values or pooled conditions; the reason is shown next to it.",
+  below_screen:
+    "Shown, not counted: too few of its proteins are known surface proteins (under 20%, or under the higher bar for a pre-filtered list).",
+  comparator:
+    "Shown for comparison, never counted: membrane fractionation, or labeling that reaches inside the cell, can't show a protein faces outward.",
 };
 
 export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {
@@ -408,9 +428,12 @@ export function repositoryUrl(id: string): string | null {
   return null;
 }
 
+/** How the viewer names a study: "George et al. 2026", surname only. */
 export function shortCitation(arm: StudyArm): string {
-  const author = (arm.first_author ?? "").split(" ")[0];
-  return [author, arm.year].filter(Boolean).join(" ") || arm.name;
+  if (arm.citation) return arm.citation;
+  // Older studies.json without `citation`: drop the initials, assume "et al.".
+  const surname = (arm.first_author ?? "").trim().replace(/\s+[A-Z]{1,4}$/, "");
+  return surname ? [`${surname} et al.`, arm.year].filter(Boolean).join(" ") : arm.name;
 }
 
 let _index: Promise<StudyIndex> | null = null;

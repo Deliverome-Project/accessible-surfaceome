@@ -87,11 +87,20 @@ test("source sentences link their identifiers", () => {
   assert.match(doi, /href="https:\/\/doi\.org\/10\.64898\/2026\.09\.16\.752145"[^>]*>10\.64898\/2026\.09\.16\.752145v1<\/a>\)\./);
 });
 
+test("the review decision's Status carries the status explainer", () => {
+  const html = renderToStaticMarkup(<MethodsBody arm={arm} m={m} />);
+  assert.match(html, /About Status/);
+  assert.match(html, /below screen/);
+});
+
 test("the accession-resolution steps link the catalog code by commit", () => {
   const html = renderToStaticMarkup(<MethodsBody arm={arm} m={m} />);
   assert.match(html, /How accessions were resolved/);
   assert.match(html, /blob\/[0-9a-f]{40}\/src\/accessible_surfaceome\/merge\/normalize\.py#L\d+/);
   assert.match(html, /blob\/[0-9a-f]{40}\/src\/accessible_surfaceome\/tools\/gene_lookup\.py#L\d+/);
+  assert.match(html, /blob\/[0-9a-f]{40}\/src\/accessible_surfaceome\/merge\/__init__\.py#L\d+/);
+  assert.match(html, /split into several human successors is not counted/);
+  assert.doesNotMatch(html, /each of its\s+successors/);
 });
 
 test("repositoryUrl knows the major proteomics repositories only", () => {
