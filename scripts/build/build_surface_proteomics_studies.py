@@ -1394,6 +1394,37 @@ HELD_REASONS = (
         r"no unperturbed baseline",
         "every arm is treated, so there is no unperturbed baseline",
     ),
+    # Specific reasons that otherwise fell to the generic default (or, for
+    # an unnamed cell line, to "pooled"); each paraphrases its review note.
+    (
+        r"cell line\(s\) and whether",
+        "the cell line, and whether runs were pooled, aren't stated",
+    ),
+    (
+        r"does not name the cell line",
+        "the deposit doesn't name the cell line or reagent, and there is no paper",
+    ),
+    (
+        r"does not state the cell type",
+        "the deposit can't be matched to the paper's cell type",
+    ),
+    (
+        r"design of the four biotin runs",
+        "the run design is only in a supplement we couldn't retrieve",
+    ),
+    (r"barely enriched", "the pull-downs are barely enriched over total lysate"),
+    (
+        r"dominated by intracellular",
+        "the shaved fraction is mostly intracellular proteins",
+    ),
+    (
+        r"tce table is not public",
+        "the total-lysate table needed to remove contaminants isn't public",
+    ),
+    (
+        r"equal-protein mix",
+        "each sample mixes several cell lines, so membership can't be stated per line",
+    ),
     ("does not match", "the deposited table doesn't match the paper's design"),
     ("channel", "the sample-to-condition map is unpublished"),
     ("reported surface set", "only the authors' pre-selected surface list is public"),
