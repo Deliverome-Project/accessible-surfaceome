@@ -98,7 +98,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-15-sweep-v11"
+SNAPSHOT = "2026-11-15-sweep-v12"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -123,6 +123,9 @@ STATUS_BY_ROLE = {
 # The build fails if an arm is missing, so a new arm must be classified here.
 CELL_GROUPS: dict[str, tuple[str, ...]] = {
     "blood_cancer": (
+        "zhou-molm13-2026",
+        "zhou-mv411-2026",
+        "zhou-rs411-2026",
         "george-aml-2026",
         "sanchez-jurkat-2026",
         "ho-k562-csc-2026",
@@ -282,6 +285,7 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "rahbar-mcf7mxr-pellicle-2005",
     ),
     "immune": (
+        "zhou-pbmc-2026",
         "laccid-2025",
         "everberg-pbmc-atps-2006",
         "udeshi-2024",
