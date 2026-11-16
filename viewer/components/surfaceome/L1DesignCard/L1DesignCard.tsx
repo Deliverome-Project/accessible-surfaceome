@@ -2,11 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { SectionCard } from "../SectionCard/SectionCard";
+import { StatusPill } from "../StatusPill/StatusPill";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
+import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
+import { prettyEnum } from "../../../lib/enums";
+import type { CoReceptorRequirements } from "../../../lib/surfaceome-types";
 import {
   STATUS_HELP,
   STATUS_LABEL,
   sortSites,
-  fetchL1Design,
+  fetchL1DesignResult,
+  l1AbsenceReason,
   l1SiteLabel,
   l1StructureUrl,
   type L1DesignFile,
@@ -110,32 +116,121 @@ export function L1MemberBlock({ m }: { m: L1Member }) {
   );
 }
 
-export function L1DesignCard({ symbol, n }: { symbol: string; n: number }) {
+/**
+ * Why the gene has no L1 design — the obligate-partner case.
+ *
+ * Reads the gene record the page already holds; there is no L1-side table of
+ * exclusions to query. Says what the record says (dependency, partners,
+ * rationale, references) and names the criterion the L1 cohort filter applies,
+ * without claiming to have re-run the filter: the record does not carry the
+ * partner's cell-line expression, which is what the gate actually tests.
+ */
+export function ObligatePartnerAbsence({
+  symbol,
+  cr,
+}: {
+  symbol: string;
+  cr: CoReceptorRequirements;
+}) {
+  const partners = (cr.partners ?? []).filter((x) => x.trim());
+  return (
+    <div className={styles.absence}>
+      <p className={styles.absenceLede}>
+        <strong>{symbol} is not an L1 library member</strong>, so no tag site or folded
+        model was designed for it.
+      </p>
+      <div className={styles.absenceChips}>
+        <StatusPill tone="danger" size="sm">
+          <ChipLabelValue label="partner for expression" value={prettyEnum(cr.surface_expression_dependency)} />
+        </StatusPill>
+        <StatusPill tone="lavender" size="sm">
+          <ChipLabelValue label="evidence basis" value={prettyEnum(cr.evidence_basis)} />
+        </StatusPill>
+        <EvidenceChipList ids={cr.cited_evidence_ids ?? []} label="References" />
+      </div>
+      {partners.length ? (
+        <p>
+          <span className={`label-mono ${styles.muted}`}>Obligate partners</span>{" "}
+          {partners.join(", ")}
+        </p>
+      ) : null}
+      <p className={styles.muted}>
+        The library leaves out a gene whose obligate partner the host cell line does not
+        express: the ORF delivered on its own would not be surface-displayed. Check the
+        partners above against the host line before reading this as a gap in the design
+        work.
+      </p>
+      {cr.rationale ? <p>{linkifyEvidenceRefs(cr.rationale)}</p> : null}
+    </div>
+  );
+}
+
+export function L1DesignCard({
+  symbol,
+  n,
+  inFgLibrary = true,
+  coReceptor = null,
+}: {
+  symbol: string;
+  n: number;
+  /** Library membership, from the page's FG-library overlay. A non-member has
+   *  no design by construction, which is a different statement from a member
+   *  whose design has not been published yet. */
+  inFgLibrary?: boolean;
+  /** ``accessibility_risks.co_receptor_requirements`` — the canonical home of
+   *  the dependency (``filters.co_receptor_dependency`` is only a mirror, and
+   *  is absent on pre-mirror records). */
+  coReceptor?: CoReceptorRequirements | null;
+}) {
   const [data, setData] = useState<L1DesignFile | null>(null);
-  const [state, setState] = useState<"loading" | "ok" | "none">("loading");
+  // "error" is deliberately distinct from "empty": a failed fetch must never
+  // render as "no design is published", which is what the single `none` state
+  // used to do for every miss, outage and shape change alike.
+  const [state, setState] = useState<"loading" | "ok" | "empty" | "error">("loading");
   useEffect(() => {
     let live = true;
     setState("loading");
-    fetchL1Design(symbol, API_BASE).then((d) => {
+    fetchL1DesignResult(symbol, API_BASE).then((r) => {
       if (!live) return;
-      setData(d);
-      setState(d && d.members.length ? "ok" : "none");
+      setData(r.kind === "ok" ? r.file : null);
+      setState(r.kind);
     });
     return () => {
       live = false;
     };
   }, [symbol]);
 
+  const absence = l1AbsenceReason({ inFgLibrary, coReceptor });
+  const excluded = state !== "loading" && state !== "ok" && absence === "obligate_partner";
+
   return (
     <SectionCard
       n={n}
       eyebrow="Library design"
       title="L1 library design"
-      meta="Suggested tag sites and folded models for each L1 member. Residues are in the member's own numbering."
+      meta={
+        excluded
+          ? "Why this gene has no L1 design."
+          : "Suggested tag sites and folded models for each L1 member. Residues are in the member's own numbering."
+      }
     >
       <div className={styles.root}>
         {state === "loading" && <p className={styles.muted}>Loading…</p>}
-        {state === "none" && <p className={styles.muted}>No L1 design is published for {symbol} yet.</p>}
+        {excluded && coReceptor && <ObligatePartnerAbsence symbol={symbol} cr={coReceptor} />}
+        {state === "error" && (
+          <p className={styles.fetchFailed}>
+            The L1 design load could not be fetched. This is a failure of the design API,
+            not a statement about {symbol} — reload to try again.
+          </p>
+        )}
+        {state === "empty" && !excluded && (
+          <p className={styles.muted}>
+            No L1 design is published for {symbol} yet.
+            {inFgLibrary
+              ? " It is an L1 library member, so this is a gap in the published load rather than an exclusion."
+              : " It is not an L1 library member, and its record gives no reason that explains the absence."}
+          </p>
+        )}
         {state === "ok" && data && (
           <>
             {data.members.map((m) => <L1MemberBlock key={m.member_id} m={m} />)}

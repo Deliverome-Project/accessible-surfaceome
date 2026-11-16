@@ -34,3 +34,13 @@
 .prov dd { margin: 0; }
 .models { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); font-size: 0.85rem; }
 .models a { color: var(--accent); }
+
+/* No-design states. The obligate-partner block is a scientific statement a
+   reviewer acts on, so it gets a left rule and normal ink rather than the
+   muted one-liner every absence used to share with a failed fetch. */
+.absence { display: flex; flex-direction: column; gap: var(--space-2); border-left: 2px solid var(--line); padding-left: var(--space-3); }
+.absence p { margin: 0; }
+.absenceLede { font-size: 0.95rem; }
+.absenceChips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+/* A fetch failure must not read as an absence: amber, not muted grey. */
+.fetchFailed { color: var(--amber-dark); margin: 0; }

@@ -15,6 +15,7 @@ import {
   type LibraryTopologyRow,
   type StructureVariantLibraryInput,
 } from "./structure-viewer-types";
+import type { CoReceptorRequirements } from "./surfaceome-types";
 
 export type L1SiteStatus = "built" | "decided_not_built" | "no_tag" | "pending" | "alternative";
 export type L1SiteSource = "rung_builder" | "ranker" | "agent_proposer";
@@ -258,14 +259,84 @@ export const L1_DESIGN_API_BASE =
   process.env.NEXT_PUBLIC_SURFACEOME_API_BASE ??
   "https://api.deliverome.org/surfaceome";
 
-export async function fetchL1Design(symbol: string, apiBase: string): Promise<L1DesignFile | null> {
+/**
+ * Outcome of one design load. A load that ARRIVED and holds no member for the
+ * gene ("empty") is a different fact from a load that could not be fetched
+ * ("error"), and the card must not render the second as the first: for most of
+ * the cohort the honest reading of a bare "no design" was "the API call failed".
+ */
+export type L1DesignFetch =
+  | { kind: "ok"; file: L1DesignFile }
+  | { kind: "empty" }
+  | { kind: "error" };
+
+export async function fetchL1DesignResult(symbol: string, apiBase: string): Promise<L1DesignFetch> {
+  let res: Response;
   try {
-    const res = await fetch(`${apiBase}/v1/l1-design/${encodeURIComponent(symbol)}`);
-    if (!res.ok) return null;
-    return parseL1Design(await res.json());
+    res = await fetch(`${apiBase}/v1/l1-design/${encodeURIComponent(symbol)}`);
   } catch {
-    return null;
+    return { kind: "error" };
   }
+  // The Worker answers 200 with `members: []` for a gene the load does not
+  // cover, so a 404 here means the ROUTE is missing (an older Worker), not
+  // that the gene has no design — both are fetch failures, not absences.
+  if (!res.ok) return { kind: "error" };
+  let file: L1DesignFile | null;
+  try {
+    file = parseL1Design(await res.json());
+  } catch {
+    return { kind: "error" };
+  }
+  // Unparseable body: the payload is not a design load at all (an HTML error
+  // page, a shape change). Not an absence either.
+  if (!file) return { kind: "error" };
+  // `load: null` is the Worker's soft-fail: `l1Load` catches every D1 error and
+  // degrades to `{ load: null, members: [] }` with a 200 (see its own comment,
+  // "Missing tables ... degrade to `load: null` rather than a 500"). A gene the
+  // load genuinely does not cover still carries the load header with an empty
+  // member list, so a missing header means the load table did not answer — the
+  // one case where a 200 is a failure, and the one this card must not print as
+  // "no design is published".
+  if (!file.load) return { kind: "error" };
+  return file.members.length ? { kind: "ok", file } : { kind: "empty" };
+}
+
+/** Back-compat shape for callers that only need "a design or nothing"
+ *  (the header's library chip, the review browser). */
+export async function fetchL1Design(symbol: string, apiBase: string): Promise<L1DesignFile | null> {
+  const r = await fetchL1DesignResult(symbol, apiBase);
+  return r.kind === "ok" ? r.file : null;
+}
+
+/**
+ * Why a gene has no L1 design, as far as the gene record can say.
+ *
+ * `obligate_partner`: the gene is NOT an L1 member and its record reports that
+ * surface expression requires an obligate partner. The L1 cohort filter
+ * (`final_library.py`) drops a gene whose obligate partner the host cell line
+ * does not express, because the ORF delivered on its own is not surface-displayed
+ * — so a reviewer looking at the TCR-CD3 subunits, the BCR subunits or B2M is
+ * looking at a deliberate exclusion, not at work nobody has got to. The record
+ * does not carry the filter's own verdict (the partner's cell-line TPM), so this
+ * names the criterion that applies, never "this is the gate that fired".
+ *
+ * `unpublished`: nothing in the record explains the absence — for a library
+ * member that is a gap in the published load.
+ */
+export type L1AbsenceReason = "obligate_partner" | "unpublished";
+
+export function l1AbsenceReason(a: {
+  inFgLibrary: boolean;
+  coReceptor: CoReceptorRequirements | null | undefined;
+}): L1AbsenceReason {
+  if (a.inFgLibrary) return "unpublished";
+  const cr = a.coReceptor;
+  if (!cr || cr.surface_expression_dependency !== "required") return "unpublished";
+  // Nothing to show a reviewer without either a partner or a rationale, and an
+  // unexplained "excluded" reads worse than a plain absence.
+  const partners = (cr.partners ?? []).filter((p) => p.trim());
+  if (!partners.length && !(cr.rationale ?? "").trim()) return "unpublished";
+  return "obligate_partner";
 }
 
 export async function fetchL1Index(apiBase: string): Promise<L1Index | null> {
