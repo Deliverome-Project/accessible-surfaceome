@@ -357,6 +357,15 @@ export interface Catalog {
 const DEFAULT_API_BASE = "https://api.deliverome.org/surfaceome";
 const FETCH_TIMEOUT_MS = 8_000;
 
+/** Backoff (ms) between build-time retries of the large index fetches
+ *  (/v1/catalog, /v1/genes). The Worker returns 503 in bursts of several
+ *  seconds when D1 is cold; the earlier 1.5s/3s schedule gave up inside one
+ *  burst and failed whole Pages builds (dev, 2026-11-13..15). Six attempts
+ *  spread over ~1 minute ride out a burst while a truly wedged Worker still
+ *  fails the build loudly. */
+const INDEX_RETRY_DELAYS_MS = [2_000, 4_000, 8_000, 15_000, 30_000];
+const INDEX_FETCH_ATTEMPTS = INDEX_RETRY_DELAYS_MS.length + 1;
+
 /**
  * Cache mode for the live Worker fetches (/v1/genes index + per-gene
  * record + triage reasoning). Production keeps `force-cache` so each
@@ -653,12 +662,12 @@ async function _loadCatalogImpl(): Promise<Catalog> {
     // Retry-on-5xx loop. The /v1/catalog response is ~5.7 MB and the
     // Worker brushes Cloudflare's per-request CPU cap when D1 is cold,
     // so intermittent 503s are normal — they almost always recover on
-    // the next call. Three attempts at 1.5s / 3s / 6s backoff. After
+    // the next call. Retries per INDEX_RETRY_DELAYS_MS. After
     // that, fall through to the throw so build failures stay loud
     // (we don't want to ship a viewer built against a wedged Worker).
     let res: Response | null = null;
     let lastStatus: number | null = null;
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    for (let attempt = 0; attempt < INDEX_FETCH_ATTEMPTS; attempt += 1) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
       try {
@@ -677,15 +686,15 @@ async function _loadCatalogImpl(): Promise<Catalog> {
       // Don't retry on 4xx — those are deterministic.
       if (res.status < 500) break;
       // 503 / 502 / 504 — usually transient; back off and retry.
-      if (attempt < 2) {
-        const delay = [1500, 3000][attempt] ?? 3000;
+      if (attempt < INDEX_FETCH_ATTEMPTS - 1) {
+        const delay = INDEX_RETRY_DELAYS_MS[attempt];
         await new Promise((r) => setTimeout(r, delay));
       }
     }
     if (!res || !res.ok) {
       throw new Error(
         `${base}/v1/catalog returned ${lastStatus ?? "no-response"} ` +
-          `after 3 attempts`,
+          `after ${INDEX_FETCH_ATTEMPTS} attempts`,
       );
     }
     payload = (await res.json()) as CatalogPayload;
@@ -929,11 +938,11 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
   // Retry-on-5xx loop mirroring loadCatalog. /v1/genes is a small
   // payload, but the Worker brushes Cloudflare's per-request CPU cap when
   // D1 is cold, so intermittent 503s are normal and recover on the next
-  // call. Three attempts at 1.5s / 3s backoff; 4xx is deterministic so we
+  // call. Retries per INDEX_RETRY_DELAYS_MS; 4xx is deterministic so we
   // break and surface it without retrying.
   let res: Response | null = null;
   let lastStatus: number | null = null;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; attempt < INDEX_FETCH_ATTEMPTS; attempt += 1) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
@@ -955,15 +964,15 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
     lastStatus = res.status;
     // Don't retry on 4xx — those are deterministic.
     if (res.status < 500) break;
-    if (attempt < 2) {
-      const delay = [1500, 3000][attempt] ?? 3000;
+    if (attempt < INDEX_FETCH_ATTEMPTS - 1) {
+      const delay = INDEX_RETRY_DELAYS_MS[attempt];
       await new Promise((r) => setTimeout(r, delay));
     }
   }
   if (!res || !res.ok) {
     throw new Error(
       `${base}/v1/genes returned ${lastStatus ?? "no-response"} ` +
-        `after 3 attempts`,
+        `after ${INDEX_FETCH_ATTEMPTS} attempts`,
     );
   }
   const data = (await res.json()) as {
