@@ -19,7 +19,6 @@ build-cache/
 # `next build` so it ships as a static asset. Pure derived artifact
 # (from the NCBI gene_info TSV) — regenerated on every build; never commit.
 public/data/gene-synonyms.json
-public/data/gene-symbols.json
 
 # Per-developer env overrides. Next.js auto-loads `.env.local`,
 # `.env.development.local`, etc. at dev/build time. NEXT_PUBLIC_*

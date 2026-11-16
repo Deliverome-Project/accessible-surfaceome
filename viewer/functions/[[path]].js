@@ -26,33 +26,12 @@
  * It also stamps the security headers onto every HTML response, and rewrites
  * the gene shell's <title> / description / og:url to name the gene, so a
  * shared gene link doesn't unfurl as the generic site page.
- *
- * Only symbols with a published record get the shell and a 200 (the list is
- * `/data/gene-symbols.json`, written at build time); every other path keeps
- * its 404, so link checkers and crawlers can tell a dead link from a gene
- * page. The decision lives in `lib/gene-route.js`, which is unit-tested.
  */
 import {
   geneShellMeta,
   geneSymbolFromPath,
   withSecurityHeaders,
 } from "../lib/gene-shell-meta.js";
-import { GENE_SYMBOLS_PATH, routeMissing, symbolSet } from "../lib/gene-route.js";
-
-// Published symbols, loaded once per isolate. null = not loaded (or the
-// list is missing, e.g. an offline build), which serves every gene-shaped
-// path rather than 404ing real genes.
-let publishedPromise;
-
-async function loadPublished(env, origin) {
-  try {
-    const res = await env.ASSETS.fetch(new URL(GENE_SYMBOLS_PATH, origin).toString());
-    if (!res.ok) return null;
-    return symbolSet(await res.json());
-  } catch {
-    return null;
-  }
-}
 
 function htmlWithSecurityHeaders(res) {
   if (!(res.headers.get("content-type") || "").includes("text/html")) return res;
@@ -93,11 +72,26 @@ export async function onRequest(context) {
 
   const url = new URL(request.url);
   const p = url.pathname;
-  publishedPromise ??= loadPublished(env, url.origin);
-  const published = await publishedPromise;
-  if (published === null) publishedPromise = undefined; // retry next request
 
-  if (routeMissing(p, request.headers.get("accept"), published) === "gene") {
+  // Only fall back to the client shell for a request that actually looks like
+  // a gene deep-dive URL: a SINGLE, extension-less path segment (`/TFRC/`),
+  // requested as a document. This mirrors the shell's own `symbolFromPath`
+  // (one segment only). Anything else — a build-asset prefix, a path with a
+  // file extension, or a multi-segment path — keeps its real 404, so a broken
+  // deploy or a genuine dead link stays visible rather than white-screening
+  // behind the shell.
+  const segments = p.split("/").filter(Boolean);
+  const isBuildAssetPrefix =
+    p.startsWith("/_next/") ||
+    p.startsWith("/data/") ||
+    p.startsWith("/assets/") ||
+    p.startsWith("/structure-viewer/");
+  const hasFileExtension = /\.[a-z0-9]+$/i.test(p);
+  const looksLikeGeneUrl =
+    segments.length === 1 && !hasFileExtension && !isBuildAssetPrefix;
+  const wantsHtml = (request.headers.get("accept") || "").includes("text/html");
+
+  if (looksLikeGeneUrl && wantsHtml) {
     const shell = await env.ASSETS.fetch(new URL("/gene/", url).toString());
     // Preserve a clean 200 with the shell's own headers; the body is the
     // client-shell HTML, which resolves the symbol from the URL at runtime.

@@ -61,14 +61,7 @@ function context(path: string, accept: string, assetStatus: number, type = "text
   return {
     request,
     next: async () => asset(),
-    env: {
-      ASSETS: {
-        fetch: async (url: string) =>
-          url.endsWith("/data/gene-symbols.json")
-            ? Response.json(["EGFR", "HLA-A"])
-            : new Response("<html></html>", { headers: { "content-type": "text/html" } }),
-      },
-    },
+    env: { ASSETS: { fetch: async () => new Response("<html></html>", { headers: { "content-type": "text/html" } }) } },
   };
 }
 
@@ -88,12 +81,7 @@ test("static pages keep their status and gain security headers", async () => {
   assert.equal(asset.headers.get("Strict-Transport-Security"), null);
 });
 
-test("curl and link checkers (*/*) get the gene page with a 200", async () => {
-  assert.equal((await onRequest(context("/EGFR/", "*/*", 404))).status, 200);
-});
-
-test("unpublished symbols, non-document requests and missing assets keep their 404", async () => {
-  assert.equal((await onRequest(context("/NOTAGENE/", "text/html", 404))).status, 404);
-  assert.equal((await onRequest(context("/EGFR/", "application/json", 404))).status, 404);
+test("non-document requests and missing assets keep their 404", async () => {
+  assert.equal((await onRequest(context("/EGFR/", "*/*", 404))).status, 404);
   assert.equal((await onRequest(context("/_next/static/missing.js", "text/html", 404))).status, 404);
 });

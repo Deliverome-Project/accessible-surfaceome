@@ -474,24 +474,6 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
-  // What one "DB vote" is — shown beside every DB votes count (catalog
-  // column, gene header strip, surface-proteomics protein table).
-  db_votes: (
-    <>
-      <strong>DB votes</strong> — how many of five public databases list
-      this protein at the cell surface, from 0 to 5. The five are UniProt
-      (curated subcellular location and keywords), Gene Ontology (plasma
-      membrane annotation), SURFY (a machine-learning prediction of the
-      surfaceome), the Cell Surface Protein Atlas (CSPA, surface proteins
-      captured on intact cells and identified by mass spectrometry) and the
-      Human Protein Atlas (HPA, antibody staining at the plasma membrane).
-      Each database casts one yes-or-no vote, using the cutoffs from our
-      candidate-universe build. A high count means the databases agree; a
-      low count doesn&apos;t rule a protein out, since every database misses
-      some surface proteins.
-    </>
-  ),
-
   // Surface-DB votes — neither triage nor deep-dive. From the
   // candidate-universe build: each of the 5 gating databases voted
   // independently on whether this protein is at the surface.
