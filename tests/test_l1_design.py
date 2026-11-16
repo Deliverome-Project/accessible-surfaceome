@@ -409,18 +409,56 @@ GIT_TABLES = {
             ("api_surface_loop", "cand-1", "0"),
         ]
     ],  # fmt: skip
+    # One row per ordered internal-loop arm: GENEE carries two, at 94 and 26, and
+    # both must show as the member's current picks.
     "internal_constructs.tsv": [
-        # Built at 26, but the decision is 94: the decision must NOT show as built.
         {
+            "arm_id": f"l1-p0006-a{n}",
+            "arm_role": role,
             "design_id": "l1-p0006",
-            "cassette_after_residue": "26",
-            "junction": "G26|T27",
+            "gene_symbol": "GENEE",
+            "native_sha256": SHA["F"],
+            "cassette_after_residue": str(res),
+            "junction": junction,
             "native_aa": "152",
             "protein_aa": "203",
-            "protein_sha256": "4" * 64,
+            "protein_sha256": sha,
             "refold_verdict": "pass",
             "built_by": "integration",
-        },
+            "decision": "internal_loop",
+            "order_verdict": "order_2",
+            "construct_key": f"l1-p0006:internal{res}",
+            "flag": "",
+            "confidence": "",
+            "decided_by": "",
+            "implemented_by": "",
+            "reason": "",
+        }
+        for n, role, res, junction, sha in [
+            (1, "loop_best", 94, "V94|S95", "4" * 64),
+            (2, "loop_2", 26, "G26|T27", "5" * 64),
+        ]
+    ],  # fmt: skip
+    # The per-insert order of record the load is reconciled against.
+    "insert_numbering.tsv": [
+        {
+            "insert_id": f"l1-i{i:04d}",
+            "plate": "1",
+            "well": f"A{i:02d}",
+            "arm_id": arm,
+            "design_id": arm.rsplit("-a", 1)[0],
+            "rung": rung,
+            "ordered_insert_nt": "900",
+            "key": "lib:X",
+        }
+        for i, (arm, rung) in enumerate(
+            [
+                ("l1-p0004-a1", "cterm"),
+                ("l1-p0006-a1", "internal"),
+                ("l1-p0006-a2", "internal"),
+            ],
+            start=1,
+        )
     ],  # fmt: skip
     "proteoform.tsv": [
         {
@@ -715,6 +753,7 @@ PINS = {
     "multipass_lane_check": "lane.tsv", "internal_gate": "gate.tsv", "agent_picks": "agent.tsv",
     "proteoform_decisions": "proteoform.tsv", "cterm_decisions": "cterm_decisions.tsv",
     "internal_constructs": "internal_constructs.tsv",
+    "insert_numbering": "insert_numbering.tsv",
 }  # fmt: skip
 OBJECT_PINS = {
     "internal_decisions": "decisions.tsv", "internal_proposed": "proposed.tsv",
@@ -849,12 +888,15 @@ def test_build_maps_every_rung(built):
     # the rank-3 runner-up at 60 loads while three unranked or rank-1 rows do not:
     # l1-p0005-res1-tag_alone (cassette variant at the same residue), GENEE-F120 (built
     # loop arm, no rank) and l1-p0006-agent-r1 (now a rank-2 row at 40, so it loads as l1-p0006-agent-r2).
+    # GENEE's two ordered internal arms are two picks, keyed by their arm ids; the v5
+    # rank-2 runner-up at 26 is now an arm itself, so it no longer loads as an
+    # alternative to it. l1-p0008's snorkel is a C-terminal arm of its own.
     assert set(sites) == {
         "l1-p0001-cterm-760", "l1-p0002-cterm-held", "l1-p0003-nsp-34", "l1-p0004-type3-r1",
-        "l1-p0005-res1-igk_tag", "l1-p0006-internal-94",
-        "l1-p0006-v5-r2", "l1-p0006-v5-r3", "l1-p0006-agent-r2",
+        "l1-p0005-res1-igk_tag", "l1-p0006-a1", "l1-p0006-a2",
+        "l1-p0006-v5-r3", "l1-p0006-agent-r2",
         "l1-p0007-internal-route_to_nterm_after_sp",
-        "l1-p0008-internal-snorkel",
+        "l1-p0008-cterm-300",
     }  # fmt: skip
     c = sites["l1-p0001-cterm-760"]
     assert (c["member_id"], c["status"], c["cassette_aa"]) == (
@@ -875,34 +917,30 @@ def test_build_maps_every_rung(built):
     assert json.loads(igk["rationale_json"])["lane_check"]["lane_ok"] == "yes"
 
 
-def test_internal_decision_carries_rationale_and_rejected_alternative(built):
+def test_internal_arm_carries_rationale_and_rejected_alternative(built):
     sites = _sites(built["data"])
-    d = sites["l1-p0006-internal-94"]
-    assert (d["status"], d["is_primary"], d["site_source"]) == (
-        "decided_not_built",
-        "1",
-        "ranker",
-    )
-    assert d["rejected_alternative"] == "v5 rank-2 pick"
+    d = sites["l1-p0006-a1"]
+    assert (d["status"], d["is_primary"], d["site_source"]) == ("built", "1", "ranker")
+    assert d["rejected_alternative"] == "v5 rank-2 pick"  # from the decisions table
     why = json.loads(d["rationale_json"])
-    assert why["rank_score"] == 0.8 and why["refold_verdict"] == "pending"
+    assert why["rank_score"] == 0.8 and why["refold_verdict"] == "pass"
+    assert (why["arm_id"], why["arm_role"], why["order_verdict"]) == (
+        "l1-p0006-a1",
+        "loop_best",
+        "order_2",
+    )
     assert why["loop_evidence"]["glycan_n"] == "100"
     assert (d["residue_before"], d["residue_after"]) == (
         "V",
         "S",
-    )  # from the ranked table's junction
+    )  # from the arm's own junction
     route = sites["l1-p0007-internal-route_to_nterm_after_sp"]
     assert (route["status"], route["insert_after_residue"]) == ("no_tag", "")
-    # Ranks 2 and 3 load as alternatives, numbered by their rank; the decided pick
-    # itself never loads a second time as its own runner-up.
-    alt = sites["l1-p0006-v5-r2"]
-    assert (alt["status"], alt["is_primary"], alt["residue_before"]) == (
-        "alternative",
-        "0",
-        "G",
-    )
-    assert (sites["l1-p0006-v5-r3"]["rank"], alt["rank"]) == ("3", "2")
-    assert "l1-p0006-v5-r1" not in sites
+    # Ranks 2 and 3 load as alternatives, numbered by their rank; an ordered arm never
+    # loads a second time as its own runner-up (rank 2 sits on the member's arm at 26).
+    alt = sites["l1-p0006-v5-r3"]
+    assert (alt["status"], alt["is_primary"], alt["rank"]) == ("alternative", "0", "3")
+    assert "l1-p0006-v5-r1" not in sites and "l1-p0006-v5-r2" not in sites
 
 
 def test_joins_never_use_member_id_and_drop_stale_rows(built):
@@ -925,9 +963,10 @@ def test_tagged_refolds_resolve_by_native_sequence_and_link_their_site(built):
         "77.0",
     )
     t = next(r for r in rows if r["member_id"] == "l1-m0006")
+    # Linked to the ARM it folds (by its tagged sha256), not to the member's one pick.
     assert (t["member_id"], t["site_id"], t["refold_verdict"]) == (
         "l1-m0006",
-        "l1-p0006-internal-94",
+        "l1-p0006-a1",
         "pass",
     )
     assert (t["cassette_first_model_residue"], t["cassette_last_model_residue"]) == (
@@ -970,20 +1009,23 @@ def test_native_only_refold_fills_a_member_with_no_native_model(built):
     )
 
 
-def test_snorkel_pick_sits_after_the_native_c_terminus(built):
-    s = _sites(built["data"])["l1-p0008-internal-snorkel"]
-    # Built by the C-terminal builder: shown after the native C-terminus (300), not at
-    # the construct position (355) that counts the added module.
+def test_snorkel_arm_sits_after_the_native_c_terminus(built):
+    sites = _sites(built["data"])
+    s = sites["l1-p0008-cterm-300"]
+    # An arm of its own in the order, built by the C-terminal builder: shown after the
+    # native C-terminus (300), not at the construct position (355) that counts the
+    # added module. It keeps the member's rung so the gene page groups it with the
+    # member's internal pick.
     assert (s["status"], s["insert_after_residue"], s["cassette_aa"]) == (
         "built",
         "300",
         "106",
     )
-    assert s["rejected_alternative"] == "internal loop 2"
+    assert s["rung"] == "internal" and s["cassette"].startswith("snorkel")
     why = json.loads(s["rationale_json"])
-    assert why["snorkel_construct"]["cassette_after_construct_residue"] == "355"
-    assert why["snorkel_design"]["components"].startswith("linker")
-    assert not any(k.startswith("l1-p0008-cterm") for k in _sites(built["data"]))
+    assert why["cassette_after_construct_residue"] == 355
+    # The decision this arm realises is not emitted a second time by _internal.
+    assert not any(k.startswith("l1-p0008-internal") for k in sites)
 
 
 def test_cterm_decisions_attach_and_holds_show(built):
@@ -1087,6 +1129,15 @@ def test_redacted_sql_drops_the_internal_record(built):
     assert db.execute(
         "SELECT insert_after_residue FROM l1_tag_site_design_public WHERE site_id = 'l1-p0001-cterm-760'"
     ).fetchone() == (760,)
+    # The rule reaches inside a nested source record too: proteoform_json used to
+    # publish the design-repo session and PR that the flat columns withhold.
+    (pf,) = db.execute(
+        "SELECT proteoform_json FROM l1_member_public WHERE proteoform_json IS NOT NULL"
+    ).fetchone()
+    doc = json.loads(pf)
+    assert doc["decision"] == "repair" and doc["target"] == "start at Met5"
+    assert (doc["decided_by"], doc["implemented_by"]) == (L.REDACTED, L.REDACTED)
+    assert "reason" not in doc
 
 
 NODE_TEST = r"""
@@ -1135,14 +1186,16 @@ const lv = body.load.load_version;
 
 [status, body] = await call("/v1/l1-design/genee");
 const e = body.members[0];
-assert.deepEqual(e.sites.filter((s) => s.is_primary).map((s) => s.status).sort(), ["decided_not_built"]);
+// Two ordered internal arms: both are current picks, so the card shows two.
+assert.deepEqual(e.sites.filter((s) => s.is_primary).map((s) => s.status).sort(), ["built", "built"]);
+assert.deepEqual(e.sites.filter((s) => s.is_primary).map((s) => s.site_id).sort(), ["l1-p0006-a1", "l1-p0006-a2"]);
 // The earlier panel's built loop arm is shown, as an alternative, never as the current pick.
 // A built loop arm from an earlier panel carries no rank, so the alternatives rule
 // (ranks 2-3 only) keeps it out of the load. Pinned so that bringing it back is a
 // deliberate change to ALT_* in build_l1_design_tables.py, not an accident.
 assert.ok(!e.sites.some((s) => s.site_id === "GENEE-F120"));
 assert.ok(e.sites.every((s) => s.status !== "alternative" || [2, 3].includes(s.rank)));
-const dec = e.sites.find((s) => s.site_id === "l1p".replace("l1p", "l1-p0006-internal-94"));
+const dec = e.sites.find((s) => s.site_id === "l1p".replace("l1p", "l1-p0006-a1"));
 assert.equal(dec.rejected_alternative, "v5 rank-2 pick");
 assert.equal(dec.rationale.loop_evidence.glycan_n, "100");
 assert.ok(e.sites.some((s) => s.site_source === "agent_proposer" && s.status === "alternative"));
@@ -1153,7 +1206,9 @@ assert.deepEqual(e.contacts.map((c) => [c.residue, c.source, c.confidence_tier])
 [status, body] = await call("/v1/l1-design");
 assert.equal(status, 200);
 assert.equal(body.members.length, 8);
-assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0006").pick_status, ["decided_not_built"]);
+// The index groups by status, so a two-arm member reads ["built"] here, not one
+// entry per arm; the arms themselves are on /v1/l1-design/{symbol}.
+assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0006").pick_status, ["built"]);
 assert.deepEqual(body.members.find((m) => m.member_id === "l1-m0008").pick_status, ["built"]);
 
 [status] = await call(`/v1/l1-design/GENEA/${lv}`);
@@ -1253,30 +1308,76 @@ def test_worker_routes_against_sqlite(built):
     assert "ok" in res.stdout
 
 
-def test_internal_decision_is_built_only_when_built_at_that_residue():
-    L = _loader()
+def _internal_member(L):
     member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
               "candidate_set": "library_reference", "rung": "internal", "ordered_length_aa": 200,
               "sequence_sha256": "a" * 64}  # fmt: skip
-    R = L.Resolver({"l1-m0001": member})
-    dec = {"design_id": "l1-p0001", "gene": "G", "sequence_sha256": "a" * 64, "decision": "internal_loop",
-           "insert_after_residue": "94.0", "pick_rank": "1", "rank_score": "0.8", "absolute_score": "0.7",
-           "best_region_pct_of_published_regions": "0.5", "this_region_length": "19", "snorkel_candidate": "False",
-           "confidence": "medium", "reason": "r", "rejected_alternative": "x", "decided_by": "ranker",
-           "implemented_by": "ranker", "refold_verdict": "pending"}  # fmt: skip
-    info = {"pr": 1, "pr_state": "open", "commit": "c" * 40, "path": "decisions.tsv"}
-    built = {"l1-p0001": {"design_id": "l1-p0001", "cassette_after_residue": "94", "junction": "V94|S95",
-                          "native_aa": "200", "protein_aa": "251", "protein_sha256": "4" * 64,
-                          "refold_verdict": "pass", "built_by": "integration"}}  # fmt: skip
-    (site,) = L._internal([dec], [], info, info, R, {}, loop_built=built)
-    assert (site["status"], site["residue_before"], site["cassette_aa"]) == (
-        "built",
-        "V",
-        51,
+    return L.Resolver({"l1-m0001": member})
+
+
+_INT_DEC = {"design_id": "l1-p0001", "gene": "G", "sequence_sha256": "a" * 64, "decision": "internal_loop",
+            "insert_after_residue": "94.0", "pick_rank": "1", "rank_score": "0.8", "absolute_score": "0.7",
+            "best_region_pct_of_published_regions": "0.5", "this_region_length": "19",
+            "snorkel_candidate": "False", "confidence": "medium", "reason": "r",
+            "rejected_alternative": "x", "decided_by": "ranker", "implemented_by": "ranker",
+            "refold_verdict": "pending"}  # fmt: skip
+_INFO = {"pr": 1, "pr_state": "open", "commit": "c" * 40, "path": "decisions.tsv"}
+
+
+def _arm(suffix, residue, junction, sha, role, verdict="pass"):
+    return {"arm_id": f"l1-p0001-a{suffix}", "arm_role": role, "design_id": "l1-p0001",
+            "gene_symbol": "G", "native_sha256": "a" * 64, "cassette_after_residue": str(residue),
+            "junction": junction, "native_aa": "200", "protein_aa": "251", "protein_sha256": sha,
+            "refold_verdict": verdict, "built_by": "integration", "decision": "internal_loop",
+            "order_verdict": "order_2", "construct_key": f"l1-p0001:internal{residue}",
+            "flag": "", "confidence": "", "decided_by": "", "implemented_by": "", "reason": ""}  # fmt: skip
+
+
+def test_every_ordered_internal_arm_is_its_own_built_site():
+    """The order of record is per arm: a two-arm member must show two picks.
+
+    The pre-2026-11-15 loader emitted one site per *design* from the decisions table,
+    so a member with three ordered loop arms rendered as one site and the other two
+    were invisible on the gene page.
+    """
+    L = _loader()
+    R = _internal_member(L)
+    arms = [
+        _arm(1, 94, "V94|S95", "4" * 64, "loop_best"),
+        _arm(2, 26, "G26|T27", "5" * 64, "loop_2"),
+    ]
+    sites = L._internal(arms, [_INT_DEC], [], _INFO, _INFO, _INFO, R, {})
+    assert len(sites) == 2, "one site per ordered arm"
+    assert [s["site_id"] for s in sites] == ["l1-p0001-a1", "l1-p0001-a2"]
+    assert {s["status"] for s in sites} == {"built"}
+    assert {s["is_primary"] for s in sites} == {1}, (
+        "every ordered arm is a current pick"
     )
-    assert site["tagged_protein_sha256"] == "4" * 64
-    (site,) = L._internal([dec], [], info, info, R, {}, loop_built={})
+    assert [s["insert_after_residue"] for s in sites] == [94, 26]
+    assert [s["rank"] for s in sites] == [1, 2]
+    assert [s["residue_before"] for s in sites] == ["V", "G"]
+    assert {s["cassette_aa"] for s in sites} == {51}
+    # Each arm carries its OWN folded construct, so a refold links to the right arm.
+    assert [s["tagged_protein_sha256"] for s in sites] == ["4" * 64, "5" * 64]
+    assert json.loads(sites[1]["rationale_json"])["arm_role"] == "loop_2"
+    # Who built the DNA is an internal record: it belongs in the rationale, which
+    # --redact-internal drops, never in status_detail, which the public API keeps
+    # verbatim. (The arm table's built_by names a design-repo session and PR.)
+    assert json.loads(sites[0]["rationale_json"])["built_by"] == "integration"
+    assert all("integration" not in s["status_detail"] for s in sites)
+
+
+def test_a_decision_the_order_gave_no_arm_still_shows_unbuilt():
+    L = _loader()
+    R = _internal_member(L)
+    (site,) = L._internal([], [_INT_DEC], [], _INFO, _INFO, _INFO, R, {})
     assert site["status"] == "decided_not_built"
+    assert "no arm on this rung" in site["status_detail"]
+    # ... and the snorkel whose only construct is the C-terminal arm is left to _cterm,
+    # which emits that arm itself: emitting it here too would double-count the member.
+    snork_dec = {**_INT_DEC, "decision": "snorkel"}
+    assert L._internal([], [snork_dec], [], _INFO, _INFO, _INFO, R, {}, None,
+                       {"l1-p0001": {"placement": "snorkel (TM module, then cassette)"}}) == []  # fmt: skip
 
 
 def test_final_refold_manifest_overrides_the_index_verdict():
