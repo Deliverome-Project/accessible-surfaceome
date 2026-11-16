@@ -15,7 +15,38 @@
  * comparator). Whole-lysate arms are left out of the data entirely.
  */
 
-export type ArmStatus = "core" | "provisional" | "held" | "below_screen" | "comparator";
+export type ArmStatus =
+  | "core"
+  | "provisional"
+  | "held"
+  | "below_screen"
+  | "annotation_selected"
+  | "comparator";
+
+/** Every status, in the order the viewer lists them (counted first). */
+export const STATUS_ORDER: ArmStatus[] = [
+  "core",
+  "provisional",
+  "held",
+  "below_screen",
+  "annotation_selected",
+  "comparator",
+];
+
+/** Wording for the sweep-v15 annotation_selected role, verbatim from the S3E8 review. */
+export const ANNOTATION_SELECTED_LABEL = "Pre-filtered by surface annotation (shown, not counted)";
+/** The same label where a "not counted" marker already sits beside it. */
+export const statusShortLabel = (s: ArmStatus) =>
+  s === "annotation_selected" ? "Pre-filtered by surface annotation" : STATUS_LABEL[s];
+/** The status pill in a table row, where "not counted" and the reason
+ *  ("author pre-filtered to …") sit right under it. */
+export const statusPillLabel = (s: ArmStatus) =>
+  s === "annotation_selected" ? "Pre-filtered" : STATUS_LABEL[s];
+export const ANNOTATION_SELECTED_METHODS =
+  "Pre-filtered by surface annotation (shown, not counted): the published table was already restricted to proteins annotated or predicted as surface or membrane proteins. Such a table cannot add a candidate or reveal a miss, and it would inflate the share of known surface proteins that the quality screen measures, so it is shown, cited only as support for proteins already in the reference, and never counted.";
+/** Added to the held-arm wording with sweep-v15, verbatim. */
+export const IMPUTED_NOT_HELD =
+  "Imputed values alone do not hold an arm: when every row passed the authors' identification filters, presence in the study is counted (provisional), though per-sample detection is not available.";
 export type MethodClass = "intact_cell" | "fractionation";
 
 export interface StudyArm {
@@ -162,16 +193,18 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
   provisional: "Provisional",
   held: "Held",
   below_screen: "High background",
+  annotation_selected: ANNOTATION_SELECTED_LABEL,
   comparator: "Comparator",
 };
 
 export const STATUS_HELP: Record<ArmStatus, string> = {
   core: "Core: intact-cell labeling, and at least 20% of the list are Canonical or Likely Surfaceome proteins. Counts as surface evidence.",
   provisional:
-    "Provisional: intact-cell labeling that passes with a caveat, for example the authors pre-filtered the list to annotated surface proteins, or it sits within 2 points below the 20% screen (18–20%). Counts as surface evidence.",
-  held: "Held: the published table can't yet tell us which proteins were detected, for example every value is imputed. Listed, not counted.",
+    "Provisional: intact-cell labeling that passes with a caveat: it sits within 2 points below the 20% screen (18–20%), it was built from a partial author export, or its values are imputed (presence counted, per-sample detection not available). Counts as surface evidence.",
+  held: "Held: the published table can't yet tell us which proteins were detected, for example conditions are pooled with no separable baseline. Listed, not counted.",
   below_screen:
     "High background: intact-cell labeling, but fewer than 20% of the list are Canonical or Likely Surfaceome proteins, so it is mostly intracellular contamination. Listed, not counted.",
+  annotation_selected: ANNOTATION_SELECTED_METHODS,
   comparator:
     "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
 };
@@ -184,10 +217,12 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
 export const STATUS_DEFINITION: Record<ArmStatus, string> = {
   core: "Counted. Intact-cell labeling, and at least 20% of its proteins are known surface proteins (Canonical or Likely).",
   provisional:
-    "Counted, with the caveat shown next to it: the authors pre-filtered the list (so it must clear a higher bar), it is a partial export, or it falls within 2 points below 20%.",
-  held: "Shown, not counted until a data problem is resolved, such as imputed values or pooled conditions; the reason is shown next to it.",
+    "Counted, with the caveat shown next to it: it falls within 2 points below 20%, it is a partial export, or its values are imputed (presence counted, per-sample detection not available).",
+  held: "Shown, not counted until a data problem is resolved, such as pooled conditions or an unpublished sample map; the reason is shown next to it.",
   below_screen:
     "Shown, not counted: too few of its proteins are known surface proteins (under 20%, or under the higher bar for a pre-filtered list).",
+  annotation_selected:
+    "The published table was already restricted to proteins annotated or predicted as surface or membrane proteins; shown, never counted.",
   comparator:
     "Shown for comparison, never counted: membrane fractionation, or labeling that reaches inside the cell, can't show a protein faces outward.",
 };

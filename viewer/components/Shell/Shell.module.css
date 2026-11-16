@@ -406,17 +406,24 @@
   }
 }
 
-@media (max-width: 760px) {
+/* Seven nav items need about 830px beside a brand lockup of up to ~445px,
+ * so below ~1300px they would run into the version badge. Put the nav on
+ * its own full-width row there (it scrolls sideways if it still doesn't
+ * fit, as on phones). */
+@media (max-width: 1300px) {
   .headerInner {
     flex-wrap: wrap;
     row-gap: 0.5rem;
-  }
-  .brandLockup {
-    gap: 0.45rem;
   }
   .nav {
     width: 100%;
     justify-content: flex-start;
     overflow-x: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .brandLockup {
+    gap: 0.45rem;
   }
 }

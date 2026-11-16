@@ -11,12 +11,15 @@ import {
   OVERLAP_ALLOWANCE_PTS,
   OVERLAP_SCREEN,
   STATUS_HELP,
-  STATUS_LABEL,
+  STATUS_ORDER,
   TIER_HELP,
   TIER_ORDER,
   type ArmStatus,
   type MethodClass,
   type StudyIndex,
+  ANNOTATION_SELECTED_METHODS,
+  IMPUTED_NOT_HELD,
+  statusShortLabel,
 } from "../../lib/surface-proteomics";
 import styles from "./page.module.css";
 
@@ -37,7 +40,6 @@ const METHOD_HELP: Record<MethodClass, string> = {
 
 const sentence = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
-const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 
 /**
  * /surface-proteomics/ — the S3E8 study compendium, linked from
@@ -55,6 +57,7 @@ export default function SurfaceProteomicsPage() {
   ) as StudyIndex;
 
   const counted = index.arms.filter(isCounted);
+  const countedPapers = new Set(counted.map((a) => a.publication)).size;
   const countByStatus = (s: ArmStatus) => index.arms.filter((a) => a.status === s).length;
 
   return (
@@ -67,7 +70,7 @@ export default function SurfaceProteomicsPage() {
             outside of human cells? We collected {index.n_arms} datasets from {index.n_publications} cell-surface
             proteomics papers and matched every reported protein to its UniProt
             accession. <strong>{counted.length} datasets</strong> from{" "}
-            {index.n_admitted_publications} papers pass our quality review (see &ldquo;How to read this page&rdquo;)
+            {countedPapers} papers pass our quality review (see &ldquo;How to read this page&rdquo;)
             and count as surface evidence; together they detect{" "}
             <strong>{index.n_accessions_admitted.toLocaleString("en-US")} proteins</strong>.
             The other {index.n_arms - counted.length} are listed for completeness
@@ -104,7 +107,7 @@ export default function SurfaceProteomicsPage() {
             What our quality review checks
           </h2>
           <p className={styles.reviewLede}>
-            A dataset counts as surface evidence only if it passes all four checks, judged
+            A dataset counts as surface evidence only if it passes all five checks, judged
             from each paper&apos;s methods section and supplementary tables. The reading is
             AI-assisted and still under review; report an error to{" "}
             <a href="mailto:surfaceome-viewer@deliverome.org">surfaceome-viewer@deliverome.org</a>.
@@ -135,9 +138,16 @@ export default function SurfaceProteomicsPage() {
             </li>
             <li>
               <strong>Readable per protein.</strong> The published table has to say which
-              proteins were detected. Tables where every value is imputed, or where the
-              baseline sample can&apos;t be identified, fail.{" "}
+              proteins were detected. Tables that pool conditions with no separable baseline,
+              or where the baseline sample can&apos;t be identified, fail. {IMPUTED_NOT_HELD}{" "}
               <span className={styles.fails}>{countByStatus("held")} datasets → Held</span>
+            </li>
+            <li>
+              <strong>Not pre-filtered by surface annotation.</strong>{" "}
+              {ANNOTATION_SELECTED_METHODS}{" "}
+              <span className={styles.fails}>
+                {countByStatus("annotation_selected")} datasets → Pre-filtered by surface annotation
+              </span>
             </li>
           </ol>
           <p className={styles.reviewLede}>
@@ -173,7 +183,7 @@ export default function SurfaceProteomicsPage() {
                 {STATUS_ORDER.map((s) => (
                   <div key={s}>
                     <dt>
-                      {STATUS_LABEL[s]}{" "}
+                      {statusShortLabel(s)}{" "}
                       <span className={s === "core" || s === "provisional" ? styles.yes : styles.no}>
                         {s === "core" || s === "provisional" ? "counted" : "not counted"}
                       </span>{" "}

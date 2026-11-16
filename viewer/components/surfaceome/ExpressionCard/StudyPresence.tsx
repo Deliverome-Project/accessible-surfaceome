@@ -11,6 +11,9 @@ import {
   STATUS_DEFINITION,
   STATUS_HELP,
   STATUS_LABEL,
+  statusShortLabel,
+  statusPillLabel,
+  STATUS_ORDER,
   STUDIES_PATH,
   FAMILY_ORDER,
   PREF_LABEL,
@@ -50,8 +53,8 @@ const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] 
   {
     key: "held",
     label: "Surface experiments we don't count",
-    desc: "Also intact-cell labeling, but most of the list is intracellular background (high background), or the published table can't tell us which proteins were detected (held).",
-    statuses: ["held", "below_screen"],
+    desc: "Also intact-cell labeling, but most of the list is intracellular background (high background), the published table was already restricted to annotated or predicted surface proteins (pre-filtered by surface annotation), or the published table can't tell us which proteins were detected (held).",
+    statuses: ["held", "below_screen", "annotation_selected"],
   },
   {
     key: "comparator",
@@ -72,7 +75,6 @@ const FAMILY_SHORT: Record<string, string> = {
 };
 
 type RowSort = "study" | "found" | "bg" | "amount" | "method" | "family" | "sample" | "status";
-const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const pct = (x: number) => `${Math.floor(x * 100)}%`;
 
 /** "Detected in 18 of 25 lines", with the lines listed on hover. */
@@ -458,7 +460,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                 <span className={styles.groupName}>{g.label}</span>
                 <InfoTip label={`About ${g.label}`}>{g.desc}</InfoTip>
                 <span className={styles.groupStatus}>
-                  {g.statuses.map((st) => STATUS_LABEL[st]).join(" + ")}
+                  {g.statuses.map((st) => statusShortLabel(st)).join(" + ")}
                 </span>
               </span>
               <span className={styles.dots}>
@@ -581,7 +583,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                   </td>
                   <td>
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
-                      {STATUS_LABEL[arm.status]}
+                      {statusPillLabel(arm.status)}
                     </StatusPill>
                     {arm.status_reason ? (
                       <div className={styles.statusReason}>{arm.status_reason}</div>
@@ -608,7 +610,7 @@ function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number
   const counted = isCounted(arm);
   const label =
     `${shortCitation(arm)}: ${arm.name}. ${hit ? "Detected" : "Not detected"}; ` +
-    `${STATUS_LABEL[arm.status]}${counted ? "" : ", not counted"}`;
+    `${statusShortLabel(arm.status)}${counted ? "" : ", not counted"}`;
   const cls = [
     styles.dot,
     hit ? `${styles[`fam_${arm.family.replace(/-/g, "_")}`] ?? ""} ${styles.hit}` : "",
@@ -650,7 +652,7 @@ function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number
           </span>
         ) : null}
         <span className={styles.tipLine}>
-          <span className={styles.tipMuted}>Status:</span> {STATUS_LABEL[arm.status]}.{" "}
+          <span className={styles.tipMuted}>Status:</span> {statusShortLabel(arm.status)}.{" "}
           {STATUS_DEFINITION[arm.status]}
         </span>
         <span className={`${styles.tipLine} ${styles.tipMuted}`}>
