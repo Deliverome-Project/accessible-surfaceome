@@ -80,6 +80,9 @@ REDACT_DROP = {
     "reason",
 }
 REDACT_FILL = {"source_commit", "source_path", "decided_by", "implemented_by"}
+#: Columns holding a source record as nested JSON: REDACT_DROP / REDACT_FILL apply to
+#: its keys too, so the provenance the flat columns withhold is not published inside it.
+REDACT_NESTED = {"proteoform_json"}
 #: Rows a source table leaves unattributed follow its rung's rule; say so rather than
 #: inventing a decider.
 RULE_DECIDER = "no individual decision: rung rule applied by the source builder"
@@ -409,23 +412,33 @@ def _cterm_decisions(rows) -> dict[str, dict]:
 
 
 def _cterm(rows, info, R, decisions=None):
-    """C-terminal arms (incl. stalk and furin moves). Snorkel rows are skipped here:
-    they are the internal member's pick and load through ``_internal``."""
+    """C-terminal arms: the C-terminal picks (incl. stalk and furin moves) and snorkels.
+
+    A snorkel row is an arm of its own in the order of record (it carries an
+    ``arm_id``): the construct appends a TM module and then the cassette after the
+    native C-terminus, so the site is reported at the native C-terminus and the row's
+    ``cassette_after_residue`` -- which counts the added module -- goes into the
+    rationale instead. Until the 2026-11-15 per-arm order these rows were skipped
+    here and folded into the internal member's single pick; a member whose arms are a
+    loop and a snorkel now shows both.
+    """
     decisions = decisions or {}
     out = []
     for r in rows:
-        if r["placement"].startswith(SNORKEL_PLACEMENT):
-            continue
         m = R.get("cterm", r["design_id"], gene=r["gene_symbol"])
         if not m:
             continue
-        res = _int(r["cassette_after_residue"])
+        snorkel = r["placement"].startswith(SNORKEL_PLACEMENT)
         native = _int(r["native_aa"])
+        res = native if snorkel else _int(r["cassette_after_residue"])
         d = decisions.get(m["design_id"], {})
         out.append(_site(
-            info, site_id=f"{m['design_id']}-cterm-{res}", m=m,
+            info, site_id=r.get("arm_id") or f"{m['design_id']}-cterm-{res}", m=m,
             rung=m["rung"], insert_after_residue=res,
-            cassette="p003 51-aa tandem (issued encoding)",
+            cassette=(
+                "snorkel: added TM module, then the 51-aa cassette" if snorkel
+                else "p003 51-aa tandem (issued encoding)"
+            ),
             cassette_aa=_diff(r["protein_aa"], r["native_aa"]),
             status="built", decision=d.get("decision") or r["placement"],
             status_detail=r["placement"] if res == native else f"{r['placement']}; native length {native}",
@@ -434,6 +447,10 @@ def _cterm(rows, info, R, decisions=None):
             rationale_json={
                 "question": d.get("question"), "evidence": d.get("evidence"),
                 "would_change_it": d.get("would_change_it"),
+                "arm_id": r.get("arm_id") or None,
+                "cassette_after_construct_residue": (
+                    _int(r["cassette_after_residue"]) if snorkel else None
+                ),
                 "review_flags": r["review_flags"], "junction_edit": r["junction_edit"],
                 "worst_partner_tract_nt": r["worst_partner_tract_nt"],
                 "worst_partner": r["worst_partner"], "cassette_features": r["cassette_features"],
@@ -650,25 +667,97 @@ def _ranker_scores(r: dict) -> dict:
     }
 
 
+#: Internal-rung arm roles in the order the builder numbers them; the rank a site row
+#: carries, so a reviewer reads a member's arms best-first.
+ARM_ROLE_RANK = {"loop_best": 1, "loop_2": 2, "loop_3": 3}
+
+
 def _internal(
+    arms,
     decisions,
     proposed,
+    info_arms,
     info_dec,
     info_prop,
     R,
     loops_by_design,
     snorkels=None,
     snorkel_built=None,
-    loop_built=None,
 ):
+    """Internal-loop arms: one primary site per ordered arm, plus the ranked runners-up.
+
+    The order of record is per arm (``l1-pNNNN-aK``) and a member carries up to three,
+    so each built arm is its own site, with its own residue, junction, refold verdict
+    and order-rule verdict. Until 2026-11-15 this emitted one site per *design* from
+    the decisions table, which showed a three-arm member as a one-site member and hid
+    every arm but one.
+
+    A design the decisions table covers but the order gave no arm on this rung (a hold,
+    or a snorkel whose only construct is the C-terminal one that ``_cterm`` emits) still
+    gets one non-built row, so the member shows with its decision rather than vanishing.
+    """
     out = []
-    chosen: dict[str, int | None] = {}
     # The decisions table carries no junction letters; the ranked table does, for the
     # same (design, residue).
     junction = {
         (r["design_id"], _int(r["insert_after_residue"])): r.get("junction") or ""
         for r in proposed
     }
+    armed: dict[str, list[int | None]] = {}
+    dec_by_design = {r["design_id"]: r for r in decisions}
+    for r in arms:
+        # The arm columns (arm_id, arm_role, order_verdict, flag, native_sha256,
+        # construct_key) arrived with the per-arm order; read them softly so an
+        # earlier revision of this table still builds, one arm per design.
+        m = R.get(
+            "internal_constructs",
+            r["design_id"],
+            sha=r.get("native_sha256"),
+            gene=r.get("gene_symbol"),
+        )
+        if not m:
+            continue
+        res = _int(r["cassette_after_residue"])
+        armed.setdefault(m["design_id"], []).append(res)
+        d = dec_by_design.get(r["design_id"], {})
+        role = r.get("arm_role") or ""
+        before, _, after = (r["junction"] or "").partition("|")
+        detail = "; ".join(x for x in (
+            role.replace("_", " ") or None,
+            r.get("decision") or d.get("decision") or None,
+            f"refold verdict {r.get('refold_verdict') or d.get('refold_verdict') or 'none'}",
+            f"order rule {r['order_verdict']}" if r.get("order_verdict") else None,
+            r.get("flag") or None,
+        ) if x)  # fmt: skip
+        out.append(_site(
+            info_arms, site_id=r.get("arm_id") or f"{m['design_id']}-internal-{res}", m=m,
+            rung=m["rung"], site_source="ranker",
+            insert_after_residue=res,
+            residue_before=before[:1] or None, residue_after=after[:1] or None,
+            cassette="p003 51-aa tandem (internal loop arm)",
+            cassette_aa=_diff(r["protein_aa"], r["native_aa"]),
+            tagged_protein_sha256=r["protein_sha256"] or None,
+            rank=ARM_ROLE_RANK.get(role), status="built",
+            decision=r.get("decision") or d.get("decision"), status_detail=detail,
+            confidence=r.get("confidence") or d.get("confidence") or None,
+            rejected_alternative=d.get("rejected_alternative") or None,
+            rationale_json={
+                **(_ranker_scores(d) if d else {}),
+                "arm_id": r.get("arm_id") or None, "arm_role": role or None,
+                "construct_key": r.get("construct_key") or None,
+                # Who built the DNA: internal, so it rides in the rationale, which
+                # --redact-internal drops. Never in status_detail, which is public.
+                "built_by": r.get("built_by") or None,
+                "order_verdict": r.get("order_verdict") or None,
+                "flag": r.get("flag") or None,
+                "refold_verdict": r.get("refold_verdict") or d.get("refold_verdict") or None,
+                "decided_on": d.get("decided_on"),
+                "loop_evidence": _loop_evidence(loops_by_design.get(m["design_id"], []), res),
+            },
+            decided_by=r.get("decided_by") or d.get("decided_by"),
+            implemented_by=r.get("implemented_by") or d.get("implemented_by"),
+            reason=r.get("reason") or d.get("reason") or None,
+        ))  # fmt: skip
     for r in decisions:
         m = R.get(
             "internal_decisions",
@@ -676,11 +765,14 @@ def _internal(
             sha=r["sequence_sha256"],
             gene=r["gene"],
         )
-        if not m:
+        if not m or m["design_id"] in armed:
             continue
         res = _int(r["insert_after_residue"])
-        chosen[m["design_id"]] = res
         dec = r["decision"]
+        # A snorkel whose construct is the C-terminal one: that arm loads through
+        # _cterm, and emitting it here too would double-count the member's arms.
+        if dec == "snorkel" and (snorkel_built or {}).get(m["design_id"]):
+            continue
         # A snorkel construct appends a module (linker + an added TM helix + the
         # cassette) after the native C-terminus, which puts the tag outside the cell.
         snork = (snorkels or {}).get(m["design_id"]) if dec == "snorkel" else None
@@ -694,70 +786,37 @@ def _internal(
             )
             snork = None
         status = INTERNAL_DECISION_STATUS.get(dec, "pending")
-        detail = f"{dec}; refold verdict {r.get('refold_verdict') or 'none'}"
-        # A snorkel the C-terminal builder already built: the member's pick is that
-        # construct (native C-terminus, then the TM module and the cassette).
-        built_snork = (
-            (snorkel_built or {}).get(m["design_id"]) if dec == "snorkel" else None
+        detail = (
+            f"{dec}; refold verdict {r.get('refold_verdict') or 'none'}; "
+            "no arm on this rung in the order of record"
         )
-        # An internal loop arm the builder already built at this residue: the pick is built.
-        built_loop = (loop_built or {}).get(m["design_id"])
-        if built_loop and _int(built_loop["cassette_after_residue"]) != res:
-            built_loop = (
-                None  # built at another site: the decision is not what was built
-            )
-        if built_loop:
-            status = "built"
-            verdict = (
-                built_loop.get("refold_verdict") or r.get("refold_verdict") or "none"
-            )
-            detail = f"{dec}; built ({built_loop.get('built_by') or 'internal builder'}); refold verdict {verdict}"
-        if built_snork:
-            status = "built"
-            detail = f"{dec}; built as {built_snork['placement']}; refold verdict {r.get('refold_verdict') or 'none'}"
         if dec == "snorkel" and info_dec.get("snorkel_pending_note"):
             status, detail = (
                 "pending",
-                f"{info_dec['snorkel_pending_note']}; was decided_not_built: {detail}",
+                f"{info_dec['snorkel_pending_note']}; was {status}: {detail}",
             )
         out.append(_site(
             info_dec, site_id=f"{m['design_id']}-internal-{res if res is not None else dec}", m=m,
             rung=m["rung"], site_source="ranker",
             insert_after_residue=(
                 # Member numbering: the module (and the cassette after it) follows the
-                # native C-terminus. cassette_after_residue counts the added module.
-                _int(built_snork["native_aa"]) if built_snork
-                else _int(snork["native_length"]) if snork else res
+                # native C-terminus.
+                _int(snork["native_length"]) if snork else res
             ),
             cassette=(
-                "p003 51-aa tandem (internal loop arm)" if built_loop
-                else "snorkel: added TM module, then the 51-aa cassette" if built_snork
-                else f"snorkel module, {snork['module_length']} aa (added TM helix + linkers + 51-aa cassette)"
+                f"snorkel module, {snork['module_length']} aa (added TM helix + linkers + 51-aa cassette)"
                 if snork else None
             ),
-            cassette_aa=(
-                _diff(built_loop["protein_aa"], built_loop["native_aa"]) if built_loop
-                else _diff(built_snork["protein_aa"], built_snork["native_aa"]) if built_snork
-                else _int(snork["module_length"]) if snork else None
-            ),
-            tagged_protein_sha256=(
-                built_snork["protein_sha256"] if built_snork
-                else built_loop["protein_sha256"] if built_loop
-                else (snork or {}).get("snorkel_protein_sha256")
-            ) or None,
-            residue_before=((built_loop or {}).get("junction") or junction.get((r["design_id"], res), "")).partition("|")[0][:1] or None,
-            residue_after=((built_loop or {}).get("junction") or junction.get((r["design_id"], res), "")).partition("|")[2][:1] or None,
+            cassette_aa=_int(snork["module_length"]) if snork else None,
+            tagged_protein_sha256=(snork or {}).get("snorkel_protein_sha256") or None,
+            residue_before=junction.get((r["design_id"], res), "").partition("|")[0][:1] or None,
+            residue_after=junction.get((r["design_id"], res), "").partition("|")[2][:1] or None,
             rank=_int(r["pick_rank"]), status=status,
             decision=dec, status_detail=detail,
             confidence=r["confidence"] or None, rejected_alternative=r["rejected_alternative"] or None,
             rationale_json={
                 **_ranker_scores(r), "refold_verdict": r.get("refold_verdict"),
                 "decided_on": r.get("decided_on"),
-                "snorkel_construct": {
-                    "placement": built_snork["placement"],
-                    "cassette_after_construct_residue": built_snork["cassette_after_residue"],
-                    "native_aa": built_snork["native_aa"], "protein_aa": built_snork["protein_aa"],
-                } if built_snork else None,
                 "snorkel_design": {k: snork.get(k) for k in ("components", "status", "reason", "rejected_alternative",
                                                             "decided_by", "implemented_by")} if snork else None,
                 "loop_evidence": _loop_evidence(loops_by_design.get(m["design_id"], []), res),
@@ -775,8 +834,12 @@ def _internal(
             continue
         res = _int(r["insert_after_residue"])
         rank = _int(r["rank"])
-        if rank is None or rank > ALT_MAX_RANK or res == chosen.get(m["design_id"]):
-            continue  # ranked runners-up only, and never the decided pick twice
+        if (
+            rank is None
+            or rank > ALT_MAX_RANK
+            or res in (armed.get(m["design_id"]) or ())
+        ):
+            continue  # ranked runners-up only, and never an ordered arm twice
         before, _, after = (r.get("junction") or "").partition("|")
         out.append(_site(
             info_prop, site_id=f"{m['design_id']}-v5-r{rank}", m=m, rung=m["rung"],
@@ -1227,8 +1290,6 @@ def build(args) -> int:
     sites += _cterm(
         T["cterm"], inputs["cterm"], R, _cterm_decisions(T.get("cterm_decisions", []))
     )
-    # Built internal loop arms (the integration build of the ranker's decisions).
-    loop_built = {r["design_id"]: r for r in T.get("internal_constructs", [])}
     snorkel_built = {
         r["design_id"]: r
         for r in T["cterm"]
@@ -1252,8 +1313,9 @@ def build(args) -> int:
     sites += _type3(T["type3"], inputs["type3"], R, type3_proteins)
     sites += _multipass(T["multipass"], inputs["multipass"], R, lane)
     snorkels = {r["design_id"]: r for r in T.get("snorkel_designs", [])}
-    sites += _internal(T["internal_decisions"], T["internal_proposed"], inputs["internal_decisions"],
-                       inputs["internal_proposed"], R, loops, snorkels, snorkel_built, loop_built)  # fmt: skip
+    sites += _internal(T["internal_constructs"], T["internal_decisions"], T["internal_proposed"],
+                       inputs["internal_constructs"], inputs["internal_decisions"],
+                       inputs["internal_proposed"], R, loops, snorkels, snorkel_built)  # fmt: skip
     sites += _built_loop_arms(T["internal_gate"], inputs["internal_gate"], R)
     agent, agent_skipped = _agent_picks(
         T["agent_picks"], inputs["agent_picks"], R.by_design, canonical_sha
@@ -1369,6 +1431,7 @@ def build(args) -> int:
             "min_separation_aa": ALT_MIN_SEPARATION_AA,
             "dropped": alts_dropped,
         },
+        "order_of_record": _order_check(T.get("insert_numbering") or [], sites),
         "members_by_class": _count(members_rows, "membrane_class"),
         "members_without_primary_site": sorted(set(members) - with_site),
         "structures_by_kind_source": _count(structures, "kind", "source"),
@@ -1397,6 +1460,50 @@ def build(args) -> int:
     )
     print(f"load_version {manifest['load_version']}")
     return 0
+
+
+def _order_check(order_rows, sites) -> dict:
+    """Reconcile the built primary sites against the per-insert order of record.
+
+    ``l1_insert_numbering.tsv`` is one row per ordered insert (``insert_id`` and the
+    ``arm_id`` it belongs to), so a load that shows a member's arms must carry one
+    built primary site per row of it. Any gap either way is *reported*, not repaired:
+    the overlay is a view of the order, and a silent mismatch is how a reviewer ends
+    up reading a library nobody ordered. Counted per design id -- member ids are
+    retired as a join key.
+    """
+    if not order_rows:
+        return {}
+    want: dict[str, int] = {}
+    for r in order_rows:
+        want[r["design_id"]] = want.get(r["design_id"], 0) + 1
+    got: dict[str, int] = {}
+    arm_ids = {r["arm_id"] for r in order_rows if r.get("arm_id")}
+    site_ids = set()
+    for s in sites:
+        if s["is_primary"] and s["status"] == "built":
+            got[s["design_id"]] = got.get(s["design_id"], 0) + 1
+            site_ids.add(s["site_id"])
+    off = sorted(d for d in set(want) | set(got) if want.get(d, 0) != got.get(d, 0))
+    return {
+        "n_inserts": len(order_rows),
+        "n_built_primary_sites": sum(got.values()),
+        "members_with_the_ordered_arm_count": sum(
+            1 for d in want if want[d] == got.get(d, 0)
+        ),
+        "members_with_a_different_count": {
+            "n": len(off),
+            "examples": [
+                f"{d}: ordered {want.get(d, 0)}, loaded {got.get(d, 0)}"
+                for d in off[:20]
+            ],
+        },
+        "arms_per_member_ordered": _count([{"n": n} for n in want.values()], "n"),
+        "arms_per_member_loaded": _count([{"n": n} for n in got.values()], "n"),
+        # Informative only: the rungs whose source carries an arm id use it as the
+        # site id, so the overlap names the arms a reviewer can trace to a plate well.
+        "site_ids_equal_to_an_arm_id": len(arm_ids & site_ids),
+    }
 
 
 def _count(rows, *keys):
@@ -1433,6 +1540,22 @@ def _redact(col: str, value: str) -> str:
         return ""
     if col in REDACT_FILL:
         return REDACTED
+    if col in REDACT_NESTED and value:
+        # A column holding the source's own record as nested JSON: the same rule has
+        # to reach inside it, or the provenance the flat columns withhold is published
+        # one level down. (proteoform_json carried a design-repo PR and session name.)
+        try:
+            doc = json.loads(value)
+        except ValueError:
+            return value
+        if not isinstance(doc, dict):
+            return value
+        clean = {
+            k: (REDACTED if k in REDACT_FILL else v)
+            for k, v in doc.items()
+            if k not in REDACT_DROP
+        }
+        return json.dumps(clean, sort_keys=True)
     return value
 
 
