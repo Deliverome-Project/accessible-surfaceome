@@ -303,9 +303,10 @@ function AccessionResolution() {
         <li>
           Each reported UniProt accession is brought up to date with UniProt&apos;s accession history (the
           release files sec_ac.txt and delac_sp.txt of January 28, 2026): a deleted Swiss-Prot entry is dropped, a
-          merged (secondary) accession becomes its current primary, and a split accession becomes each of its
-          successors. This is the catalog&apos;s rule in{" "}
-          {code("src/accessible_surfaceome/merge/normalize.py", 28, "merge/normalize.py")}.
+          merged (secondary) accession becomes its current primary, and a split accession becomes its human
+          successor; one split into several human successors is not counted, as in the catalog (
+          {code("src/accessible_surfaceome/merge/normalize.py", 28, "merge/normalize.py")} and{" "}
+          {code("src/accessible_surfaceome/merge/__init__.py", 234, "merge/__init__.py")}).
         </li>
         <li>
           The current accession is matched to its gene through the HGNC gene ID (HGNC&apos;s own UniProt cross-reference

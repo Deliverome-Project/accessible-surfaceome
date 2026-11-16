@@ -92,6 +92,9 @@ test("the accession-resolution steps link the catalog code by commit", () => {
   assert.match(html, /How accessions were resolved/);
   assert.match(html, /blob\/[0-9a-f]{40}\/src\/accessible_surfaceome\/merge\/normalize\.py#L\d+/);
   assert.match(html, /blob\/[0-9a-f]{40}\/src\/accessible_surfaceome\/tools\/gene_lookup\.py#L\d+/);
+  assert.match(html, /blob\/[0-9a-f]{40}\/src\/accessible_surfaceome\/merge\/__init__\.py#L\d+/);
+  assert.match(html, /split into several human successors is not counted/);
+  assert.doesNotMatch(html, /each of its\s+successors/);
 });
 
 test("repositoryUrl knows the major proteomics repositories only", () => {
