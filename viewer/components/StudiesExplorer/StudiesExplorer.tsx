@@ -456,8 +456,12 @@ export function StudiesExplorer({ index }: Props) {
                     ) : null}
                   </td>
                   <td className={styles.num}>
-                    {arm.n_proteins.toLocaleString("en-US")}
-                    <Bar value={arm.n_proteins / maxN} />
+                    {/* Bar inline with the number, like Surface overlap, so the
+                        two bars sit on the same line in every row. */}
+                    <span className={styles.countInline}>
+                      <Bar value={arm.n_proteins / maxN} inline />
+                      <span className={styles.countInlineNum}>{arm.n_proteins.toLocaleString("en-US")}</span>
+                    </span>
                   </td>
                   <td>
                     <OverlapBar
@@ -520,9 +524,9 @@ export function StudiesExplorer({ index }: Props) {
   );
 }
 
-function Bar({ value }: { value: number }) {
+function Bar({ value, inline = false }: { value: number; inline?: boolean }) {
   return (
-    <span className={styles.bar} aria-hidden="true">
+    <span className={inline ? `${styles.bar} ${styles.barInline}` : styles.bar} aria-hidden="true">
       <span style={{ width: `${Math.max(2, value * 100)}%` }} />
     </span>
   );
