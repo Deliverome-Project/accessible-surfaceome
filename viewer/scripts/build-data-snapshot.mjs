@@ -386,6 +386,23 @@ async function snapshotGeneSynonyms(symbolsList) {
   );
 }
 
+// The published gene symbols, for the Pages Function: it answers `/{SYMBOL}/`
+// with the gene shell and a 200 only for these, and keeps the 404 for any
+// other path (functions/[[path]].js, lib/gene-route.js). An empty list writes
+// nothing, and the Function then serves every gene-shaped path as before.
+async function snapshotGeneSymbols(symbolsList) {
+  const symbols = [...new Set(symbolsList ?? [])].sort();
+  if (symbols.length === 0) {
+    console.warn("[snapshot] gene-symbols → no gene list; not writing it.");
+    return;
+  }
+  await mkdir(PUBLIC_DATA_DIR, { recursive: true });
+  const out = path.join(PUBLIC_DATA_DIR, "gene-symbols.json");
+  const body = JSON.stringify(symbols);
+  await writeFile(out, body);
+  console.log(`  wrote ${out} (${symbols.length} symbols, ${fmtMB(body.length)})`);
+}
+
 async function snapshot() {
   if (!API_BASE || API_BASE === "local") {
     console.log(
@@ -399,6 +416,7 @@ async function snapshot() {
   await snapshotEndpoints();
   const symbols = await snapshotRecords();
   await snapshotGeneSynonyms(symbols);
+  await snapshotGeneSymbols(symbols);
 }
 
 // Exported for unit tests (viewer/tests/build_data_snapshot_fetch.test.mjs)

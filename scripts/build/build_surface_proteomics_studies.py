@@ -98,7 +98,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-15-sweep-v11"
+SNAPSHOT = "2026-11-15-sweep-v12"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -123,6 +123,9 @@ STATUS_BY_ROLE = {
 # The build fails if an arm is missing, so a new arm must be classified here.
 CELL_GROUPS: dict[str, tuple[str, ...]] = {
     "blood_cancer": (
+        "zhou-molm13-2026",
+        "zhou-mv411-2026",
+        "zhou-rs411-2026",
         "george-aml-2026",
         "sanchez-jurkat-2026",
         "ho-k562-csc-2026",
@@ -282,6 +285,7 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "rahbar-mcf7mxr-pellicle-2005",
     ),
     "immune": (
+        "zhou-pbmc-2026",
         "laccid-2025",
         "everberg-pbmc-atps-2006",
         "udeshi-2024",
@@ -1431,6 +1435,112 @@ def public_wording(text: str | None) -> str | None:
     return americanize(text)
 
 
+# The audit records where it read the method and the instrument as short
+# citation notes ("Mol Cell Proteomics 2026, PMC13202573, Experimental
+# Procedures"; "ProteomeXchange record PXD068779"). The panel shows them as
+# sentences; the viewer links the identifiers (PMC, DOI, PXD, ...) in them.
+_SECTION = r"(?:STAR )?(?:Materials and )?(?:Methods|Method|Experimental Procedures|Results|Supplementary|Supplemental)\b"
+_METHOD_SOURCE_RULES = (
+    (
+        re.compile(r"^(?P<cite>[A-Z][^,]*? \d{4}), (?P<pmc>PMC\d+), (?P<sec>.+)$"),
+        "Method as described in the paper's {sec} ({cite}; full text {pmc}).",
+    ),
+    (
+        re.compile(r"^bioRxiv (?P<doi>10\.\S+?) full text, (?P<sec>.+)$"),
+        "Method as described in the preprint's {sec} (bioRxiv {doi}).",
+    ),
+    (
+        re.compile(rf"^(?P<pmc>PMC\d+) (?P<sec>{_SECTION}.*)$"),
+        "Method as described in the paper's {sec} (full text {pmc}).",
+    ),
+    (
+        re.compile(
+            r"^(?P<sec>(?:STAR Methods|Materials and Methods|Methods|Experimental [Pp]rocedures) .+)$"
+        ),
+        "Method as described in the paper's {sec}.",
+    ),
+)
+_SUMMARIZED = re.compile(
+    r"^Summarized from (?P<id>\S+) during our (?P<date>[\d/-]+) literature sweep"
+    r"(?P<unchecked>; not yet re-checked against the full paper)?$"
+)
+_ACCESS_NOTE = (
+    (re.compile(r"\s*\(Cloudflare 403\)"), " (refused automated access)"),
+    (
+        re.compile(r"(\w[\w-]*(?: DOI)?(?: page)?) 403\b"),
+        r"\1 refused automated access",
+    ),
+    (re.compile(r"\bor JS stub\b"), "or served no readable text"),
+    (re.compile(r"\(no PMCID/full text\)"), "(no free full text)"),
+    (re.compile(r"\(no PMCID\)"), "(no free full text)"),
+    (re.compile(r"\bno PMC record\b"), "no free full text in PubMed Central"),
+    (re.compile(r"\bNo PMCID\b"), "No free full text"),
+)
+
+
+def _sentence(text: str) -> str:
+    text = text.strip()
+    return text if text.endswith(".") else text + "."
+
+
+def _access_wording(text: str) -> str:
+    for pat, repl in _ACCESS_NOTE:
+        text = pat.sub(repl, text)
+    return text
+
+
+def method_source_sentence(text: str | None) -> str | None:
+    """Where the method was read, as a sentence for the panel."""
+    text = public_wording(text)
+    if not text:
+        return None
+    if m := _SUMMARIZED.match(text):
+        checked = "; not yet checked against the full text" if m["unchecked"] else ""
+        return f"Method summarized from the paper ({m['id']}) during our {m['date']} literature search{checked}."
+    for pat, template in _METHOD_SOURCE_RULES:
+        if m := pat.match(text):
+            return template.format(**m.groupdict())
+    return _sentence(f"Method read from: {_access_wording(text)}")
+
+
+_PX_RECORD = re.compile(
+    r"^ProteomeXchange records? (?P<ids>[A-Z]+\d+(?:, [A-Z]+\d+)*)$"
+)
+_PAPER_SECTION = re.compile(
+    r"^(?P<pmc>PMC\d+) (?:via NCBI efetch )?"
+    r"(?P<sec>(?:Methods|Method validation|Data acquisition table)[^;]*?)"
+    r"(?: \((?:Europe PMC XML|PMC page|PMC article page)\))?$"
+)
+_FULL_TEXT = re.compile(r"^(?P<src>bioRxiv|J-STAGE) full text Methods$")
+# The audit's verified method record: the instrument was read together with
+# the method, from the source the method sentence names.
+_AUDIT_METHOD = "methods as recorded in this audit (verified_method)"
+
+
+def instrument_source_sentence(text: str | None) -> str | None:
+    """Where the instrument was read, as a sentence for the panel."""
+    text = public_wording(text)
+    if not text:
+        return None
+    if text == _AUDIT_METHOD:
+        return (
+            "Instrument taken from our verified summary of the paper's methods,"
+            " read from the same source as the method."
+        )
+    if m := _PX_RECORD.match(text):
+        ids = m.group("ids").split(", ")
+        listed = ids[0] if len(ids) == 1 else ", ".join(ids[:-1]) + f" and {ids[-1]}"
+        record = "record" if len(ids) == 1 else "records"
+        return f"Instrument as listed in the ProteomeXchange {record} {listed}."
+    if m := _PAPER_SECTION.match(text):
+        return f"Instrument as named in the paper's {m['sec']} (full text {m['pmc']})."
+    if m := _FULL_TEXT.match(text):
+        return f"Instrument as named in the paper's Methods ({m['src']} full text)."
+    if text.startswith("Supplementary "):
+        return _sentence(f"Instrument as listed in the paper's {text}")
+    return _sentence(f"Where we looked for the instrument: {_access_wording(text)}")
+
+
 def _public_url(value: Any) -> str | None:
     if not isinstance(value, str):
         return None
@@ -1583,12 +1693,12 @@ def build_methods(
         )
         rec = {
             "method": americanize(a.get("verified_method") or d.get("method_detail")),
-            "method_source": public_wording(a.get("source")),
+            "method_source": method_source_sentence(a.get("source")),
             "beads": public_wording(a.get("beads")),
             "lot": a.get("lot"),
             "instrument": a.get("instrument"),
             "instrument_detail": a.get("instrument_detail"),
-            "instrument_source": a.get("instrument_source"),
+            "instrument_source": instrument_source_sentence(a.get("instrument_source")),
             "cell_or_tissue": americanize(d.get("cell_or_tissue_type")),
             "sample_scope": americanize(d.get("sample_scope")),
             "source_files": files,
