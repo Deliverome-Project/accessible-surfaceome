@@ -15,6 +15,12 @@ export const metadata: Metadata = {
  * and membrane-protein class, step through members, and record "looks good / no" or
  * an alternative tag site. The design data comes from /v1/l1-design; reviews go to
  * the token-gated /v1/l1-review endpoints (private database).
+ *
+ * The header is deliberately two lines. A reviewer is here to go through 2,710 members
+ * and sees this page tens of times a day; the paragraph that explained the whole scheme
+ * cost most of a 1280x800 viewport on every one of those visits, which pushed the
+ * filters, the list and the detail panel below the fold. What a reviewer needs every
+ * visit stays; the rest is one disclosure away.
  */
 export default function L1ReviewPage() {
   return (
@@ -23,12 +29,22 @@ export default function L1ReviewPage() {
         <header className={styles.head}>
           <h1 className={`h-data ${styles.title}`}>L1 library review</h1>
           <p className={styles.lede}>
-            Every member of the L1 library with the tag site we plan to use and why it was chosen: the rung logic,
-            scores, gate and refold results, who decided it and the alternative it beat. Agent sessions now make these
-            calls under delegation; <strong>Looks good / No</strong> and <strong>Suggest an alternative tag</strong>{" "}
-            are how a reviewer overturns one. Residue numbers are the member&rsquo;s own (an isoform or ortholog is not
-            numbered like the canonical). Membrane class is rule-based, for browsing only.
+            Every member with the tag site we plan to use and why.{" "}
+            <strong>Residue numbers are each member&rsquo;s own</strong> — an isoform or ortholog is not
+            numbered like the canonical.
           </p>
+          <details className={styles.about}>
+            <summary>what the fields mean</summary>
+            <p>
+              The rung logic, scores, gate and refold results, who decided each pick and the
+              alternative it beat are all on the member&rsquo;s card. Agent sessions make these calls
+              under delegation; <strong>Looks good / No</strong> and{" "}
+              <strong>Suggest an alternative tag</strong> are how a reviewer overturns one. Membrane
+              class is rule-based, for browsing only. The topology strip is the member&rsquo;s own
+              DeepTMHMM prediction, coloured as on the gene pages, with the tag insert flagged in
+              orange.
+            </p>
+          </details>
         </header>
         <L1Review />
       </section>

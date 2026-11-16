@@ -421,6 +421,12 @@ export interface LibraryTopologyRow {
   tool?: string | null;
   topology_version?: string | null;
   topology_acc?: string | null;
+  /** Length of the ordered construct the topology was computed on. The Worker serves the
+   *  record's `deterministic_features` values as strings, so a consumer comparing this
+   *  against a number has to coerce — see `l1MemberTopology`, which uses it to refuse a
+   *  topology whose length disagrees with the member it was paired to. */
+  ordered_length_aa?: string | number | null;
+  species?: string | null;
 }
 
 export interface LibraryStructureRow {
