@@ -105,3 +105,128 @@ test("curated contacts are drawn only on a member whose protein is the reference
   assert.equal(curatedContactsAlign(null, "a".repeat(64)), false);
   assert.equal(curatedContactsAlign("a".repeat(64), undefined), false);
 });
+
+// --------------------------------------------- browsing, gene grouping, topology strip
+
+test("members of one gene group into one entry, in the browsing order they already have", async () => {
+  const { groupByGene } = await import("../lib/l1-design");
+  const got = groupByGene([
+    { gene_symbol: "TFR2" }, { gene_symbol: "TFRC" }, { gene_symbol: "TFRC" }, { gene_symbol: "TG" },
+  ]);
+  assert.deepEqual(got.map((g) => [g.gene_symbol, g.members.length, g.firstIndex]), [
+    ["TFR2", 1, 0], ["TFRC", 2, 1], ["TG", 1, 3],
+  ]);
+});
+
+test("letter keys walk the genes starting with that letter and wrap", async () => {
+  const { nextIndexByLetter } = await import("../lib/l1-design");
+  const g = [{ gene_symbol: "ABCA8" }, { gene_symbol: "TFRC" }, { gene_symbol: "TFRC" }, { gene_symbol: "TG" }];
+  assert.equal(nextIndexByLetter(g, "t", -1), 1);     // from nothing selected
+  assert.equal(nextIndexByLetter(g, "T", 1), 2);      // same letter again walks on
+  assert.equal(nextIndexByLetter(g, "T", 3), 1);      // and wraps past the end
+  assert.equal(nextIndexByLetter(g, "a", 1), 0);
+  assert.equal(nextIndexByLetter(g, "z", 0), -1);     // no such letter in this filter
+  assert.equal(nextIndexByLetter(g, "ab", 0), -1);    // not a single letter
+  assert.equal(nextIndexByLetter([], "a", 0), -1);
+});
+
+test("a topology is used only when it describes THIS member's ordered protein", async () => {
+  const { l1MemberTopology } = await import("../lib/l1-design");
+  const rows = [
+    { candidate_id: "l1-p2131", per_residue_topology: "I".repeat(760), ordered_length_aa: "760" },
+    { candidate_id: "l1-p2617", per_residue_topology: "I".repeat(732), ordered_length_aa: "732" },
+    // Another tranche's member for the same gene: never this member's topology.
+    { candidate_id: "l2-p4210", per_residue_topology: "I".repeat(763), ordered_length_aa: "763" },
+  ];
+  const human = { design_id: "l1-p2131", ordered_length_aa: 760 };
+  const cyno = { design_id: "l1-p2617", ordered_length_aa: 732 };
+  assert.equal(l1MemberTopology(rows, human)?.candidate_id, "l1-p2131");
+  assert.equal(l1MemberTopology(rows, cyno)?.candidate_id, "l1-p2617");
+  // A length disagreement means the two halves describe different proteins — refuse it
+  // rather than draw the insert flag against the wrong bands.
+  assert.equal(l1MemberTopology(rows, { design_id: "l1-p2131", ordered_length_aa: 999 }), null);
+  assert.equal(l1MemberTopology(rows, { design_id: "l1-p9999", ordered_length_aa: 760 }), null);
+  assert.equal(l1MemberTopology(rows, { design_id: null, ordered_length_aa: 760 }), null);
+  assert.equal(l1MemberTopology([], human), null);
+  assert.equal(
+    l1MemberTopology([{ candidate_id: "l1-p2131", per_residue_topology: "" }], human),
+    null,
+  );
+});
+
+test("the legend names only the topology states the member actually has", async () => {
+  const { topologyStatesPresent } = await import("../lib/l1-design");
+  assert.deepEqual(topologyStatesPresent("SSSOOOMMMIII"), ["M", "O", "I", "S"]);
+  assert.deepEqual(topologyStatesPresent("IIII"), ["I"]);
+  assert.deepEqual(topologyStatesPresent(""), []);
+});
+
+test("a member's tab is named for the proteoform it encodes, falling back to candidate_set", async () => {
+  const { l1MemberTabLabel } = await import("../lib/l1-design");
+  const human = { candidate_set: "library_reference", species: "human" };
+  const cyno = { candidate_set: "ortholog", species: "cyno" };
+  // With a topology row the cohort decides, which is the only field that knows a
+  // library_reference member is really a UniProt isoform.
+  assert.equal(l1MemberTabLabel(human, { cohort: "human_canonical" }), "Canonical");
+  assert.equal(l1MemberTabLabel(human, { cohort: "human_isoform", topology_acc: "P02786-2" }), "Isoform 2");
+  assert.equal(l1MemberTabLabel(cyno, { cohort: "cyno_ortholog" }), "Cyno ortholog");
+  // Without one, the index's own fields.
+  assert.equal(l1MemberTabLabel(human), "Reference");
+  assert.equal(l1MemberTabLabel(cyno), "Cyno ortholog");
+  assert.equal(l1MemberTabLabel({ candidate_set: "isoform", species: "human" }), "Isoform");
+});
+
+test("every current pick gets a flag, ordered along the sequence and labelled by arm", async () => {
+  const { insertFlags, armLabel } = await import("../components/L1Review/L1TopologyStrip");
+  const arm = (id: string, r: number, primary = true): L1Site =>
+    site({ site_id: id, insert_after_residue: r, is_primary: primary, residue_before: "H", residue_after: "D" });
+  const flags = insertFlags([arm("l1-p1088-a2", 151), arm("l1-p1088-a1", 55), arm("l1-p1088-a3", 80)], 200);
+  assert.deepEqual(flags.map((f) => f.label), ["a1", "a3", "a2"]);
+  assert.deepEqual(flags.map((f) => f.insertAfterResidue), [55, 80, 151]);
+  // Alternatives are not flagged: the strip's job is "where does THIS member's tag go".
+  assert.equal(insertFlags([arm("l1-p1088-a1", 55), arm("alt", 70, false)], 200).length, 1);
+  // A site id without an arm suffix is labelled by its residue, not by the raw id —
+  // `l1-p2089-res1-igk_tag` would otherwise put 20 characters on a 6px mark.
+  assert.equal(armLabel("l1-p2089-res1-igk_tag"), null);
+  assert.equal(armLabel("l1-p1088-a2"), "a2");
+  assert.equal(insertFlags([arm("l1-p2089-res1-igk_tag", 1)], 299)[0].label, "1");
+  assert.equal(insertFlags([arm("l1-p0001-nterm", 0)], 299)[0].label, "N");
+});
+
+test("the strip reuses the gene pages' topology bands and flags the insert over them", async () => {
+  const { L1TopologyStrip, insertFlags } = await import("../components/L1Review/L1TopologyStrip");
+  const flags = insertFlags(
+    [site({ site_id: "l1-p1088-a1", insert_after_residue: 55, residue_before: "H", residue_after: "D" })],
+    200,
+  );
+  const html = renderToStaticMarkup(
+    React.createElement(L1TopologyStrip, {
+      topology: "I".repeat(50) + "M".repeat(20) + "O".repeat(130),
+      flags, gene: "LHFPL6", variantLabel: "Canonical", nAlternatives: 2,
+    }),
+  );
+  // The bands are TOPOLOGY_COLORS straight from lib/structure-viewer-types, the same
+  // palette the gene pages' strip and 3D cartoon read — not a second scheme.
+  assert.match(html, /#A9CFA8/); // intracellular
+  assert.match(html, /#FFD579/); // TM helix
+  assert.match(html, /#8878C8/); // extracellular
+  assert.match(html, /Intracellular/);
+  assert.match(html, /tag insert/);
+  assert.match(html, /between H55 and D56/);
+  assert.match(html, /2 alternatives not drawn here/);
+  // Positioned on the boundary the cassette goes into, as a fraction of this member's
+  // own length — 55 of 200.
+  assert.match(html, /left:27\.5%/);
+});
+
+test("a member with no topology gets no strip rather than one drawn from something else", async () => {
+  const { L1TopologyStrip } = await import("../components/L1Review/L1TopologyStrip");
+  assert.equal(
+    renderToStaticMarkup(
+      React.createElement(L1TopologyStrip, {
+        topology: "", flags: [], gene: "X", variantLabel: "Canonical", nAlternatives: 0,
+      }),
+    ),
+    "",
+  );
+});

@@ -21,8 +21,13 @@
 .search { font: inherit; font-size: 0.85rem; padding: 0.2rem 0.5rem; border: 1px solid var(--line); border-radius: var(--radius-pill); margin-left: auto; min-width: 12rem; }
 
 .split { display: grid; grid-template-columns: minmax(16rem, 22rem) 1fr; gap: var(--space-4); align-items: start; }
-@media (max-width: 900px) { .split { grid-template-columns: 1fr; } .list { max-height: 40vh; } }
-.list { list-style: none; margin: 0; padding: 0; max-height: 78vh; overflow-y: auto; border: 1px solid var(--line-soft); border-radius: var(--radius-sm); position: sticky; top: var(--space-3); }
+@media (max-width: 900px) { .split { grid-template-columns: 1fr; } .listCol { position: static; } .list { max-height: 40vh; } }
+/* Sized to what is actually on screen, not to 78vh. The list starts ~16rem down the
+   page, so a 78vh list ran a third of its height below the fold: arrow-stepping scrolled
+   the selected row into the list's view and out of the window's. The sticky wrapper
+   keeps that same height pinned once the page scrolls. */
+.listCol { position: sticky; top: var(--space-2); }
+.list { list-style: none; margin: 0; padding: 0; max-height: calc(100vh - 22rem); min-height: 14rem; overflow-y: auto; border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
 .row, .rowOn {
   font: inherit; width: 100%; text-align: left; display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
   padding: 0.35rem 0.6rem; border: 0; border-bottom: 1px solid var(--line-soft); background: transparent; cursor: pointer; color: var(--ink);
@@ -98,3 +103,110 @@
 .table th { text-align: left; color: var(--muted); font-weight: var(--fw-medium); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem 0.3rem 0; border-bottom: 1px solid var(--line-soft); }
 .table td { padding: 0.3rem 0.6rem 0.3rem 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
 .pmid { margin-right: 0.35rem; }
+
+/* --------------------------------------------------- topology strip + tag insert flag
+   Bands and legend come from the gene pages' TopologyBar / TopologyLegend, so the
+   topology palette here is the production one (lib/structure-viewer-types.ts
+   TOPOLOGY_COLORS). Only the insert flag is this page's own.
+
+   --l1-insert is a saturated orange chosen against that palette, not a brand amber:
+   --amber-bright (#f4aa28) sits right on top of the TM-helix yellow (#FFD579), and
+   --amber-mid is too muted to be the one unmissable mark on the strip. #FF7A00 keeps
+   the largest worst-case separation from every topology band of the oranges tried
+   (CIEDE2000 dE 23 normal / 19 protanopia / 14 deuteranopia / 8 tritanopia against the
+   nearest band, which is the red signal peptide) — comparable to the production
+   legend's own closest internal pair, so it is no worse than what the gene pages
+   already ship. Hue is never the only cue regardless: the flag is 6px against 14px
+   bands, has a labelled head, and --l1-insert-edge (the brand amber-dark) outlines it
+   at >= 2:1 luminance against every band, which dichromats keep in full. */
+.strip {
+  --l1-insert: #FF7A00;
+  --l1-insert-edge: var(--amber-dark);
+  border: 1px solid var(--line-soft);
+  border-left: 4px solid var(--l1-insert);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3) 0.35rem;
+  margin: var(--space-2) 0 var(--space-3);
+  background: var(--bg-soft);
+}
+.stripHead { display: flex; flex-wrap: wrap; gap: 0.35rem var(--space-3); align-items: baseline; }
+.stripTitle { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-deep); font-weight: var(--fw-medium); }
+/* Head room for the flag, which overhangs the bar on both sides. */
+.stripBody { position: relative; padding: 1.15rem 0 0.35rem; }
+
+.insert {
+  position: absolute;
+  bottom: 0.35rem;
+  width: 6px;                      /* bands are 14px tall; nothing else on the strip is this thick */
+  height: 22px;
+  transform: translateX(-50%);
+  background: var(--l1-insert);
+  border: 1px solid var(--l1-insert-edge);
+  border-radius: 1px;
+  /* Halo so the flag never reads as part of whichever band it crosses. */
+  box-shadow: 0 0 0 1.5px var(--bg-soft, #fff);
+  pointer-events: auto;
+  z-index: 2;
+}
+.insertHead {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--l1-insert);
+  border: 1px solid var(--l1-insert-edge);
+  border-radius: var(--radius-sm);
+  color: #26120a;                  /* dark on orange: 7.4:1, so the arm id is readable */
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.25;
+  padding: 0 0.22rem;
+  white-space: nowrap;
+}
+.stripLegend { display: flex; flex-wrap: wrap; gap: 0.1rem var(--space-4); align-items: baseline; }
+.stripLegend ul { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.2rem var(--space-3); font-size: 0.8rem; }
+.insertSwatch {
+  display: inline-block; width: 6px; height: 13px; vertical-align: -0.15rem; margin-right: 0.3rem;
+  background: var(--l1-insert); border: 1px solid var(--l1-insert-edge); border-radius: 1px;
+}
+
+/* ------------------------------------------------------------- gene grouping and tabs */
+.geneGroup { border-bottom: 1px solid var(--line-soft); }
+.geneGroup:last-child { border-bottom: 0; }
+.memberTabs { display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0 0.6rem 0.4rem 1.1rem; }
+.memberTab, .memberTabOn {
+  font: inherit; font-size: 0.72rem; padding: 0.05rem 0.4rem; border-radius: var(--radius-pill);
+  border: 1px solid var(--line); background: var(--bg-soft); color: var(--ink); cursor: pointer;
+  display: inline-flex; gap: 0.25rem; align-items: center;
+}
+.memberTabOn { border-color: var(--accent); background: var(--accent); color: #fff; font-weight: var(--fw-medium); }
+.memberTabOn .goodDot { box-shadow: 0 0 0 1px #fff; }
+.detailTabs { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: var(--space-2) 0 0; }
+.detailTabs .memberTab, .detailTabs .memberTabOn { font-size: 0.78rem; padding: 0.12rem 0.55rem; }
+
+/* ----------------------------------------------------------------- keyboard affordance */
+.keys { display: flex; flex-wrap: wrap; gap: 0.2rem var(--space-3); align-items: baseline; font-size: 0.75rem; color: var(--muted); }
+.keys kbd {
+  font-family: var(--font-mono); font-size: 0.72rem; padding: 0 0.25rem;
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px;
+  background: var(--bg-soft); color: var(--ink);
+}
+.keyHelp { margin: 0; }
+.keyHelp > summary { cursor: pointer; font-size: 0.75rem; color: var(--muted); list-style: none; }
+.keyHelp > summary::-webkit-details-marker { display: none; }
+.keyHelp[open] > summary { margin-bottom: 0.3rem; }
+.keyTable { display: grid; grid-template-columns: max-content 1fr; gap: 0.1rem var(--space-3); font-size: 0.78rem; margin: 0; }
+.keyTable dt { color: var(--ink); }
+.keyTable dd { margin: 0; color: var(--muted); }
+.letterToast {
+  font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-deep);
+  background: var(--bg-warm); border-radius: var(--radius-pill); padding: 0 0.45rem;
+}
+
+/* --------------------------------------------------------------- above-the-fold layout */
+.listHead { display: flex; flex-wrap: wrap; gap: 0.3rem var(--space-3); align-items: baseline; padding: 0.3rem 0.1rem; }
+.listCount { font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.identity > summary { cursor: pointer; font-size: 0.8rem; color: var(--muted); }
+.identity[open] .settings { margin-top: var(--space-2); }
+.identity .settings { border-bottom: 0; padding-top: 0; }

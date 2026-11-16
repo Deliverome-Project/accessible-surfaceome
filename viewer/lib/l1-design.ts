@@ -656,3 +656,139 @@ export function currentL1Memberships<T extends { candidate_id: string; library: 
   }
   return out;
 }
+
+// ------------------------------------------------- review-page browsing and topology
+
+/**
+ * Per-residue topology for the proteins the L1 members encode, from the gene record.
+ *
+ * The `/v1/l1-design` payload carries `topology_version` but not the string itself; the
+ * strings live on the gene record at
+ * `deterministic_features.library_designed_topology`, one row per library candidate,
+ * keyed by `candidate_id` (which IS the member's `design_id`). Fetched here rather than
+ * threaded down from the gene page because the review browser is a client component that
+ * never renders inside a gene page.
+ *
+ * Returns `[]` for any failure: the strip is an aid, so a missing topology must degrade
+ * to "no strip", never to a strip drawn from something else.
+ */
+export async function fetchL1MemberTopologies(
+  symbol: string,
+  apiBase: string,
+  signal?: AbortSignal,
+): Promise<LibraryTopologyRow[]> {
+  try {
+    const res = await fetch(`${apiBase}/v1/genes/${encodeURIComponent(symbol)}`, { signal });
+    if (!res.ok) return [];
+    const body = (await res.json()) as {
+      deterministic_features?: { library_designed_topology?: LibraryTopologyRow[] | null } | null;
+    };
+    const rows = body?.deterministic_features?.library_designed_topology;
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The topology row that describes THIS member's ordered protein, or null.
+ *
+ * Paired by `candidate_id` == `design_id` and then checked for length agreement, for the
+ * same reason {@link structureViewerDataFromLibraryMember} does: a strip drawn from
+ * another proteoform's topology is a perfectly plausible-looking lie, and the insert flag
+ * on top of it would point at the wrong band. A gene's record also carries rows for
+ * members of other tranches (L2), which the design-id match excludes on its own.
+ */
+export function l1MemberTopology(
+  rows: readonly LibraryTopologyRow[] | null | undefined,
+  member: Pick<L1Member, "design_id" | "ordered_length_aa">,
+): LibraryTopologyRow | null {
+  if (!rows?.length || !member.design_id) return null;
+  const row = rows.find((r) => r.candidate_id && r.candidate_id === member.design_id);
+  const topo = row?.per_residue_topology ?? "";
+  if (!row || !topo) return null;
+  // `ordered_length_aa` arrives as a string on the record's rows and as a number on the
+  // design payload, so compare numerically rather than by identity.
+  const rowLen = Number(row.ordered_length_aa ?? NaN);
+  if (Number.isFinite(rowLen) && rowLen !== topo.length) return null;
+  const memberLen = member.ordered_length_aa;
+  if (memberLen != null && memberLen !== topo.length) return null;
+  return row;
+}
+
+/** The topology states actually present in a string, in legend order. */
+export function topologyStatesPresent(topology: string): string[] {
+  const seen = new Set(topology);
+  return ["M", "O", "I", "S", "B"].filter((s) => seen.has(s));
+}
+
+/**
+ * One entry per gene, holding that gene's members in the browsing order they already
+ * have.
+ *
+ * `filterIndex` sorts by gene symbol then member id, so a gene's members are already
+ * adjacent; grouping preserves that order, which is what lets the ← → keys keep walking
+ * member by member (nothing is skipped) while the list shows one entry per gene with its
+ * library reference, isoform and ortholog members as tabs.
+ */
+export interface L1GeneGroup<T extends { gene_symbol: string }> {
+  gene_symbol: string;
+  members: T[];
+  /** Index of this group's first member in the flat, filtered member list. */
+  firstIndex: number;
+}
+
+export function groupByGene<T extends { gene_symbol: string }>(
+  members: readonly T[],
+): L1GeneGroup<T>[] {
+  const out: L1GeneGroup<T>[] = [];
+  members.forEach((m, i) => {
+    const last = out[out.length - 1];
+    if (last && last.gene_symbol === m.gene_symbol) last.members.push(m);
+    else out.push({ gene_symbol: m.gene_symbol, members: [m], firstIndex: i });
+  });
+  return out;
+}
+
+/**
+ * What to call a member on its gene's tab strip: the proteoform it encodes when the
+ * topology row says (`libraryVariantLabel` reads the topology *cohort*, which is the only
+ * field that knows whether a `library_reference` member is really the canonical or an
+ * isoform), otherwise the coarse candidate_set + species the index carries.
+ */
+export function l1MemberTabLabel(
+  member: Pick<L1IndexMember, "candidate_set" | "species">,
+  topology?: LibraryTopologyRow | null,
+): string {
+  if (topology) return libraryVariantLabel(topology);
+  const set = (member.candidate_set ?? "").toLowerCase();
+  const species = (member.species ?? "").toLowerCase();
+  if (set === "ortholog") return species ? `${species[0].toUpperCase()}${species.slice(1)} ortholog` : "Ortholog";
+  if (set === "isoform") return "Isoform";
+  if (set === "library_reference") return species && species !== "human" ? `Reference (${species})` : "Reference";
+  if (set === "expression_rescue") return "Rescue arm";
+  return set ? set.replace(/_/g, " ") : "Member";
+}
+
+/**
+ * Index of the next member whose gene starts with `letter`, searching forward from
+ * `from` and wrapping, so pressing the same letter again walks that letter's genes
+ * instead of sticking on the first one. -1 when no gene in view starts with it.
+ */
+export function nextIndexByLetter(
+  members: readonly { gene_symbol: string }[],
+  letter: string,
+  from: number,
+): number {
+  const L = letter.toUpperCase();
+  if (!members.length || L.length !== 1) return -1;
+  const start = from < 0 ? 0 : from;
+  // step runs to members.length so the last candidate examined is `start` itself: when
+  // one gene is the letter's only match, pressing the key again stays on it rather than
+  // reporting "no such letter", which would read as a broken key.
+  for (let step = 1; step <= members.length; step += 1) {
+    const i = (start + step) % members.length;
+    if (members[i].gene_symbol.toUpperCase().startsWith(L)) return i;
+  }
+  return -1;
+}

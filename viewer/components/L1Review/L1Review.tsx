@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   PLACEMENT_LABEL,
   SOURCE_LABEL,
@@ -9,12 +9,17 @@ import {
   countBy,
   fetchL1Design,
   fetchL1Index,
+  fetchL1MemberTopologies,
   fetchL1Reviews,
   filterIndex,
+  groupByGene,
+  l1MemberTabLabel,
+  l1MemberTopology,
   l1SiteLabel,
   l1StructureUrl,
   latestVerdicts,
   modelToMemberResidue,
+  nextIndexByLetter,
   sortSites,
   submitL1Review,
   visibleContacts,
@@ -28,6 +33,8 @@ import {
   type L1Site,
   type L1Structure,
 } from "../../lib/l1-design";
+import type { LibraryTopologyRow } from "../../lib/structure-viewer-types";
+import { L1TopologyStrip, insertFlags } from "./L1TopologyStrip";
 import { L1Structure3D, type L1Mark } from "./L1Structure3D";
 import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
 import styles from "./L1Review.module.css";
@@ -390,6 +397,7 @@ function CuratedContacts({ gene, aligned, acc }: { gene: CuratedContactsData | n
 
 function MemberDetail({
   member,
+  topologyRow,
   loadVersion,
   reviews,
   token,
@@ -397,6 +405,7 @@ function MemberDetail({
   onSaved,
 }: {
   member: L1Member;
+  topologyRow: LibraryTopologyRow | null;
   loadVersion: string;
   reviews: L1Reviews | null;
   token: string;
@@ -474,8 +483,20 @@ function MemberDetail({
     [model],
   );
 
+  const topology = topologyRow?.per_residue_topology ?? "";
+  const flags = insertFlags(sites, member.ordered_length_aa);
+
   return (
     <div className={styles.detailBody}>
+      {topology ? (
+        <L1TopologyStrip
+          topology={topology}
+          flags={flags}
+          gene={member.gene_symbol}
+          variantLabel={l1MemberTabLabel(member, topologyRow)}
+          nAlternatives={sites.filter((s) => s.is_primary === false).length}
+        />
+      ) : null}
       {member.proteoform?.decision ? (
         <p className={styles.caveat}>
           <strong>Proteoform audit: {member.proteoform.decision}</strong>
@@ -561,6 +582,14 @@ export function L1Review() {
   const [reviewer, setReviewer] = useState("");
   const [reviews, setReviews] = useState<L1Reviews | null>(null);
   const [authMsg, setAuthMsg] = useState("");
+  const [topologies, setTopologies] = useState<LibraryTopologyRow[]>([]);
+  // What the last letter key did, shown for a moment so a key that found nothing is not
+  // silent (pressing Z with no Z gene in the filter otherwise looks like a dead page).
+  const [letterMsg, setLetterMsg] = useState("");
+  const searchRef = useRef<HTMLInputElement | null>(null);
+  const activeRowRef = useRef<HTMLButtonElement | null>(null);
+  const listRef = useRef<HTMLOListElement | null>(null);
+  const [keyHelpOpen, setKeyHelpOpen] = useState(false);
 
   useEffect(() => {
     setToken(store.get("l1-review-token"));
@@ -597,12 +626,16 @@ export function L1Review() {
   const verdicts = useMemo(() => latestVerdicts(reviews?.reviews ?? []), [reviews]);
 
   const update = useCallback((patch: Partial<typeof filters>) => {
-    setFilters((f) => {
-      const next = { ...f, ...patch };
-      writeUrl(next);
-      return next;
-    });
+    setFilters((f) => ({ ...f, ...patch }));
   }, []);
+  // The URL is written from an effect, not from inside the setFilters updater. React
+  // runs an updater during render, and Next patches `history.replaceState`, so writing
+  // there made the router set state mid-render — React's "Cannot update a component
+  // while rendering a different component" warning, once per keypress now that the
+  // arrows drive this.
+  useEffect(() => {
+    writeUrl(filters);
+  }, [filters]);
   const go = useCallback(
     (delta: number) => {
       if (!visible.length) return;
@@ -611,18 +644,106 @@ export function L1Review() {
     },
     [pos, visible, update],
   );
+  const goTo = useCallback(
+    (i: number) => {
+      const m = visible[i];
+      if (m) update({ m: m.design_id ?? m.member_id });
+    },
+    [visible, update],
+  );
+  /** Jump to the next gene starting with `letter`, wrapping; says so when there is none. */
+  const jumpToLetter = useCallback(
+    (letter: string) => {
+      const i = nextIndexByLetter(visible, letter, pos);
+      const L = letter.toUpperCase();
+      if (i < 0) {
+        setLetterMsg(`${L} — no gene in this filter`);
+        return;
+      }
+      setLetterMsg(`${L} → ${visible[i].gene_symbol}`);
+      goTo(i);
+    },
+    [visible, pos, goTo],
+  );
+  useEffect(() => {
+    if (!letterMsg) return;
+    const t = setTimeout(() => setLetterMsg(""), 1600);
+    return () => clearTimeout(t);
+  }, [letterMsg]);
 
   useEffect(() => {
     if (!current) {
       setDetail(null);
+      setTopologies([]);
       return;
     }
     let live = true;
+    const ctl = new AbortController();
     fetchL1Design(current.gene_symbol, API_BASE).then((d) => live && setDetail(d));
+    // The per-residue topology strings live on the gene record, not on the design
+    // payload. Fetched per gene, in parallel with the design, so stepping through
+    // members of one gene costs one call for the whole group.
+    setTopologies([]);
+    fetchL1MemberTopologies(current.gene_symbol, API_BASE, ctl.signal).then(
+      (rows) => live && setTopologies(rows),
+    );
     return () => {
       live = false;
+      ctl.abort();
     };
   }, [current?.gene_symbol]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fit the list to the window rather than to a guessed `calc(100vh - Nrem)`: how far
+  // down the page it starts depends on how many rows the filter chips wrap onto, which
+  // changes with the window width and with the filters themselves. A list taller than
+  // the space below it is the specific bug this avoids — `scrollIntoView` would put the
+  // selected row inside the list's own view but below the window's, so arrow-stepping
+  // looked like it had stopped moving.
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const fit = () => {
+      // Below the split's breakpoint the list sits above the detail panel at a fixed
+      // 40vh (the stylesheet's job); an inline height would fight it.
+      if (window.innerWidth <= 900) {
+        el.style.removeProperty("max-height");
+        return;
+      }
+      const want = Math.max(220, Math.round(window.innerHeight - el.getBoundingClientRect().top - 12));
+      // Only write on a real change: this runs from a ResizeObserver, and an
+      // unconditional write is how those turn into loops.
+      if (Math.abs(want - parseFloat(el.style.maxHeight || "0")) > 1) el.style.maxHeight = `${want}px`;
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    window.addEventListener("scroll", fit, { passive: true });
+    const ro = new ResizeObserver(fit);
+    ro.observe(document.body);
+    return () => {
+      window.removeEventListener("resize", fit);
+      window.removeEventListener("scroll", fit);
+      ro.disconnect();
+    };
+    // Keyed on `index` because the list element does not exist while the library is
+    // loading: a mount-only effect would measure nothing and leave the stylesheet's
+    // fallback height in place, which is the very over-long list this works around.
+  }, [index]);
+
+  // Keep the selected row in view when the keys move the selection: the list is a
+  // scrolling column, so arrow-walking it without this scrolls the selection off screen
+  // within a dozen members. Scrolls the LIST only, by the least that brings the row in —
+  // `scrollIntoView` would also scroll the window, which drags the detail panel and the
+  // filters the reviewer is working against out from under them on a deep-linked load.
+  useEffect(() => {
+    const row = activeRowRef.current;
+    const box = listRef.current;
+    if (!row || !box) return;
+    const r = row.getBoundingClientRect();
+    const b = box.getBoundingClientRect();
+    const pad = 8;
+    if (r.top < b.top) box.scrollTop -= b.top - r.top + pad;
+    else if (r.bottom > b.bottom) box.scrollTop += r.bottom - b.bottom + pad;
+  }, [current?.member_id]);
 
   // A detail from a newer load than the index means a load landed while the page was
   // open: refresh the index so both describe the same library.
@@ -635,13 +756,60 @@ export function L1Review() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return;
-      if (e.key === "ArrowRight" || e.key === "j") go(1);
-      if (e.key === "ArrowLeft" || e.key === "k") go(-1);
+      const typing =
+        !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable);
+      // Escape leaves a field so the rest of the keys come back; everything else stays
+      // out of the way while the reviewer is writing a reason.
+      if (typing) {
+        if (e.key === "Escape") t.blur();
+        return;
+      }
+      // Never steal a browser or OS shortcut (⌘L, ctrl-F, alt-←).
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        go(1);
+        return;
+      }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        go(-1);
+        return;
+      }
+      if (e.key === "Home") {
+        e.preventDefault();
+        goTo(0);
+        return;
+      }
+      if (e.key === "End") {
+        e.preventDefault();
+        goTo(visible.length - 1);
+        return;
+      }
+      // `?` is shift+/ on a US layout, where the browser reports key "?" — but not on
+      // every layout or every automation driver, so shift+/ is taken as `?` too.
+      if (e.key === "?" || (e.key === "/" && e.shiftKey)) {
+        e.preventDefault();
+        setKeyHelpOpen((v) => !v);
+        return;
+      }
+      if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+        return;
+      }
+      // A single letter jumps to the next gene starting with it. This is why j / k are no
+      // longer prev / next: 2,710 members run the whole alphabet, so every letter has to
+      // mean "jump to that letter" — the arrows already cover prev / next.
+      if (/^[a-zA-Z]$/.test(e.key)) {
+        e.preventDefault();
+        jumpToLetter(e.key);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go]);
+  }, [go, goTo, jumpToLetter, visible.length]);
 
   if (index === "loading") return <p className={styles.muted}>Loading the library…</p>;
   if (!index || !index.load) return <p className={styles.muted}>No L1 design is published on this API yet.</p>;
@@ -654,34 +822,53 @@ export function L1Review() {
   const classCounts = countBy(members.filter((m) => !filters.rung || m.rung === filters.rung), (m) => m.membrane_class);
   const reviewedN = new Set((reviews?.reviews ?? []).map((r) => r.design_id)).size;
 
+  const groups = groupByGene(visible);
+  // Topology rows are fetched per gene, so every member of the current gene has one and
+  // the tab strip can name each proteoform.
+  const topoFor = (m: { design_id: string | null; ordered_length_aa: number | null }) =>
+    l1MemberTopology(topologies, m);
+  // The current gene's members, in browsing order, for the detail panel's tab strip.
+  const siblings = current ? (groups.find((g) => g.gene_symbol === current.gene_symbol)?.members ?? []) : [];
+
   return (
     <div className={styles.app}>
-      <div className={styles.settings}>
-        <label>
-          reviewer
-          <input value={reviewer} onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }} placeholder="your name" />
-        </label>
-        <label>
-          review token
-          <input type="password" value={token} onChange={(e) => { setToken(e.target.value); store.set("l1-review-token", e.target.value); }} placeholder="paste once; kept in this browser" />
-        </label>
-        {reviews ? (
-          <span className={styles.muted}>
-            {reviewedN} of {members.length} members reviewed ·{" "}
-            <a href={`${API_BASE}/v1/l1-review/export.tsv`} onClick={async (e) => {
-              e.preventDefault();
-              const res = await fetch(`${API_BASE}/v1/l1-review/export.tsv`, { headers: { "X-L1-Review-Token": token } });
-              const blob = await res.blob();
-              const a = document.createElement("a");
-              a.href = URL.createObjectURL(blob);
-              a.download = "l1_reviews.tsv";
-              a.click();
-            }}>export reviews + suggestions (TSV)</a>
-          </span>
-        ) : null}
-        {authMsg ? <span className={styles.warn}>{authMsg}</span> : null}
-        <span className={`${styles.muted} ${styles.mono}`}>load {index.load.load_version}</span>
-      </div>
+      {/* Name and token are set once per browser, so they are folded away: on a 1280x800
+          laptop the row they used to occupy was the difference between the detail panel
+          starting above the fold and below it. Opened automatically until a token is in
+          hand, so a first-time reviewer still lands on it. */}
+      <details className={styles.identity} open={!token || !reviewer}>
+        <summary>
+          {reviewer ? `Reviewing as ${reviewer}` : "Set your name and review token"}
+          {token ? "" : " · no token yet (read-only)"}
+          {reviews ? ` · ${reviewedN} of ${members.length} members reviewed` : ""}
+          {" · "}
+          <span className={styles.mono}>load {index.load.load_version}</span>
+        </summary>
+        <div className={styles.settings}>
+          <label>
+            reviewer
+            <input value={reviewer} onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }} placeholder="your name" />
+          </label>
+          <label>
+            review token
+            <input type="password" value={token} onChange={(e) => { setToken(e.target.value); store.set("l1-review-token", e.target.value); }} placeholder="paste once; kept in this browser" />
+          </label>
+          {reviews ? (
+            <span className={styles.muted}>
+              <a href={`${API_BASE}/v1/l1-review/export.tsv`} onClick={async (e) => {
+                e.preventDefault();
+                const res = await fetch(`${API_BASE}/v1/l1-review/export.tsv`, { headers: { "X-L1-Review-Token": token } });
+                const blob = await res.blob();
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "l1_reviews.tsv";
+                a.click();
+              }}>export reviews + suggestions (TSV)</a>
+            </span>
+          ) : null}
+          {authMsg ? <span className={styles.warn}>{authMsg}</span> : null}
+        </div>
+      </details>
 
       <div className={styles.facets}>
         <div>
@@ -709,34 +896,106 @@ export function L1Review() {
               {s === "" ? "all" : s === "none" ? "no pick yet" : STATUS_LABEL[s as L1Site["status"]]}
             </button>
           ))}
-          <input className={styles.search} value={filters.q} onChange={(e) => update({ q: e.target.value })} placeholder="gene, l1-m…, l1-p…" />
+          <input ref={searchRef} className={styles.search} value={filters.q} onChange={(e) => update({ q: e.target.value })} placeholder="gene, l1-m…, l1-p…  ( / )" />
         </div>
       </div>
 
       <div className={styles.split}>
-        <ol className={styles.list} aria-label="Members">
-          {visible.map((m) => {
-            const v = verdicts.get(m.design_id ?? "") ?? [];
-            const on = current?.member_id === m.member_id;
-            return (
-              <li key={m.member_id}>
-                <button type="button" className={on ? styles.rowOn : styles.row} onClick={() => update({ m: m.design_id ?? m.member_id })}>
-                  <strong>{m.gene_symbol}</strong>
-                  <span className={styles.mono}>{m.member_id}</span>
-                  {m.species && m.species !== "human" ? <span className={styles.badge}>{m.species}</span> : null}
-                  {m.candidate_set === "isoform" ? <span className={styles.badge}>isoform</span> : null}
-                  <span className={styles.rowStatus}>
-                    {m.pick_status.length ? m.pick_status.map((s, i) => <StatusPill key={i} status={s} />) : <span className={styles.muted}>no pick</span>}
-                    {v.map((r) => (
-                      <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} title={`${r.reviewer}: ${r.verdict}${r.reason ? ` — ${r.reason}` : ""}`} />
-                    ))}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-          {!visible.length ? <li className={styles.muted}>No member matches these filters.</li> : null}
-        </ol>
+        <div className={styles.listCol}>
+          <div className={styles.listHead}>
+            <span className={styles.listCount}>
+              {groups.length} gene{groups.length === 1 ? "" : "s"} · {visible.length} member
+              {visible.length === 1 ? "" : "s"}
+            </span>
+            {letterMsg ? <span className={styles.letterToast}>{letterMsg}</span> : null}
+            <details
+              className={styles.keyHelp}
+              open={keyHelpOpen}
+              onToggle={(e) => setKeyHelpOpen((e.currentTarget as HTMLDetailsElement).open)}
+            >
+              <summary>
+                <span className={styles.keys}>
+                  <span><kbd>←</kbd><kbd>→</kbd> member</span>
+                  <span><kbd>A</kbd>–<kbd>Z</kbd> gene</span>
+                  <span><kbd>?</kbd> keys</span>
+                </span>
+              </summary>
+              <dl className={styles.keyTable}>
+                <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt>
+                <dd>previous / next member in this filter (orthologs and isoforms included)</dd>
+                <dt><kbd>A</kbd>–<kbd>Z</kbd></dt>
+                <dd>jump to the next gene starting with that letter; press it again to walk them</dd>
+                <dt><kbd>Home</kbd> <kbd>End</kbd></dt>
+                <dd>first / last member in this filter</dd>
+                <dt><kbd>/</kbd></dt>
+                <dd>focus the search box</dd>
+                <dt><kbd>Esc</kbd></dt>
+                <dd>leave a text field, so the keys above work again</dd>
+                <dt><kbd>?</kbd></dt>
+                <dd>show or hide this list</dd>
+              </dl>
+            </details>
+          </div>
+          <ol ref={listRef} className={styles.list} aria-label="Members">
+            {/* One entry per gene: its library reference and any isoform or ortholog member
+                are tabs on that entry, not unrelated rows, so the human reference and its
+                cyno or mouse ortholog are read side by side. The ← → keys still walk member
+                by member through the same order, so nothing is skipped. */}
+            {groups.map((g) => {
+              const primary = g.members.find((m) => m.candidate_set === "library_reference") ?? g.members[0];
+              const onGene = current?.gene_symbol === g.gene_symbol;
+              return (
+                <li key={g.gene_symbol} className={styles.geneGroup}>
+                  <button
+                    type="button"
+                    ref={onGene && current?.member_id === primary.member_id ? activeRowRef : undefined}
+                    className={current?.member_id === primary.member_id ? styles.rowOn : styles.row}
+                    onClick={() => update({ m: primary.design_id ?? primary.member_id })}
+                  >
+                    <strong>{g.gene_symbol}</strong>
+                    <span className={styles.mono}>{primary.member_id}</span>
+                    {g.members.length > 1 ? (
+                      <span className={styles.badge} title={`${g.members.length} members of this gene in view`}>
+                        {g.members.length} forms
+                      </span>
+                    ) : null}
+                    <span className={styles.rowStatus}>
+                      {primary.pick_status.length
+                        ? primary.pick_status.map((s, i) => <StatusPill key={i} status={s} />)
+                        : <span className={styles.muted}>no pick</span>}
+                      {(verdicts.get(primary.design_id ?? "") ?? []).map((r) => (
+                        <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} title={`${r.reviewer}: ${r.verdict}${r.reason ? ` — ${r.reason}` : ""}`} />
+                      ))}
+                    </span>
+                  </button>
+                  {g.members.length > 1 ? (
+                    <div className={styles.memberTabs}>
+                      {g.members.map((m) => {
+                        const on = current?.member_id === m.member_id;
+                        return (
+                          <button
+                            key={m.member_id}
+                            type="button"
+                            ref={on ? activeRowRef : undefined}
+                            className={on ? styles.memberTabOn : styles.memberTab}
+                            title={`${m.member_id} · ${m.candidate_set ?? ""} · ${m.species ?? ""}`}
+                            onClick={() => update({ m: m.design_id ?? m.member_id })}
+                          >
+                            {l1MemberTabLabel(m)}
+                            {(verdicts.get(m.design_id ?? "") ?? []).map((r) => (
+                              <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} />
+                            ))}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                </li>
+              );
+            })}
+            {!visible.length ? <li className={styles.muted}>No member matches these filters.</li> : null}
+          </ol>
+        </div>
 
         <div className={styles.detail}>
           {current ? (
@@ -755,12 +1014,36 @@ export function L1Review() {
                     <a href={`/${encodeURIComponent(current.gene_symbol)}`}>gene page</a>
                     {pos >= 0 ? ` · ${pos + 1} of ${visible.length} in this view (← → keys)` : " · not in the current filter"}
                   </p>
+                  {/* The gene's other forms, so the human reference and its cyno or mouse
+                      ortholog are one click apart. Each keeps its own residue numbering —
+                      the strip and every residue below are the selected member's. */}
+                  {siblings.length > 1 ? (
+                    <div className={styles.detailTabs} role="group" aria-label={`${current.gene_symbol} forms`}>
+                      {siblings.map((m) => {
+                        const on = m.member_id === current.member_id;
+                        return (
+                          <button
+                            key={m.member_id}
+                            type="button"
+                            aria-pressed={on}
+                            className={on ? styles.memberTabOn : styles.memberTab}
+                            title={`${m.member_id}${m.ordered_length_aa ? ` · ${m.ordered_length_aa} aa` : ""} · its own numbering`}
+                            onClick={() => update({ m: m.design_id ?? m.member_id })}
+                          >
+                            {l1MemberTabLabel(m, topoFor(m))}
+                            {m.ordered_length_aa ? <span className={styles.mono}>{m.ordered_length_aa} aa</span> : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                 </div>
                 <button type="button" onClick={() => go(1)} aria-label="Next member">→</button>
               </div>
               {member ? (
                 <MemberDetail
                   member={member}
+                  topologyRow={l1MemberTopology(topologies, member)}
                   loadVersion={index.load.load_version}
                   reviews={reviews}
                   token={token}
