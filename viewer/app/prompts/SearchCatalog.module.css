@@ -121,7 +121,7 @@
 .subhead {
   margin: var(--space-2) 0 0;
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);

@@ -106,7 +106,7 @@
    weight / tracking / case (it lives inside the <h1>). */
 .synonyms {
   margin-left: 0.55rem;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: var(--fw-regular);
   font-style: normal;
   letter-spacing: normal;
@@ -185,7 +185,7 @@
 
 .triageAgree {
   color: var(--success);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
 
@@ -195,7 +195,7 @@
  * structure that a second visual chip is overkill. */
 .triageConflict {
   color: var(--warning);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
 
@@ -255,7 +255,7 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.2rem var(--space-3);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 
@@ -284,13 +284,13 @@
 
 .idLabel {
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   letter-spacing: 0.03em;
 }
 
 .idValue {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--ink-soft);
 }
 
@@ -305,7 +305,7 @@
   padding-top: var(--space-3);
   border-top: 1px solid var(--line);
   font-family: var(--font-sans);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -558,7 +558,7 @@
 }
 
 .detTileSub {
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: var(--muted);
   line-height: 1.4;
 }

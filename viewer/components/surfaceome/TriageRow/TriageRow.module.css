@@ -40,7 +40,7 @@
 
 .triageAgree {
   color: var(--success);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
 
@@ -50,7 +50,7 @@
  * structure that a second visual chip is overkill. */
 .triageConflict {
   color: var(--warning);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
 
@@ -61,7 +61,7 @@
  * the 928 genes (18% of the cohort) that land here. */
 .triageNarrowed {
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
 

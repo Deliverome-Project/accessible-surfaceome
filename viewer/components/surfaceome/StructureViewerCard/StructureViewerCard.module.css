@@ -44,7 +44,7 @@
 
 .captionLink {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--ink-soft, #555);
   border-bottom: 1px solid var(--line);
   padding-bottom: 1px;
@@ -66,7 +66,7 @@
    best-effort near segment boundaries. */
 .captionCaveat {
   margin: 0.1rem 0 0;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-style: italic;
   line-height: 1.4;
   color: var(--muted);
@@ -109,7 +109,7 @@
    for the SURFACE-Bind anchor data next to the spheres. */
 .sitesCitation {
   margin: 0.4rem 0 0;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: var(--muted);
   line-height: 1.4;
 }
@@ -183,7 +183,7 @@
 
 .variantTabSub {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   opacity: 0.7;
   white-space: nowrap;
   overflow: hidden;

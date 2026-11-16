@@ -65,7 +65,7 @@
 
 .variantSub {
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.02em;
 }
 
@@ -235,7 +235,7 @@
   align-items: center;
   gap: 0.25rem 0.9rem;
   margin: 0.55rem 0 0;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 

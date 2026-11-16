@@ -25,13 +25,13 @@
 
 .benchmarkAgree {
   color: var(--success);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
 
 .benchmarkConflict {
   color: var(--warning);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
 
@@ -40,6 +40,6 @@
  * matching note in TriageRow.module.css. */
 .benchmarkNarrowed {
   color: var(--muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
