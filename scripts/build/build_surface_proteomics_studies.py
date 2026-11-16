@@ -104,6 +104,25 @@ PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
 SOURCES_PATH = f"{ANALYSIS_DIR}/sources.json"
+RAW_DATA_PATH = f"{ANALYSIS_DIR}/raw_data_locations.tsv"
+# The shared study workbook (one tab per study arm, named by its id cut to
+# Excel's 31-character limit). Its durable copy is on S3; the viewer links
+# the Drive copy of the same file, which outside readers can open.
+STUDY_LIST_KEY = (
+    f"{PROCESSED_PREFIX}/study-list/Deliverome_surface_proteomics_studies.xlsx"
+)
+STUDY_LIST = {
+    "name": "Deliverome_surface_proteomics_studies_sweep-v12.xlsx",
+    "url": "https://drive.google.com/file/d/1ZZwZHYQo8P9dipYKZIMztVNOf2yA3utI/view",
+}
+# Raw-data audit flags, as the viewer words them.
+RAW_FLAGS = (
+    "raw_public",
+    "raw_private_or_embargoed",
+    "processed_only",
+    "accession_invalid",
+    "raw_not_deposited",
+)
 API_BASE = "https://api.deliverome.org/surfaceome"
 
 # Must match ``shardOf`` in viewer/lib/surface-proteomics.ts.
@@ -455,9 +474,9 @@ def _read_s3(bucket: str, key: str) -> bytes:
     return s3.get_object(Bucket=bucket, Key=key)["Body"].read()
 
 
-def _git_show(args: argparse.Namespace, path: str) -> str:
+def _git_show(args: argparse.Namespace, path: str, ref: str | None = None) -> str:
     return subprocess.run(
-        ["git", "-C", args.analysis_repo, "show", f"{args.analysis_ref}:{path}"],
+        ["git", "-C", args.analysis_repo, "show", f"{ref or args.analysis_ref}:{path}"],
         check=True,
         capture_output=True,
         text=True,
@@ -1846,6 +1865,64 @@ def write_methods_tsv(
             w.writerow([_tsv_cell(row.get(c)) for c in METHODS_TSV_COLS])
 
 
+def load_raw_locations(text: str) -> dict[str, dict[str, Any]]:
+    """Where each study arm's raw instrument files are, from the S3E8 raw-data audit.
+
+    Keeps only the public location fields (flag, repository, accessions, URL);
+    the audit's free-text notes are not carried over.
+    """
+    out: dict[str, dict[str, Any]] = {}
+    for row in csv.DictReader(io.StringIO(text), delimiter="\t"):
+        sid = row.get("study_id")
+        if not sid or row.get("record") != "registry":
+            continue
+        flag = row.get("flag") or ""
+        if flag not in RAW_FLAGS:
+            raise SystemExit(f"unknown raw-data flag {flag!r} for {sid}")
+        accessions = [
+            x.strip() for x in (row.get("accessions") or "").split(";") if x.strip()
+        ]
+        out[sid] = {
+            k: v
+            for k, v in {
+                "flag": flag,
+                "repository": row.get("repository") or None,
+                "accessions": accessions or None,
+                "url": _public_url(row.get("url")),
+            }.items()
+            if v
+        }
+    return out
+
+
+def workbook_sheet_names(data: bytes) -> list[str]:
+    """Sheet names of an .xlsx, read from its workbook.xml (no full parse)."""
+    import zipfile
+
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        root = ET.fromstring(z.read("xl/workbook.xml"))
+    ns = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+    return [s.get("name") or "" for s in root.iter(f"{ns}sheet")]
+
+
+def attach_sources(
+    arms: list[dict[str, Any]],
+    parent_of: dict[str, str],
+    raw: dict[str, dict[str, Any]],
+    tabs: set[str] | None,
+) -> None:
+    """Give each arm its raw-data location and its study-workbook tab.
+
+    An arm split out of a parent study has no row or tab of its own; it uses
+    its parent's.
+    """
+    for a in arms:
+        keys = [a["id"], *([parent_of[a["id"]]] if a["id"] in parent_of else [])]
+        a["raw_data"] = next((raw[k] for k in keys if k in raw), None)
+        if tabs is not None:
+            a["sheet_tab"] = next((k[:31] for k in keys if k[:31] in tabs), None)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--snapshot", default=SNAPSHOT)
@@ -1858,6 +1935,10 @@ def main() -> None:
         "--analysis-repo", default=str(Path.home() / "git" / "deliverome-analysis")
     )
     p.add_argument("--analysis-ref", default="origin/main")
+    p.add_argument(
+        "--raw-data-ref",
+        help="analysis-repo ref holding raw_data_locations.tsv (default: --analysis-ref)",
+    )
     p.add_argument("--api-base", default=API_BASE)
     p.add_argument("--out", type=Path, default=OUT_DIR)
     args = p.parse_args()
@@ -1898,6 +1979,30 @@ def main() -> None:
         raise SystemExit(f"add these arms to CELL_GROUPS: {', '.join(missing)}")
     for a in arms:
         a["cell_group"] = group_of[a["id"]]
+    parent_of = {
+        d["study_id"]: d["recovery_parent_study"]
+        for d in manifest["datasets"]
+        if d.get("recovery_parent_study")
+    }
+    parent_of.update({c: k for k, v in aliases.items() for c in v})
+    if args.source_dir:
+        raw_path = Path(args.source_dir) / "raw_data_locations.tsv"
+        raw = load_raw_locations(raw_path.read_text()) if raw_path.exists() else {}
+        tabs_path = Path(args.source_dir) / "study_list_tabs.json"
+        tabs = set(json.loads(tabs_path.read_text())) if tabs_path.exists() else None
+    else:
+        import os
+
+        raw = load_raw_locations(_git_show(args, RAW_DATA_PATH, args.raw_data_ref))
+        tabs = set(
+            workbook_sheet_names(
+                _read_s3(os.environ["S3_BUCKET_PROCESSED"], STUDY_LIST_KEY)
+            )
+        )
+    attach_sources(arms, parent_of, raw, tabs)
+    no_raw = [a["id"] for a in arms if not a["raw_data"]]
+    if raw and no_raw:
+        raise SystemExit(f"no raw-data audit row for: {', '.join(no_raw)}")
     index = {a["id"]: i for i, a in enumerate(arms)}
     aliases = {k: [c for c in v if c in index] for k, v in aliases.items()}
     aliases = {k: v for k, v in aliases.items() if v}
@@ -1978,6 +2083,7 @@ def main() -> None:
         "cohort_detection_hist": cohort_hists(presence, arms, deep, tiers),
         "accession_normalization": norm_stats,
         "aliases": aliases,
+        "study_list": STUDY_LIST,
         "excluded_arms": excluded,
         "arms": arms,
     }

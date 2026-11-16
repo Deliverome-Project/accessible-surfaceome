@@ -30,6 +30,9 @@ import {
   PREF_LABEL,
   surfacePreference,
   type PresenceEntry,
+  loadPresence,
+  RAW_FLAG_LABEL,
+  repositoryUrl,
 } from "../../lib/surface-proteomics";
 import { ProteinLookup } from "./ProteinLookup";
 import { HoverTip } from "../surfaceome/_shared/HoverTip";
@@ -123,7 +126,7 @@ const CHOICES: { key: Choice; label: string; desc: (nCounted: number) => string 
     key: "compare",
     label: "Compare studies",
     desc: () =>
-      "Tick one dataset to see its proteins, or several to see which proteins they share.",
+      "Every dataset, one row per paper (expand a paper for its datasets), counted ones first. Tick one dataset to see its proteins, or several to see which proteins they share.",
   },
   {
     key: "lookup",
@@ -131,6 +134,26 @@ const CHOICES: { key: Choice; label: string; desc: (nCounted: number) => string 
     desc: () => "Type a symbol, name or accession to see every dataset that detected it.",
   },
 ];
+
+/** Bring a table row into view once it has rendered (retries for about a
+ *  second: the row appears after the selection and its paper are set). */
+function scrollToRow(id: string, tries = 20) {
+  // The browser restores the scroll position when the page finishes
+  // loading, which would undo an earlier scroll; wait for that first.
+  if (document.readyState !== "complete") {
+    window.addEventListener("load", () => setTimeout(() => scrollToRow(id, tries), 0), {
+      once: true,
+    });
+    return;
+  }
+  const el = document.getElementById(id);
+  if (!el) {
+    if (tries > 0) setTimeout(() => scrollToRow(id, tries - 1), 50);
+    return;
+  }
+  const top = el.getBoundingClientRect().top + window.scrollY - window.innerHeight / 3;
+  window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
+}
 
 /** One query parameter, or null (server render / absent). */
 function param(name: string): string | null {
@@ -177,18 +200,61 @@ export function StudiesExplorer({ index }: Props) {
   const [cellGroups, setCellGroups] = useState<Set<CellGroup>>(
     () => new Set((param("cg")?.split(",").filter(Boolean) ?? []) as CellGroup[]),
   );
+  const [families, setFamilies] = useState<Set<string>>(
+    () => new Set(param("fam")?.split(",").filter(Boolean) ?? []),
+  );
+  const FAMILIES = useMemo(
+    () => FAMILY_ORDER.filter((f) => arms.some((a) => a.family === f)),
+    [arms],
+  );
+  const familyLabel = useMemo(
+    () => new Map(arms.map((a) => [a.family, a.family_label])),
+    [arms],
+  );
+  // ?det=ACC (from a gene page): only the datasets that detected that protein.
+  // Read after mount: the static HTML has no query string, so reading it
+  // during the first render would not match the server markup.
+  const [det, setDet] = useState<string | null>(null);
+  useEffect(() => setDet(param("det")), []);
+  const [detHits, setDetHits] = useState<{ set: Set<number>; symbol: string } | null>(null);
+  useEffect(() => {
+    if (!det) {
+      setDetHits(null);
+      return;
+    }
+    let live = true;
+    loadPresence(det).then(
+      ({ entry }) => live && setDetHits({ set: new Set(entry?.a ?? []), symbol: entry?.s || det }),
+      () => live && setDetHits({ set: new Set(), symbol: det }),
+    );
+    return () => {
+      live = false;
+    };
+  }, [det]);
   useEffect(() => {
     setParams({
       dq: query.trim() || null,
       st: [...statuses].join(",") || null,
       mc: [...classes].join(",") || null,
       cg: [...cellGroups].join(",") || null,
+      fam: [...families].join(",") || null,
+      det,
     });
-  }, [query, statuses, classes, cellGroups]);
+  }, [query, statuses, classes, cellGroups, families, det]);
+  // Papers opened to show their datasets.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggleExpanded = (pub: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(pub)) next.delete(pub);
+      else next.add(pub);
+      return next;
+    });
   const [selected, setSelected] = useState<number[]>([]);
   const [view, setView] = useState<View | null>(null);
   // Hand-picked modes; a preset view takes precedence when set.
-  const [mode, setMode] = useState<"compare" | "lookup" | null>(null);
+  // The study table is the landing state; a preset view replaces it.
+  const [mode, setMode] = useState<"compare" | "lookup" | null>("compare");
   const [pickOpen, setPickOpen] = useState(true);
   const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<StudySort>();
   const showResults = () => {
@@ -207,10 +273,14 @@ export function StudiesExplorer({ index }: Props) {
       : ids.map((id) => idxById.get(id)).filter((i): i is number => i !== undefined);
     setView(v);
     setSelected(sel);
-    if (!v && sel.length) setMode("compare");
-    // Arriving from a link (a gene page dot, an email): go straight to the results.
-    if (sel.length) setPickOpen(false);
-  }, [idxById, aliases, countedIdx]);
+    if (!v && sel.length) {
+      // Arriving from a link (a gene page dot, an email): open each linked
+      // dataset's paper in the table and bring the first one into view.
+      setMode("compare");
+      setExpanded(new Set(sel.map((i) => arms[i].publication)));
+      scrollToRow(`arm-${arms[sel[0]].id}`);
+    }
+  }, [idxById, aliases, countedIdx, arms]);
   const updateSelected = useCallback(
     (next: number[], nextView: View | null = null) => {
       setSelected(next);
@@ -247,10 +317,12 @@ export function StudiesExplorer({ index }: Props) {
   const visible = arms
     .map((arm, i) => ({ arm, i }))
     .filter(
-      ({ arm }) =>
+      ({ arm, i }) =>
+        (!det || (detHits !== null && detHits.set.has(i))) &&
         (statuses.size === 0 || statuses.has(arm.status)) &&
         (classes.size === 0 || classes.has(arm.method_class)) &&
         (cellGroups.size === 0 || (arm.cell_group != null && cellGroups.has(arm.cell_group))) &&
+        (families.size === 0 || families.has(arm.family)) &&
         (!q ||
           [arm.name, arm.first_author, arm.sample, arm.family_label, arm.journal, arm.pmid, String(arm.year)]
             .filter(Boolean)
@@ -272,6 +344,155 @@ export function StudiesExplorer({ index }: Props) {
   const maxN = Math.max(...arms.map((a) => a.n_proteins));
   const letterOf = new Map(selected.map((i, k) => [i, letter(k)]));
 
+  // Default order (no column sorted): counted datasets first, then by
+  // status, newest first.
+  const ordered =
+    sortKey === null
+      ? [...visible].sort(
+          (a, b) =>
+            Number(isCounted(b.arm)) - Number(isCounted(a.arm)) ||
+            STATUS_ORDER.indexOf(a.arm.status) - STATUS_ORDER.indexOf(b.arm.status) ||
+            (b.arm.year ?? 0) - (a.arm.year ?? 0) ||
+            shortCitation(a.arm).localeCompare(shortCitation(b.arm)),
+        )
+      : rows;
+  // One row per paper, placed where its first dataset falls in that order.
+  type Item = { arm: StudyArm; i: number };
+  const groups: { pub: string; items: Item[] }[] = [];
+  {
+    const at = new Map<string, number>();
+    for (const r of ordered) {
+      const k = at.get(r.arm.publication);
+      if (k === undefined) {
+        at.set(r.arm.publication, groups.length);
+        groups.push({ pub: r.arm.publication, items: [r] });
+      } else groups[k].items.push(r);
+    }
+  }
+  // A search or a gene filter opens every matching paper.
+  const autoOpen = q.length > 0 || det !== null;
+  const nPapersShown = groups.length;
+
+  const armRow = ({ arm, i }: Item, nested: boolean) => {
+              const sel = selected.includes(i);
+              const counted = isCounted(arm);
+              return (
+                <tr
+                  key={arm.id}
+                  id={`arm-${arm.id}`}
+                  className={`${sel ? styles.selectedRow : ""} ${counted ? "" : styles.notCounted} ${nested ? styles.armRow : ""}`}
+                >
+                  <td>
+                    <label className={styles.pick}>
+                      <input
+                        type="checkbox"
+                        checked={sel}
+                        onChange={() => toggle(i)}
+                        aria-label={`Select ${arm.name}`}
+                      />
+                      {sel ? <span className={styles.letter}>{letterOf.get(i)}</span> : null}
+                    </label>
+                  </td>
+                  <td className={styles.studyCell}>
+                    <button type="button" className={styles.studyButton} onClick={() => toggle(i)}>
+                      {nested ? arm.name : shortCitation(arm)}
+                    </button>
+                    {nested ? null : <div className={styles.sub}>{arm.name}</div>}
+                    {nested ? null : <PaperLinks arm={arm} />}
+                    <ArmSources arm={arm} studyList={index.study_list} />
+                  </td>
+                  <td>{arm.year ?? "—"}</td>
+                  <td>
+                    <span className={styles.method}>
+                      <span className={`${styles.swatch} ${styles[`sw_${arm.method_class}`]}`} aria-hidden="true" />
+                      {METHOD_CLASS_LABEL[arm.method_class]}
+                    </span>
+                  </td>
+                  <td>
+                    <FamilyChip arm={arm} />
+                  </td>
+                  <td className={styles.sample}>
+                    {arm.sample}
+                    {arm.cell_group ? (
+                      <div className={styles.sub}>{CELL_GROUP_LABEL[arm.cell_group]}</div>
+                    ) : null}
+                  </td>
+                  <td className={styles.num}>
+                    {/* Bar inline with the number, like Surface overlap, so the
+                        two bars sit on the same line in every row. */}
+                    <span className={styles.countInline}>
+                      <Bar value={arm.n_proteins / maxN} inline />
+                      <span className={styles.countInlineNum}>{arm.n_proteins.toLocaleString("en-US")}</span>
+                    </span>
+                  </td>
+                  <td>
+                    <OverlapBar
+                      value={arm.reference_overlap}
+                      intact={arm.method_class === "intact_cell"}
+                      status={arm.status}
+                    />
+                  </td>
+                  <td>
+                    <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
+                      {STATUS_LABEL[arm.status]}
+                    </StatusPill>
+                    <div className={counted ? styles.countedYes : styles.countedNo}>
+                      {counted ? "counted" : "not counted"}
+                    </div>
+                    {arm.status_reason ? (
+                      <div className={styles.statusReason}>{arm.status_reason}</div>
+                    ) : null}
+                  </td>
+                </tr>
+              );
+  };
+
+  const paperRows = (g: { pub: string; items: Item[] }) => {
+    if (g.items.length === 1) return [armRow(g.items[0], false)];
+    const all = arms.filter((a) => a.publication === g.pub);
+    const first = g.items[0].arm;
+    const open = autoOpen || expanded.has(g.pub);
+    const nCounted = all.filter(isCounted).length;
+    const anySelected = g.items.some(({ i }) => selected.includes(i));
+    const head = (
+      <tr
+        key={`paper-${g.pub}`}
+        className={`${styles.paperRow} ${anySelected ? styles.selectedRow : ""} ${nCounted ? "" : styles.notCounted}`}
+      >
+        <td>
+          <button
+            type="button"
+            className={styles.expandButton}
+            aria-expanded={open}
+            aria-label={`${open ? "Hide" : "Show"} the ${all.length} datasets of ${shortCitation(first)}`}
+            onClick={() => toggleExpanded(g.pub)}
+          >
+            {open ? "▾" : "▸"}
+          </button>
+        </td>
+        <td className={styles.studyCell}>
+          <button type="button" className={styles.studyButton} onClick={() => toggleExpanded(g.pub)}>
+            {shortCitation(first)}
+          </button>
+          {first.title ? <div className={styles.sub}>{first.title}</div> : null}
+          <PaperLinks arm={first} />
+        </td>
+        <td>{first.year ?? "—"}</td>
+        <td colSpan={6} className={styles.paperSummary}>
+          {all.length} datasets: {nCounted} counted
+          {all.length - nCounted ? `, ${all.length - nCounted} not counted` : ""}
+          {g.items.length < all.length ? ` · ${g.items.length} match the filters` : ""}
+          {!open ? (
+            <button type="button" className={styles.linkButton} onClick={() => toggleExpanded(g.pub)}>
+              show datasets
+            </button>
+          ) : null}
+        </td>
+      </tr>
+    );
+    return open ? [head, ...g.items.map((it) => armRow(it, true))] : [head];
+  };
+
   const header = (k: StudySort, label: string, num = false, info?: ReactNode) => (
     <th aria-sort={ariaSort(k)} className={num ? styles.num : undefined}>
       <span className={styles.headWithTip}>
@@ -292,6 +513,16 @@ export function StudiesExplorer({ index }: Props) {
       <section className={styles.start} aria-label="Where to start">
         <div className={styles.startRow} role="group" aria-label="Where to start">
           <span className={`label-mono ${styles.startLabel}`}>Start with</span>
+          <InfoTip wide align="start" label="About the starting views">
+            The three preset views, each over every counted dataset:
+            <ul className={styles.tipList}>
+              {CHOICES.filter((c) => VIEWS.includes(c.key as View)).map((c) => (
+                <li key={c.key}>
+                  <strong>{c.label}:</strong> {c.desc(countedIdx.length)}
+                </li>
+              ))}
+            </ul>
+          </InfoTip>
           {CHOICES.map((c) => (
             <button
               key={c.key}
@@ -306,9 +537,7 @@ export function StudiesExplorer({ index }: Props) {
           ))}
         </div>
         <p className={styles.startDesc}>
-          {active
-            ? CHOICES.find((c) => c.key === active)?.desc(countedIdx.length)
-            : "Pick one to begin."}
+          {CHOICES.find((c) => c.key === (active ?? "compare"))?.desc(countedIdx.length)}
         </p>
         {active === "lookup" ? <ProteinLookup /> : null}
       </section>
@@ -367,10 +596,29 @@ export function StudiesExplorer({ index }: Props) {
           value={classes}
           onChange={setClasses}
         />
+        <ChipGroup
+          label="Chemistry"
+          options={FAMILIES as unknown as string[]}
+          labelOf={(f) => familyLabel.get(f) ?? f}
+          countOf={(f) => arms.filter((a) => a.family === f).length}
+          value={families}
+          onChange={setFamilies}
+        />
       </div>
 
+      {det ? (
+        <div className={styles.detBanner} role="status">
+          {detHits === null
+            ? "Loading the datasets that detected this protein…"
+            : `Showing the ${detHits.set.size} dataset${detHits.set.size === 1 ? "" : "s"} that detected ${detHits.symbol} (${det}).`}
+          <button type="button" className={styles.linkButton} onClick={() => setDet(null)}>
+            show all datasets
+          </button>
+        </div>
+      ) : null}
+
       <div className={styles.count}>
-        {rows.length} of {arms.length} datasets shown
+        {rows.length} of {arms.length} datasets shown, from {nPapersShown} paper{nPapersShown === 1 ? "" : "s"}
         {selected.length > 0 ? ` · ${selected.length} selected` : ""}
         {selected.length > 0 ? (
           <button type="button" className={styles.linkButton} onClick={() => updateSelected([])}>
@@ -391,99 +639,12 @@ export function StudiesExplorer({ index }: Props) {
               {header("family", "Chemistry")}
               {header("sample", "Cell type / sample")}
               {header("n", "Proteins", true)}
-              {header("overlap", "Surface overlap")}
+              {header("overlap", "Surface overlap", false, tooltips.surface_overlap)}
               {header("status", "Status", false, tooltips.arm_status)}
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ arm, i }) => {
-              const sel = selected.includes(i);
-              const counted = isCounted(arm);
-              return (
-                <tr
-                  key={arm.id}
-                  className={`${sel ? styles.selectedRow : ""} ${counted ? "" : styles.notCounted}`}
-                >
-                  <td>
-                    <label className={styles.pick}>
-                      <input
-                        type="checkbox"
-                        checked={sel}
-                        onChange={() => toggle(i)}
-                        aria-label={`Select ${arm.name}`}
-                      />
-                      {sel ? <span className={styles.letter}>{letterOf.get(i)}</span> : null}
-                    </label>
-                  </td>
-                  <td className={styles.studyCell}>
-                    <button type="button" className={styles.studyButton} onClick={() => toggle(i)}>
-                      {shortCitation(arm)}
-                    </button>
-                    <div className={styles.sub}>{arm.name}</div>
-                    <div className={styles.paperLinks}>
-                      {arm.pmid ? (
-                        <a href={`https://pubmed.ncbi.nlm.nih.gov/${arm.pmid}/`} target="_blank" rel="noreferrer">
-                          PMID {arm.pmid}
-                        </a>
-                      ) : null}
-                      {arm.doi ? (
-                        <a href={`https://doi.org/${arm.doi}`} target="_blank" rel="noreferrer">
-                          DOI
-                        </a>
-                      ) : null}
-                      {arm.repository_ids.length ? (
-                        <span className={styles.sub}>
-                          {arm.repository ? `${arm.repository} ` : ""}
-                          {arm.repository_ids.join(", ")}
-                        </span>
-                      ) : null}
-                    </div>
-                  </td>
-                  <td>{arm.year ?? "—"}</td>
-                  <td>
-                    <span className={styles.method}>
-                      <span className={`${styles.swatch} ${styles[`sw_${arm.method_class}`]}`} aria-hidden="true" />
-                      {METHOD_CLASS_LABEL[arm.method_class]}
-                    </span>
-                  </td>
-                  <td>
-                    <FamilyChip arm={arm} />
-                  </td>
-                  <td className={styles.sample}>
-                    {arm.sample}
-                    {arm.cell_group ? (
-                      <div className={styles.sub}>{CELL_GROUP_LABEL[arm.cell_group]}</div>
-                    ) : null}
-                  </td>
-                  <td className={styles.num}>
-                    {/* Bar inline with the number, like Surface overlap, so the
-                        two bars sit on the same line in every row. */}
-                    <span className={styles.countInline}>
-                      <Bar value={arm.n_proteins / maxN} inline />
-                      <span className={styles.countInlineNum}>{arm.n_proteins.toLocaleString("en-US")}</span>
-                    </span>
-                  </td>
-                  <td>
-                    <OverlapBar
-                      value={arm.reference_overlap}
-                      intact={arm.method_class === "intact_cell"}
-                      status={arm.status}
-                    />
-                  </td>
-                  <td>
-                    <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
-                      {STATUS_LABEL[arm.status]}
-                    </StatusPill>
-                    <div className={counted ? styles.countedYes : styles.countedNo}>
-                      {counted ? "counted" : "not counted"}
-                    </div>
-                    {arm.status_reason ? (
-                      <div className={styles.statusReason}>{arm.status_reason}</div>
-                    ) : null}
-                  </td>
-                </tr>
-              );
-            })}
+            {groups.flatMap((g) => paperRows(g))}
           </tbody>
         </table>
       </div>
@@ -1412,5 +1573,74 @@ function PrefCell({
     >
       <span className={`${styles.prefNum} ${cls}`}>{sign(pref.mean)}</span>
     </HoverTip>
+  );
+}
+
+/** The paper itself: PubMed and DOI links. */
+function PaperLinks({ arm }: { arm: StudyArm }) {
+  if (!arm.pmid && !arm.doi) return null;
+  return (
+    <div className={styles.paperLinks}>
+      {arm.pmid ? (
+        <a href={`https://pubmed.ncbi.nlm.nih.gov/${arm.pmid}/`} target="_blank" rel="noreferrer">
+          PMID {arm.pmid}
+        </a>
+      ) : null}
+      {arm.doi ? (
+        <a href={`https://doi.org/${arm.doi}`} target="_blank" rel="noreferrer">
+          DOI
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
+/** One dataset's own sources: its tab in the shared study workbook, and
+ *  where its raw instrument files are (from the S3E8 raw-data audit). */
+export function ArmSources({
+  arm,
+  studyList,
+}: {
+  arm: StudyArm;
+  studyList?: { name: string; url: string };
+}) {
+  const raw = arm.raw_data;
+  const accs = raw?.accessions ?? arm.repository_ids;
+  const rawHref = raw?.url ?? (accs.length ? repositoryUrl(accs[0]) : null);
+  return (
+    <div className={styles.paperLinks}>
+      {studyList && arm.sheet_tab ? (
+        <a
+          href={studyList.url}
+          target="_blank"
+          rel="noreferrer"
+          title={`Opens ${studyList.name}; this dataset is on the tab named ${arm.sheet_tab}`}
+        >
+          Study list, tab “{arm.sheet_tab}”
+        </a>
+      ) : null}
+      {raw ? (
+        raw.flag === "raw_not_deposited" || raw.flag === "accession_invalid" || !accs.length ? (
+          <span className={styles.sub}>{RAW_FLAG_LABEL[raw.flag]}</span>
+        ) : (
+          <span className={styles.sub}>
+            {rawHref ? (
+              <a href={rawHref} target="_blank" rel="noreferrer">
+                {raw.repository ? `${raw.repository} ` : ""}
+                {accs.join(", ")}
+              </a>
+            ) : (
+              `${raw.repository ? `${raw.repository} ` : ""}${accs.join(", ")}`
+            )}
+            : {RAW_FLAG_LABEL[raw.flag]}
+          </span>
+        )
+      ) : accs.length ? (
+        <span className={styles.sub}>
+          {arm.repository ? `${arm.repository} ` : ""}
+          {accs.join(", ")}
+        </span>
+      ) : null}
+    </div>
   );
 }

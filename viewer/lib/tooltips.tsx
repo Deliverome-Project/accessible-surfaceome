@@ -510,6 +510,24 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  // Surface overlap / reference — the review screen each dataset is scored on
+  // (StudyArm.reference_overlap = proteins in the reference ÷ proteins listed).
+  surface_overlap: (
+    <>
+      <strong>Surface overlap</strong>: the share of a dataset&apos;s proteins
+      that are in the reference (Canonical or Likely in our Surfaceome
+      catalog). An intact-cell dataset needs at least 20% (the tick) to
+      count, or a higher bar if the authors pre-filtered its list.
+    </>
+  ),
+  reference: (
+    <>
+      <strong>Reference</strong>: the Canonical and Likely tiers of our
+      Surfaceome catalog, the known surface proteins each dataset&apos;s list
+      is compared with.
+    </>
+  ),
+
   // Surface-DB votes — neither triage nor deep-dive. From the
   // candidate-universe build: each of the 5 gating databases voted
   // independently on whether this protein is at the surface.

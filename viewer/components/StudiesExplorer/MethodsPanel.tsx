@@ -73,7 +73,12 @@ export function MethodsBody({ arm, m }: { arm: StudyArm; m: ArmMethods }) {
           ) : null}
           {m.n_total_ids != null ? (
             <>
-              <dt>Reference overlap</dt>
+              <dt>
+                Reference overlap{" "}
+                <InfoTip wide align="start" label="About the reference">
+                  {tooltips.reference}
+                </InfoTip>
+              </dt>
               <dd>
                 {(m.n_in_reference ?? 0).toLocaleString("en-US")} of{" "}
                 {m.n_total_ids.toLocaleString("en-US")} reported IDs are Canonical or Likely

@@ -465,3 +465,15 @@ a.dot:focus-visible {
   align-items: center;
   gap: 0.25rem;
 }
+
+.studiesLink {
+  white-space: nowrap;
+}
+
+/* Detected in a dataset we don't count: a ring in the technology's color,
+   not a filled dot, so counted and not-counted detections read apart. */
+.hit.dim {
+  opacity: 0.8;
+  background: transparent !important;
+  border-width: 2.5px;
+}

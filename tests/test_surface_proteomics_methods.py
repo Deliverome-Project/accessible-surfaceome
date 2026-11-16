@@ -213,3 +213,60 @@ def test_published_citations_use_surnames() -> None:
         assert not re.search(r"\b[A-Z]{2,4} \d{4}$", c), (arm["id"], c)
         if arm.get("n_authors") is None:
             assert " et al. " in c, (arm["id"], c)
+
+
+def test_raw_locations_keep_public_fields_only() -> None:
+    tsv = (
+        "key\tstudy_id\trecord\tflag\trepository\taccessions\turl\tnotes\n"
+        "a\ta\tregistry\traw_public\tPRIDE\tPXD000001; PXD000002\t"
+        "https://www.ebi.ac.uk/pride/archive/projects/PXD000001\tsome note\n"
+        "b\tb\tregistry\traw_not_deposited\t\t\t\t\n"
+        "x\t\tnot_obtained\traw_public\tPRIDE\tPXD9\t\t\n"
+    )
+    raw = b.load_raw_locations(tsv)
+    assert set(raw) == {"a", "b"}
+    assert raw["a"] == {
+        "flag": "raw_public",
+        "repository": "PRIDE",
+        "accessions": ["PXD000001", "PXD000002"],
+        "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD000001",
+    }
+    assert raw["b"] == {"flag": "raw_not_deposited"}
+
+
+def test_split_arms_use_the_parent_tab_and_raw_row() -> None:
+    arms = [{"id": "p-child-2026"}, {"id": "solo-2026"}]
+    raw = {"p-2026": {"flag": "raw_public"}, "solo-2026": {"flag": "processed_only"}}
+    b.attach_sources(arms, {"p-child-2026": "p-2026"}, raw, {"p-2026", "solo-2026"})
+    assert arms[0]["raw_data"] == {"flag": "raw_public"}
+    assert arms[0]["sheet_tab"] == "p-2026"
+    assert arms[1]["sheet_tab"] == "solo-2026"
+
+
+def test_workbook_sheet_names() -> None:
+    import io
+    import zipfile
+
+    xml = (
+        '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        '<sheets><sheet name="Studies" sheetId="1"/><sheet name="abc-2026" sheetId="2"/>'
+        "</sheets></workbook>"
+    )
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("xl/workbook.xml", xml)
+    assert b.workbook_sheet_names(buf.getvalue()) == ["Studies", "abc-2026"]
+
+
+def test_published_arms_have_sources() -> None:
+    path = ROOT / "viewer" / "public" / "data" / "surface-proteomics" / "studies.json"
+    if not path.exists():
+        return
+    data = json.loads(path.read_text())
+    if "study_list" not in data:
+        return
+    assert data["study_list"]["url"].startswith("https://drive.google.com/")
+    for arm in data["arms"]:
+        assert arm.get("sheet_tab"), arm["id"]
+        assert (arm.get("raw_data") or {}).get("flag") in b.RAW_FLAGS, arm["id"]
+        assert "notes" not in (arm.get("raw_data") or {}), arm["id"]
