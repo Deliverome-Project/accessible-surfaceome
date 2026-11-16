@@ -83,6 +83,7 @@ import shutil
 import statistics
 import subprocess
 import time
+import xml.etree.ElementTree as ET
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -1142,7 +1143,7 @@ def write_downloads(
     # Ends on always-present columns: a trailing empty field would leave a
     # trailing tab, which whitespace-trimming tools (and pre-commit) strip.
     cols = [
-        "id", "name", "first_author", "year", "journal", "pmid", "doi", "repository",
+        "id", "name", "citation", "first_author", "year", "journal", "pmid", "doi", "repository",
         "repository_ids", "method_class", "family", "family_label", "cell_group",
         "sample", "reference_overlap", "n_proteins", "admitted", "status",
     ]  # fmt: skip
@@ -1236,6 +1237,65 @@ def load_pubmed(pmids: list[str]) -> dict[str, dict[str, Any]]:
             ),
         }
     return out
+
+
+def load_pubmed_authors(pmids: list[str]) -> dict[str, dict[str, Any]]:
+    """First author's surname and the author count, from the PubMed record.
+
+    esummary's ``sortfirstauthor`` is "Surname Initials", and a surname can
+    have several words ("Cohen Yaron K"), so the surname comes from the
+    efetch XML's ``LastName`` (or ``CollectiveName`` for a consortium).
+    """
+    if not pmids:
+        return {}
+    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+    params = {"db": "pubmed", "retmode": "xml", "id": ",".join(sorted(set(pmids)))}
+    headers = {"User-Agent": "accessible-surfaceome build (surface-proteomics studies)"}
+    r = httpx.post(url, data=params, headers=headers, timeout=120)
+    r.raise_for_status()
+    out: dict[str, dict[str, Any]] = {}
+    for art in ET.fromstring(r.content).iter("PubmedArticle"):
+        pmid = art.findtext("MedlineCitation/PMID")
+        authors = [
+            a
+            for a in art.findall("MedlineCitation/Article/AuthorList/Author")
+            if a.get("ValidYN", "Y") == "Y"
+        ]
+        if not pmid or not authors:
+            continue
+        surnames = [
+            a.findtext("LastName") or a.findtext("CollectiveName") for a in authors[:2]
+        ]
+        out[pmid] = {
+            "author_surname": surnames[0],
+            "second_author_surname": surnames[1] if len(authors) == 2 else None,
+            "n_authors": len(authors),
+        }
+    return out
+
+
+_INITIALS = re.compile(r"\s+[A-Z]{1,4}$")
+
+
+def study_citation(arm: dict[str, Any]) -> str | None:
+    """ "George et al. 2026", "A and B 2020" or "A 2020": surname only.
+
+    With no known author count, "et al." is the default. A two-author
+    paper names both only when the second surname is known.
+    """
+    surname = arm.get("author_surname") or _INITIALS.sub(
+        "", (arm.get("first_author") or "").strip()
+    )
+    if not surname:
+        return None
+    n = arm.get("n_authors")
+    if n == 1:
+        names = surname
+    elif n == 2 and arm.get("second_author_surname"):
+        names = f"{surname} and {arm['second_author_surname']}"
+    else:
+        names = f"{surname} et al."
+    return " ".join(x for x in (names, str(arm.get("year") or "")) if x)
 
 
 # The viewer uses American spelling. Our own curated descriptions (arm names,
@@ -1378,6 +1438,8 @@ def build_arms(
                 "name": americanize(_strip_citation(d["name"])),
                 "publication": str(d.get("publication_id") or paper.get("pmid") or sid),
                 "first_author": paper.get("first_author"),
+                "citation": study_citation(paper),
+                "n_authors": paper.get("n_authors"),
                 "year": paper.get("year"),
                 "journal": paper.get("journal"),
                 "title": paper.get("title"),
@@ -1720,7 +1782,7 @@ def build_methods(
 
 
 METHODS_TSV_COLS = (
-    "id", "name", "first_author", "year", "pmid", "doi", "status", "status_reason",
+    "id", "name", "citation", "first_author", "year", "pmid", "doi", "status", "status_reason",
     "rationale", "repository", "repository_ids", "source_files", "method",
     "method_source", "beads", "lot", "instrument", "instrument_detail",
     "instrument_source", "cell_or_tissue", "sample_scope", "accession_columns",
@@ -1824,6 +1886,8 @@ def main() -> None:
         for d in manifest["datasets"]
     ]
     pubmed = load_pubmed([p for p in pmids if p.isdigit()])
+    for pmid, authors in load_pubmed_authors(list(pubmed)).items():
+        pubmed[pmid].update(authors)
     built = build_arms(manifest, audit, {k: len(v) for k, v in counts.items()}, pubmed)
     # Whole-lysate arms measure neither intact cells nor a membrane fraction.
     excluded = sorted(a["id"] for a in built if a["method_class"] == "lysate")

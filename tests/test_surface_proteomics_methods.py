@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -171,3 +172,44 @@ def test_published_sources_are_sentences() -> None:
                 assert text.endswith("."), (arm, key, text)
                 assert "verified_method" not in text and "this audit" not in text, arm
                 assert "same source as the method" not in text, arm
+
+
+def test_study_citation_style() -> None:
+    cite = b.study_citation
+    assert cite({"first_author": "George BM", "year": 2026}) == "George et al. 2026"
+    assert (
+        cite({"author_surname": "Cohen Yaron", "n_authors": 9, "year": 2026})
+        == "Cohen Yaron et al. 2026"
+    )
+    assert cite({"first_author": "Cohen Yaron K", "year": 2026}) == (
+        "Cohen Yaron et al. 2026"
+    )
+    assert (
+        cite(
+            {
+                "author_surname": "Smith",
+                "second_author_surname": "Jones",
+                "n_authors": 2,
+                "year": 2020,
+            }
+        )
+        == "Smith and Jones 2020"
+    )
+    assert cite({"author_surname": "Smith", "n_authors": 1, "year": 2020}) == (
+        "Smith 2020"
+    )
+    assert cite({"first_author": None, "year": 2019}) is None
+
+
+def test_published_citations_use_surnames() -> None:
+    path = ROOT / "viewer" / "public" / "data" / "surface-proteomics" / "studies.json"
+    if not path.exists():
+        return
+    for arm in json.loads(path.read_text())["arms"]:
+        c = arm.get("citation")
+        if not c:
+            continue
+        assert re.fullmatch(r"\S.*?( et al\.| and \S.*)? \d{4}", c), (arm["id"], c)
+        assert not re.search(r"\b[A-Z]{2,4} \d{4}$", c), (arm["id"], c)
+        if arm.get("n_authors") is None:
+            assert " et al. " in c, (arm["id"], c)

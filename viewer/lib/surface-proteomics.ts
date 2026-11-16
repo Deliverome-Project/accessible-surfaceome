@@ -23,6 +23,10 @@ export interface StudyArm {
   name: string;
   publication: string;
   first_author: string | null;
+  /** "George et al. 2026", "A and B 2020" or "A 2020" (surname only), built
+   *  from the PubMed author list; "et al." when the author count is unknown. */
+  citation?: string | null;
+  n_authors?: number | null;
   year: number | null;
   journal: string | null;
   title: string | null;
@@ -424,9 +428,12 @@ export function repositoryUrl(id: string): string | null {
   return null;
 }
 
+/** How the viewer names a study: "George et al. 2026", surname only. */
 export function shortCitation(arm: StudyArm): string {
-  const author = (arm.first_author ?? "").split(" ")[0];
-  return [author, arm.year].filter(Boolean).join(" ") || arm.name;
+  if (arm.citation) return arm.citation;
+  // Older studies.json without `citation`: drop the initials, assume "et al.".
+  const surname = (arm.first_author ?? "").trim().replace(/\s+[A-Z]{1,4}$/, "");
+  return surname ? [`${surname} et al.`, arm.year].filter(Boolean).join(" ") : arm.name;
 }
 
 let _index: Promise<StudyIndex> | null = null;
