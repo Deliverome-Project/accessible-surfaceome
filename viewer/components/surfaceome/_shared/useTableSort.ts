@@ -50,13 +50,9 @@ export interface UseTableSort<K extends string> {
  *  matches the order applied). */
 export type SortValue = number | string;
 
-/** `initial` restores a sort (e.g. from the URL); omitted, the table starts unsorted. */
-export function useTableSort<K extends string>(initial?: {
-  key: K | null;
-  dir: SortDir;
-}): UseTableSort<K> {
-  const [sortKey, setSortKey] = useState<K | null>(initial?.key ?? null);
-  const [sortDir, setSortDir] = useState<SortDir>(initial?.dir ?? "asc");
+export function useTableSort<K extends string>(): UseTableSort<K> {
+  const [sortKey, setSortKey] = useState<K | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const onSort = useCallback(
     (key: K) => {

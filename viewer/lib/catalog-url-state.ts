@@ -21,7 +21,6 @@
  *   reason   triage-agent reason code
  *   dd       yes | no — has a deep-dive record
  *   sb       any | ge1 | ge3 | not_in — SURFACE-Bind patches
- *   sp       ge1 | ge3 | ge10 | none — counted surface-proteomics datasets
  *   f.<key>  deep-dive enum filter, e.g. f.surface_method_direct=flow_cytometry
  *   b.<key>  deep-dive boolean filter: yes | no
  *   sort     sort column (symbol, n_sources, db_<db>, triage, dd_access, …);
@@ -34,7 +33,6 @@
  */
 
 export type SurfaceBindMode = "any" | "ge1" | "ge3" | "not_in";
-export type ProteomicsMode = "ge1" | "ge3" | "ge10" | "none";
 
 export interface CatalogUrlState {
   q: string;
@@ -48,8 +46,6 @@ export interface CatalogUrlState {
   reasons: string[];
   deepDive: "yes" | "no" | null;
   surfaceBind: SurfaceBindMode | null;
-  /** Counted surface-proteomics datasets detecting the protein. */
-  proteomics: ProteomicsMode | null;
   ddEnum: Record<string, string[]>;
   ddBool: Record<string, "yes" | "no">;
   /** Sort column, or null for the catalog's default sort. */
@@ -74,7 +70,6 @@ export interface CatalogUrlVocabulary {
 }
 
 const SURFACE_BIND_MODES: readonly SurfaceBindMode[] = ["any", "ge1", "ge3", "not_in"];
-const PROTEOMICS_MODES: readonly ProteomicsMode[] = ["ge1", "ge3", "ge10", "none"];
 const MAX_SOURCES = 5;
 
 export function emptyCatalogUrlState(): CatalogUrlState {
@@ -90,7 +85,6 @@ export function emptyCatalogUrlState(): CatalogUrlState {
     reasons: [],
     deepDive: null,
     surfaceBind: null,
-    proteomics: null,
     ddEnum: {},
     ddBool: {},
     sort: null,
@@ -130,8 +124,6 @@ export function parseCatalogUrl(search: string, vocab: CatalogUrlVocabulary): Ca
   state.deepDive = dd === "yes" || dd === "no" ? dd : null;
   const sb = params.get("sb") as SurfaceBindMode | null;
   state.surfaceBind = sb && SURFACE_BIND_MODES.includes(sb) ? sb : null;
-  const sp = params.get("sp") as ProteomicsMode | null;
-  state.proteomics = sp && PROTEOMICS_MODES.includes(sp) ? sp : null;
   for (const [key, allowed] of Object.entries(vocab.ddEnum)) {
     const vals = list(params, `f.${key}`, allowed);
     if (vals.length) state.ddEnum[key] = vals;
@@ -176,7 +168,6 @@ export function serializeCatalogUrl(s: CatalogUrlState): string {
   if (s.reasons.length) add("reason", s.reasons.join(","));
   if (s.deepDive) add("dd", s.deepDive);
   if (s.surfaceBind) add("sb", s.surfaceBind);
-  if (s.proteomics) add("sp", s.proteomics);
   for (const key of Object.keys(s.ddEnum).sort()) {
     if (s.ddEnum[key].length) add(`f.${key}`, s.ddEnum[key].join(","));
   }

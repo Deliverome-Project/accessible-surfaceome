@@ -80,7 +80,7 @@ export function ExpressionTable({ rows }: Props) {
   const sorted = sortRows(rows, comparators);
 
   return (
-    <div className={styles.tableScroll}>
+    <div>
       <SortResetButton visible={sortKey !== null} onReset={reset} />
       <table className={styles.table}>
         <thead>
