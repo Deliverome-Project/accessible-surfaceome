@@ -24,6 +24,11 @@ __pycache__/
 
 # Local secrets/runtime
 .env
+# Only `.env` was ignored, so a `.env.local` / `.env.bak` / `.env.production`
+# copy was committable in a PUBLIC repository. Ignore every variant and
+# re-include the committed template.
+.env.*
+!.env.example
 *.log
 
 # Wrangler.toml for the public Worker carries the surfaceome_public D1 UUID
@@ -168,3 +173,11 @@ paper/*.xml
 
 # audit_record_deterministic_consistency.py report + stale-gene list (regenerated per run)
 data/analysis/deterministic_consistency/
+
+# wrangler local secrets (never committed)
+cloudflare/workers/surfaceome_api/.dev.vars
+
+# Library index payloads: built in the private design repository (deliverome-analysis)
+# by build_library_structure_payload.py / build_library_topology_index.py, staged here
+# for the two D1 loaders. This repository is public; the built tables are not kept in it.
+data/external/library_structures/

@@ -41,8 +41,9 @@ counted in the manifest.
   to another rung).
 * ``pending``: the source table predates the 2026-11-12 delegation and still marks the
   pick as held or awaiting approval.
-* ``alternative``: a ranked or proposed site that is not the current pick (ranker
-  runners-up, agent-proposer picks), shown so a reviewer can compare.
+* ``alternative``: a ranked runner-up that is not the current pick (ranker or
+  agent-proposer), shown so a reviewer can compare. Only ranks 2-3, and only at least
+  10 aa from every pick the member carries -- see ``_keep_alternatives``.
 
 ``--redact-internal`` replaces the provenance columns (source PR / commit / path,
 decided_by, implemented_by, reason, rejected_alternative, rationale) with a placeholder.
@@ -125,6 +126,13 @@ INT_COLS = {
     "canonical_residue", "ion_site", "additive_only", "in_extracellular",
 }  # fmt: skip
 STATUSES = {"built", "decided_not_built", "no_tag", "pending", "alternative"}
+#: Which ranked runners-up a reviewer sees, and how far an alternative must sit from the
+#: member's pick to be worth comparing. Becca Carlson, 2026-11-15: show only ranks 2-3,
+#: numbered as such, and only at least ALT_MIN_SEPARATION_AA away from the first pick --
+#: a runner-up a few residues from the pick is the same site, not an alternative to it.
+#: An alternative with no rank is not a ranked runner-up, so it does not qualify.
+ALT_MIN_RANK, ALT_MAX_RANK = 2, 3
+ALT_MIN_SEPARATION_AA = 10
 
 
 # --------------------------------------------------------------------------- inputs
@@ -304,6 +312,46 @@ class Resolver:
 
 
 # --------------------------------------------------------------------------- sites
+
+
+def _keep_alternatives(sites: list[dict]) -> tuple[list[dict], dict]:
+    """Keep only the ranked runners-up a reviewer can act on.
+
+    An ``alternative`` row survives when its rank is within
+    ``ALT_MIN_RANK..ALT_MAX_RANK`` and its insert position is at least
+    ``ALT_MIN_SEPARATION_AA`` from *every* pick the member carries. Every pick, not
+    just one: a multi-arm member has several, and a runner-up that lands on top of any
+    of them is that arm, not an alternative to it. Rows that are not alternatives are
+    returned untouched, and a dropped row's rung and reason are counted for the
+    manifest so a missing alternative is explainable without rebuilding.
+    """
+    picks: dict[str, set[int]] = {}
+    for s in sites:
+        if s["is_primary"] and s["insert_after_residue"] is not None:
+            picks.setdefault(s["member_id"], set()).add(s["insert_after_residue"])
+    kept, dropped = [], {}
+    for s in sites:
+        if s["status"] != "alternative":
+            kept.append(s)
+            continue
+        rank, res = s["rank"], s["insert_after_residue"]
+        if rank is None:
+            why = "unranked"
+        elif not (ALT_MIN_RANK <= rank <= ALT_MAX_RANK):
+            why = f"rank {rank} outside {ALT_MIN_RANK}-{ALT_MAX_RANK}"
+        elif res is None:
+            why = "no insert position to compare"
+        elif any(
+            abs(res - p) < ALT_MIN_SEPARATION_AA for p in picks.get(s["member_id"], ())
+        ):
+            why = f"within {ALT_MIN_SEPARATION_AA} aa of a pick"
+        else:
+            kept.append(s)
+            continue
+        dropped[f"{s['site_source']}: {why}"] = (
+            dropped.get(f"{s['site_source']}: {why}", 0) + 1
+        )
+    return kept, dropped
 
 
 def _site(src_info: dict, **kw) -> dict:
@@ -727,8 +775,8 @@ def _internal(
             continue
         res = _int(r["insert_after_residue"])
         rank = _int(r["rank"])
-        if rank is None or rank > 2 or res == chosen.get(m["design_id"]):
-            continue  # ranks 1-2 only, and never the decided pick twice
+        if rank is None or rank > ALT_MAX_RANK or res == chosen.get(m["design_id"]):
+            continue  # ranked runners-up only, and never the decided pick twice
         before, _, after = (r.get("junction") or "").partition("|")
         out.append(_site(
             info_prop, site_id=f"{m['design_id']}-v5-r{rank}", m=m, rung=m["rung"],
@@ -1283,6 +1331,7 @@ def build(args) -> int:
     contacts = _contacts(T["lit_contacts"], R)
 
     members_rows = sorted(members.values(), key=lambda r: r["member_id"])
+    sites, alts_dropped = _keep_alternatives(sites)
     sites.sort(key=lambda r: (r["member_id"], -r["is_primary"], r["site_id"]))
     structures.sort(key=lambda r: (r["member_id"], r["structure_id"]))
     contacts.sort(key=lambda r: (r["member_id"], r["residue"], r["source"]))
@@ -1315,6 +1364,11 @@ def build(args) -> int:
         "contacts": len(contacts),
         "sites_by_rung_status": _count(sites, "rung", "status"),
         "sites_by_source": _count(sites, "site_source", "is_primary"),
+        "alternatives_rule": {
+            "ranks": [ALT_MIN_RANK, ALT_MAX_RANK],
+            "min_separation_aa": ALT_MIN_SEPARATION_AA,
+            "dropped": alts_dropped,
+        },
         "members_by_class": _count(members_rows, "membrane_class"),
         "members_without_primary_site": sorted(set(members) - with_site),
         "structures_by_kind_source": _count(structures, "kind", "source"),
