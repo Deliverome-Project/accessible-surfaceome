@@ -30,6 +30,9 @@ import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
 import {
   PRESETS,
+  PRESET_PARAM,
+  parsePresetParam,
+  presetParamValue,
   INDUCTION_SUBS,
   PRESET_IMPLIED_FILTERS,
   DEEP_DIVE_ONLY_NOTE,
@@ -458,6 +461,26 @@ export function CatalogTable({
   const [presetKeys, setPresetKeys] = useState<Set<PresetKey>>(
     () => new Set(),
   );
+  // The chip selection lives in ?preset=canonical,likely so a link reproduces
+  // it. Read after mount (the static HTML has no query string), then keep the
+  // URL in step without adding history entries.
+  const presetUrlRead = useRef(false);
+  useEffect(() => {
+    const fromUrl = parsePresetParam(
+      new URLSearchParams(window.location.search).get(PRESET_PARAM),
+    );
+    if (fromUrl.size) setPresetKeys(fromUrl);
+    presetUrlRead.current = true;
+  }, []);
+  useEffect(() => {
+    if (!presetUrlRead.current) return;
+    const url = new URL(window.location.href);
+    const value = presetParamValue(presetKeys);
+    if ((url.searchParams.get(PRESET_PARAM) ?? null) === value) return;
+    if (value) url.searchParams.set(PRESET_PARAM, value);
+    else url.searchParams.delete(PRESET_PARAM);
+    window.history.replaceState(window.history.state, "", url.toString());
+  }, [presetKeys]);
   // Standalone "low-literature + UniProt" curated list — NOT a PRESETS entry
   // because its predicate needs the UniProt DB flag (r.db.uniprot), which isn't
   // in the deep-dive `deep_dive_filters`. Mutually exclusive with the preset chips.

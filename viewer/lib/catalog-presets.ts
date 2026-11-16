@@ -599,3 +599,24 @@ export const INDUCTION_SUBS: ReadonlyArray<{
     predicate: passesInductionImmune,
   },
 ];
+
+/** URL parameter holding the selected tier preset chips, e.g.
+ *  `/?preset=canonical,likely` (a deep link the author e-mails use). */
+export const PRESET_PARAM = "preset";
+
+/** Preset keys named in a `?preset=` value: comma-separated, case-insensitive;
+ *  unknown keys and "all" (= no filter) are ignored. */
+export function parsePresetParam(value: string | null | undefined): Set<PresetKey> {
+  const known = new Set<PresetKey>(PRESETS.map((p) => p.key).filter((k) => k !== "all"));
+  const keys = (value ?? "")
+    .split(",")
+    .map((k) => k.trim().toLowerCase())
+    .filter((k): k is PresetKey => known.has(k as PresetKey));
+  return new Set(keys);
+}
+
+/** The `?preset=` value for a selection, in chip order; null when empty. */
+export function presetParamValue(keys: ReadonlySet<PresetKey>): string | null {
+  const v = PRESETS.map((p) => p.key).filter((k) => k !== "all" && keys.has(k));
+  return v.length ? v.join(",") : null;
+}
