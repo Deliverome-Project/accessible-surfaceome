@@ -99,7 +99,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-16-sweep-v15"
+SNAPSHOT = "2026-11-16-sweep-v16"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -201,6 +201,8 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "yanagida-hl60-raft-2007",
     ),
     "solid_cancer": (
+        # sweep-v16: BxPC-3, PANC-1 and CFPAC-1 xenograft tumors.
+        "zimmerman-pdac-xenograft-2025",
         "salmela-cscc-2026",
         "porter-gbm-2026",
         "glyco-pdx-csc-2026",
