@@ -281,6 +281,16 @@ def _orient_pdb_by_topology(
 
 
 def _fetch_pdb(uniprot: str) -> str:
+    """Fetch the AlphaFold model for one of this figure's three genes.
+
+    Fragment 1 is hardcoded, which is only correct because this figure's
+    genes are fixed and short — KLK2 261 aa, SRC 536 aa, CD63 238 aa, all
+    far under AlphaFold DB's 2,700-residue single-model cap. Any code that
+    takes an arbitrary accession must NOT copy this: AFDB splits a longer
+    entry into overlapping ``F1``/``F2``/... fragments, so an ``-F1-`` URL
+    renders only the first slice. The fragment-aware resolver for the
+    viewer is ``viewer/lib/afdb-model.ts``.
+    """
     cache = SCRATCH / f"AF-{uniprot}-F1-model_v6.pdb"
     if cache.exists():
         return cache.read_text()

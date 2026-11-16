@@ -221,6 +221,76 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  afdb_residue_range: (
+    <>
+      The <strong>UniProt residue numbers present in the coordinates
+      being drawn</strong>, measured from the model itself rather than
+      assumed from the sequence length. Every residue number elsewhere on
+      this page — tag sites, SURFACE-Bind anchors, topology spans — is on
+      this same axis, so a residue outside this range is not in the
+      structure you are looking at.
+    </>
+  ),
+
+  afdb_partial_model: (
+    <>
+      This AlphaFold model covers <strong>fewer residues than the
+      sequence this record resolved</strong>, so part of the protein is
+      not shown. Two causes, both AlphaFold DB&apos;s rather than ours:
+      <br />
+      <br />
+      <strong>Sequence-version drift.</strong> A model is built from the
+      UniProt sequence version current at model-build time; if UniProt has
+      since extended the entry, the model stops where the older sequence
+      did.
+      <br />
+      <br />
+      <strong>The length cap.</strong> AlphaFold DB caps a single model at
+      2,700 residues. Longer proteins were originally released as
+      overlapping ~1,400-residue fragments (Tunyasuvunakool et al. 2021,{" "}
+      <a
+        href="https://pubmed.ncbi.nlm.nih.gov/34293799/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        PMID 34293799
+      </a>
+      ); current releases exclude them instead (Varadi et al. 2024,{" "}
+      <a
+        href="https://pubmed.ncbi.nlm.nih.gov/37933859/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        PMID 37933859
+      </a>
+      ). Where fragments do exist this viewer joins them, so the range
+      above is the whole of what AlphaFold DB publishes.
+      <br />
+      <br />
+      Judge a residue outside this range from the experimental structure
+      tab or the topology strip, not from this model.
+    </>
+  ),
+
+  afdb_fragments: (
+    <>
+      AlphaFold DB caps one model at 2,700 residues and splits a longer
+      entry into overlapping ~1,400-residue fragments (Tunyasuvunakool et
+      al. 2021,{" "}
+      <a
+        href="https://pubmed.ncbi.nlm.nih.gov/34293799/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        PMID 34293799
+      </a>
+      ). The viewer fetches every fragment the entry has and joins them on
+      the UniProt residue axis, keeping the first fragment&apos;s
+      coordinates where fragments overlap. The residue range beside this
+      chip is what the joined model actually covers.
+    </>
+  ),
+
   afdb_disordered: (
     <>
       Fraction of residues AlphaFold predicts with low confidence

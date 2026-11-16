@@ -167,7 +167,7 @@ def fetch_afdb_prediction(
     if cache_path.exists() and not refresh:
         try:
             payload = json.loads(cache_path.read_text())
-            return _extract_pdb_url(payload)
+            return _extract_pdb_url(payload, uniprot)
         except (OSError, json.JSONDecodeError):
             # Corrupt cache → fall through to a fresh fetch.
             pass
@@ -186,16 +186,61 @@ def fetch_afdb_prediction(
 
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(json.dumps(payload, indent=2) + "\n")
-    return _extract_pdb_url(payload)
+    return _extract_pdb_url(payload, uniprot)
 
 
-def _extract_pdb_url(payload: object) -> tuple[str | None, int | None]:
-    """AFDB returns an array; pull the first entry's pdbUrl/latestVersion."""
+def _extract_pdb_url(
+    payload: object, uniprot: str | None = None
+) -> tuple[str | None, int | None]:
+    """Pick the pdbUrl/latestVersion of AFDB's model of ``uniprot`` itself.
+
+    Deliberately NOT ``payload[0]``. For a base accession the prediction
+    API returns the canonical model plus every modelled alternative
+    isoform plus any federated third-party model that reuses the same bare
+    accession, and array position is not a contract. Baking the wrong one
+    puts a different, usually shorter sequence under the gene page's
+    "Canonical" tab — LRP1 (Q07954) is the case that reached us as a
+    reader report: its only entry is ``AF-Q07954-2-F1``, isoform 2,
+    residues 1-292 of a 4,544-aa protein.
+
+    Returns ``(None, None)`` — the runtime then resolves the model live —
+    when AFDB serves no first-party model for this exact accession, and
+    also when the entry is SPLIT INTO FRAGMENTS (``AF-{acc}-F1``,
+    ``-F2``, ...): a single baked URL cannot represent a multi-fragment
+    model, and baking fragment 1 alone is exactly the truncation this
+    avoids. The viewer assembles every fragment at view time instead (see
+    ``viewer/lib/afdb-model.ts``).
+    """
     if not isinstance(payload, list) or not payload:
         return (None, None)
-    first = payload[0]
-    if not isinstance(first, dict):
+    entries = [e for e in payload if isinstance(e, dict)]
+    if uniprot is None:
+        # No accession to match against: only safe when the response is
+        # unambiguous.
+        if len(entries) != 1:
+            return (None, None)
+        mine = entries
+    else:
+        mine = [
+            e
+            for e in entries
+            if e.get("uniprotAccession") == uniprot and not e.get("isComplex")
+        ]
+        # AFDB's own entry ids are accession-keyed; anything else is a
+        # federated model from another pipeline.
+        own = [
+            e
+            for e in mine
+            if re.fullmatch(rf"AF-{re.escape(uniprot)}-F(\d+)", str(e.get("entryId") or ""))
+        ]
+        if own:
+            if len(own) > 1:
+                # Multi-fragment entry — resolve at view time, not here.
+                return (None, None)
+            mine = own
+    if len(mine) != 1:
         return (None, None)
+    first = mine[0]
     pdb_url = first.get("pdbUrl")
     latest_version = first.get("latestVersion")
     if pdb_url is not None and not isinstance(pdb_url, str):

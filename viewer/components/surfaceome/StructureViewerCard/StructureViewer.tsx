@@ -22,9 +22,20 @@ import {
   L1_CASSETTE_COLOR,
   L1_NONNATIVE_COLOR,
   TOPOLOGY_COLORS,
-  alphafoldPdbUrl,
   alphafoldPredictionApiUrl,
 } from "../../../lib/structure-viewer-types";
+import {
+  alphafoldFragmentPdbUrl,
+  pdbResidueSpan,
+  selectAfdbModel,
+  stitchAfdbFragments,
+} from "../../../lib/afdb-model";
+import type { AfdbModelSelection } from "../../../lib/afdb-model";
+
+/** ``activeRenderedResidueRange`` is keyed by variant id, and the Canonical
+ *  tab has no variant (``activeVariant === null``). This stands in for it so
+ *  a measured canonical span can be stored and read back like any other. */
+const CANONICAL_RANGE_KEY = "__canonical__";
 import type {
   AlphafoldPredictionEntry,
   LibraryMembership,
@@ -588,10 +599,20 @@ function _renderCaption(args: {
   afdbMetaByAcc: Record<string, AfdbVariantMeta | "loading" | "error">;
   pdbTitles: Record<string, string>;
   chainOnlyAtomCounts: Record<string, number>;
+  /** Residue span measured from the rendered AFDB coordinates, null until
+   *  the model has loaded (or on a non-AFDB tab). */
+  afdbCoveredRange: { min: number; max: number } | null;
+  /** Length of the sequence the ACTIVE tab's topology describes — what the
+   *  model is expected to cover. */
+  afdbExpectedLength: number;
+  /** How many fragments AFDB splits the active entry into. 1 for every
+   *  gene in this cohort today; >1 is the case the F1-only URL truncated. */
+  afdbFragmentCount: number;
 }) {
   const {
     activeVariant, canonicalStruct, proteinName, canonicalUniprot,
     afdbMetaByAcc, pdbTitles, chainOnlyAtomCounts,
+    afdbCoveredRange, afdbExpectedLength, afdbFragmentCount,
   } = args;
 
   // ---- Schweke homo-oligomer branch ----
@@ -891,6 +912,45 @@ function _renderCaption(args: {
   const label = isCanonical
     ? "AlphaFold model"
     : `AlphaFold model · ${(activeVariant as StructureVariantAfdb).label}`;
+
+  // ---- Covered residue range ----
+  // Always stated, never inferred: a reader judging a tag site has to know
+  // whether the residue they care about is in the model at all. Measured
+  // from the rendered atoms, so it is right whether the model is whole, a
+  // short one AFDB built from an older UniProt sequence version, or a
+  // multi-fragment entry whose fragments were joined.
+  let coverageNode: ReactNode = null;
+  if (afdbCoveredRange) {
+    const { min, max } = afdbCoveredRange;
+    const spans = max - min + 1;
+    const partial = afdbExpectedLength > 0 && spans < afdbExpectedLength;
+    const rangeText = `${min.toLocaleString()}–${max.toLocaleString()}`;
+    coverageNode = partial ? (
+      <StatusPill tone="amber" size="sm">
+        Residues <strong>{rangeText}</strong>
+        {afdbExpectedLength > 0 ? ` of ${afdbExpectedLength.toLocaleString()}` : ""}
+        <InfoTip wide label="About the modelled residue range">
+          {tooltips.afdb_partial_model}
+        </InfoTip>
+      </StatusPill>
+    ) : (
+      <span className={styles.captionStat}>
+        Residues <strong>{rangeText}</strong>
+        <InfoTip wide label="About the modelled residue range">
+          {tooltips.afdb_residue_range}
+        </InfoTip>
+      </span>
+    );
+  }
+  const fragmentNode =
+    afdbFragmentCount > 1 ? (
+      <span className={styles.captionStat}>
+        <strong>{afdbFragmentCount}</strong> fragments joined
+        <InfoTip wide label="About AlphaFold fragments">
+          {tooltips.afdb_fragments}
+        </InfoTip>
+      </span>
+    ) : null;
   // proteinName / captionTitle was removed from the canonical AFDB
   // branch — the gene symbol is already the page's h1, so repeating
   // the protein descriptor in the structure caption was visual noise.
@@ -919,6 +979,18 @@ function _renderCaption(args: {
                 {tooltips.afdb_disordered}
               </InfoTip>
             </span>
+          </>
+        ) : null}
+        {coverageNode ? (
+          <>
+            <span className={styles.captionSep} aria-hidden="true">·</span>
+            <span className={styles.captionStat}>{coverageNode}</span>
+          </>
+        ) : null}
+        {fragmentNode ? (
+          <>
+            <span className={styles.captionSep} aria-hidden="true">·</span>
+            {fragmentNode}
           </>
         ) : null}
         <span className={styles.captionSep} aria-hidden="true">·</span>
@@ -1295,6 +1367,13 @@ export function StructureViewer({
   const [activeRenderedResidueRange, setActiveRenderedResidueRange] =
     useState<{ variantId: string; min: number; max: number } | null>(null);
 
+  /** How many AFDB fragments the active tab's model was assembled from.
+   *  1 for every gene in this cohort as of 2026-11 — AFDB currently
+   *  excludes entries past its 2,700-aa cap rather than fragmenting them —
+   *  but the viewer no longer assumes it, and says so when it is >1. */
+  const [afdbFragmentsRendered, setAfdbFragmentsRendered] =
+    useState<{ variantId: string; count: number } | null>(null);
+
   // SURFACE-Bind sphere overlay only makes sense on the canonical
   // AFDB view — anchor residues are canonical-UniProt-keyed and
   // don't translate to isoforms / orthologs / chain-restricted PDBs.
@@ -1362,18 +1441,14 @@ export function StructureViewer({
             // the "Canonical" tab silently swaps in a different, much
             // shorter sequence — exactly the "AlphaFold structure appears
             // to be showing a truncation" Josh Tycko flagged on LRP1.
-            // Treat the canonical as UNAVAILABLE unless an entry's
-            // ``uniprotAccession`` matches the exact acc we asked for
-            // (bare, no isoform suffix). Multi-fragment canonical models
-            // — AF-{acc}-F1/F2/… for very long proteins — still match on
-            // the bare acc, so they stay available.
-            const j = (await r.json()) as Array<{
-              uniprotAccession?: string;
-            }>;
-            const hasCanonicalModel =
-              Array.isArray(j) &&
-              j.some((e) => e.uniprotAccession === acc);
-            return [acc, hasCanonicalModel];
+            // Treat the canonical as UNAVAILABLE unless AFDB serves a
+            // renderable model for the exact acc we asked for (bare, no
+            // isoform suffix). ``selectAfdbModel`` is the single place that
+            // rule lives — it also keeps multi-fragment entries
+            // (AF-{acc}-F1/F2/… for proteins past AFDB's residue cap)
+            // available, since every fragment matches on the bare acc.
+            const j = (await r.json()) as AlphafoldPredictionEntry[];
+            return [acc, selectAfdbModel(j, acc) !== null];
           } catch {
             // Network hiccup / parse error — don't gray it out; the
             // per-tab render will still surface a genuine failure if
@@ -1445,6 +1520,10 @@ export function StructureViewer({
     : effectiveVariants[variantIdx - 1] ?? null;
   const isExperimentalActive = activeVariant?.source === "experimental";
   const isSchwekeActive = activeVariant?.source === "schweke-homomer";
+  // Canonical tab and every isoform / ortholog tab are AFDB models — the
+  // tabs whose covered residue span is measured from the fetched
+  // coordinates rather than carried on the variant.
+  const isAfdbActive = isCanonicalActive || activeVariant?.source === "afdb";
   // Library membership per tab (index 0 = Canonical), so the strip can mark
   // library vs non-library and the note under it can say which is which.
   const tabLibraryMembers: LibraryMembership[][] = [
@@ -1518,19 +1597,27 @@ export function StructureViewer({
   const activeOnOwnSequence =
     activeVariant?.source === "afdb" &&
     (activeVariant.id.startsWith("iso-") || activeVariant.id.startsWith("ortholog-"));
-  // An experimental chain or a trimmed homo-oligomer model covers only part
-  // of the canonical sequence; the strip blanks the rest.
+  // An experimental chain, a trimmed homo-oligomer model, OR an AFDB model
+  // built from a shorter UniProt sequence version than the record resolved
+  // covers only part of the sequence; the strip blanks the rest. The AFDB
+  // range is measured from the rendered atoms (set by the render branch)
+  // because nothing in the API response announces a short model.
+  const renderedRangeKey = activeVariant?.id ?? CANONICAL_RANGE_KEY;
+  const measuredRange =
+    activeRenderedResidueRange?.variantId === renderedRangeKey
+      ? activeRenderedResidueRange
+      : null;
   const coveredStart =
     activeVariant?.source === "experimental"
       ? activeVariant.unp_start
-      : isSchwekeActive && activeRenderedResidueRange?.variantId === activeVariant?.id
-        ? activeRenderedResidueRange.min
+      : (isSchwekeActive || isAfdbActive) && measuredRange
+        ? measuredRange.min
         : null;
   const coveredEnd =
     activeVariant?.source === "experimental"
       ? activeVariant.unp_end
-      : isSchwekeActive && activeRenderedResidueRange?.variantId === activeVariant?.id
-        ? activeRenderedResidueRange.max
+      : (isSchwekeActive || isAfdbActive) && measuredRange
+        ? measuredRange.max
         : null;
   useEffect(() => {
     onActiveTopologyChangeRef.current?.({
@@ -1753,22 +1840,18 @@ export function StructureViewer({
           { cache: "force-cache" },
         );
         if (!r.ok) throw new Error(`AFDB API ${r.status}`);
-        const j = (await r.json()) as Array<{
-          uniprotAccession?: string;
-          entryId?: string;
-          latestVersion?: number;
-          globalMetricValue?: number;
-          fractionPlddtLow?: number;
-          fractionPlddtVeryLow?: number;
-        }>;
+        const j = (await r.json()) as AlphafoldPredictionEntry[];
         // The /api/prediction/{acc} endpoint accepts isoform-suffixed
         // accs AND base accs. For an isoform-suffixed acc the array
         // contains a single matching entry; for a base acc the array
-        // can carry canonical PLUS each modelled isoform. Pick the
-        // entry whose ``uniprotAccession`` matches what we asked for
-        // (defensive: tolerates either response shape).
-        const entry = j.find((e) => e.uniprotAccession === acc) ?? j[0];
-        if (!entry) throw new Error("empty AFDB response");
+        // can carry canonical PLUS each modelled isoform PLUS federated
+        // third-party models on the same bare acc. Selecting through
+        // ``selectAfdbModel`` keeps the pLDDT / version / entry-page
+        // metadata on the SAME entry the render path fetches coordinates
+        // from — previously a `?? j[0]` fallback could show an isoform's
+        // or a third-party model's pLDDT under the canonical tab.
+        const entry = selectAfdbModel(j, acc)?.entry;
+        if (!entry) throw new Error("no AFDB model for this accession");
         if (cancelled) return;
         setAfdbMetaByAcc((prev) => ({
           ...prev,
@@ -1927,87 +2010,115 @@ export function StructureViewer({
           setStatus("nomodel");
           return;
         }
-        // URL resolution strategy:
-        //   - Canonical view with a baked `data.pdb_url` → use it
-        //     directly (the build script wrote a version-correct URL
-        //     via the prediction API at build time).
-        //   - Anything else (canonical with no baked URL, or any
-        //     non-canonical AFDB variant tab) → resolve via the
-        //     prediction API first. Previously this fell back to
-        //     `alphafoldPdbUrl(acc)`, which used the helper's
-        //     `version="v4"` default and ate a 404 before retrying
-        //     through the prediction API. The console saw a noisy
-        //     `AF-{acc}-F1-model_v4.pdb 404 (Not Found)` on every
-        //     gene whose AFDB model had been bumped past v4 (EGFR,
-        //     GPR75, …). Prediction-API-first is one extra ~1 KB
-        //     cached JSON fetch — cheaper than a 404 + retry, and
-        //     silent. The helper's default is now pinned to
-        //     LATEST_KNOWN_AFDB_VERSION (v6 as of 2025-08) so even
-        //     the "prediction API down + no baked URL" fallback
-        //     lands on a current-ish file.
-        let pdbUrl: string | null = isCanonicalActive
-          ? (data.pdb_url ?? null)
-          : null;
-        if (!pdbUrl) {
-          try {
-            const apiResp = await fetch(
-              alphafoldPredictionApiUrl(activeUniprot),
-            );
-            if (apiResp.ok) {
-              const entries =
-                (await apiResp.json()) as AlphafoldPredictionEntry[];
-              pdbUrl = entries[0]?.pdbUrl ?? null;
-            }
-          } catch {
-            // Network / parse error — fall through to the legacy v4
-            // URL below as a last resort. The 404 (if any) is the
-            // remaining noise; previously it was the FIRST step.
+        // URL resolution strategy — prediction-API-FIRST for every AFDB
+        // tab, canonical included.
+        //
+        // The API response is the only thing that knows how many
+        // FRAGMENTS the entry has. AFDB splits an entry past its
+        // per-model residue cap (2,700 aa) into overlapping ~1,400-residue
+        // fragments AF-{acc}-F1/F2/… (Tunyasuvunakool et al. 2021, PMID
+        // 34293799), and this code used to build `AF-{acc}-F1-...` by hand
+        // — rendering only the first slice of such an entry with nothing on
+        // screen to say so. So resolve the whole fragment set here, and
+        // never template the fragment number.
+        //
+        // It is also the only way to know WHICH entry belongs to this
+        // accession: a base acc's response carries the canonical model plus
+        // every modelled isoform plus (since AFDB began federating
+        // third-party predictions) externally contributed models reusing the
+        // same bare acc. `entries[0]` was a positional guess;
+        // `selectAfdbModel` selects explicitly.
+        //
+        // The API fetch is `force-cache` and the metadata effect above
+        // already warms the same URL, so this costs no extra round trip in
+        // practice. A build-baked `data.pdb_url` is now only the fallback
+        // for "prediction API unreachable", together with the offline
+        // fragment-1 URL pinned to LATEST_KNOWN_AFDB_VERSION.
+        let selection: AfdbModelSelection | null = null;
+        try {
+          const apiResp = await fetch(
+            alphafoldPredictionApiUrl(activeUniprot),
+            { cache: "force-cache" },
+          );
+          if (apiResp.ok) {
+            const entries =
+              (await apiResp.json()) as AlphafoldPredictionEntry[];
+            selection = selectAfdbModel(entries, activeUniprot);
+          }
+        } catch {
+          // Network / parse error — fall through to the baked / offline
+          // URL below as a last resort.
+        }
+        const fragmentTargets: { url: string; start: number | null }[] =
+          selection
+            ? selection.fragments.map((f) => ({ url: f.pdbUrl, start: f.start }))
+            : [
+                {
+                  url:
+                    (isCanonicalActive ? data.pdb_url : null) ??
+                    alphafoldFragmentPdbUrl(activeUniprot),
+                  start: null,
+                },
+              ];
+
+        // Fetch every fragment. A fragment that 404s is dropped rather
+        // than failing the whole model: a partial multi-fragment model is
+        // still worth rendering, and the covered-range chip reports the
+        // span that actually loaded instead of implying the whole protein.
+        const fetched = await Promise.all(
+          fragmentTargets.map(async (t) => {
+            const resp = await fetch(t.url, { cache: "force-cache" });
+            return { ...t, resp };
+          }),
+        );
+        const loaded: { text: string; start: number | null }[] = [];
+        for (const f of fetched) {
+          if (f.resp.ok) {
+            loaded.push({ text: await f.resp.text(), start: f.start });
           }
         }
-        if (!pdbUrl) pdbUrl = alphafoldPdbUrl(activeUniprot);
-
-        let pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
-
-        // Defensive retry for a STALE baked URL (canonical view with
-        // a build-baked v_n URL that's been superseded since the build).
-        // The prediction-API-first path above already handles the no-
-        // baked-URL cases, so this branch only fires for build-pinned
-        // URLs that aged out (observed: O95800 v4→v6 between
-        // 2025-08 builds).
-        if (pdbResp.status === 404) {
-          try {
-            const apiResp = await fetch(
-              alphafoldPredictionApiUrl(activeUniprot),
-            );
-            if (apiResp.ok) {
-              const entries =
-                (await apiResp.json()) as AlphafoldPredictionEntry[];
-              if (entries[0]?.pdbUrl && entries[0].pdbUrl !== pdbUrl) {
-                pdbUrl = entries[0].pdbUrl;
-                pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
-              }
-            }
-          } catch {
-            // Fall through to the status check below.
-          }
-        }
-        if (!pdbResp.ok) {
+        if (loaded.length === 0) {
+          const first = fetched[0].resp;
           // A 404 = AlphaFold DB simply has no model for this protein
           // (e.g. megalin/LRP2 and other very large proteins beyond
           // AFDB's per-entry limit). That's not a load FAILURE — surface
           // a soft "no model available" state, not a red error. Non-404s
           // are genuine failures and still throw → the error UI + Retry.
-          if (pdbResp.status === 404) {
+          if (first.status === 404) {
             if (renderSeq !== renderSeqRef.current) return;
             setErrorMsg("");
             setStatus("nomodel");
             return;
           }
           throw new Error(
-            `AlphaFold DB returned ${pdbResp.status} for ${activeUniprot}`,
+            `AlphaFold DB returned ${first.status} for ${activeUniprot}`,
           );
         }
-        rawPdb = await pdbResp.text();
+        // One fragment is returned byte-identical (the universal case in
+        // this cohort today); several are joined into one single-chain PDB
+        // on the UniProt residue axis, which is the frame the topology
+        // coloring, the 3Dmol `resi` selections and the tag-site pins all
+        // already assume.
+        rawPdb = stitchAfdbFragments(loaded);
+        // Record what the reader is ACTUALLY looking at. No API field
+        // announces a short model: AFDB builds from the UniProt sequence
+        // version current at model-build time, which can be shorter than
+        // the sequence our record resolved (MUC3B Q9H195 — record 13,477
+        // aa, AF-Q9H195-F1 covers 1–1,237). Only the coordinates know, so
+        // measure them and let the caption + topology strip say so.
+        const afdbSpan = pdbResidueSpan(rawPdb);
+        const afdbRangeKey = activeVariant?.id ?? CANONICAL_RANGE_KEY;
+        if (afdbSpan) {
+          setActiveRenderedResidueRange({
+            variantId: afdbRangeKey,
+            min: afdbSpan.min,
+            max: afdbSpan.max,
+          });
+        }
+        setAfdbFragmentsRendered({
+          variantId: afdbRangeKey,
+          count: loaded.length,
+        });
       }
 
       // Resolve the chain id we'll actually use downstream — PDBe's
@@ -3235,6 +3346,18 @@ export function StructureViewer({
         afdbMetaByAcc,
         pdbTitles,
         chainOnlyAtomCounts,
+        afdbCoveredRange:
+          isAfdbActive && measuredRange
+            ? { min: measuredRange.min, max: measuredRange.max }
+            : null,
+        // The active tab's own sequence is what its model should cover:
+        // the canonical length on the Canonical tab, the isoform's /
+        // ortholog's own length on its tab.
+        afdbExpectedLength: activeTopology.length,
+        afdbFragmentCount:
+          afdbFragmentsRendered?.variantId === renderedRangeKey
+            ? afdbFragmentsRendered.count
+            : 1,
       })}
 
       {/* Legend — switches with viewMode. Topology mode shows the

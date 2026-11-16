@@ -200,3 +200,92 @@ def _make_synthetic_cif(plddts: list[float]) -> str:
         "_atom_site.pdbx_PDB_model_num\n"
         f"{body}\n"
     )
+
+
+# ---------------------------------------------------------------------------
+# Which entry the fetcher measures
+# ---------------------------------------------------------------------------
+# A base accession's prediction response is not a single model. It also
+# carries every modelled alternative isoform, and -- since AFDB began
+# federating third-party predictions -- externally contributed models that
+# reuse the same bare accession with an opaque entry id. Taking position 0
+# measures whichever molecule happens to sort first, and that is how LRP1's
+# record came to carry isoform 2's pLDDT (79.19, from a 292-aa model of a
+# 4,544-aa protein) under "Whole pLDDT" on the gene page.
+
+
+def _meta(entry_id: str, acc: str, **extra: object) -> dict[str, object]:
+    return {
+        "entryId": entry_id,
+        "uniprotAccession": acc,
+        "globalMetricValue": 80.0,
+        "cifUrl": f"https://alphafold.ebi.ac.uk/files/{entry_id}-model_v6.cif",
+        **extra,
+    }
+
+
+def _load(payload: list[dict[str, object]], acc: str, tmp_path: Path):
+    from accessible_surfaceome.tools.afdb_plddt import _load_or_fetch_metadata
+
+    meta_path = tmp_path / f"{acc}.json"
+    meta_path.write_text(json.dumps(payload))
+    return _load_or_fetch_metadata(acc, meta_path)
+
+
+def test_metadata_entry_is_the_one_for_this_accession(tmp_path: Path):
+    """Even when an isoform sorts first."""
+    entry = _load(
+        [
+            _meta("AF-P14209-2-F1", "P14209-2", globalMetricValue=90.4),
+            _meta("AF-P14209-F1", "P14209", globalMetricValue=75.9),
+        ],
+        "P14209",
+        tmp_path,
+    )
+    assert entry["entryId"] == "AF-P14209-F1"
+    assert entry["globalMetricValue"] == 75.9
+
+
+def test_isoform_only_response_raises_rather_than_measuring_the_isoform(
+    tmp_path: Path,
+):
+    """LRP1. The callers treat the exception as "no AFDB metrics for this
+    gene" and keep going, so the record gets no number instead of a
+    different molecule's."""
+    with pytest.raises(ValueError, match="no model for Q07954"):
+        _load([_meta("AF-Q07954-2-F1", "Q07954-2")], "Q07954", tmp_path)
+
+
+def test_afdbs_own_model_beats_a_federated_one_on_the_same_accession(
+    tmp_path: Path,
+):
+    entry = _load(
+        [
+            _meta("AF-0000000015138413", "Q04900", globalMetricValue=61.0),
+            _meta("AF-Q04900-F1", "Q04900", globalMetricValue=88.0),
+        ],
+        "Q04900",
+        tmp_path,
+    )
+    assert entry["entryId"] == "AF-Q04900-F1"
+
+
+def test_fragment_one_carries_the_metrics_for_a_split_entry(tmp_path: Path):
+    """Higher fragments are the continuation of the same model; fragment 1
+    is what the caption's pLDDT has always described. Supplied out of
+    order, because the response's order is not a contract."""
+    entry = _load(
+        [
+            _meta("AF-Q6ZZZ9-F3", "Q6ZZZ9"),
+            _meta("AF-Q6ZZZ9-F1", "Q6ZZZ9"),
+            _meta("AF-Q6ZZZ9-F2", "Q6ZZZ9"),
+        ],
+        "Q6ZZZ9",
+        tmp_path,
+    )
+    assert entry["entryId"] == "AF-Q6ZZZ9-F1"
+
+
+def test_complex_entries_are_not_measured_as_the_monomer(tmp_path: Path):
+    with pytest.raises(ValueError, match="no model for P12931"):
+        _load([_meta("AF-P12931-F1", "P12931", isComplex=True)], "P12931", tmp_path)
