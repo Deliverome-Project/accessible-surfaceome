@@ -106,6 +106,21 @@ export const MEMBRANE_COLOR = "#A0A4AB";
  */
 export const LATEST_KNOWN_AFDB_VERSION = "v6";
 
+/**
+ * **Fragment 1 only — do not use to decide what to render.**
+ *
+ * AlphaFold DB splits an entry past its 2,700-residue cap into overlapping
+ * ``F1``/``F2``/… fragments, so this URL is the *first slice* of such an
+ * entry, not the model. Anything that renders a structure must resolve the
+ * fragment set from the prediction API (``selectAfdbModel`` in
+ * ``./afdb-model``), which reports the fragments the entry actually has;
+ * ``alphafoldFragmentPdbUrl`` there is the fragment-aware builder and this
+ * one delegates to it.
+ *
+ * Kept for the narrow cases that legitimately want a single deterministic
+ * URL with no network call: the offline fallback for "prediction API
+ * unreachable", and build-time placeholders.
+ */
 export function alphafoldPdbUrl(
   uniprotAcc: string,
   version: string = LATEST_KNOWN_AFDB_VERSION,
@@ -135,6 +150,26 @@ export interface AlphafoldPredictionEntry {
   latestVersion?: number;
   entryId?: string;
   modelEntityId?: string;
+  /** The accession THIS entry models. For a base-accession query the
+   *  response also carries every modelled isoform (``P00533-2``) and any
+   *  federated third-party model reusing the bare accession, so this is
+   *  what distinguishes "the model we asked for" from its siblings. */
+  uniprotAccession?: string;
+  /** 1-based, end-inclusive span of the UniProt sequence this entry covers.
+   *  Less than the whole sequence for a fragment of a split entry, and for a
+   *  model built from an older, shorter UniProt sequence version. */
+  uniprotStart?: number;
+  uniprotEnd?: number;
+  /** True for a multi-chain complex prediction, which the single-chain
+   *  topology coloring does not expect. */
+  isComplex?: boolean;
+  /** Model provider — ``GDM`` for AlphaFold DB's own models, other codes
+   *  (e.g. ``ATBC``) for federated third-party predictions. */
+  providerId?: string;
+  /** Mean pLDDT over the model. */
+  globalMetricValue?: number;
+  fractionPlddtLow?: number;
+  fractionPlddtVeryLow?: number;
 }
 
 // ---------------------------------------------------------------------------

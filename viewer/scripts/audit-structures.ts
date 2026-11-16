@@ -27,9 +27,15 @@
  *   - none of the chain's UniProt-mapped residues land on atoms under the
  *     viewer's projection (`projectExperimentalChain`, SIFTS fallback
  *     included), so topology colouring would come out blank.
- * Canonical AlphaFold tab:
- *   - AFDB's first prediction entry (the one the viewer renders) is an
- *     isoform while a canonical model exists.
+ * Canonical AlphaFold tab (`lib/afdb-model.ts`, the same selection the
+ * viewer uses):
+ *   - AFDB serves no renderable model for the exact accession though the
+ *     response is a 200 — isoform-only or complex-only (`isoform_only`);
+ *   - the model covers fewer residues than the current UniProt canonical
+ *     sequence (`partial`), which is how a model built from an older,
+ *     shorter sequence version reads as a truncation on the page;
+ *   - how many fragments the entry is split into (`afdb_fragments`), which
+ *     the viewer joins rather than rendering only F1.
  *   Model files themselves aren't downloaded: AFDB's file host rate-
  *   limits a client to far below cohort scale (it 429'd within minutes
  *   of the first full run), and the viewer already re-resolves a stale
@@ -73,6 +79,7 @@ import {
   alphafoldPredictionApiUrl,
   type AlphafoldPredictionEntry,
 } from "../lib/structure-viewer-types";
+import { selectAfdbModel } from "../lib/afdb-model";
 
 const API_BASE = (
   process.env.SURFACEOME_API_BASE ?? "https://api.deliverome.org/surfaceome"
@@ -166,9 +173,46 @@ interface Row {
    *  catches: coverage says a projection lands on atoms, identity says
    *  it lands on the RIGHT atoms. */
   identity_pct: string;
-  /** ok | fail | none | isoform_only | error */
+  /** ok | fail | partial | none | isoform_only | error */
   afdb_status: string;
+  /** How many fragments AFDB splits the entry into (``AF-{acc}-F1/F2/…``).
+   *  1 for every gene in this cohort today; >1 means the viewer joins them. */
+  afdb_fragments: string;
+  /** Residues the model covers, over the current UniProt canonical length.
+   *  Blank when either number was unreachable. The pair is what catches a
+   *  model built from an older, shorter UniProt sequence version. */
+  afdb_covered: string;
+  afdb_expected: string;
   detail: string;
+}
+
+/** Length of the CURRENT UniProt canonical sequence. Deliberately not
+ *  ``fetchCanonicalSequence``: that helper prefers AFDB's own
+ *  ``uniprotSequence``, which is the sequence version the model was built
+ *  from — comparing a model against it can never show a shortfall. UniProt
+ *  REST is the independent reference. */
+const _uniprotLen = new Map<string, number | null>();
+async function uniprotCanonicalLength(acc: string): Promise<number | null> {
+  const hit = _uniprotLen.get(acc);
+  if (hit !== undefined) return hit;
+  let len: number | null = null;
+  try {
+    const r = await auditFetch(`https://rest.uniprot.org/uniprotkb/${acc}.fasta`);
+    if (r.ok) {
+      const text = await r.text();
+      const seq = text
+        .split(/\r?\n/)
+        .filter((l) => l && !l.startsWith(">"))
+        .join("");
+      if (seq.length > 0) len = seq.length;
+    } else {
+      await r.body?.cancel();
+    }
+  } catch {
+    len = null;
+  }
+  _uniprotLen.set(acc, len);
+  return len;
 }
 
 async function auditExperimental(g: Gene, row: Row): Promise<void> {
@@ -300,24 +344,40 @@ async function auditAfdb(g: Gene, row: Row): Promise<void> {
     row.afdb_status = "none";
     return;
   }
-  const entries = (await r.json()) as Array<
-    AlphafoldPredictionEntry & { uniprotAccession?: string }
-  >;
+  const entries = (await r.json()) as AlphafoldPredictionEntry[];
   if (!Array.isArray(entries) || entries.length === 0) {
     row.afdb_status = "none";
     return;
   }
-  // Same availability rule as the viewer's mount probe.
-  if (!entries.some((e) => e.uniprotAccession === g.uniprot_acc)) {
+  // The viewer's own selection — isoform-only responses, federated
+  // third-party models reusing the bare acc, complexes, and the fragment
+  // set all resolved exactly as a gene page resolves them.
+  const sel = selectAfdbModel(entries, g.uniprot_acc);
+  if (!sel) {
     row.afdb_status = "isoform_only";
     return;
   }
-  // The viewer renders entries[0] on the canonical tab.
-  if (entries[0].uniprotAccession !== g.uniprot_acc) {
-    row.afdb_status = "fail";
+  row.afdb_fragments = String(sel.fragments.length);
+  // Coverage. AFDB builds a model from the UniProt sequence version
+  // current at model-build time; when UniProt has since extended the
+  // entry, the model silently stops where the old sequence did (MUC3B
+  // Q9H195: 13,477-aa canonical, model covers 1-1,237). Nothing in the
+  // response announces that, so compare the spans. Reported, not failed:
+  // the shortfall is AFDB's data rather than our bug, and the gene page
+  // now labels the covered range -- but a NEW one should be noticed.
+  const covered =
+    sel.reportedStart !== null && sel.reportedEnd !== null
+      ? sel.reportedEnd - sel.reportedStart + 1
+      : null;
+  const expected = await uniprotCanonicalLength(g.uniprot_acc);
+  if (covered !== null) row.afdb_covered = String(covered);
+  if (expected !== null) row.afdb_expected = String(expected);
+  if (covered !== null && expected !== null && covered < expected) {
+    row.afdb_status = "partial";
     row.detail = appendDetail(
       row.detail,
-      `AFDB entry 0 is ${entries[0].uniprotAccession}, not the canonical model`,
+      `AFDB model covers ${covered}/${expected} residues ` +
+        `(${Math.round((100 * covered) / expected)}%)`,
     );
     return;
   }
@@ -338,6 +398,9 @@ async function auditGene(g: Gene): Promise<Row> {
     exp_status: "",
     identity_pct: "",
     afdb_status: "",
+    afdb_fragments: "",
+    afdb_covered: "",
+    afdb_expected: "",
     detail: "",
   };
   // The two lanes hit different hosts, so run them side by side.
@@ -360,7 +423,8 @@ async function auditGene(g: Gene): Promise<Row> {
 
 const COLUMNS: (keyof Row)[] = [
   "gene_symbol", "uniprot_acc", "pdb_id", "chain_id", "source",
-  "exp_status", "identity_pct", "afdb_status", "detail",
+  "exp_status", "identity_pct", "afdb_status", "afdb_fragments",
+  "afdb_covered", "afdb_expected", "detail",
 ];
 
 function toTsv(rows: Row[]): string {
@@ -418,8 +482,23 @@ async function main() {
   const scored = rows.filter((r) => r.identity_pct !== "");
   const errors = rows.filter((r) => r.exp_status === "error" || r.afdb_status === "error");
   const nothing = rows.filter(
-    (r) => r.exp_status === "no_structure" && r.afdb_status !== "ok",
+    (r) =>
+      r.exp_status === "no_structure" &&
+      r.afdb_status !== "ok" &&
+      r.afdb_status !== "partial",
   );
+  // An AFDB model that covers less of the protein than the current UniProt
+  // canonical sequence. Not a failure — the gene page labels the covered
+  // range — but worth listing, because a reader judging a tag site needs
+  // to know the residue they care about may not be in the model.
+  const partialAfdb = rows
+    .filter((r) => r.afdb_status === "partial")
+    .sort(
+      (a, b) =>
+        Number(a.afdb_covered) / Number(a.afdb_expected) -
+        Number(b.afdb_covered) / Number(b.afdb_expected),
+    );
+  const multiFragment = rows.filter((r) => Number(r.afdb_fragments) > 1);
   const withExp = rows.filter((r) => r.pdb_id);
 
   const md: string[] = [
@@ -431,7 +510,9 @@ async function main() {
       `${count("exp_status", "no_structure")} with none. ` +
       `AlphaFold canonical: ${count("afdb_status", "ok")} ok, ` +
       `${count("afdb_status", "none")} no model, ` +
-      `${count("afdb_status", "isoform_only")} isoform-only.`,
+      `${count("afdb_status", "isoform_only")} isoform-only, ` +
+      `${partialAfdb.length} covering only part of the canonical sequence, ` +
+      `${multiFragment.length} split into fragments the viewer joins.`,
     "",
     `**${failures.length} failing, ${misregistered.length} misregistered, ` +
       `${errors.length} service errors.** ` +
@@ -452,6 +533,13 @@ async function main() {
         `${r.identity_pct ? `${r.identity_pct}%` : "—"} | ${r.afdb_status} | ${r.detail} |`);
     }
   };
+  list(
+    "Partial AlphaFold coverage — model is shorter than the canonical sequence",
+    partialAfdb,
+  );
+  if (multiFragment.length > 0) {
+    list("Multi-fragment AlphaFold entries — joined on the UniProt axis", multiFragment);
+  }
   list("Misregistered — loads, but numbered wrong", misregistered);
   list("Failures", failures);
   list("Service errors", errors);

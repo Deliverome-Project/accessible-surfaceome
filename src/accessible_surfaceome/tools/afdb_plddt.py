@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from pathlib import Path
 
 import httpx
@@ -321,7 +322,22 @@ def _load_or_fetch_metadata(
 
     Reads ``meta_path`` (a JSON list as returned by AFDB's API) if it
     exists, otherwise GETs ``{AFDB_API_BASE}/{uniprot_acc}``, writes the
-    response body to ``meta_path``, and returns the parsed [0] entry.
+    response body to ``meta_path``, and returns the entry for THIS
+    accession.
+
+    Deliberately not ``payload[0]``. A base accession's response also
+    carries every modelled alternative isoform, and (since AFDB began
+    federating third-party predictions) externally contributed models that
+    reuse the same bare accession with an opaque ``AF-00000000…`` entry id.
+    Taking position 0 silently measures a different molecule: LRP1
+    (Q07954) has NO canonical model at all, and position 0 is
+    ``AF-Q07954-2-F1`` — isoform 2, 292 aa of a 4,544-aa protein — whose
+    pLDDT (79.19) is what ended up baked on the record.
+
+    Raises ``ValueError`` when AFDB has no first-party model for this exact
+    accession. Both call sites already treat an exception as "no AFDB
+    metrics for this gene" and carry on, so the gene gets NO number rather
+    than another molecule's.
     """
 
     if meta_path.exists():
@@ -335,13 +351,42 @@ def _load_or_fetch_metadata(
             meta_path.write_text(json.dumps(payload, indent=2))
     if not payload:
         raise ValueError(f"AFDB metadata for {uniprot_acc} is empty")
-    entry = payload[0] if isinstance(payload, list) else payload
-    if not isinstance(entry, dict):
-        raise ValueError(
-            f"AFDB metadata for {uniprot_acc} has unexpected shape: "
-            f"{type(entry).__name__}"
+    if not isinstance(payload, list):
+        if not isinstance(payload, dict):
+            raise ValueError(
+                f"AFDB metadata for {uniprot_acc} has unexpected shape: "
+                f"{type(payload).__name__}"
+            )
+        return payload
+    entries = [e for e in payload if isinstance(e, dict)]
+    mine = [
+        e
+        for e in entries
+        if e.get("uniprotAccession") == uniprot_acc and not e.get("isComplex")
+    ]
+    # AFDB's own entry ids are accession-keyed (``AF-{acc}-F{n}``);
+    # anything else on the same accession is another pipeline's model.
+    own = [
+        e
+        for e in mine
+        if re.fullmatch(
+            rf"AF-{re.escape(uniprot_acc)}-F\d+", str(e.get("entryId") or "")
         )
-    return entry
+    ]
+    # Fragment 1 of a split entry carries the whole-model metrics the
+    # caption shows; higher fragments are the continuation.
+    pool = sorted(
+        own,
+        key=lambda e: int(
+            re.sub(rf"^AF-{re.escape(uniprot_acc)}-F", "", str(e.get("entryId")))
+        ),
+    ) or mine
+    if not pool:
+        raise ValueError(
+            f"AFDB has no model for {uniprot_acc} itself "
+            f"(entries: {[e.get('entryId') for e in entries]})"
+        )
+    return pool[0]
 
 
 def _load_or_fetch_cif(cif_url: str, cif_path: Path) -> list[float]:
