@@ -6,14 +6,21 @@ import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { tooltips } from "../lib/tooltips";
-import { STATUS_DEFINITION, STATUS_LABEL, type ArmStatus } from "../lib/surface-proteomics";
+import {
+  ANNOTATION_SELECTED_METHODS,
+  STATUS_DEFINITION,
+  STATUS_HELP,
+  STATUS_LABEL,
+  STATUS_ORDER,
+} from "../lib/surface-proteomics";
 
-const ALL: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
+const ALL = STATUS_ORDER;
 
 test("the Status explainer defines every status the data uses, one line each", () => {
   const html = renderToStaticMarkup(<>{tooltips.arm_status}</>);
   for (const s of ALL) {
-    assert.ok(html.includes(STATUS_LABEL[s]), s);
+    const label = s === "annotation_selected" ? "Pre-filtered by surface annotation" : STATUS_LABEL[s];
+    assert.ok(html.includes(label), s);
     const def = STATUS_DEFINITION[s];
     assert.ok(def.length > 0 && !def.includes("\n"), s);
   }
@@ -26,4 +33,11 @@ test("only core and provisional are defined as counted", () => {
     const counted = /^Counted/.test(STATUS_DEFINITION[s]);
     assert.equal(counted, s === "core" || s === "provisional", s);
   }
+});
+
+test("the pre-filtered status uses the review's wording verbatim", () => {
+  assert.equal(STATUS_LABEL.annotation_selected, "Pre-filtered by surface annotation (shown, not counted)");
+  assert.equal(STATUS_HELP.annotation_selected, ANNOTATION_SELECTED_METHODS);
+  assert.match(ANNOTATION_SELECTED_METHODS, /^Pre-filtered by surface annotation \(shown, not counted\): the published table/);
+  assert.ok(ALL.includes("annotation_selected"));
 });

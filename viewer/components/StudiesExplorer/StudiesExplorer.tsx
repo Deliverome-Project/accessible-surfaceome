@@ -12,6 +12,9 @@ import {
   shortCitation,
   STATUS_HELP,
   STATUS_LABEL,
+  statusShortLabel,
+  statusPillLabel,
+  STATUS_ORDER,
   TIER_LABEL,
   TIER_ORDER,
   type ArmStatus,
@@ -56,7 +59,6 @@ type Tier = TierCode | "none";
 type StudySort = "study" | "year" | "method" | "family" | "sample" | "n" | "overlap" | "status";
 type ProteinSort = "protein" | "name" | "votes" | "tier" | "counted" | "amount" | "pref";
 
-const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const ALL_CLASSES: MethodClass[] = ["intact_cell", "fractionation"];
 const PAGE = 200;
 /** Above this many selected studies the exact-intersection list stops being readable. */
@@ -434,7 +436,7 @@ export function StudiesExplorer({ index }: Props) {
                   </td>
                   <td>
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
-                      {STATUS_LABEL[arm.status]}
+                      {statusPillLabel(arm.status)}
                     </StatusPill>
                     <div className={counted ? styles.countedYes : styles.countedNo}>
                       {counted ? "counted" : "not counted"}
@@ -708,7 +710,9 @@ function OverlapBar({
   // arm inside the 2-point allowance is counted (light teal), and a
   // pre-filtered list below its raised bar is high background (amber).
   const counted = status === "core" || status === "provisional";
-  const tone = !intact
+  // A table pre-filtered by surface annotation has an inflated overlap by
+  // construction, so it is drawn neutral rather than as a pass.
+  const tone = !intact || status === "annotation_selected"
     ? styles.na
     : status === "below_screen"
       ? styles.fail
@@ -1123,7 +1127,7 @@ function SelectionPanel({
                 <strong>{shortCitation(arms[i])}</strong> · {arms[i].name}{" "}
                 <span className={styles.sub}>
                   ({arms[i].n_proteins.toLocaleString("en-US")} proteins
-                  {isCounted(arms[i]) ? "" : `; ${STATUS_LABEL[arms[i].status].toLowerCase()}, not counted`})
+                  {isCounted(arms[i]) ? "" : `; ${statusShortLabel(arms[i].status).toLowerCase()}, not counted`})
                 </span>
               </span>
             </li>
@@ -1137,7 +1141,7 @@ function SelectionPanel({
       {single && !consensus ? <MethodsPanel key={arms[selected[0]].id} arm={arms[selected[0]]} /> : null}
       {!single && selected.some((i) => !isCounted(arms[i])) ? (
         <p className={styles.caveat}>
-          The selection includes datasets that are not counted as surface evidence (held, high background, or comparators).
+          The selection includes datasets that are not counted as surface evidence (held, high background, pre-filtered by surface annotation, or comparators).
         </p>
       ) : null}
 

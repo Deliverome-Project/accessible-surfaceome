@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { CITATIONS, doiUrl, pubmedUrl } from "./citations";
-import { STATUS_DEFINITION, STATUS_LABEL, type ArmStatus } from "./surface-proteomics";
+import { STATUS_DEFINITION, STATUS_ORDER, statusShortLabel } from "./surface-proteomics";
 
 /**
  * Field-provenance tooltip text — one place to edit, shared across
@@ -500,9 +500,12 @@ export const tooltips: Record<string, ReactNode> = {
       <strong>Status</strong> says whether a dataset counts as surface
       evidence in the cross-study comparison.
       <ul style={{ margin: "0.35rem 0 0", paddingLeft: "1.1rem" }}>
-        {(["core", "provisional", "held", "below_screen", "comparator"] as ArmStatus[]).map((s) => (
+        {STATUS_ORDER.map((s) => (
           <li key={s}>
-            <strong>{STATUS_LABEL[s]}{s === "below_screen" ? " (below screen)" : ""}:</strong>{" "}
+            <strong>
+              {statusShortLabel(s)}
+              {s === "below_screen" ? " (below screen)" : ""}:
+            </strong>{" "}
             {STATUS_DEFINITION[s]}
           </li>
         ))}

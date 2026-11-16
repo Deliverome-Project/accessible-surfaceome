@@ -99,7 +99,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-15-sweep-v12"
+SNAPSHOT = "2026-11-16-sweep-v15"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -135,6 +135,9 @@ STATUS_BY_ROLE = {
     "hold": "held",
     "below_adjusted_screen": "below_screen",
     "complementary": "comparator",
+    # sweep-v15: a table already restricted to annotated or predicted surface
+    # proteins is shown but never counted (it cannot add a candidate).
+    "annotation_selected": "annotation_selected",
     # sources.json's role for an arm the registry admits as a primary input.
     "primary": "core",
 }
@@ -1339,9 +1342,29 @@ _AMERICAN = (
 )
 
 
+# Internal storage references ("as banked in external://bucket/prefix/") that
+# curated text sometimes carries. Never published: the phrase is dropped.
+_STORAGE_REF = re.compile(
+    r",?\s*(?:as\s+)?(?:banked|stored|archived|copied|saved)?\s*(?:in|at|under)?\s*"
+    r"\b(?:external|processed|raw|s3)://[^\s:;,)]*"
+)
+# Anything that still looks like one after scrubbing fails the build.
+_STORAGE_LEAK = re.compile(
+    r"\b(?:external|processed|raw|s3)://|cell-surface-proteomics/"
+)
+
+
+def scrub_storage(text: str | None) -> str | None:
+    """Drop internal storage references from curated free text."""
+    if not text:
+        return text
+    return _STORAGE_REF.sub("", text).strip()
+
+
 def americanize(text: str | None) -> str | None:
     if not text:
         return text
+    text = scrub_storage(text) or text
     for a, b in _AMERICAN:
         text = text.replace(a, b)
     return text
@@ -1358,8 +1381,19 @@ FILTER_UNIVERSE_LABEL = {
 
 # Held reasons, matched in order against the review note (lower-cased). The
 # note itself is not exported; only this short structured label is.
+# Matched as regular expressions. sweep-v15: imputed values alone no longer
+# hold an arm, so imputation is tried last; a note that mentions it alongside
+# its real reason ("current table has imputed abundance and unresolved
+# input...", "non-imputed LFQ") gets the real reason.
 HELD_REASONS = (
-    ("imput", "values are imputed, so detection can't be read per protein"),
+    (
+        r"unresolved input",
+        "the input sample and baseline can't be identified in the published table",
+    ),
+    (
+        r"no unperturbed baseline",
+        "every arm is treated, so there is no unperturbed baseline",
+    ),
     ("does not match", "the deposited table doesn't match the paper's design"),
     ("channel", "the sample-to-condition map is unpublished"),
     ("reported surface set", "only the authors' pre-selected surface list is public"),
@@ -1373,6 +1407,7 @@ HELD_REASONS = (
     ("barcoded", "samples can't be separated in the published table"),
     ("pool", "conditions are pooled in one list, with no separable baseline"),
     ("biological", "only biological comparisons are published, not a baseline list"),
+    (r"(?<!non-)imput", "values are imputed, so detection can't be read per protein"),
 )
 
 
@@ -1382,6 +1417,9 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
     universe = d.get("filter_universe")
     filtered = universe not in (None, "human")
     if status == "provisional":
+        # sweep-v15: imputation alone no longer holds an arm.
+        if "imput" in (d.get("reason") or "").lower():
+            return "values are imputed: presence counted, per-sample detection not available"
         if filtered:
             what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
             return f"author pre-filtered to {what}"
@@ -1399,9 +1437,12 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
     if status == "held":
         note = (d.get("reason") or "").lower()
         return next(
-            (label for key, label in HELD_REASONS if key in note),
+            (label for key, label in HELD_REASONS if re.search(key, note)),
             "per-protein detection can't be recovered from the table",
         )
+    if status == "annotation_selected":
+        what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
+        return f"author pre-filtered to {what}"
     if status == "comparator":
         if d.get("method_group") == "membrane-fractionation":
             return "membrane fractionation, not intact-cell labeling"
@@ -1451,6 +1492,10 @@ def build_arms(
             else bool(d.get("surface_accessibility_evidence"))
         )
         role = d["review_role"]
+        if role not in STATUS_BY_ROLE:
+            raise SystemExit(
+                f"{sid}: unknown review role {role!r}; add it to STATUS_BY_ROLE"
+            )
         arms.append(
             {
                 "id": sid,
@@ -2054,6 +2099,14 @@ def main() -> None:
         shards[shard_of(acc)][acc] = entry
 
     admitted = [a for a in arms if a["admitted"]]
+    # The viewer counts by status; the totals above count by `admitted`.
+    mismatch = [
+        a["id"]
+        for a in arms
+        if a["admitted"] != (a["status"] in ("core", "provisional"))
+    ]
+    if mismatch:
+        raise SystemExit(f"admitted disagrees with status for: {', '.join(mismatch)}")
     meta = {
         "_generated_by": "scripts/build/build_surface_proteomics_studies.py",
         "generated_at": datetime.now(UTC).strftime("%Y-%m-%d"),
@@ -2088,6 +2141,15 @@ def main() -> None:
         "arms": arms,
     }
 
+    methods = build_methods(manifest, audit, arms)
+    # Last line of defense for the "no storage paths in public output" rule.
+    for label, blob in (("studies.json", meta), ("methods.json", methods)):
+        leak = _STORAGE_LEAK.search(json.dumps(blob, ensure_ascii=False))
+        if leak:
+            raise SystemExit(
+                f"{label} would publish a storage reference near {leak.group(0)!r}"
+            )
+
     if args.out.exists():
         shutil.rmtree(args.out)
     (args.out / "presence").mkdir(parents=True)
@@ -2099,7 +2161,6 @@ def main() -> None:
             json.dumps(shard, separators=(",", ":"), ensure_ascii=False) + "\n"
         )
     write_downloads(args.out, arms, shards)
-    methods = build_methods(manifest, audit, arms)
     (args.out / "methods.json").write_text(
         json.dumps(methods, separators=(",", ":"), ensure_ascii=False) + "\n"
     )

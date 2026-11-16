@@ -270,3 +270,60 @@ def test_published_arms_have_sources() -> None:
         assert arm.get("sheet_tab"), arm["id"]
         assert (arm.get("raw_data") or {}).get("flag") in b.RAW_FLAGS, arm["id"]
         assert "notes" not in (arm.get("raw_data") or {}), arm["id"]
+
+
+def test_annotation_selected_is_shown_not_counted() -> None:
+    assert b.STATUS_BY_ROLE["annotation_selected"] == "annotation_selected"
+    reason = b.status_reason(
+        {"filter_universe": "surfy", "pct_in_surf": 0.9}, "annotation_selected", 0.2
+    )
+    assert reason == "author pre-filtered to SURFY-predicted surface proteins"
+
+
+def test_published_statuses_are_known() -> None:
+    path = ROOT / "viewer" / "public" / "data" / "surface-proteomics" / "studies.json"
+    if not path.exists():
+        return
+    known = set(b.STATUS_BY_ROLE.values())
+    for arm in json.loads(path.read_text())["arms"]:
+        assert arm["status"] in known, (arm["id"], arm["status"])
+        assert arm["admitted"] == (arm["status"] in ("core", "provisional")), arm["id"]
+
+
+def test_imputed_provisional_reason() -> None:
+    d = {
+        "reason": "provisional: values imputed; presence counted.",
+        "pct_in_surf": 0.34,
+    }
+    assert b.status_reason(d, "provisional", 0.2) == (
+        "values are imputed: presence counted, per-sample detection not available"
+    )
+
+
+def test_storage_references_are_scrubbed() -> None:
+    text = (
+        "bioRxiv supplementary S4 (surface compiled), as banked in "
+        "external://cell-surface-proteomics/2026-09-19-george-v1/: mean abundance"
+    )
+    out = b.americanize(text)
+    assert out == "bioRxiv supplementary S4 (surface compiled): mean abundance"
+    assert not b._STORAGE_LEAK.search(out)
+
+
+def test_held_reason_prefers_the_real_reason_over_imputation() -> None:
+    lasa = {
+        "reason": "hold: current table has imputed abundance and unresolved input/sample selection."
+    }
+    assert b.status_reason(lasa, "held", 0.2) == (
+        "the input sample and baseline can't be identified in the published table"
+    )
+    mahameed = {
+        "reason": "Hold: no unperturbed baseline exists; per-replicate, non-imputed LFQ."
+    }
+    assert b.status_reason(mahameed, "held", 0.2) == (
+        "every arm is treated, so there is no unperturbed baseline"
+    )
+    only = {"reason": "hold: every value is imputed."}
+    assert b.status_reason(only, "held", 0.2) == (
+        "values are imputed, so detection can't be read per protein"
+    )
