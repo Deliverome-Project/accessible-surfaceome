@@ -327,3 +327,14 @@ def test_held_reason_prefers_the_real_reason_over_imputation() -> None:
     assert b.status_reason(only, "held", 0.2) == (
         "values are imputed, so detection can't be read per protein"
     )
+
+
+def test_published_held_arms_have_specific_reasons() -> None:
+    path = ROOT / "viewer" / "public" / "data" / "surface-proteomics" / "studies.json"
+    if not path.exists():
+        return
+    generic = "per-protein detection can't be recovered from the table"
+    for arm in json.loads(path.read_text())["arms"]:
+        if arm["status"] == "held":
+            assert arm.get("status_reason") not in (None, generic), arm["id"]
+            assert "imputed" not in arm["status_reason"], arm["id"]
