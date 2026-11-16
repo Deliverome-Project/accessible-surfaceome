@@ -209,7 +209,10 @@
 .nav {
   display: inline-flex;
   align-items: center;
-  gap: 2.4rem;
+  /* Seven items: the gap narrows with the window so every label stays on
+     one line (each label is nowrap) instead of wrapping to two. */
+  gap: clamp(1.1rem, 1.6vw, 2.4rem);
+  white-space: nowrap;
   font-family: var(--font-sans);
   font-size: 0.76rem;
   font-weight: 350;

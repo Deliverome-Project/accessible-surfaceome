@@ -407,9 +407,19 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       <div className={`label-mono ${styles.subhead}`}>
         Published surface-proteomics studies
         <span className={styles.rollup}>
-          Detected in {countedHits.length} of {counted.length} counted datasets ({pubHits.size} of{" "}
-          {pubs.size} papers)
-          {otherHits > 0 ? ` · listed in ${otherHits} not-counted dataset${otherHits === 1 ? "" : "s"}` : ""}
+          Detected in {countedHits.length} of {counted.length} counted datasets (
+          {counted.length ? Math.round((100 * countedHits.length) / counted.length) : 0}%;{" "}
+          {pubHits.size} of {pubs.size} papers)
+          {otherHits > 0 ? `, plus ${otherHits} not counted` : ""}.
+          {countedHits.length + otherHits > 0 ? (
+            <>
+              {" "}
+              <Link href={`${STUDIES_PATH}?det=${encodeURIComponent(uniprotAcc)}`} className={styles.studiesLink}>
+                See {countedHits.length + otherHits === 1 ? "this dataset" : `these ${countedHits.length + otherHits} datasets`}{" "}
+                in the study table →
+              </Link>
+            </>
+          ) : null}
         </span>
         <InfoTip wide label="About study presence">
           Whether {symbol} ({uniprotAcc}) appears in the protein list of each
@@ -482,8 +492,10 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       </div>
       <p className={styles.legend}>
         <span className={styles.legendItem}>
-          Filled = detected; <span className={styles.dot} /> hollow = not detected; faded = not
-          counted. Hover a dot for the study.
+          <span className={`${styles.dot} ${styles.hit} ${styles.fam_biotin_amine}`} /> filled = detected in
+          a counted dataset; <span className={`${styles.dot} ${styles.hit} ${styles.fam_biotin_amine} ${styles.dim}`} />{" "}
+          colored ring = detected in a dataset we don&apos;t count; <span className={styles.dot} /> gray ring = not
+          detected. Hover a dot for the study.
         </span>
       </p>
 

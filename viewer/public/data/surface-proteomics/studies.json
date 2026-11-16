@@ -197,6 +197,94 @@
    0,
    1
   ],
+  "likely": [
+   547,
+   171,
+   69,
+   63,
+   33,
+   49,
+   20,
+   33,
+   24,
+   14,
+   18,
+   14,
+   12,
+   10,
+   13,
+   7,
+   8,
+   8,
+   7,
+   6,
+   7,
+   5,
+   5,
+   10,
+   5,
+   2,
+   8,
+   5,
+   3,
+   6,
+   7,
+   5,
+   7,
+   2,
+   3,
+   4,
+   2,
+   1,
+   3,
+   1,
+   2,
+   2,
+   1,
+   3,
+   3,
+   1,
+   1,
+   3,
+   2,
+   2,
+   1,
+   3,
+   1,
+   1,
+   0,
+   1,
+   0,
+   2,
+   0,
+   0,
+   1,
+   0,
+   0,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   1,
+   0,
+   0,
+   1,
+   0,
+   2,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
   "low": [
    598,
    114,
@@ -461,94 +549,6 @@
    0,
    1
   ],
-  "likely": [
-   547,
-   171,
-   69,
-   63,
-   33,
-   49,
-   20,
-   33,
-   24,
-   14,
-   18,
-   14,
-   12,
-   10,
-   13,
-   7,
-   8,
-   8,
-   7,
-   6,
-   7,
-   5,
-   5,
-   10,
-   5,
-   2,
-   8,
-   5,
-   3,
-   6,
-   7,
-   5,
-   7,
-   2,
-   3,
-   4,
-   2,
-   1,
-   3,
-   1,
-   2,
-   2,
-   1,
-   3,
-   3,
-   1,
-   1,
-   3,
-   2,
-   2,
-   1,
-   3,
-   1,
-   1,
-   0,
-   1,
-   0,
-   2,
-   0,
-   0,
-   1,
-   0,
-   0,
-   1,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   1,
-   0,
-   0,
-   1,
-   0,
-   2,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0,
-   0
-  ],
   "uncertain": [
    42,
    5,
@@ -653,6 +653,10 @@
    "vilen-sia-2022"
   ]
  },
+ "study_list": {
+  "name": "Deliverome_surface_proteomics_studies_sweep-v12.xlsx",
+  "url": "https://drive.google.com/file/d/1ZZwZHYQo8P9dipYKZIMztVNOf2yA3utI/view"
+ },
  "excluded_arms": [
   "bakhshinyan-mb-glyco-2023",
   "chen-hek293t-sialo-perm-2015",
@@ -699,6 +703,10 @@
    "repository": "none_deposited",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "george-aml-2026",
    "lines": [
     "697",
     "CMS",
@@ -759,6 +767,15 @@
     "JPST003825"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD064232/JPST003825"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST003825"
+   },
+   "sheet_tab": "srivastava-tnbc-cm-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 4368
@@ -792,6 +809,15 @@
     "JPST003825"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD064232/JPST003825"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST003825"
+   },
+   "sheet_tab": "srivastava-tnbc-csp-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 3830
@@ -824,6 +850,15 @@
     "PXD065511"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD065511"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD065511"
+   },
+   "sheet_tab": "salmela-cscc-2026",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 9)",
    "n_quantified": 2270
@@ -853,7 +888,11 @@
    "reference_overlap": 0.11357615894039735,
    "repository": "none found",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "dusailly-ec-2026"
   },
   {
    "id": "porter-gbm-2026",
@@ -883,6 +922,15 @@
     "PXD058999"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD058999"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD058999"
+   },
+   "sheet_tab": "porter-gbm-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 12)",
    "n_quantified": 4667
@@ -913,6 +961,15 @@
    "repository": null,
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000096571"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000096571"
+   },
+   "sheet_tab": "glyco-pdx-csc-2026",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 27)",
    "n_quantified": 844
@@ -945,6 +1002,15 @@
     "PXD069264"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD069264"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD069264"
+   },
+   "sheet_tab": "slezak-hct116apex-2026",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 656
@@ -977,6 +1043,15 @@
     "PXD072355"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD072355"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD072355"
+   },
+   "sheet_tab": "rethore-huvec-2026",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 2915
@@ -1009,6 +1084,15 @@
     "PXD083032"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD083032"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD083032"
+   },
+   "sheet_tab": "cohenyaron-hela-2026",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 1261
@@ -1041,6 +1125,14 @@
     "PXD058892"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "iProX",
+    "accessions": [
+     "PXD058892"
+    ]
+   },
+   "sheet_tab": "zhou-pbmc-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 15)",
    "n_quantified": 973
@@ -1073,6 +1165,15 @@
     "MSV000103688"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000103688"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000103688"
+   },
+   "sheet_tab": "mesidor-cf-s1-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 610
@@ -1105,6 +1206,15 @@
     "MSV000103688"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000103688"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000103688"
+   },
+   "sheet_tab": "mesidor-cf-s2-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 603
@@ -1137,6 +1247,15 @@
     "MSV000103688"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000103688"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000103688"
+   },
+   "sheet_tab": "mesidor-cf-s3-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 7)",
    "n_quantified": 843
@@ -1169,6 +1288,15 @@
     "MSV000103688"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000103688"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000103688"
+   },
+   "sheet_tab": "mesidor-cf-s4-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 10)",
    "n_quantified": 1470
@@ -1201,6 +1329,15 @@
     "MSV000103688"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000103688"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000103688"
+   },
+   "sheet_tab": "mesidor-cf-s5-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 5)",
    "n_quantified": 891
@@ -1233,6 +1370,15 @@
     "PXD068422"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD068422"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD068422"
+   },
+   "sheet_tab": "sanchez-jurkat-2026",
    "quant_unit": "MS intensity",
    "quant_note": "one sample",
    "n_quantified": 1543
@@ -1266,6 +1412,15 @@
     "PXD080445"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD080445/MSV000102332"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000102332"
+   },
+   "sheet_tab": "ho-k562-csc-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 3526
@@ -1299,6 +1454,15 @@
     "PXD080445"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD080445/MSV000102332"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000102332"
+   },
+   "sheet_tab": "ho-k562-conaey-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 4965
@@ -1332,6 +1496,15 @@
     "PXD080445"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD080445/MSV000102332"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000102332"
+   },
+   "sheet_tab": "ho-k562-wgaey-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 4964
@@ -1365,6 +1538,15 @@
     "PXD080445"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD080445/MSV000102332"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000102332"
+   },
+   "sheet_tab": "ho-k562-choley-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 5398
@@ -1398,6 +1580,15 @@
     "PXD080445"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD080445/MSV000102332"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000102332"
+   },
+   "sheet_tab": "ho-k562-nbaey-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 5079
@@ -1431,6 +1622,15 @@
     "PXD080445"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD080445/MSV000102332"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000102332"
+   },
+   "sheet_tab": "ho-k562-cscey-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 5621
@@ -1464,6 +1664,15 @@
     "PXD080445"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD080445/MSV000102332"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000102332"
+   },
+   "sheet_tab": "ho-k562-snhs-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 4394
@@ -1497,6 +1706,15 @@
     "PXD080445"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD080445/MSV000102332"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000102332"
+   },
+   "sheet_tab": "ho-k562-wgahrp-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 5500
@@ -1530,6 +1748,15 @@
     "MSV000093771"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD048266/MSV000093771"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000093771"
+   },
+   "sheet_tab": "bruno-mcf10a-yipf5-2026",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 4159
@@ -1562,6 +1789,14 @@
     "PXD058892"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "iProX",
+    "accessions": [
+     "PXD058892"
+    ]
+   },
+   "sheet_tab": "zhou-molm13-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1676
@@ -1592,6 +1827,10 @@
    "repository": "none (raw data on request)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "stehn-mpnst-2026",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 7)",
    "n_quantified": 2674
@@ -1624,6 +1863,15 @@
     "PXD066343"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD066343"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD066343"
+   },
+   "sheet_tab": "cattaneo-crc-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 12)",
    "n_quantified": 8600
@@ -1656,6 +1904,14 @@
     "PXD058892"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "iProX",
+    "accessions": [
+     "PXD058892"
+    ]
+   },
+   "sheet_tab": "zhou-mv411-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1746
@@ -1688,6 +1944,15 @@
     "PXD075484"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD075484"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD075484"
+   },
+   "sheet_tab": "mooney-os-2026",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 44)",
    "n_quantified": 2159
@@ -1720,6 +1985,17 @@
     "PXD077611"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD077603",
+     "PXD077611",
+     "PXD077844"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD077603"
+   },
+   "sheet_tab": "chen-pc3-2026",
    "quant_unit": "PSMs",
    "quant_note": "as reported",
    "n_quantified": 5714
@@ -1752,6 +2028,15 @@
     "PXD075844"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD075844"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD075844"
+   },
+   "sheet_tab": "laurent-gsc-2026",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 12)",
    "n_quantified": 4712
@@ -1782,6 +2067,10 @@
    "repository": "none found (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "kuffa-crcpolar-2026",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 48)",
    "n_quantified": 3028
@@ -1814,6 +2103,14 @@
     "PXD058892"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "iProX",
+    "accessions": [
+     "PXD058892"
+    ]
+   },
+   "sheet_tab": "zhou-rs411-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1674
@@ -1846,6 +2143,15 @@
     "PXD068779"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD068779"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD068779"
+   },
+   "sheet_tab": "sucam-2026",
    "quant_unit": "peptides",
    "quant_note": "as reported",
    "n_quantified": 1256
@@ -1878,6 +2184,15 @@
     "PXD068779"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD068779"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD068779"
+   },
+   "sheet_tab": "sucam-2026",
    "quant_unit": "peptides",
    "quant_note": "as reported",
    "n_quantified": 1278
@@ -1910,6 +2225,15 @@
     "PXD068779"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD068779"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD068779"
+   },
+   "sheet_tab": "sucam-2026",
    "quant_unit": "peptides",
    "quant_note": "as reported",
    "n_quantified": 1713
@@ -1941,7 +2265,16 @@
    "repository_ids": [
     "PXD068779"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD068779"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD068779"
+   },
+   "sheet_tab": "sucam-2026"
   },
   {
    "id": "flores-um-2026",
@@ -1971,6 +2304,16 @@
     "PXD069080"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD068873",
+     "PXD069080"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD068873"
+   },
+   "sheet_tab": "flores-um-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 16)",
    "n_quantified": 3526
@@ -2004,6 +2347,16 @@
     "PXD071681"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD053647",
+     "PXD071681"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD053647"
+   },
+   "sheet_tab": "xu-thp1-surface-2026",
    "quant_unit": "log2 TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 548
@@ -2036,6 +2389,15 @@
     "PXD071351"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD071351"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD071351"
+   },
+   "sheet_tab": "deoca-tnbc-membrane-2026",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 12)",
    "n_quantified": 4933
@@ -2068,6 +2430,15 @@
     "PXD068879"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD068879"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD068879"
+   },
+   "sheet_tab": "choi-u2os-memper-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 6581
@@ -2098,6 +2469,10 @@
    "repository": "none found (no ProteomeXchange identifier in the preprint)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "mazzone-rpe1-2026",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 2015
@@ -2130,6 +2505,17 @@
     "PXD076394"
    ],
    "cell_group": "neural",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD076394",
+     "PXD076419",
+     "PXD081186"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD076394"
+   },
+   "sheet_tab": "nash-i3neuron-2026",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 2096
@@ -2162,6 +2548,15 @@
     "PXD048492"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "processed_only",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD048492"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD048492"
+   },
+   "sheet_tab": "kasap-myeloma-csc-2025",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 4886
@@ -2195,6 +2590,16 @@
     "PXD056849"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD056849",
+     "MSV000096107"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000096107"
+   },
+   "sheet_tab": "taggi-bbb-2025",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 7621
@@ -2227,6 +2632,15 @@
     "PXD059899"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD059899"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD059899"
+   },
+   "sheet_tab": "alvarez-bmec-2025",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 7)",
    "n_quantified": 4250
@@ -2259,6 +2673,15 @@
     "PXD053951"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD053951"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD053951"
+   },
+   "sheet_tab": "friedlova-cervix-2025",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1378
@@ -2291,6 +2714,15 @@
     "PXD059013"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD059013"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD059013"
+   },
+   "sheet_tab": "martins-crc3d-2025",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 12)",
    "n_quantified": 2843
@@ -2323,6 +2755,15 @@
     "PXD059552"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD059552"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD059552"
+   },
+   "sheet_tab": "furan-biotin",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 264
@@ -2353,6 +2794,10 @@
    "repository": "none (J-STAGE supplementary PDF only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ito-huvec-hdlec-2025",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 948
@@ -2385,6 +2830,15 @@
     "PXD052910"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "processed_only",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD052910"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD052910"
+   },
+   "sheet_tab": "werner-jmml-cd34-2025",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 4163
@@ -2417,6 +2871,15 @@
     "PXD058992"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD058992"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD058992"
+   },
+   "sheet_tab": "marhelava-ball-pdx-2025",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 24)",
    "n_quantified": 4654
@@ -2450,6 +2913,16 @@
     "MSV000095684"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE; MassIVE",
+    "accessions": [
+     "PXD062870",
+     "MSV000095684"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD062870"
+   },
+   "sheet_tab": "laccid-2025",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 5139
@@ -2481,7 +2954,16 @@
    "repository_ids": [
     "PXD060977"
    ],
-   "cell_group": "neural"
+   "cell_group": "neural",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD060977"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD060977"
+   },
+   "sheet_tab": "holmes-2025"
   },
   {
    "id": "liu-ovcar8-hydrazide-2025",
@@ -2511,6 +2993,15 @@
     "PXD053872"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "processed_only",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD053872"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD053872"
+   },
+   "sheet_tab": "liu-ovcar8-hydrazide-2025",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1526
@@ -2543,6 +3034,15 @@
     "PXD054019"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD054019"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD054019"
+   },
+   "sheet_tab": "p4936-membrane-nmti-2025",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 3485
@@ -2575,6 +3075,15 @@
     "PXD054008"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD054008"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD054008"
+   },
+   "sheet_tab": "shep21n-membrane-nmti-2025",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 3747
@@ -2604,7 +3113,11 @@
    "reference_overlap": 0.3311451495258935,
    "repository": "supplement",
    "repository_ids": [],
-   "cell_group": "neural"
+   "cell_group": "neural",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "breyer-2025"
   },
   {
    "id": "thorup-nge",
@@ -2633,7 +3146,16 @@
    "repository_ids": [
     "MSV000098694"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000098694"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000098694"
+   },
+   "sheet_tab": "thorup-nge"
   },
   {
    "id": "thorup-wgahrp",
@@ -2662,7 +3184,16 @@
    "repository_ids": [
     "MSV000098694"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000098694"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000098694"
+   },
+   "sheet_tab": "thorup-wgahrp"
   },
   {
    "id": "nicholson-gm2-2025",
@@ -2692,6 +3223,15 @@
     "PXD064632"
    ],
    "cell_group": "neural",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD064632"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD064632"
+   },
+   "sheet_tab": "nicholson-gm2-2025",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 30)",
    "n_quantified": 2721
@@ -2724,6 +3264,15 @@
     "PXD027594"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD027594"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD027594"
+   },
+   "sheet_tab": "cd38-myeloma-2024",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 12)",
    "n_quantified": 3121
@@ -2756,6 +3305,15 @@
     "MSV000089171"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000089171"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000089171"
+   },
+   "sheet_tab": "khan-chordoma-2024",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 12)",
    "n_quantified": 4125
@@ -2788,6 +3346,15 @@
     "PXD043375"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD043375"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD043375"
+   },
+   "sheet_tab": "mooney-ewing-2024",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 38)",
    "n_quantified": 2504
@@ -2820,6 +3387,15 @@
     "PXD042888"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "iProX",
+    "accessions": [
+     "PXD042888/IPX0006545000"
+    ],
+    "url": "https://www.iprox.cn/page/project.html?id=IPX0006545000"
+   },
+   "sheet_tab": "gasf-wang-2024",
    "quant_unit": "probe-labeled peptides",
    "quant_note": "as reported",
    "n_quantified": 1354
@@ -2852,6 +3428,15 @@
     "PXD046280"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD046280"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD046280"
+   },
+   "sheet_tab": "vaish-hek293tshaving-2024",
    "quant_unit": "unique peptides",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1306
@@ -2884,6 +3469,15 @@
     "PXD050878"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD050878"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD050878"
+   },
+   "sheet_tab": "hunter-hfff-pmp-2024",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 5)",
    "n_quantified": 1539
@@ -2914,6 +3508,10 @@
    "repository": null,
    "repository_ids": [],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "udeshi-2024",
    "quant_unit": "log2 TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 2622
@@ -2945,7 +3543,16 @@
    "repository_ids": [
     "PXD048880"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD048880"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD048880"
+   },
+   "sheet_tab": "hypoxic-gbm-2024"
   },
   {
    "id": "lasa-2024",
@@ -2974,7 +3581,16 @@
    "repository_ids": [
     "PXD043772"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD043772"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD043772"
+   },
+   "sheet_tab": "lasa-2024"
   },
   {
    "id": "hamilton-nb-2024",
@@ -3004,6 +3620,15 @@
     "PXD047474"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD047474"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD047474"
+   },
+   "sheet_tab": "hamilton-nb-2024",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 56)",
    "n_quantified": 6914
@@ -3036,6 +3661,18 @@
     "PXD045259"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD044985",
+     "PXD045117",
+     "PXD045212",
+     "PXD045259"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD044985"
+   },
+   "sheet_tab": "herhaus-8988t-2024",
    "quant_unit": "DIA protein quantity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1178
@@ -3068,7 +3705,16 @@
     "PXD048921",
     "JPST002467"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD048921/JPST002467"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST002467"
+   },
+   "sheet_tab": "deng-2024"
   },
   {
    "id": "xu-thp1-trafficking-2024",
@@ -3098,6 +3744,14 @@
     "PXD048888"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD048888"
+    ]
+   },
+   "sheet_tab": "xu-thp1-trafficking-2024",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 397
@@ -3129,7 +3783,17 @@
    "repository_ids": [
     "PXD055086"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD052032",
+     "PXD055086"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD052032"
+   },
+   "sheet_tab": "reeves-2024"
   },
   {
    "id": "tuomivaara-u2os-slapshot-2024",
@@ -3159,6 +3823,15 @@
     "PXD041387"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD041387"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD041387"
+   },
+   "sheet_tab": "tuomivaara-u2os-slapshot-2024",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 5)",
    "n_quantified": 2912
@@ -3191,6 +3864,15 @@
     "PXD041387"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD041387"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD041387"
+   },
+   "sheet_tab": "tuomivaara-u2os-csc-2024",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 5)",
    "n_quantified": 1165
@@ -3223,7 +3905,16 @@
     "PXD037308",
     "IPX0005164000"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "iProX",
+    "accessions": [
+     "PXD037308/IPX0005164000"
+    ],
+    "url": "https://www.iprox.cn/page/project.html?id=IPX0005164000"
+   },
+   "sheet_tab": "yin-u937-pm-itraq-2024"
   },
   {
    "id": "veneer-2024",
@@ -3253,7 +3944,17 @@
     "MSV000093424",
     "MSV000093894"
    ],
-   "cell_group": "immune"
+   "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000093424",
+     "MSV000093894"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000093424"
+   },
+   "sheet_tab": "veneer-2024"
   },
   {
    "id": "tremblay-dcsc-2023",
@@ -3281,6 +3982,10 @@
    "repository": "none found (supplementary table only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "tremblay-dcsc-2023",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 730
@@ -3312,7 +4017,16 @@
    "repository_ids": [
     "MSV000088624"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000088624"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000088624"
+   },
+   "sheet_tab": "cellsurfer-2023"
   },
   {
    "id": "calligaris-chs-2023",
@@ -3341,7 +4055,16 @@
    "repository_ids": [
     "PXD042402"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD042402"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD042402"
+   },
+   "sheet_tab": "calligaris-chs-2023"
   },
   {
    "id": "cyssurf-yan",
@@ -3371,6 +4094,15 @@
     "PXD042403"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD042403"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD042403"
+   },
+   "sheet_tab": "cyssurf-yan",
    "quant_unit": "spectral counts",
    "quant_note": "as reported",
    "n_quantified": 1231
@@ -3401,6 +4133,16 @@
    "repository": "none (surface data not deposited)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD038271",
+     "PXD038372"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD038271"
+   },
+   "sheet_tab": "pandey-dipg-2023",
    "quant_unit": "peptides",
    "quant_note": "as reported",
    "n_quantified": 2991
@@ -3435,6 +4177,19 @@
     "PXD032966"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD032801",
+     "PXD032823",
+     "PXD032905",
+     "PXD032966",
+     "PXD032967"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD032801"
+   },
+   "sheet_tab": "oates-macrophage-2023",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 1388
@@ -3466,7 +4221,16 @@
    "repository_ids": [
     "PXD044945"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD044945"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD044945"
+   },
+   "sheet_tab": "jiang-hela-mol-fusion-2023"
   },
   {
    "id": "zhao-peptidisc-2023",
@@ -3496,6 +4260,16 @@
     "PXD039990"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD039990",
+     "PXD041913"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD039990"
+   },
+   "sheet_tab": "zhao-peptidisc-2023",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 9)",
    "n_quantified": 2312
@@ -3529,6 +4303,15 @@
     "JPST001827"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD036376/JPST001827"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST001827"
+   },
+   "sheet_tab": "li-hepg2-pecsl-insulin-2023",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 2787
@@ -3562,7 +4345,18 @@
     "PXD035589",
     "PXD035591"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD035404",
+     "PXD035589",
+     "PXD035591"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD035404"
+   },
+   "sheet_tab": "mandal-nomo1-csc-2023"
   },
   {
    "id": "yumoto-pc3-2023",
@@ -3592,6 +4386,15 @@
     "PXD037378"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD037378"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD037378"
+   },
+   "sheet_tab": "yumoto-pc3-2023",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 3721
@@ -3625,6 +4428,15 @@
     "JPST001448"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD031476/JPST001448"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST001448"
+   },
+   "sheet_tab": "wang-prostate-primary-2023",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 56)",
    "n_quantified": 3995
@@ -3657,6 +4469,15 @@
     "PXD040703"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD040703"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD040703"
+   },
+   "sheet_tab": "potts-pbmc-pmp-2023",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 560
@@ -3689,6 +4510,15 @@
     "PXD039788"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD039788"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD039788"
+   },
+   "sheet_tab": "vit-ppgl-hptc-2023",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 27)",
    "n_quantified": 2158
@@ -3721,7 +4551,17 @@
     "PXD036208",
     "IPX0004890000"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "iProX",
+    "accessions": [
+     "PXD036208/IPX0004890000",
+     "IPX0004890001"
+    ],
+    "url": "https://www.iprox.cn/page/project.html?id=IPX0004890000"
+   },
+   "sheet_tab": "shi-rd-ev71-2023"
   },
   {
    "id": "jayabal-retinoblastoma-2023",
@@ -3752,6 +4592,18 @@
     "PXD039518"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD039515",
+     "PXD039516",
+     "PXD039517",
+     "PXD039518"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD039515"
+   },
+   "sheet_tab": "jayabal-retinoblastoma-2023",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 2894
@@ -3782,6 +4634,15 @@
    "repository": null,
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD039480"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD039480"
+   },
+   "sheet_tab": "rms-2023",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 48)",
    "n_quantified": 6615
@@ -3814,6 +4675,15 @@
     "PXD031828"
    ],
    "cell_group": "multi",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD031828"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD031828"
+   },
+   "sheet_tab": "harant-sma-srm-2023",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 9)",
    "n_quantified": 3751
@@ -3845,7 +4715,16 @@
    "repository_ids": [
     "PXD031845"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD031845"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD031845"
+   },
+   "sheet_tab": "vilen-2022"
   },
   {
    "id": "vilen-sia-2022",
@@ -3874,7 +4753,16 @@
    "repository_ids": [
     "PXD031845"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD031845"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD031845"
+   },
+   "sheet_tab": "vilen-2022"
   },
   {
    "id": "sbiosite-2023",
@@ -3903,7 +4791,16 @@
    "repository_ids": [
     "PXD044519"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD044519"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD044519"
+   },
+   "sheet_tab": "sbiosite-2023"
   },
   {
    "id": "fielding-a549-pmp-2022",
@@ -3933,6 +4830,15 @@
     "PXD025000"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD025000"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD025000"
+   },
+   "sheet_tab": "fielding-a549-pmp-2022",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 4945
@@ -3965,6 +4871,15 @@
     "PXD030597"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD030597"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD030597"
+   },
+   "sheet_tab": "capdeville-daoy-2022",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 4319
@@ -3997,6 +4912,15 @@
     "PXD024251"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD024251"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD024251"
+   },
+   "sheet_tab": "sheikh-hap1-seel-2022",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 229
@@ -4029,6 +4953,15 @@
     "PXD033407"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD033407"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD033407"
+   },
+   "sheet_tab": "depierreux-hfff-pmp-2022",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 5)",
    "n_quantified": 2623
@@ -4060,7 +4993,16 @@
    "repository_ids": [
     "MSV000090149"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000090149/PXD036143"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000090149"
+   },
+   "sheet_tab": "lango-hl60-2022"
   },
   {
    "id": "nishino-hela-egf-2022",
@@ -4091,6 +5033,20 @@
     "PXD032062"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD032062/JPST001515",
+     "PXD035218/JPST001686",
+     "PXD035219/JPST001687",
+     "PXD035220/JPST001688",
+     "PXD035229/JPST001689",
+     "PXD035242/JPST001690"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST001515"
+   },
+   "sheet_tab": "nishino-hela-egf-2022",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1793
@@ -4123,7 +5079,16 @@
     "PXD034402",
     "JPST001658"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD034402/JPST001658"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST001658"
+   },
+   "sheet_tab": "mori-liver-pm-2022"
   },
   {
    "id": "ferguson-2022",
@@ -4155,6 +5120,17 @@
     "PXD032031"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD022482",
+     "PXD022553",
+     "PXD032031"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD022482"
+   },
+   "sheet_tab": "ferguson-2022",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 11)",
    "n_quantified": 1153
@@ -4184,7 +5160,11 @@
    "reference_overlap": 0.6432337434094904,
    "repository": "supplement",
    "repository_ids": [],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "optimized-csc-aml-2022"
   },
   {
    "id": "hammoud-mdm-raft-2022",
@@ -4214,6 +5194,15 @@
     "PXD028434"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD028434"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD028434"
+   },
+   "sheet_tab": "hammoud-mdm-raft-2022",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 10)",
    "n_quantified": 1773
@@ -4246,6 +5235,15 @@
     "PXD028523"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD028523"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD028523"
+   },
+   "sheet_tab": "kirkemo-2022",
    "quant_unit": "peptides",
    "quant_note": "as reported",
    "n_quantified": 1320
@@ -4278,6 +5276,15 @@
     "PXD014165"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD014165"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD014165"
+   },
+   "sheet_tab": "anderson-2022",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 20)",
    "n_quantified": 5094
@@ -4308,6 +5315,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "gangras-shsy5y-2022",
    "quant_unit": "log2 peptide AUC",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 886
@@ -4340,6 +5351,15 @@
     "PXD028978"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD028978"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD028978"
+   },
+   "sheet_tab": "lazar-skbr3shaving-2022",
    "quant_unit": "PSMs",
    "quant_note": "one sample",
    "n_quantified": 1962
@@ -4372,6 +5392,15 @@
     "PXD028977"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD028977"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD028977"
+   },
+   "sheet_tab": "lazar-skbr3amine-2022",
    "quant_unit": "PSMs",
    "quant_note": "one sample",
    "n_quantified": 2301
@@ -4404,6 +5433,15 @@
     "PXD028976"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD028976"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD028976"
+   },
+   "sheet_tab": "lazar-skbr3glyco-2022",
    "quant_unit": "PSMs",
    "quant_note": "one sample",
    "n_quantified": 1913
@@ -4433,7 +5471,16 @@
    "reference_overlap": 0.4912974683544304,
    "repository": null,
    "repository_ids": [],
-   "cell_group": "immune"
+   "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD024789"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD024789"
+   },
+   "sheet_tab": "byrnes-2022"
   },
   {
    "id": "nix-ball-2021",
@@ -4460,7 +5507,16 @@
    "reference_overlap": 0.19738562091503267,
    "repository": null,
    "repository_ids": [],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD016800"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD016800"
+   },
+   "sheet_tab": "nix-ball-2021"
   },
   {
    "id": "orfanou-breast-2021",
@@ -4490,6 +5546,15 @@
     "PXD021819"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD021819"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD021819"
+   },
+   "sheet_tab": "orfanou-breast-2021",
    "quant_unit": "peak area",
    "quant_note": "mean over the samples where it was detected (of 16)",
    "n_quantified": 1420
@@ -4523,6 +5588,15 @@
     "MSV000086413"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD022385/MSV000086413"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000086413"
+   },
+   "sheet_tab": "olivieri-rbc-drm-2021",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 173
@@ -4555,6 +5629,15 @@
     "PXD027110"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD027110"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD027110"
+   },
+   "sheet_tab": "rose-gbm-2021",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 9)",
    "n_quantified": 1631
@@ -4588,6 +5671,15 @@
     "JPST001019"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD022744/JPST001019"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST001019"
+   },
+   "sheet_tab": "li-hela-pecsl-2021",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 2318
@@ -4620,6 +5712,14 @@
     "PXD014925"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_private_or_embargoed",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD014925"
+    ]
+   },
+   "sheet_tab": "tobys-hela-ap2-2021",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 2359
@@ -4652,6 +5752,15 @@
     "PXD022834"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD022834"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD022834"
+   },
+   "sheet_tab": "soday-2021",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 10)",
    "n_quantified": 1250
@@ -4682,6 +5791,10 @@
    "repository": "none (supporting information only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "nayak-k562-memper-glyco-2021",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 479
@@ -4711,7 +5824,11 @@
    "reference_overlap": 0.23425380080670183,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "sun-mcf7-xlink-gao-2021"
   },
   {
    "id": "lorenz-muller-2021",
@@ -4738,7 +5855,11 @@
    "reference_overlap": 0.6572104018912529,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "neural"
+   "cell_group": "neural",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "lorenz-muller-2021"
   },
   {
    "id": "heider-mm1s-2021",
@@ -4768,6 +5889,15 @@
     "PXD018244"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD018244"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD018244"
+   },
+   "sheet_tab": "heider-mm1s-2021",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1407
@@ -4800,6 +5930,15 @@
     "PXD022721"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD022721"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD022721"
+   },
+   "sheet_tab": "lu-molm14-2021",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 24)",
    "n_quantified": 5992
@@ -4832,7 +5971,16 @@
     "MSV000085930",
     "PXD020799"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "PXD020799/MSV000085930"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000085930"
+   },
+   "sheet_tab": "myc-wells-2021"
   },
   {
    "id": "akpinar-msc-pm-2021",
@@ -4860,6 +6008,10 @@
    "repository": "none (supplementary table only; raw data on request per Data Availability)",
    "repository_ids": [],
    "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "akpinar-msc-pm-2021",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 2365
@@ -4890,6 +6042,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "kaczmarczyk-h23-2021",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 4776
@@ -4920,6 +6076,10 @@
    "repository": "none found (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "li-npc-2021",
    "quant_unit": "unique peptides",
    "quant_note": "mean over the samples where it was detected (of 7)",
    "n_quantified": 2484
@@ -4952,6 +6112,15 @@
     "PXD022350"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD022350"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD022350"
+   },
+   "sheet_tab": "ehlers-ampd2-2021",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 3828
@@ -4984,6 +6153,15 @@
     "PXD013840"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD013840"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD013840"
+   },
+   "sheet_tab": "zurli-bcell-pmp-2020",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 10)",
    "n_quantified": 1218
@@ -5015,7 +6193,16 @@
    "repository_ids": [
     "PXD014526"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD014526"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD014526"
+   },
+   "sheet_tab": "beguin-boec-2020"
   },
   {
    "id": "ito-bbb-2020",
@@ -5043,6 +6230,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ito-bbb-2020",
    "quant_unit": "peak area",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 439
@@ -5072,7 +6263,11 @@
    "reference_overlap": 0.12709030100334448,
    "repository": "none (supplementary table only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "barua-hct116-2020"
   },
   {
    "id": "lango-hl60-proteolysis-2020",
@@ -5100,6 +6295,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "lango-hl60-proteolysis-2020",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 8)",
    "n_quantified": 62
@@ -5132,6 +6331,15 @@
     "PXD021351"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD021351"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD021351"
+   },
+   "sheet_tab": "soh-hacat-pmp-2020",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "one sample",
    "n_quantified": 1259
@@ -5164,6 +6372,15 @@
     "PXD014709"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD014709"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD014709"
+   },
+   "sheet_tab": "mahameed-hepg2-2020",
    "quant_unit": "log2 LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1295
@@ -5196,6 +6413,15 @@
     "PXD016912"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD016912"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD016912"
+   },
+   "sheet_tab": "kong-lung-2020",
    "quant_unit": "iBAQ intensity",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 2800
@@ -5227,7 +6453,16 @@
    "repository_ids": [
     "PXD013832"
    ],
-   "cell_group": "immune"
+   "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD013832"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD013832"
+   },
+   "sheet_tab": "ravenhill-2020"
   },
   {
    "id": "myeloma-csc-2020",
@@ -5256,7 +6491,16 @@
    "repository_ids": [
     "MSV000084858"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "MassIVE",
+    "accessions": [
+     "MSV000084858"
+    ],
+    "url": "https://massive.ucsd.edu/ProteoSAFe/QueryMSV?id=MSV000084858"
+   },
+   "sheet_tab": "myeloma-csc-2020"
   },
   {
    "id": "wojdyla-2020",
@@ -5286,6 +6530,15 @@
     "PXD015359"
    ],
    "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD015359"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD015359"
+   },
+   "sheet_tab": "wojdyla-2020",
    "quant_unit": "log2 TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 5870
@@ -5318,7 +6571,16 @@
     "PXD017039 (PRIDE; holds ONLY raw .raw + search-engine output .mgf.byrslt/.byspec2/.pep.xml/.fasta - no processed protein tables)",
     "PMC7148585 (PNAS Supporting Information; source of the protein-level CSC table used here)"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD017039"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD017039"
+   },
+   "sheet_tab": "leung-2020"
   },
   {
    "id": "beguin-mdm-2019",
@@ -5348,6 +6610,15 @@
     "PXD011490"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD011490"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD011490"
+   },
+   "sheet_tab": "beguin-mdm-2019",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 1121
@@ -5380,6 +6651,15 @@
     "PXD009174"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD009174"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD009174"
+   },
+   "sheet_tab": "beguin-boec-inflam-2019",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 491
@@ -5411,7 +6691,11 @@
    "repository_ids": [
     "PMID:31227739"
    ],
-   "cell_group": "stem_stromal"
+   "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "matta-2019"
   },
   {
    "id": "suttapitugsakul-8lines-2019",
@@ -5439,6 +6723,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "multi",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "suttapitugsakul-8lines-2019",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 16)",
    "n_quantified": 1046
@@ -5471,7 +6759,16 @@
     "PXD039794",
     "JPST002017"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD039794/JPST002017"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST002017"
+   },
+   "sheet_tab": "li-hela-biotin-2019"
   },
   {
    "id": "vit-lymphoma-hptc-2019",
@@ -5501,6 +6798,15 @@
     "PXD012647"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD012647"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD012647"
+   },
+   "sheet_tab": "vit-lymphoma-hptc-2019",
    "quant_unit": "MS intensity",
    "quant_note": "one sample",
    "n_quantified": 1719
@@ -5530,7 +6836,11 @@
    "reference_overlap": 0.6457142857142857,
    "repository": null,
    "repository_ids": [],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "leung-2019"
   },
   {
    "id": "giovani-pdl-2019",
@@ -5560,6 +6870,15 @@
     "PXD010226"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD010226"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD010226"
+   },
+   "sheet_tab": "giovani-pdl-2019",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 929
@@ -5592,6 +6911,15 @@
     "PXD014376"
    ],
    "cell_group": "neural",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD014376"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD014376"
+   },
+   "sheet_tab": "higginbotham-adbrain-2019",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 1739
@@ -5624,6 +6952,15 @@
     "PXD013852"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD013852"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD013852"
+   },
+   "sheet_tab": "ravenhill-rbc-pmp-2019",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 18)",
    "n_quantified": 1249
@@ -5656,6 +6993,15 @@
     "PXD013034"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD013034"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD013034"
+   },
+   "sheet_tab": "wang-bcell-pmp-2019",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "one sample",
    "n_quantified": 691
@@ -5687,7 +7033,16 @@
    "repository_ids": [
     "PXD013627"
    ],
-   "cell_group": "multi"
+   "cell_group": "multi",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD013627"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD013627"
+   },
+   "sheet_tab": "autocsc-2019"
   },
   {
    "id": "jpst000531-bbb-pm-2019",
@@ -5718,6 +7073,15 @@
     "PXD012021"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD012021/JPST000531"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST000531"
+   },
+   "sheet_tab": "jpst000531-bbb-pm-2019",
    "quant_unit": "peak area",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 2357
@@ -5750,6 +7114,15 @@
     "PXD008378"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD008378"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD008378"
+   },
+   "sheet_tab": "schmidt-aml-2018",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 10)",
    "n_quantified": 994
@@ -5781,7 +7154,16 @@
    "repository_ids": [
     "PXD008752"
    ],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD008752"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD008752"
+   },
+   "sheet_tab": "egan-rbc-pmp-2018"
   },
   {
    "id": "gu-tumorlines-2018",
@@ -5809,6 +7191,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "gu-tumorlines-2018",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 5)",
    "n_quantified": 5746
@@ -5841,6 +7227,15 @@
     "PXD010361"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD010361"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD010361"
+   },
+   "sheet_tab": "furniss-hela-pmp-2018",
    "quant_unit": "peptides",
    "quant_note": "as reported",
    "n_quantified": 961
@@ -5870,7 +7265,11 @@
    "reference_overlap": 0.0701949860724234,
    "repository": "none (supplementary table only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "liu-hela-pda-2018"
   },
   {
    "id": "weldemariam-hesc-membrane-2018",
@@ -5901,6 +7300,15 @@
     "PXD009840"
    ],
    "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "jPOST",
+    "accessions": [
+     "PXD009840/JPST000421"
+    ],
+    "url": "https://repository.jpostdb.org/entry/JPST000421"
+   },
+   "sheet_tab": "weldemariam-hesc-membrane-2018",
    "quant_unit": "PSMs",
    "quant_note": "as reported",
    "n_quantified": 7824
@@ -5934,6 +7342,16 @@
     "10.17632/ptm7dzc25y.2"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD007790",
+     "PXD007791"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD007790"
+   },
+   "sheet_tab": "murphy-mdamb468-pmp-2018",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 1333
@@ -5965,7 +7383,16 @@
    "repository_ids": [
     "PXD007552"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD007552"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD007552"
+   },
+   "sheet_tab": "perna-2017"
   },
   {
    "id": "ghosh-gbm-2017",
@@ -5993,6 +7420,10 @@
    "repository": "GPM (thegpm.org model IDs; no PRIDE/ProteomeXchange deposit)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ghosh-gbm-2017",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 12)",
    "n_quantified": 1247
@@ -6025,6 +7456,15 @@
     "PXD005883"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD005883"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD005883"
+   },
+   "sheet_tab": "fielding-hfff-us12-2017",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 2956
@@ -6058,6 +7498,16 @@
     "PXD001225"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD001225",
+     "PXD004273"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD001225"
+   },
+   "sheet_tab": "tharkeshwar-hela-pm-2017",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 2370
@@ -6087,7 +7537,11 @@
    "reference_overlap": 0.8379746835443038,
    "repository": "supplement",
    "repository_ids": [],
-   "cell_group": "stem_stromal"
+   "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "hepatic-endoderm-2017"
   },
   {
    "id": "temme-asc-2017",
@@ -6117,6 +7571,15 @@
     "PXD005013"
    ],
    "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD005013"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD005013"
+   },
+   "sheet_tab": "temme-asc-2017",
    "quant_unit": "unique peptides",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 817
@@ -6147,6 +7610,10 @@
    "repository": "none (spectra on a Protein Prospector server; no ProteomeXchange deposit)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "lango-leukemia-2017",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 445
@@ -6176,7 +7643,16 @@
    "reference_overlap": 0.7223021582733813,
    "repository": null,
    "repository_ids": [],
-   "cell_group": "immune"
+   "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD005846"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD005846"
+   },
+   "sheet_tab": "kalxdorf-2017"
   },
   {
    "id": "haverland-2017",
@@ -6203,7 +7679,11 @@
    "reference_overlap": 0.7381546134663342,
    "repository": "supplement",
    "repository_ids": [],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "haverland-2017"
   },
   {
    "id": "xiao-mcf7-2017",
@@ -6230,7 +7710,11 @@
    "reference_overlap": 0.8566037735849057,
    "repository": "none (list from the Veneer reanalysis, Table S1 of Gundry lab JPR 2024)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "xiao-mcf7-2017"
   },
   {
    "id": "glisovic-molm14-pm-2017",
@@ -6260,6 +7744,15 @@
     "PXD004801"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD004801"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD004801"
+   },
+   "sheet_tab": "glisovic-molm14-pm-2017",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 14)",
    "n_quantified": 5281
@@ -6292,6 +7785,15 @@
     "PXD004801"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD004801"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD004801"
+   },
+   "sheet_tab": "glisovic-molm14-biotin-2017",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 626
@@ -6324,6 +7826,15 @@
     "PXD006317"
    ],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD006317"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD006317"
+   },
+   "sheet_tab": "ersing-p3hr1-pmp-2017",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 1005
@@ -6354,6 +7865,10 @@
    "repository": "none (supplementary table only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "kim-wi38-mempn-2017",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 1108
@@ -6384,6 +7899,10 @@
    "repository": "none (supplementary table only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "kim-wi38-surface-2017",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 1283
@@ -6414,6 +7933,10 @@
    "repository": "none found",
    "repository_ids": [],
    "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "niehage-dpsc-2016",
    "quant_unit": "unique peptides",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 3344
@@ -6444,6 +7967,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "chhuon-hela-raft-2016",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 332
@@ -6474,6 +8001,10 @@
    "repository": "none (supporting information PDF only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "sun-hela-seel-chase-2016",
    "quant_unit": "reported abundance",
    "quant_note": "one sample",
    "n_quantified": 461
@@ -6504,6 +8035,10 @@
    "repository": "none (supporting information PDF only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "sun-hela-seel-2016",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 317
@@ -6533,7 +8068,11 @@
    "reference_overlap": 0.6715328467153284,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "xiao-hepg2-galnaz-2016"
   },
   {
    "id": "xiao-hepg2-glcnaz-2016",
@@ -6560,7 +8099,11 @@
    "reference_overlap": 0.38461538461538464,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "xiao-hepg2-glcnaz-2016"
   },
   {
    "id": "xiao-hepg2-mannaz-2016",
@@ -6587,7 +8130,11 @@
    "reference_overlap": 0.7614678899082569,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "xiao-hepg2-mannaz-2016"
   },
   {
    "id": "szklanna-platelet-drm-2016",
@@ -6617,6 +8164,15 @@
     "PXD002554"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD002554"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD002554"
+   },
+   "sheet_tab": "szklanna-platelet-drm-2016",
    "quant_unit": "LFQ intensity",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 136
@@ -6649,6 +8205,15 @@
     "PXD004168"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD004168"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD004168"
+   },
+   "sheet_tab": "hoare-imr90-pmp-2016",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 491
@@ -6679,6 +8244,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ye-mcf10a-membrane-2016",
    "quant_unit": "PSMs",
    "quant_note": "one sample",
    "n_quantified": 4284
@@ -6709,6 +8278,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ye-mcf10a-csc-2016",
    "quant_unit": "PSMs",
    "quant_note": "one sample",
    "n_quantified": 122
@@ -6738,7 +8311,11 @@
    "reference_overlap": 0.5796545105566219,
    "repository": "none (list from the Veneer reanalysis, Table S1 of Gundry lab JPR 2024)",
    "repository_ids": [],
-   "cell_group": "neural"
+   "cell_group": "neural",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "tyleckova-npc-2016"
   },
   {
    "id": "mallanna-2016",
@@ -6765,7 +8342,11 @@
    "reference_overlap": 0.66,
    "repository": "supplement",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "mallanna-2016"
   },
   {
    "id": "wang-aml-surface-2015",
@@ -6793,6 +8374,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "wang-aml-surface-2015",
    "quant_unit": "reported abundance",
    "quant_note": "one sample",
    "n_quantified": 4952
@@ -6823,6 +8408,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ross-arpe19-2015",
    "quant_unit": "peptides",
    "quant_note": "one sample",
    "n_quantified": 554
@@ -6852,7 +8441,11 @@
    "reference_overlap": 0.12101794214573416,
    "repository": "not verified",
    "repository_ids": [],
-   "cell_group": "stem_stromal"
+   "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "holley-msc-2015"
   },
   {
    "id": "matheson-cemt4-pmp-2015",
@@ -6881,7 +8474,16 @@
    "repository_ids": [
     "PXD002934"
    ],
-   "cell_group": "blood_cancer"
+   "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD002934"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD002934"
+   },
+   "sheet_tab": "matheson-cemt4-pmp-2015"
   },
   {
    "id": "cspa-2015",
@@ -6910,7 +8512,16 @@
    "repository_ids": [
     "PXD000589"
    ],
-   "cell_group": "multi"
+   "cell_group": "multi",
+   "raw_data": {
+    "flag": "processed_only",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD000589"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD000589"
+   },
+   "sheet_tab": "cspa-2015"
   },
   {
    "id": "gao-gastric-pm-2015",
@@ -6938,6 +8549,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "gao-gastric-pm-2015",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "one sample",
    "n_quantified": 491
@@ -6967,7 +8582,11 @@
    "reference_overlap": 0.7090909090909091,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "smeekens-hek293t-galnaz-2015"
   },
   {
    "id": "chen-hek293t-sialo-2015",
@@ -6994,7 +8613,11 @@
    "reference_overlap": 0.7295918367346939,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "chen-hek293t-sialo-2015"
   },
   {
    "id": "kopecka-ht29-csc-2015",
@@ -7022,6 +8645,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "kopecka-ht29-csc-2015",
    "quant_unit": "reported abundance",
    "quant_note": "one sample",
    "n_quantified": 378
@@ -7052,6 +8679,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ozlu-hela-mitosis-2015",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 5)",
    "n_quantified": 2271
@@ -7084,6 +8715,15 @@
     "PXD001117"
    ],
    "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD001117"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD001117"
+   },
+   "sheet_tab": "gomesalves-hcsc-2015",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 2986
@@ -7116,6 +8756,15 @@
     "PXD017732"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD017732"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD017732"
+   },
+   "sheet_tab": "sharma-fetal-cm-2015",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1345
@@ -7148,6 +8797,15 @@
     "PXD002235"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD002235"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD002235"
+   },
+   "sheet_tab": "vildhede-liver-2015",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 36)",
    "n_quantified": 4880
@@ -7177,7 +8835,11 @@
    "reference_overlap": 0.8029197080291971,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "chen-breast-sialo-2015"
   },
   {
    "id": "kitata-nsclc-membrane-2015",
@@ -7207,6 +8869,15 @@
     "PXD002224"
    ],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD002224"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD002224"
+   },
+   "sheet_tab": "kitata-nsclc-membrane-2015",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 13)",
    "n_quantified": 4639
@@ -7237,6 +8908,10 @@
    "repository": "none",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "jung-colonorg-2015",
    "quant_unit": "MS intensity",
    "quant_note": "one sample",
    "n_quantified": 1898
@@ -7269,6 +8944,15 @@
     "PXD001988"
    ],
    "cell_group": "multi",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD001988"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD001988"
+   },
+   "sheet_tab": "ducret-liver-csc-2015",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 17)",
    "n_quantified": 536
@@ -7301,6 +8985,15 @@
     "PXD001432"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD001432"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD001432"
+   },
+   "sheet_tab": "graessel-cd4t-pal-2015",
    "quant_unit": "PSMs",
    "quant_note": "mean over the samples where it was detected (of 8)",
    "n_quantified": 75
@@ -7331,6 +9024,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "autelitano-gbm-sialo-2014",
    "quant_unit": "log2 intensity",
    "quant_note": "mean over the samples where it was detected (of 7)",
    "n_quantified": 838
@@ -7361,6 +9058,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "weekes-hfff-qtv-2014",
    "quant_unit": "TMT reporter abundance",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 2546
@@ -7393,6 +9094,15 @@
     "PXD000987"
    ],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD000987"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD000987"
+   },
+   "sheet_tab": "vanderpost-colon-2014",
    "quant_unit": "MS intensity",
    "quant_note": "mean over the samples where it was detected (of 16)",
    "n_quantified": 2627
@@ -7422,7 +9132,11 @@
    "reference_overlap": 0.8387096774193549,
    "repository": "supplement",
    "repository_ids": [],
-   "cell_group": "stem_stromal"
+   "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "boheler-2014"
   },
   {
    "id": "ramya-bjab-gal-2013",
@@ -7450,6 +9164,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ramya-bjab-gal-2013",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 213
@@ -7480,6 +9198,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ramya-bjab-pal-2013",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 439
@@ -7510,6 +9232,10 @@
    "repository": "none (supporting information only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "yokoyama-endometrial-2013",
    "quant_unit": "peptides",
    "quant_note": "as reported",
    "n_quantified": 270
@@ -7540,6 +9266,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "yan-hnscc-spheres-2013",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 375
@@ -7570,6 +9300,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "petrareanu-heparg-2013",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 323
@@ -7600,6 +9334,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "kang-mda453-csc-2013",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 18)",
    "n_quantified": 2699
@@ -7630,6 +9368,10 @@
    "repository": "none",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "posthumadeboer-os-2013",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 8)",
    "n_quantified": 2740
@@ -7659,7 +9401,11 @@
    "reference_overlap": 0.46096654275092935,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "wang-placenta-2013"
   },
   {
    "id": "muraoka-breast-membrane-2013",
@@ -7689,7 +9435,17 @@
     "PXD000066",
     "PXD005163"
    ],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE; jPOST",
+    "accessions": [
+     "PXD000066",
+     "PXD005163/JPST000201"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD000066"
+   },
+   "sheet_tab": "muraoka-breast-membrane-2013"
   },
   {
    "id": "bonardi-aml-pm-2013",
@@ -7717,6 +9473,10 @@
    "repository": "ProteomeCommons Tranche (hash in paper; service retired)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "bonardi-aml-pm-2013",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 6336
@@ -7749,6 +9509,15 @@
     "PXD005559"
    ],
    "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_public",
+    "repository": "PRIDE",
+    "accessions": [
+     "PXD005559"
+    ],
+    "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD005559"
+   },
+   "sheet_tab": "rorvig-neutrophil-2013",
    "quant_unit": "MS intensity",
    "quant_note": "one sample",
    "n_quantified": 1298
@@ -7779,6 +9548,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "choksawangkarn-rpmi8226-pellicl",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 1158
@@ -7809,6 +9582,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "weekes-thp1-ul138-2013",
    "quant_unit": "unique peptides",
    "quant_note": "one sample",
    "n_quantified": 615
@@ -7838,7 +9615,11 @@
    "reference_overlap": 0.15873015873015872,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "kani-a431-gefitinib-2012"
   },
   {
    "id": "mi-hcc-csc-2012",
@@ -7865,7 +9646,11 @@
    "reference_overlap": 0.6282051282051282,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "mi-hcc-csc-2012"
   },
   {
    "id": "zhang-luad-pm-2012",
@@ -7892,7 +9677,11 @@
    "reference_overlap": 0.31851851851851853,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "zhang-luad-pm-2012"
   },
   {
    "id": "karhemo-mda435-2012",
@@ -7920,6 +9709,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "karhemo-mda435-2012",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 6)",
    "n_quantified": 79
@@ -7950,6 +9743,10 @@
    "repository": "none",
    "repository_ids": [],
    "cell_group": "neural",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "english-brain-2012",
    "quant_unit": "protein matches",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 1131
@@ -7980,6 +9777,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "ponnusamy-fnrbc-membrane-2012",
    "quant_unit": "peptides",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 226
@@ -8009,7 +9810,11 @@
    "reference_overlap": 0.6019900497512438,
    "repository": "supplement",
    "repository_ids": [],
-   "cell_group": "stem_stromal"
+   "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "msc-hoflack-2011"
   },
   {
    "id": "yang-pc3-sialo-2011",
@@ -8037,6 +9842,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "yang-pc3-sialo-2011",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 513
@@ -8067,6 +9876,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "qattan-mcf7-sucrose-2010",
    "quant_unit": "spectral counts",
    "quant_note": "one sample",
    "n_quantified": 1456
@@ -8096,7 +9909,11 @@
    "reference_overlap": 0.3623693379790941,
    "repository": "none",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "zhang-os-2010"
   },
   {
    "id": "zhang-placenta-stb-2010",
@@ -8124,6 +9941,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "zhang-placenta-stb-2010",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 3)",
    "n_quantified": 280
@@ -8154,6 +9975,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "mcquade-hesc-membrane-2009",
    "quant_unit": "peptides",
    "quant_note": "one sample",
    "n_quantified": 2240
@@ -8183,7 +10008,11 @@
    "reference_overlap": 0.13910186199342825,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "lethlarsen-mda-pm-2009"
   },
   {
    "id": "garcia-shsy5y-2009",
@@ -8211,6 +10040,10 @@
    "repository": "none (supplementary tables only; search results cited at the FHCRC CPAS server)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "garcia-shsy5y-2009",
    "quant_unit": "spectral counts",
    "quant_note": "one sample",
    "n_quantified": 2317
@@ -8241,6 +10074,10 @@
    "repository": "none (supplementary table only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "adam-lncap-drm-2008",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 503
@@ -8271,6 +10108,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "faca-ovarian-2008",
    "quant_unit": "spectral counts",
    "quant_note": "mean over the samples where it was detected (of 4)",
    "n_quantified": 3009
@@ -8301,6 +10142,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "stem_stromal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "dormeyer-hesc-hecc-pm-2008",
    "quant_unit": "reported abundance",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 1572
@@ -8330,7 +10175,11 @@
    "reference_overlap": 0.13179723502304147,
    "repository": "none (supporting information PDF only)",
    "repository_ids": [],
-   "cell_group": "solid_cancer"
+   "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "pshezhetsky-caco2-pm-2007"
   },
   {
    "id": "yanagida-hl60-raft-2007",
@@ -8358,6 +10207,10 @@
    "repository": "none (supporting information PDF only)",
    "repository_ids": [],
    "cell_group": "blood_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "yanagida-hl60-raft-2007",
    "quant_unit": "peptides",
    "quant_note": "one sample",
    "n_quantified": 127
@@ -8388,6 +10241,10 @@
    "repository": "none (supporting information PDF only)",
    "repository_ids": [],
    "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "he-liver-pm-2007",
    "quant_unit": "unique peptides",
    "quant_note": "mean over the samples where it was detected (of 2)",
    "n_quantified": 370
@@ -8417,7 +10274,11 @@
    "reference_overlap": 0.23214285714285715,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "immune"
+   "cell_group": "immune",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "everberg-pbmc-atps-2006"
   },
   {
    "id": "rahbar-mcf7mxr-pellicle-2005",
@@ -8445,6 +10306,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "rahbar-mcf7mxr-pellicle-2005",
    "quant_unit": "peptides",
    "quant_note": "one sample",
    "n_quantified": 537
@@ -8475,6 +10340,10 @@
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
    "cell_group": "solid_cancer",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "zhao-lung-bdap-2004",
    "quant_unit": "peptides",
    "quant_note": "one sample",
    "n_quantified": 646
@@ -8504,7 +10373,11 @@
    "reference_overlap": 0.20270270270270271,
    "repository": "none (supplementary tables only)",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "blonder-epidermis-pm-2004"
   },
   {
    "id": "zhao-pm-affinity-2003",
@@ -8531,7 +10404,11 @@
    "reference_overlap": 0.12537764350453173,
    "repository": "none (supporting information only)",
    "repository_ids": [],
-   "cell_group": "other_normal"
+   "cell_group": "other_normal",
+   "raw_data": {
+    "flag": "raw_not_deposited"
+   },
+   "sheet_tab": "zhao-pm-affinity-2003"
   }
  ]
 }

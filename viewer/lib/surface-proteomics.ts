@@ -47,6 +47,11 @@ export interface StudyArm {
   reference_overlap: number | null;
   repository: string | null;
   repository_ids: string[];
+  /** Where the raw instrument files are, from the S3E8 raw-data audit
+   *  (an arm split from a parent study uses the parent's row). */
+  raw_data?: RawData | null;
+  /** This arm's tab in the shared study workbook (StudyIndex.study_list). */
+  sheet_tab?: string | null;
   /** Curated cell-type group (CELL_GROUPS in the build script). */
   cell_group?: CellGroup;
   /** Cell-line names, for atlases whose table has one column per line. */
@@ -101,6 +106,8 @@ export interface StudyIndex {
   n_accessions_admitted: number;
   /** Registry ids the snapshot split into several arms → those arm ids. */
   aliases?: Record<string, string[]>;
+  /** The shared study workbook: one tab per study arm. */
+  study_list?: { name: string; url: string };
   /** counted_detection_hist[k] = proteins detected in exactly k counted arms (k >= 1). */
   counted_detection_hist?: number[];
   /** Same over the deep-dived cohort including k = 0: "all" plus one per tier. */
@@ -273,6 +280,29 @@ export function shareBelow(hist: number[] | undefined, k: number): { below: numb
   if (!total) return null;
   return { below: hist.slice(0, k).reduce((s, x) => s + x, 0) / total, total };
 }
+
+export type RawFlag =
+  | "raw_public"
+  | "raw_private_or_embargoed"
+  | "processed_only"
+  | "accession_invalid"
+  | "raw_not_deposited";
+
+export interface RawData {
+  flag: RawFlag;
+  repository?: string;
+  accessions?: string[];
+  url?: string;
+}
+
+/** Short wording for each raw-data audit flag. */
+export const RAW_FLAG_LABEL: Record<RawFlag, string> = {
+  raw_public: "raw files",
+  raw_private_or_embargoed: "raw files, not yet released",
+  processed_only: "processed files only, no raw files",
+  accession_invalid: "printed accession doesn't resolve",
+  raw_not_deposited: "raw data not deposited",
+};
 
 /** Labeling chemistry families, each with its own chip color. */
 export const FAMILY_ORDER = [
