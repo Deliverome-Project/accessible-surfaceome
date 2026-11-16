@@ -7,8 +7,16 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { L1MemberBlock } from "../components/surfaceome/L1DesignCard/L1DesignCard";
-import { l1SiteLabel, l1StructureUrl, parseL1Design, type L1Site } from "../lib/l1-design";
+import { L1MemberBlock, ObligatePartnerAbsence } from "../components/surfaceome/L1DesignCard/L1DesignCard";
+import {
+  fetchL1DesignResult,
+  l1AbsenceReason,
+  l1SiteLabel,
+  l1StructureUrl,
+  parseL1Design,
+  type L1Site,
+} from "../lib/l1-design";
+import type { CoReceptorRequirements } from "../lib/surfaceome-types";
 import { STRUCTURES_BASE } from "../lib/structure-viewer-types";
 
 const site = (over: Partial<L1Site>): L1Site => ({
@@ -92,4 +100,126 @@ test("member block shows rung, status, provenance and both models", () => {
   assert.match(html, /Native model: AlphaFold DB, pLDDT 81/);
   assert.match(html, /Tagged refold \(l1-m0001-cterm-760\): ColabFold \(tagged\), pLDDT 70, cassette 761–811/);
   assert.match(html, /library-colabfold-tagged\/2026-11-12\/l1-m0001\.pdb/);
+});
+
+// --------------------------------------------------------------- no-design states
+
+const coReceptor = (over: Partial<CoReceptorRequirements> = {}): CoReceptorRequirements => ({
+  surface_expression_dependency: "required",
+  partners: ["GENEB", "GENEC"],
+  evidence_basis: "trafficking",
+  rationale: "Gene X does not reach the surface as a monomer (a1_evi_04).",
+  cited_evidence_ids: ["a1_evi_04"],
+  ...over,
+});
+
+test("a non-member with an obligate partner is an explained exclusion", () => {
+  assert.equal(
+    l1AbsenceReason({ inFgLibrary: false, coReceptor: coReceptor() }),
+    "obligate_partner",
+  );
+});
+
+test("a library member is never an exclusion, whatever its dependency", () => {
+  // A member with no published design is a gap in the load, so saying "excluded"
+  // would be wrong in exactly the direction this card is meant to fix.
+  assert.equal(l1AbsenceReason({ inFgLibrary: true, coReceptor: coReceptor() }), "unpublished");
+});
+
+test("a non-member without a required partner is an unexplained absence", () => {
+  for (const dep of ["none", "modulatory", "unknown"] as const) {
+    assert.equal(
+      l1AbsenceReason({
+        inFgLibrary: false,
+        coReceptor: coReceptor({ surface_expression_dependency: dep }),
+      }),
+      "unpublished",
+    );
+  }
+  assert.equal(l1AbsenceReason({ inFgLibrary: false, coReceptor: null }), "unpublished");
+});
+
+test("`required` with nothing to show is not dressed up as an exclusion", () => {
+  assert.equal(
+    l1AbsenceReason({
+      inFgLibrary: false,
+      coReceptor: coReceptor({ partners: [], rationale: "", cited_evidence_ids: [] }),
+    }),
+    "unpublished",
+  );
+  // Whitespace-only partners count as none.
+  assert.equal(
+    l1AbsenceReason({
+      inFgLibrary: false,
+      coReceptor: coReceptor({ partners: ["  "], rationale: "  ", cited_evidence_ids: [] }),
+    }),
+    "unpublished",
+  );
+});
+
+test("the exclusion block names the partners, the basis and the rationale", () => {
+  const html = renderToStaticMarkup(
+    React.createElement(ObligatePartnerAbsence, { symbol: "GENEA", cr: coReceptor() }),
+  );
+  assert.match(html, /is not an L1 library member/);
+  assert.match(html, /GENEB, GENEC/);
+  assert.match(html, /Obligate partners/);
+  assert.match(html, /does not reach the surface as a monomer/);
+  // The host-line check is the actionable half: without it a reviewer cannot tell
+  // what would have to change for the gene to be designable.
+  assert.match(html, /host cell line does not\s+express/);
+  // Never the old undifferentiated line.
+  assert.doesNotMatch(html, /No L1 design is published/);
+});
+
+// ------------------------------------------------------ load-bearing fetch states
+
+/** Stand in for one `/v1/l1-design/{sym}` response. */
+function withFetch<T>(impl: typeof fetch, body: () => Promise<T>): Promise<T> {
+  const real = globalThis.fetch;
+  globalThis.fetch = impl;
+  return body().finally(() => {
+    globalThis.fetch = real;
+  });
+}
+const ok = (payload: unknown): typeof fetch =>
+  (async () => new Response(JSON.stringify(payload), { status: 200 })) as unknown as typeof fetch;
+
+test("a load that covers the gene with no member is a real absence", async () => {
+  const r = await withFetch(ok({ gene_symbol: "GENEA", load: payload.load, members: [] }), () =>
+    fetchL1DesignResult("GENEA", "https://api.example"),
+  );
+  assert.equal(r.kind, "empty");
+});
+
+test("a 200 with no load is a FAILURE, not an absence", async () => {
+  // The Worker's `l1Load` catches every D1 error and degrades to
+  // `{ load: null, members: [] }` with a 200. Rendering that as "no design is
+  // published" is the exact bug this card exists to stop, and it reached the
+  // live site: a transient D1 hiccup blanked TFRC's two members.
+  const r = await withFetch(ok({ gene_symbol: "TFRC", load: null, members: [] }), () =>
+    fetchL1DesignResult("TFRC", "https://api.example"),
+  );
+  assert.equal(r.kind, "error");
+});
+
+test("a transport failure and a non-200 are failures, not absences", async () => {
+  const thrown = await withFetch(
+    (async () => {
+      throw new TypeError("network");
+    }) as unknown as typeof fetch,
+    () => fetchL1DesignResult("GENEA", "https://api.example"),
+  );
+  assert.equal(thrown.kind, "error");
+  const http500 = await withFetch(
+    (async () => new Response("<html>", { status: 500 })) as unknown as typeof fetch,
+    () => fetchL1DesignResult("GENEA", "https://api.example"),
+  );
+  assert.equal(http500.kind, "error");
+});
+
+test("a load with members is served as the design", async () => {
+  const r = await withFetch(ok(payload), () => fetchL1DesignResult("GENEA", "https://api.example"));
+  assert.equal(r.kind, "ok");
+  assert.equal(r.kind === "ok" ? r.file.members.length : 0, 1);
 });

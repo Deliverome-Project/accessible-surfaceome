@@ -11,6 +11,7 @@ import { AccessibilityRisksCard } from "../AccessibilityRisksCard/AccessibilityR
 import { InternalizationCard } from "../InternalizationCard/InternalizationCard";
 import { TaggedSitesCard } from "../TaggedSitesCard/TaggedSitesCard";
 import { L1DesignCard } from "../L1DesignCard/L1DesignCard";
+import { l1AbsenceReason } from "../../../lib/l1-design";
 import { withoutComputedCandidates } from "../../../lib/tag-sites-overlay";
 import { BenchmarkRow } from "../BenchmarkRow/BenchmarkRow";
 import { BiologicalContextCard } from "../BiologicalContextCard/BiologicalContextCard";
@@ -150,6 +151,14 @@ export function GeneDetail({
   // is the recommendation. Other genes keep them, labelled as legacy.
   const shownTagSites = inFgLibrary ? withoutComputedCandidates(taggedSites) : taggedSites;
 
+  // A non-member whose record reports an obligate partner requirement gets the L1
+  // design tab too, so the exclusion is stated rather than left as a silent absence.
+  // Read from the deep block, not `filters.co_receptor_dependency` (a mirror that
+  // pre-mirror records lack).
+  const coReceptor = rec.accessibility_risks.co_receptor_requirements;
+  const l1Excluded =
+    !inFgLibrary && l1AbsenceReason({ inFgLibrary, coReceptor }) === "obligate_partner";
+
   // Prev/next navigation across the FG library, alphabetically. The FG-only
   // ordered list is the deep-dive genes (each has a `/[symbol]` page) that are
   // ALSO library members, sorted by symbol so "adjacent" means alphabetically
@@ -264,14 +273,25 @@ export function GeneDetail({
       render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
     // L1 library design (suggested tag sites + folded models per member), fetched
-    // client-side from /v1/l1-design. Only on library genes: the card answers "how
-    // will we tag the protein we order", which no other gene has.
-    ...(inFgLibrary
+    // client-side from /v1/l1-design. On library genes the card answers "how will we
+    // tag the protein we order", which no other gene has — AND on the non-members
+    // whose record explains why they are out (an obligate partner the host line must
+    // also express: the TCR-CD3 and BCR subunits, B2M). Those are deliberate
+    // exclusions a reviewer could not previously tell from an un-designed gene, and
+    // the explanation lives in the record this page already holds.
+    ...(inFgLibrary || l1Excluded
       ? [
           {
             kind: "l1-design",
             label: "L1 design",
-            render: (n: number) => <L1DesignCard symbol={rec.gene.hgnc_symbol} n={n} />,
+            render: (n: number) => (
+              <L1DesignCard
+                symbol={rec.gene.hgnc_symbol}
+                n={n}
+                inFgLibrary={inFgLibrary}
+                coReceptor={coReceptor}
+              />
+            ),
           },
         ]
       : []),
