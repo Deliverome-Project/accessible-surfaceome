@@ -69,7 +69,7 @@ const FAMILY_SHORT: Record<string, string> = {
   "biotin-amine": "Amine biotin",
   "glycoprotein-capture": "Glycoprotein",
   "glycopeptide-capture": "Glycopeptide",
-  "peroxidase-proximity": "Peroxidase",
+  "peroxidase-proximity": "Peroxidase / laccase",
   "other-chemoproteomic": "Other",
   "membrane-fractionation": "Fractionation",
 };
