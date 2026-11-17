@@ -99,7 +99,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-16-sweep-v16"
+SNAPSHOT = "2026-11-16-sweep-v17"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -439,7 +439,7 @@ FAMILY_LABEL = {
     "biotin-amine": "Amine biotinylation",
     "glycoprotein-capture": "Glycoprotein capture",
     "glycopeptide-capture": "Glycopeptide capture",
-    "peroxidase-proximity": "Peroxidase proximity labeling",
+    "peroxidase-proximity": "Peroxidase or laccase proximity labeling",
     "other-chemoproteomic": "Other chemoproteomic labeling",
     "membrane-fractionation": "Membrane fractionation",
 }
@@ -1458,6 +1458,10 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
             return f"author pre-filtered to {what}"
         if pct is not None and pct < base:
             return f"within 2 points of the {base:.0%} screen ({pct:.1%})"
+        # sweep-v17: an arm kept above its matched no-label control by our
+        # own fold cutoff rather than the authors' published one (LaccID).
+        if any("enriched_over_control" in x for x in d.get("extractions") or []):
+            return "filtered against its matched no-label control by our cutoff, not the authors'"
         return "built from a partial author export (peptide-level table)"
     if status == "below_screen":
         if filtered and pct is not None:
@@ -1788,6 +1792,17 @@ def _filters(e: dict[str, Any]) -> list[str]:
         )
     if e.get("symbol_regex"):
         rules.append(f"symbols matching {e['symbol_regex']}")
+    rule = e.get("enriched_over_control")
+    if rule:
+        # sweep-v17: membership also needs enrichment over a matched no-label control.
+        fold = 2 ** float(rule["min_log2"])
+        control = rule.get("control_label") or "matched no-label control"
+        rules.append(
+            f"keep proteins at least {fold:g}-fold above the {control} "
+            f"(mean of the {len(rule['labeled'])} labeled versus "
+            f"{len(rule['control'])} control channels); a protein the control "
+            "did not detect stays"
+        )
     return rules
 
 
