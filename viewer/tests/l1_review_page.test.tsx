@@ -8,15 +8,18 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { SiteCard } from "../components/L1Review/L1Review";
+import { ReviewPanel, SiteCard } from "../components/L1Review/L1Review";
 import {
   filterIndex,
   latestVerdicts,
   modelToMemberResidue,
+  reviewScopeLabel,
   sortSites,
+  standingReviewIds,
   visibleContacts,
   type L1Contact,
   type L1IndexMember,
+  type L1Member,
   type L1ReviewRow,
   type L1Site,
 } from "../lib/l1-design";
@@ -96,6 +99,98 @@ test("the site card shows who decided, why, the rejected alternative and the sco
   assert.match(html, /rank score/);
   assert.match(html, /glycan n/);
   assert.match(html, /design PR 7 \(open\)/);
+});
+
+// ------------------------------------------- what a verdict is a verdict on
+//
+// A verdict carries the tag site it is about, so "a2 sits in the pore, a1 and a3 are
+// fine" has somewhere to go: the r2 agent round rejects arms, not members. A null
+// site id is the member as a whole, which is what every row written before this was.
+//
+// Not covered here: the per-member draft retention. These tests render to static
+// markup with no DOM, so typing in one member and clicking to another cannot be
+// driven from them; that one is checked in the browser.
+
+const member = (over: Partial<L1Member> = {}): L1Member => ({
+  member_id: "l1-m0006", design_id: "l1-p0006", gene_symbol: "LHFPL6", species: "human",
+  candidate_set: "library_reference", rung: "internal", ordered_length_aa: 400,
+  sequence_sha256: null, sites: [], structures: [], ...over,
+});
+const twoArms = [
+  site({ site_id: "l1-p0006-a1" }),
+  site({ site_id: "l1-p0006-a2", is_primary: false, insert_after_residue: 151, residue_before: "H", residue_after: "D" }),
+];
+
+test("a verdict's scope reads as the arm it is about, or the member as a whole", () => {
+  assert.equal(reviewScopeLabel(null, twoArms, 400), "the member as a whole");
+  assert.equal(reviewScopeLabel("l1-p0006-a1", twoArms, 400), "a1 — between V94 and S95");
+  assert.equal(reviewScopeLabel("l1-p0006-a2", twoArms, 400), "a2 — between H151 and D152 (alternative)");
+  // A row from an earlier load, whose site this load no longer carries, still names its
+  // arm rather than silently reading as a verdict on the whole member.
+  assert.equal(reviewScopeLabel("l1-p0006-a7", twoArms, 400), "a7");
+  assert.equal(reviewScopeLabel("l1-p2089-res1-igk_tag", twoArms, 400), "l1-p2089-res1-igk_tag");
+});
+
+test("a later verdict on the same arm supersedes it; another arm is a separate verdict", () => {
+  const r = (id: string, siteId: string | null, at: string, v: "good" | "no"): L1ReviewRow => ({
+    review_id: id, created_at: at, reviewer: "Becca", member_id: "l1-m0001", design_id: "l1-p0001",
+    gene_symbol: "AXL", site_id: siteId, verdict: v, reason: null, load_version: "l1d-0",
+  });
+  const rows = [
+    r("a", "l1-p0001-a1", "2026-11-16T09", "no"),
+    r("b", "l1-p0001-a1", "2026-11-16T11", "good"), // changed her mind about a1
+    r("c", "l1-p0001-a2", "2026-11-16T10", "no"),   // a different arm: still standing
+    r("d", null, "2026-11-16T08", "good"),          // and the member as a whole
+  ];
+  assert.deepEqual([...standingReviewIds(rows)].sort(), ["b", "c", "d"]);
+  // The member-list dots roll up by the same scope, so a1 and a2 both get one.
+  assert.equal(latestVerdicts(rows).get("l1-p0001")!.length, 3);
+});
+
+const panel = (over: Partial<Parameters<typeof ReviewPanel>[0]> = {}) =>
+  renderToStaticMarkup(
+    React.createElement(ReviewPanel, {
+      member: member({ sites: twoArms }), loadVersion: "l1d-3", reviews: null,
+      token: "t", reviewer: "Becca", pickedResidue: null,
+      drafts: {}, setDrafts: () => {}, onSaved: () => {}, ...over,
+    }),
+  );
+
+test("the review panel asks which arm the verdict is about, before the buttons", () => {
+  const html = panel();
+  assert.match(html, /the member as a whole/);
+  assert.match(html, /a1 — between V94 and S95/);
+  assert.match(html, /a2 — between H151 and D152 \(alternative\)/);
+  // The choice changes what the buttons mean, so it is read before them.
+  assert.ok(html.indexOf("the member as a whole") < html.indexOf("Looks good"));
+});
+
+test("without a token the panel's text fields are closed, not only its buttons", () => {
+  // A tokenless visitor could write 4,000 characters into a textarea whose save button
+  // was greyed out above it, and lose every one of them.
+  const locked = panel({ token: "" });
+  assert.match(locked, /<textarea[^>]*disabled/);
+  assert.match(locked, /Set your name and token above/);
+  assert.doesNotMatch(panel(), /<textarea[^>]*disabled/);
+});
+
+test("an earlier verdict on the same arm shows as superseded, not as a second opinion", () => {
+  const r = (id: string, at: string, v: "good" | "no", reason: string): L1ReviewRow => ({
+    review_id: id, created_at: at, reviewer: "Becca", member_id: "l1-m0006", design_id: "l1-p0006",
+    gene_symbol: "LHFPL6", site_id: "l1-p0006-a1", verdict: v, reason, load_version: "l1d-3",
+  });
+  const html = panel({
+    reviews: {
+      reviews: [r("a", "2026-11-16T09", "no", "pore helix"), r("b", "2026-11-16T11", "good", "mapped wrong; it is fine")],
+      alt_tags: [],
+    },
+  });
+  assert.match(html, /class="superseded"/);
+  assert.equal(html.match(/superseded by a later row/g)!.length, 1);
+  assert.match(html, /a1 — between V94 and S95/);
+  // The list is every reviewer's rows, which is what makes answering someone possible;
+  // it used to be headed "Your review".
+  assert.match(html, /every reviewer/);
 });
 
 test("curated contacts are drawn only on a member whose protein is the reference sequence", async () => {

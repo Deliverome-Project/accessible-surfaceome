@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import {
   PLACEMENT_LABEL,
   SOURCE_LABEL,
   STATUS_HELP,
   STATUS_LABEL,
+  armLabel,
   countBy,
   fetchL1Design,
   fetchL1Index,
@@ -20,7 +21,9 @@ import {
   latestVerdicts,
   modelToMemberResidue,
   nextIndexByLetter,
+  reviewScopeLabel,
   sortSites,
+  standingReviewIds,
   submitL1Review,
   visibleContacts,
   type L1Contact,
@@ -184,13 +187,29 @@ export function SiteCard({ site, length }: { site: L1Site; length: number | null
   );
 }
 
-function ReviewPanel({
+/** What a reviewer has typed for one member and not yet saved. */
+interface Draft {
+  /** The tag site the verdict is about; "" is the member as a whole (a null `site_id`). */
+  siteId: string;
+  reason: string;
+  alt: { residue: string; placement: L1Placement; cassette: string; reason: string };
+}
+
+const EMPTY_DRAFT: Draft = {
+  siteId: "",
+  reason: "",
+  alt: { residue: "", placement: "internal", cassette: "", reason: "" },
+};
+
+export function ReviewPanel({
   member,
   loadVersion,
   reviews,
   token,
   reviewer,
   pickedResidue,
+  drafts,
+  setDrafts,
   onSaved,
 }: {
   member: L1Member;
@@ -199,22 +218,53 @@ function ReviewPanel({
   token: string;
   reviewer: string;
   pickedResidue: number | null;
+  drafts: Record<string, Draft>;
+  setDrafts: Dispatch<SetStateAction<Record<string, Draft>>>;
   onSaved: () => void;
 }) {
-  const [reason, setReason] = useState("");
+  // Drafts are held per member for as long as the page is open, rather than cleared when
+  // the member changes. Reading a neighbouring member before finishing a sentence is the
+  // normal way to answer someone — "is a2 really worse than TFR2's?" — and clearing on
+  // member change threw that text away silently.
+  //
+  // They are owned by `L1Review` and passed in, not held here: stepping to another gene
+  // empties `detail` while the next design loads, which unmounts this panel and its
+  // parent, so panel-local state cannot survive the very move that loses the text. Only
+  // the page component stays mounted across it.
+  const key = member.design_id ?? member.member_id;
   const [msg, setMsg] = useState("");
-  const [alt, setAlt] = useState<{ residue: string; placement: L1Placement; cassette: string; reason: string }>({
-    residue: "", placement: "internal", cassette: "", reason: "",
-  });
+  const draft = drafts[key] ?? EMPTY_DRAFT;
+  const patch = useCallback(
+    (p: Partial<Draft>) => setDrafts((d) => ({ ...d, [key]: { ...(d[key] ?? EMPTY_DRAFT), ...p } })),
+    [key],
+  );
+  const setAlt = useCallback(
+    (p: Partial<Draft["alt"]>) =>
+      setDrafts((d) => {
+        const cur = d[key] ?? EMPTY_DRAFT;
+        return { ...d, [key]: { ...cur, alt: { ...cur.alt, ...p } } };
+      }),
+    [key],
+  );
+  // The save message belongs to the member it was about; the draft text does not.
   useEffect(() => {
-    setReason("");
     setMsg("");
-    setAlt({ residue: "", placement: "internal", cassette: "", reason: "" });
-  }, [member.member_id]);
+  }, [key]);
+  // Deps stay on `pickedResidue` alone, and the member is read through a ref: with `key`
+  // in the deps this would re-run on a member change, while the parent has not yet reset
+  // the pick to null, and write the old member's residue into the new member's draft.
+  const keyRef = useRef(key);
+  keyRef.current = key;
   useEffect(() => {
-    if (pickedResidue != null) setAlt((a) => ({ ...a, residue: String(pickedResidue) }));
+    if (pickedResidue == null) return;
+    const k = keyRef.current;
+    setDrafts((d) => {
+      const cur = d[k] ?? EMPTY_DRAFT;
+      return { ...d, [k]: { ...cur, alt: { ...cur.alt, residue: String(pickedResidue) } } };
+    });
   }, [pickedResidue]);
 
+  const sites = useMemo(() => sortSites(member.sites), [member.sites]);
   const base = {
     reviewer, member_id: member.member_id, design_id: member.design_id, gene_symbol: member.gene_symbol,
     sequence_sha256: member.sequence_sha256 ?? null, load_version: loadVersion,
@@ -222,39 +272,64 @@ function ReviewPanel({
   const canWrite = Boolean(token && reviewer && member.design_id);
   const mine = (reviews?.reviews ?? []).filter((r) => r.design_id === member.design_id);
   const alts = (reviews?.alt_tags ?? []).filter((r) => r.design_id === member.design_id);
+  const standing = useMemo(() => standingReviewIds(reviews?.reviews ?? []), [reviews]);
 
   async function verdict(v: "good" | "no") {
-    if (v === "no" && !reason.trim()) {
+    if (v === "no" && !draft.reason.trim()) {
       setMsg("Say why it is a no.");
       return;
     }
-    const r = await submitL1Review(API_BASE, token, { ...base, kind: "verdict", verdict: v, reason });
-    setMsg(r.ok ? `Saved: ${v === "good" ? "looks good" : "no"}.` : `Not saved: ${r.error}`);
+    const r = await submitL1Review(API_BASE, token, {
+      ...base, kind: "verdict", verdict: v, reason: draft.reason,
+      // "" is the member as a whole, which the table stores as NULL.
+      site_id: draft.siteId || null,
+    });
+    const about = reviewScopeLabel(draft.siteId || null, sites, member.ordered_length_aa);
+    setMsg(r.ok ? `Saved: ${v === "good" ? "looks good" : "no"} on ${about}.` : `Not saved: ${r.error}`);
     if (r.ok) {
-      setReason("");
+      patch({ reason: "" });
       onSaved();
     }
   }
 
   async function suggest() {
     const r = await submitL1Review(API_BASE, token, {
-      ...base, kind: "alt_tag", placement: alt.placement,
-      insert_after_residue: alt.residue === "" ? null : Number(alt.residue),
-      cassette_variant: alt.cassette, reason: alt.reason,
+      ...base, kind: "alt_tag", placement: draft.alt.placement,
+      insert_after_residue: draft.alt.residue === "" ? null : Number(draft.alt.residue),
+      cassette_variant: draft.alt.cassette, reason: draft.alt.reason,
     });
     setMsg(r.ok ? "Alternative tag saved." : `Not saved: ${r.error}`);
     if (r.ok) {
-      setAlt({ residue: "", placement: alt.placement, cassette: "", reason: "" });
+      setAlt({ residue: "", cassette: "", reason: "" });
       onSaved();
     }
   }
 
   return (
     <section className={styles.review} aria-label="Review">
-      <h3 className={styles.h3}>Your review</h3>
+      {/* Not "your review": the list below carries every reviewer's rows, which is what
+          makes answering someone else's point possible at all. */}
+      <h3 className={styles.h3}>Review</h3>
       {!canWrite ? (
         <p className={styles.muted}>Set your name and review token (top of the page) to record a review.</p>
       ) : null}
+      {/* A verdict on one arm rather than on the member: the r2 agent round rejects arms,
+          not members, so "a2 is in the pore, a1 and a3 are fine" needs somewhere to go. */}
+      <label className={styles.scope}>
+        about
+        <select
+          value={draft.siteId}
+          disabled={!canWrite}
+          onChange={(e) => patch({ siteId: e.target.value })}
+        >
+          <option value="">the member as a whole</option>
+          {sites.map((s) => (
+            <option key={s.site_id} value={s.site_id}>
+              {reviewScopeLabel(s.site_id, sites, member.ordered_length_aa)}
+            </option>
+          ))}
+        </select>
+      </label>
       <div className={styles.verdictRow}>
         <button type="button" className={styles.good} disabled={!canWrite} onClick={() => verdict("good")}>
           Looks good
@@ -264,9 +339,10 @@ function ReviewPanel({
         </button>
         <textarea
           className={styles.reason}
-          placeholder="Why not? (required for No; optional otherwise)"
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
+          placeholder={canWrite ? "Why not? (required for No; optional otherwise)" : "Set your name and token above to write a review"}
+          value={draft.reason}
+          disabled={!canWrite}
+          onChange={(e) => patch({ reason: e.target.value })}
           rows={2}
         />
       </div>
@@ -277,14 +353,19 @@ function ReviewPanel({
             residue (member numbering; or click the structure)
             <input
               inputMode="numeric"
-              value={alt.residue}
-              onChange={(e) => setAlt({ ...alt, residue: e.target.value.replace(/[^0-9]/g, "") })}
+              value={draft.alt.residue}
+              disabled={!canWrite}
+              onChange={(e) => setAlt({ residue: e.target.value.replace(/[^0-9]/g, "") })}
               placeholder={member.ordered_length_aa ? `1–${member.ordered_length_aa}` : ""}
             />
           </label>
           <label>
             placement
-            <select value={alt.placement} onChange={(e) => setAlt({ ...alt, placement: e.target.value as L1Placement })}>
+            <select
+              value={draft.alt.placement}
+              disabled={!canWrite}
+              onChange={(e) => setAlt({ placement: e.target.value as L1Placement })}
+            >
               {(Object.keys(PLACEMENT_LABEL) as L1Placement[]).map((p) => (
                 <option key={p} value={p}>{PLACEMENT_LABEL[p]}</option>
               ))}
@@ -292,11 +373,11 @@ function ReviewPanel({
           </label>
           <label>
             cassette variant (optional)
-            <input value={alt.cassette} onChange={(e) => setAlt({ ...alt, cassette: e.target.value })} placeholder="e.g. linkers-only" />
+            <input value={draft.alt.cassette} disabled={!canWrite} onChange={(e) => setAlt({ cassette: e.target.value })} placeholder="e.g. linkers-only" />
           </label>
           <label className={styles.altReason}>
             reason
-            <textarea rows={2} value={alt.reason} onChange={(e) => setAlt({ ...alt, reason: e.target.value })} />
+            <textarea rows={2} value={draft.alt.reason} disabled={!canWrite} onChange={(e) => setAlt({ reason: e.target.value })} />
           </label>
         </div>
         <button type="button" disabled={!canWrite} onClick={suggest}>Save suggestion</button>
@@ -304,12 +385,14 @@ function ReviewPanel({
       {msg ? <p className={styles.msg} role="status">{msg}</p> : null}
       {mine.length || alts.length ? (
         <div className={styles.history}>
-          <h4 className={styles.h4}>Recorded for this member</h4>
+          <h4 className={styles.h4}>Recorded for this member, every reviewer, oldest first</h4>
           <ul>
             {mine.map((r) => (
-              <li key={r.review_id}>
+              <li key={r.review_id} className={standing.has(r.review_id) ? undefined : styles.superseded}>
                 <span className={r.verdict === "good" ? styles.goodText : styles.noText}>{r.verdict === "good" ? "looks good" : "no"}</span>{" "}
-                · {r.reviewer} · {r.created_at.slice(0, 16).replace("T", " ")}
+                · {reviewScopeLabel(r.site_id, sites, member.ordered_length_aa)} · {r.reviewer} ·{" "}
+                {r.created_at.slice(0, 16).replace("T", " ")}
+                {standing.has(r.review_id) ? "" : " · superseded by a later row"}
                 {r.reason ? ` · ${r.reason}` : ""}
               </li>
             ))}
@@ -402,6 +485,8 @@ function MemberDetail({
   reviews,
   token,
   reviewer,
+  drafts,
+  setDrafts,
   onSaved,
 }: {
   member: L1Member;
@@ -410,6 +495,8 @@ function MemberDetail({
   reviews: L1Reviews | null;
   token: string;
   reviewer: string;
+  drafts: Record<string, Draft>;
+  setDrafts: Dispatch<SetStateAction<Record<string, Draft>>>;
   onSaved: () => void;
 }) {
   const sites = sortSites(member.sites);
@@ -512,6 +599,8 @@ function MemberDetail({
         token={token}
         reviewer={reviewer}
         pickedResidue={picked}
+        drafts={drafts}
+        setDrafts={setDrafts}
         onSaved={onSaved}
       />
       <section>
@@ -582,6 +671,10 @@ export function L1Review() {
   const [reviewer, setReviewer] = useState("");
   const [reviews, setReviews] = useState<L1Reviews | null>(null);
   const [authMsg, setAuthMsg] = useState("");
+  // Unsaved review text, per member, for as long as the page is open. Held here because
+  // this component outlives the detail panel: stepping to another gene empties `detail`
+  // while the next design is fetched, which unmounts the panel the text was typed into.
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [topologies, setTopologies] = useState<LibraryTopologyRow[]>([]);
   // What the last letter key did, shown for a moment so a key that found nothing is not
   // silent (pressing Z with no Z gene in the filter otherwise looks like a dead page).
@@ -963,8 +1056,11 @@ export function L1Review() {
                       {primary.pick_status.length
                         ? primary.pick_status.map((s, i) => <StatusPill key={i} status={s} />)
                         : <span className={styles.muted}>no pick</span>}
+                      {/* One dot per reviewer per scope, so a member whose a2 was
+                          rejected and whose a1 passed shows both. The index carries no
+                          sites, so the arm is read off the site id. */}
                       {(verdicts.get(primary.design_id ?? "") ?? []).map((r) => (
-                        <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} title={`${r.reviewer}: ${r.verdict}${r.reason ? ` — ${r.reason}` : ""}`} />
+                        <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} title={`${r.reviewer}: ${r.verdict} · ${r.site_id ? armLabel(r.site_id) ?? r.site_id : "the member"}${r.reason ? ` — ${r.reason}` : ""}`} />
                       ))}
                     </span>
                   </button>
@@ -1048,6 +1144,8 @@ export function L1Review() {
                   reviews={reviews}
                   token={token}
                   reviewer={reviewer}
+                  drafts={drafts}
+                  setDrafts={setDrafts}
                   onSaved={loadReviews}
                 />
               ) : (

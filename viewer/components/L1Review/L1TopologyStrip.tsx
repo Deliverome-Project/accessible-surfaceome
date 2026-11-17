@@ -18,7 +18,7 @@ import {
   TopologyBar,
   TopologyLegend,
 } from "../surfaceome/IsoformsCard/TopologyBar";
-import { l1SiteLabel, topologyStatesPresent, type L1Site } from "../../lib/l1-design";
+import { armLabel, l1SiteLabel, topologyStatesPresent, type L1Site } from "../../lib/l1-design";
 import styles from "./L1Review.module.css";
 
 export interface InsertFlag {
@@ -33,7 +33,9 @@ export interface InsertFlag {
 }
 
 /**
- * `l1-p1088-a2` → `a2`, and null for every other shape of site id.
+ * `l1-p1088-a2` → `a2`, and null for every other shape of site id. Defined in
+ * `lib/l1-design` — the review panel names a verdict's arm with the same function — and
+ * re-exported here, where it was first needed.
  *
  * Multi-arm members name their arms `-aK`, but plenty of single-arm picks do not
  * (`l1-p2089-res1-igk_tag` is a real one): printing the raw id on the flag put a 20
@@ -41,10 +43,7 @@ export interface InsertFlag {
  * id is labelled by its insert residue instead, which is the number a reviewer is
  * checking anyway.
  */
-export function armLabel(siteId: string): string | null {
-  const m = /-(a\d+)$/.exec(siteId);
-  return m ? m[1] : null;
-}
+export { armLabel };
 
 /** The member's current picks as flags, left to right along the sequence. */
 export function insertFlags(sites: readonly L1Site[], orderedLength: number | null): InsertFlag[] {
