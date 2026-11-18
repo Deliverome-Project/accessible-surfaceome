@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
-  isCounted,
+  countableOtherConditions,
+  countingRule,
+  INCLUDE_OTHER_LABEL,
+  INCLUDE_OTHER_PARAM,
+  includeOtherHelp,
   letter,
   loadAllPresence,
   METHOD_CLASS_LABEL,
@@ -190,7 +194,13 @@ export function StudiesExplorer({ index }: Props) {
     () => ALL_CLASSES.filter((c) => arms.some((a) => a.method_class === c)),
     [arms],
   );
-  const countedIdx = useMemo(() => arms.flatMap((a, i) => (isCounted(a) ? [i] : [])), [arms]);
+  // Opt-in (?oc=1): also count other conditions whose baseline arm counts.
+  // Off by default, so each study counts only its baseline samples.
+  const [includeOther, setIncludeOther] = useState(() => param(INCLUDE_OTHER_PARAM) === "1");
+  const counts = useMemo(() => countingRule(arms, includeOther), [arms, includeOther]);
+  const nOther = useMemo(() => arms.filter((a) => a.status === "perturbed").length, [arms]);
+  const nCountableOther = useMemo(() => countableOtherConditions(arms).length, [arms]);
+  const countedIdx = useMemo(() => arms.flatMap((a, i) => (counts(a) ? [i] : [])), [arms, counts]);
   const [query, setQuery] = useState(() => param("dq") ?? "");
   // Catalog-style chips: nothing checked = no filter; checked values OR together.
   const [statuses, setStatuses] = useState<Set<ArmStatus>>(
@@ -241,8 +251,9 @@ export function StudiesExplorer({ index }: Props) {
       cg: [...cellGroups].join(",") || null,
       fam: [...families].join(",") || null,
       det,
+      [INCLUDE_OTHER_PARAM]: includeOther ? "1" : null,
     });
-  }, [query, statuses, classes, cellGroups, families, det]);
+  }, [query, statuses, classes, cellGroups, families, det, includeOther]);
   // Papers opened to show their datasets.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const toggleExpanded = (pub: string) =>
@@ -282,7 +293,8 @@ export function StudiesExplorer({ index }: Props) {
       setExpanded(new Set(sel.map((i) => arms[i].publication)));
       scrollToRow(`arm-${arms[sel[0]].id}`);
     }
-  }, [idxById, aliases, countedIdx, arms]);
+    // Read the URL once; a later change of counting rule is handled below.
+  }, [idxById, aliases, arms]);
   const updateSelected = useCallback(
     (next: number[], nextView: View | null = null) => {
       setSelected(next);
@@ -296,6 +308,12 @@ export function StudiesExplorer({ index }: Props) {
     },
     [arms],
   );
+  // A preset view runs over every counted dataset, so it follows the toggle.
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  useEffect(() => {
+    if (viewRef.current) setSelected(countedIdx);
+  }, [countedIdx]);
   const openView = (v: View) => {
     setMode(null);
     updateSelected(countedIdx, v);
@@ -352,7 +370,7 @@ export function StudiesExplorer({ index }: Props) {
     sortKey === null
       ? [...visible].sort(
           (a, b) =>
-            Number(isCounted(b.arm)) - Number(isCounted(a.arm)) ||
+            Number(counts(b.arm)) - Number(counts(a.arm)) ||
             STATUS_ORDER.indexOf(a.arm.status) - STATUS_ORDER.indexOf(b.arm.status) ||
             (b.arm.year ?? 0) - (a.arm.year ?? 0) ||
             shortCitation(a.arm).localeCompare(shortCitation(b.arm)),
@@ -377,7 +395,7 @@ export function StudiesExplorer({ index }: Props) {
 
   const armRow = ({ arm, i }: Item, nested: boolean) => {
               const sel = selected.includes(i);
-              const counted = isCounted(arm);
+              const counted = counts(arm);
               return (
                 <tr
                   key={arm.id}
@@ -454,7 +472,7 @@ export function StudiesExplorer({ index }: Props) {
     const all = arms.filter((a) => a.publication === g.pub);
     const first = g.items[0].arm;
     const open = autoOpen || expanded.has(g.pub);
-    const nCounted = all.filter(isCounted).length;
+    const nCounted = all.filter(counts).length;
     const anySelected = g.items.some(({ i }) => selected.includes(i));
     const head = (
       <tr
@@ -541,6 +559,24 @@ export function StudiesExplorer({ index }: Props) {
         <p className={styles.startDesc}>
           {CHOICES.find((c) => c.key === (active ?? "compare"))?.desc(countedIdx.length)}
         </p>
+        {nOther > 0 ? (
+          <p className={styles.otherNote} data-on={includeOther ? "true" : "false"}>
+            {includeOther
+              ? `Counting other conditions (not the default): ${nCountableOther} senescent, infected, knockout, treated or diseased datasets count alongside their studies' baselines.`
+              : `Each study counts only its baseline samples. The same studies' ${nOther} other-condition datasets (senescent, infected, knockout, treated or diseased samples) are listed but not counted.`}{" "}
+            <label className={styles.otherToggle}>
+              <input
+                type="checkbox"
+                checked={includeOther}
+                onChange={(e) => setIncludeOther(e.target.checked)}
+              />{" "}
+              {INCLUDE_OTHER_LABEL}
+            </label>
+            <InfoTip wide align="start" label={`About ${INCLUDE_OTHER_LABEL.toLowerCase()}`}>
+              {includeOtherHelp(nCountableOther, nOther)}
+            </InfoTip>
+          </p>
+        ) : null}
         {active === "lookup" ? <ProteinLookup /> : null}
       </section>
 
@@ -674,6 +710,7 @@ export function StudiesExplorer({ index }: Props) {
             arms={arms}
             selected={selected}
             countedIdx={countedIdx}
+            counts={counts}
             view={
               view ??
               (selected.length === countedIdx.length && countedIdx.every((i) => selected.includes(i))
@@ -813,11 +850,14 @@ function SelectionPanel({
   arms,
   selected,
   countedIdx,
+  counts,
   view,
 }: {
   arms: StudyArm[];
   selected: number[];
   countedIdx: number[];
+  /** The page's counting rule (baseline only, or with other conditions). */
+  counts: (arm: StudyArm) => boolean;
   /** A preset over all counted datasets, or null for a hand-picked selection. */
   view: View | null;
 }) {
@@ -1127,7 +1167,7 @@ function SelectionPanel({
                 <strong>{shortCitation(arms[i])}</strong> · {arms[i].name}{" "}
                 <span className={styles.sub}>
                   ({arms[i].n_proteins.toLocaleString("en-US")} proteins
-                  {isCounted(arms[i]) ? "" : `; ${statusShortLabel(arms[i].status).toLowerCase()}, not counted`})
+                  {counts(arms[i]) ? "" : `; ${statusShortLabel(arms[i].status).toLowerCase()}, not counted`})
                 </span>
               </span>
             </li>
@@ -1135,11 +1175,11 @@ function SelectionPanel({
         </ol>
       ) : null}
 
-      {single && !isCounted(arms[selected[0]]) ? (
+      {single && !counts(arms[selected[0]]) ? (
         <p className={styles.caveat}>{STATUS_HELP[arms[selected[0]].status]}</p>
       ) : null}
       {single && !consensus ? <MethodsPanel key={arms[selected[0]].id} arm={arms[selected[0]]} /> : null}
-      {!single && selected.some((i) => !isCounted(arms[i])) ? (
+      {!single && selected.some((i) => !counts(arms[i])) ? (
         <p className={styles.caveat}>
           The selection includes datasets that are not counted as surface evidence (held, high background, pre-filtered by surface annotation, comparators, or other conditions of a study's samples).
         </p>

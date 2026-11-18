@@ -479,6 +479,51 @@ export function isCounted(arm: StudyArm): boolean {
   return arm.status === "core" || arm.status === "provisional";
 }
 
+/**
+ * The counting rule a page applies. By default it is `isCounted`: each study
+ * counts only its baseline samples. A reader can opt in to also counting the
+ * other conditions (senescent, infected, knockout, treated, diseased), and
+ * then an other-condition arm counts only when its baseline arm is counted,
+ * so the same lab, method and quality screen stand behind it. Other
+ * conditions of held, high-background or comparator studies never count.
+ */
+export function countingRule(
+  arms: readonly StudyArm[],
+  includeOther: boolean,
+): (arm: StudyArm) => boolean {
+  if (!includeOther) return isCounted;
+  const byId = new Map(arms.map((a) => [a.id, a]));
+  return (arm) => {
+    if (isCounted(arm)) return true;
+    if (arm.status !== "perturbed" || !arm.parent) return false;
+    const parent = byId.get(arm.parent);
+    return parent ? isCounted(parent) : false;
+  };
+}
+
+/** Other-condition arms that would count with the opt-in (their baseline is counted). */
+export function countableOtherConditions(arms: readonly StudyArm[]): StudyArm[] {
+  const counts = countingRule(arms, true);
+  return arms.filter((a) => a.status === "perturbed" && counts(a));
+}
+
+/** URL parameter that turns the opt-in on (`?oc=1`), shared by the study
+ *  table and the gene-page link into it. */
+export const INCLUDE_OTHER_PARAM = "oc";
+
+export const INCLUDE_OTHER_LABEL = "Also count other conditions";
+
+/** Why the opt-in is off by default, for the toggle's tooltip. */
+export function includeOtherHelp(nCountable: number, nOther: number): string {
+  return (
+    `Off by default. Each study counts only its baseline samples (untreated, wild-type or healthy cells). ` +
+    `Switching this on also counts the same studies' other conditions, such as senescent, infected, knockout, ` +
+    `drug-treated, differentiated or diseased samples, but only where the study's baseline dataset is itself counted: ` +
+    `${nCountable} of the ${nOther} other-condition datasets qualify. Other conditions of held, high-background or ` +
+    `comparator studies stay uncounted. The totals at the top of the Surface proteomics page are always baseline-only.`
+  );
+}
+
 export function baseAccession(acc: string): string {
   return acc.trim().split("-")[0].toUpperCase();
 }

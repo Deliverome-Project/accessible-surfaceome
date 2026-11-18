@@ -842,3 +842,32 @@
 .detBanner .linkButton {
   margin-left: 0.5rem;
 }
+
+/* Other conditions: not counted by default; the reader can opt in. */
+.otherNote {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--line);
+  background: var(--surface);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+}
+
+.otherNote[data-on="true"] {
+  border-left-color: var(--amber-mid);
+  background: var(--amber-tint);
+  color: var(--ink);
+}
+
+.otherToggle {
+  display: inline-flex;
+  gap: 0.3rem;
+  align-items: center;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
