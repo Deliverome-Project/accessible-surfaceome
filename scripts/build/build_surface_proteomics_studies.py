@@ -104,10 +104,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-18-abundance-v1"
+SNAPSHOT = "2026-11-18-abundance-v3"
 # Non-baseline states of the sweep's inputs (senescent, infected, knockout, treated cells),
 # one shown-not-counted arm each; built by the analysis repo's perturbed_arms.py from SNAPSHOT.
-PERTURBED_SNAPSHOT = "2026-11-17-perturbed-v1"
+PERTURBED_SNAPSHOT = "2026-11-18-perturbed-v3"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -211,6 +211,10 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "yanagida-hl60-raft-2007",
     ),
     "solid_cancer": (
+        # sweep-v19: ES2, Kuramochi, OVCAR8 and PEO4 high-grade serous ovarian cancer lines.
+        "govindarajan-hgsc-csc-2026",
+        # sweep-v19: malignant rhabdoid tumor and matched normal kidney organoids (one pooled list).
+        "buhl-mrt-organoid-2026",
         # sweep-v16: BxPC-3, PANC-1 and CFPAC-1 xenograft tumors.
         "zimmerman-pdac-xenograft-2025",
         "salmela-cscc-2026",
@@ -350,6 +354,8 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
     ),
     "stem_stromal": (
         "wojdyla-2020",
+        # sweep-v19: ovarian cancer-associated fibroblasts.
+        "govindarajan-caf-csc-2026",
         "matta-2019",
         "hepatic-endoderm-2017",
         "niehage-dpsc-2016",
@@ -365,6 +371,8 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "mcquade-hesc-membrane-2009",
     ),
     "other_normal": (
+        # sweep-v19: immortalized fallopian tube epithelium (FT194, FT237).
+        "govindarajan-fte-csc-2026",
         "mesidor-cf-s1-2026",
         "mesidor-cf-s2-2026",
         "mesidor-cf-s3-2026",
