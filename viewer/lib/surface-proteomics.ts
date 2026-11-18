@@ -85,6 +85,12 @@ export interface StudyArm {
   admitted: boolean;
   n_proteins: number;
   reference_overlap: number | null;
+  /** Which screen judged it: "abundance" (share of its length-corrected amount in
+   *  Canonical or Likely proteins, when the table reports usable amounts) or "count"
+   *  (reference_overlap). Absent on arms the screen doesn't apply to. */
+  screen_basis?: "abundance" | "count" | null;
+  abundance_share?: number | null;
+  abundance_cutoff?: number | null;
   repository: string | null;
   repository_ids: string[];
   /** Where the raw instrument files are, from the S3E8 raw-data audit
@@ -208,12 +214,12 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
 };
 
 export const STATUS_HELP: Record<ArmStatus, string> = {
-  core: "Core: intact-cell labeling, and at least 20% of the list are Canonical or Likely Surfaceome proteins. Counts as surface evidence.",
+  core: "Core: intact-cell labeling that passes the surface screen: at least 24% of its length-corrected protein amount is Canonical or Likely Surfaceome proteins when the table reports amounts, otherwise at least 20% of its protein list. Counts as surface evidence.",
   provisional:
-    "Provisional: intact-cell labeling that passes with a caveat: it sits within 2 points below the 20% screen (18–20%), it was built from a partial author export, or its values are imputed (presence counted, per-sample detection not available). Counts as surface evidence.",
+    "Provisional: intact-cell labeling that passes with a caveat: it sits within 2 points below the 20% list screen (18–20%), it has no no-label control, it was built from a partial author export, or its values are imputed (presence counted, per-sample detection not available). Counts as surface evidence.",
   held: "Held: the published table can't yet tell us which proteins were detected, for example conditions are pooled with no separable baseline. Listed, not counted.",
   below_screen:
-    "High background: intact-cell labeling, but fewer than 20% of the list are Canonical or Likely Surfaceome proteins, so it is mostly intracellular contamination. Listed, not counted.",
+    "High background: intact-cell labeling, but under the surface screen (24% of its length-corrected amount, or 20% of its list when no amounts are published, are Canonical or Likely Surfaceome proteins), so it is mostly intracellular contamination. Listed, not counted.",
   annotation_selected: ANNOTATION_SELECTED_METHODS,
   comparator:
     "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
@@ -227,12 +233,12 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
  * CALIBRATED_INCLUSION.md, FRACTIONATION.md).
  */
 export const STATUS_DEFINITION: Record<ArmStatus, string> = {
-  core: "Counted. Intact-cell labeling, and at least 20% of its proteins are known surface proteins (Canonical or Likely).",
+  core: "Counted. Intact-cell labeling, and at least 24% of its length-corrected protein amount (or, without published amounts, 20% of its proteins) is known surface proteins (Canonical or Likely).",
   provisional:
-    "Counted, with the caveat shown next to it: it falls within 2 points below 20%, it is a partial export, or its values are imputed (presence counted, per-sample detection not available).",
+    "Counted, with the caveat shown next to it: it falls within 2 points below the 20% list screen, it has no no-label control, it is a partial export, or its values are imputed (presence counted, per-sample detection not available).",
   held: "Shown, not counted until a data problem is resolved, such as pooled conditions or an unpublished sample map; the reason is shown next to it.",
   below_screen:
-    "Shown, not counted: too few of its proteins are known surface proteins (under 20%, or under the higher bar for a pre-filtered list).",
+    "Shown, not counted: too little of it is known surface proteins (under 24% of its length-corrected amount, under 20% of its proteins when no amounts are published, or under the higher bar for a pre-filtered list).",
   annotation_selected:
     "The published table was already restricted to proteins annotated or predicted as surface or membrane proteins; shown, never counted.",
   comparator:
@@ -255,6 +261,24 @@ export function studyHref(armIds: string[]): string {
 
 /** Surface-reference overlap a counted intact-cell arm must reach (the S3E8 screen). */
 export const OVERLAP_SCREEN = 0.2;
+
+/** Share of a dataset's length-corrected protein amount that must be Canonical or
+ *  Likely when its table reports usable amounts (the S3E8 abundance screen; calibrated
+ *  so it passes as many membrane preparations as the 20% list screen). Must match
+ *  every arm's `abundance_cutoff`, which a test checks. */
+export const ABUNDANCE_SCREEN = 0.24;
+
+/** The number a dataset was screened on, and the bar it had to reach. */
+export function screenScore(arm: StudyArm): {
+  value: number | null;
+  cutoff: number;
+  basis: "abundance" | "count";
+} {
+  if (arm.screen_basis === "abundance" && arm.abundance_share != null) {
+    return { value: arm.abundance_share, cutoff: arm.abundance_cutoff ?? ABUNDANCE_SCREEN, basis: "abundance" };
+  }
+  return { value: arm.reference_overlap, cutoff: OVERLAP_SCREEN, basis: "count" };
+}
 /** S3E8 admits an intact-cell list up to this many points below the screen, as Provisional only. */
 export const OVERLAP_ALLOWANCE_PTS = 2;
 

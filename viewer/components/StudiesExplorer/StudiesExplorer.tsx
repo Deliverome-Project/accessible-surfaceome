@@ -13,6 +13,7 @@ import {
   METHOD_CLASS_LABEL,
   OVERLAP_ALLOWANCE_PTS,
   OVERLAP_SCREEN,
+  screenScore,
   shortCitation,
   STATUS_HELP,
   STATUS_LABEL,
@@ -357,7 +358,7 @@ export function StudiesExplorer({ index }: Props) {
     family: (r) => FAMILY_ORDER.indexOf(r.arm.family as (typeof FAMILY_ORDER)[number]),
     sample: (r) => r.arm.sample ?? "",
     n: (r) => r.arm.n_proteins,
-    overlap: (r) => r.arm.reference_overlap ?? -1,
+    overlap: (r) => screenScore(r.arm).value ?? -1,
     status: (r) => STATUS_ORDER.indexOf(r.arm.status),
   };
   const rows = sortRows(visible, comparators);
@@ -446,11 +447,7 @@ export function StudiesExplorer({ index }: Props) {
                     </span>
                   </td>
                   <td>
-                    <OverlapBar
-                      value={arm.reference_overlap}
-                      intact={arm.method_class === "intact_cell"}
-                      status={arm.status}
-                    />
+                    <OverlapBar arm={arm} />
                   </td>
                   <td>
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
@@ -732,17 +729,14 @@ function Bar({ value, inline = false }: { value: number; inline?: boolean }) {
   );
 }
 
-/** Surface overlap with a tick at the screen an intact-cell arm must reach. */
-function OverlapBar({
-  value,
-  intact,
-  status,
-}: {
-  value: number | null;
-  intact: boolean;
-  status: StudyArm["status"];
-}) {
+/** The screen score (share of the amount, or of the list) with a tick at the bar
+ *  an intact-cell arm must reach. */
+function OverlapBar({ arm }: { arm: StudyArm }) {
+  const { value, cutoff, basis } = screenScore(arm);
+  const intact = arm.method_class === "intact_cell";
+  const status = arm.status;
   if (value == null) return <span className={styles.sub}>—</span>;
+  const byAmount = basis === "abundance";
   // Color follows the review outcome, not the raw number: a provisional
   // arm inside the 2-point allowance is counted (light teal), and a
   // pre-filtered list below its raised bar is high background (amber).
@@ -753,18 +747,22 @@ function OverlapBar({
     ? styles.na
     : status === "below_screen"
       ? styles.fail
-      : counted && value < OVERLAP_SCREEN
+      : counted && value < cutoff
         ? styles.near
-        : value >= OVERLAP_SCREEN
+        : value >= cutoff
           ? styles.pass
           : styles.fail;
   return (
     <HoverTip
-      tip={`${pct(value)} of this dataset's proteins are Canonical or Likely in our Surfaceome${
-        intact
-          ? `; counted datasets need at least ${pct(OVERLAP_SCREEN)} (the tick), or are Provisional within ${OVERLAP_ALLOWANCE_PTS} points below it`
-          : ""
-      }.`}
+      tip={
+        byAmount
+          ? `${pct(value)} of this dataset's length-corrected protein amount is Canonical or Likely in our Surfaceome (${pct(arm.reference_overlap)} of its proteins). Datasets whose table reports amounts need at least ${pct(cutoff)} of their amount (the tick).`
+          : `${pct(value)} of this dataset's proteins are Canonical or Likely in our Surfaceome${
+              intact
+                ? `; datasets without published amounts need at least ${pct(OVERLAP_SCREEN)} of their proteins (the tick), or are Provisional within ${OVERLAP_ALLOWANCE_PTS} points below it`
+                : ""
+            }.`
+      }
     >
     <span className={styles.overlap}>
       <span className={styles.overlapTrack}>
@@ -772,9 +770,10 @@ function OverlapBar({
           className={`${styles.overlapFill} ${tone}`}
           style={{ width: `${Math.min(100, value * 100)}%` }}
         />
-        <span className={styles.overlapTick} style={{ left: `${OVERLAP_SCREEN * 100}%` }} />
+        <span className={styles.overlapTick} style={{ left: `${cutoff * 100}%` }} />
       </span>
       <span className={styles.overlapNum}>{pct(value)}</span>
+      {byAmount ? <span className={styles.overlapBasis}>amount</span> : null}
     </span>
     </HoverTip>
   );

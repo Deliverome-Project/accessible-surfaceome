@@ -693,6 +693,9 @@ function Dot({
           {arm.reference_overlap != null
             ? `, ${Math.round(arm.reference_overlap * 100)}% Canonical or Likely`
             : ""}
+          {arm.screen_basis === "abundance" && arm.abundance_share != null
+            ? ` (${Math.round(arm.abundance_share * 100)}% of its length-corrected amount)`
+            : ""}
         </span>
         {hit && q && arm.quant_unit ? (
           <span className={styles.tipLine}>

@@ -11,6 +11,7 @@ import {
   METHOD_CLASS_LABEL,
   OVERLAP_ALLOWANCE_PTS,
   OVERLAP_SCREEN,
+  ABUNDANCE_SCREEN,
   STATUS_HELP,
   STATUS_ORDER,
   TIER_HELP,
@@ -138,12 +139,18 @@ export default function SurfaceProteomicsPage() {
               <span className={styles.fails}>{countByStatus("comparator")} datasets → Comparator</span>
             </li>
             <li>
-              <strong>Mostly surface proteins, not background.</strong> At least{" "}
-              {Math.round(OVERLAP_SCREEN * 100)}% of the dataset&apos;s proteins must be
-              established surface proteins, meaning Canonical or Likely in our Surfaceome; a list
-              within {OVERLAP_ALLOWANCE_PTS} points below that counts only as Provisional. A list
-              further below is dominated by intracellular contamination. (A random set of
-              human proteins scores about 15%.) When the authors pre-filtered their list to
+              <strong>Mostly surface proteins, not background.</strong> When the published
+              table reports per-protein amounts (intensities or spectral counts), at least{" "}
+              {Math.round(ABUNDANCE_SCREEN * 100)}% of the dataset&apos;s total amount must be
+              established surface proteins, meaning Canonical or Likely in our Surfaceome. Each
+              protein&apos;s amount is divided by its length first, so the share counts molecules
+              and a long protein is not favored. A deep list picks up many faint intracellular
+              proteins, so judging by amount keeps it from being penalized for depth. The bar
+              passes as many membrane preparations as the list screen does. When the table reports
+              no usable amounts, at least {Math.round(OVERLAP_SCREEN * 100)}% of the
+              dataset&apos;s proteins must be established surface proteins, and a list within{" "}
+              {OVERLAP_ALLOWANCE_PTS} points below that counts only as Provisional. (A random set
+              of human proteins scores about 15%.) When the authors pre-filtered their list to
               annotated surface proteins, the bar is raised to match.{" "}
               <span className={styles.fails}>
                 {countByStatus("below_screen")} datasets → High background
@@ -167,7 +174,7 @@ export default function SurfaceProteomicsPage() {
             Datasets that pass are <strong>Core</strong> ({countByStatus("core")}), or{" "}
             <strong>Provisional</strong> ({countByStatus("provisional")}) when they pass with a
             caveat, such as sitting within two points of the {Math.round(OVERLAP_SCREEN * 100)}%
-            bar. Both count.
+            list bar or having no no-label control. Both count.
           </p>
           <p className={styles.reviewLede}>
             A study counts only its baseline samples: untreated, wild-type, uninfected or
@@ -223,12 +230,15 @@ export default function SurfaceProteomicsPage() {
                 <div>
                   <dt>Surface overlap</dt>
                   <dd>
-                    The share of a study&apos;s proteins that are Canonical or Likely in our
-                    Surfaceome. A clean intact-cell experiment scores high; one
-                    swamped by intracellular contamination scores low. Intact-cell datasets
-                    need at least {Math.round(OVERLAP_SCREEN * 100)}% (the tick on each
-                    bar) to be counted, or count as Provisional within{" "}
-                    {OVERLAP_ALLOWANCE_PTS} points below it (light bar).
+                    How much of a study is Canonical or Likely in our Surfaceome. A clean
+                    intact-cell experiment scores high; one swamped by intracellular
+                    contamination scores low. For datasets that report amounts (marked
+                    &ldquo;amount&rdquo;) it is the share of the length-corrected amount, and
+                    they need at least {Math.round(ABUNDANCE_SCREEN * 100)}%; for the rest it
+                    is the share of proteins, and they need at least{" "}
+                    {Math.round(OVERLAP_SCREEN * 100)}%, or count as Provisional within{" "}
+                    {OVERLAP_ALLOWANCE_PTS} points below it (light bar). The tick on each bar
+                    marks the bar that dataset had to reach.
                   </dd>
                 </div>
                 <div>
