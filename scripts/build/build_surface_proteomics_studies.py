@@ -104,10 +104,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-18-abundance-v3"
+SNAPSHOT = "2026-11-18-abundance-v4"
 # Non-baseline states of the sweep's inputs (senescent, infected, knockout, treated cells),
 # one shown-not-counted arm each; built by the analysis repo's perturbed_arms.py from SNAPSHOT.
-PERTURBED_SNAPSHOT = "2026-11-18-perturbed-v3"
+PERTURBED_SNAPSHOT = "2026-11-18-perturbed-v4"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -392,6 +392,7 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "myc-wells-2021",
         "ito-bbb-2020",
         "soh-hacat-pmp-2020",
+        "soh-hacat-silac-pmp-2020",
         "leung-2020",
         "giovani-pdl-2019",
         "mallanna-2016",
@@ -585,6 +586,8 @@ STUDY_STEMS: dict[str, str] = {
     "graessel-cd4t-pal-2015": "Primary human naive CD4+ T cell PAL surface glycoproteome",
     "herhaus-8988t-2024": "PaTu 8988T pancreatic cancer sulfo-NHS-LC surfaceome with no-biotin control",
     "kopecka-ht29-csc-2015": "HT29 colon carcinoma hydrazide cell surface capture",
+    "soh-hacat-pmp-2020": "HaCaT keratinocyte plasma membrane profiling, TMT (GOPC knockout experiment)",
+    "soh-hacat-silac-pmp-2020": "HaCaT keratinocyte plasma membrane profiling, SILAC (HSV-1 infection experiment)",
     "li-hepg2-pecsl-insulin-2023": "HepG2 10-s peroxidase-mediated (PECSL) surface biotinylation",
     "mahameed-hepg2-2020": "HepG2 sulfo-NHS-SS-biotin surfaceome",
     "ozlu-hela-mitosis-2015": "HeLa SILAC sulfo-NHS-SS-biotin surfaceome",

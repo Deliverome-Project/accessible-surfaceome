@@ -74,7 +74,7 @@ export default function SurfaceProteomicsPage() {
             outside of human cells? We collected {index.n_arms} datasets from {index.n_publications} cell-surface
             proteomics papers and matched every reported protein to its UniProt
             accession. <strong>{counted.length} datasets</strong> from{" "}
-            {countedPapers} papers pass our quality review (see &ldquo;How to read this page&rdquo;)
+            {countedPapers} papers pass our quality review (see &ldquo;How to interpret these datasets&rdquo;)
             and count as surface evidence; together they detect{" "}
             <strong>{index.n_accessions_admitted.toLocaleString("en-US")} proteins</strong>.
             The other {index.n_arms - counted.length} are listed for completeness
@@ -111,7 +111,7 @@ export default function SurfaceProteomicsPage() {
 
         <details className={styles.key}>
           <summary className={styles.keySummary}>
-            How to read this page{" "}
+            How to interpret these datasets{" "}
             <span className={styles.keyHint}>
               what counts as surface evidence, methods, scores and Surfaceome tiers
             </span>
