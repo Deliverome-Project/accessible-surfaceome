@@ -18,6 +18,7 @@ import {
   TIER_HELP,
   TIER_LABEL,
   TIER_ORDER,
+  loadShard,
   shardOf,
   type PresenceShard,
   type StudyIndex,
@@ -162,5 +163,39 @@ test("datasets with published amounts are screened on their amount, at the viewe
     assert.ok(a.abundance_share != null, `${a.id}: has a share`);
     const passes = a.abundance_share! + 1e-9 >= ABUNDANCE_SCREEN;
     assert.equal(isCounted(a), passes, `${a.id}: counted exactly when its amount share passes`);
+  }
+});
+
+test("a presence shard survives a transient failure but not a real 404", async () => {
+  const realFetch = globalThis.fetch;
+  const calls: string[] = [];
+  const reply = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  try {
+    // Two hiccups then success: the shard still loads, so one dropped request out of the
+    // 32 the explorer asks for cannot strand the whole view.
+    let n = 0;
+    globalThis.fetch = (async (url: string) => {
+      calls.push(String(url));
+      n += 1;
+      if (n === 1) throw new TypeError("network error");
+      if (n === 2) return reply({}, 503);
+      return reply({ P12345: { s: "SHARD_OK", a: [] } });
+    }) as typeof fetch;
+    const ok = (await loadShard(900)) as PresenceShard;
+    assert.equal(ok.P12345?.s, "SHARD_OK");
+    assert.equal(n, 3, "retried twice before succeeding");
+
+    // A 404 is the server's answer, not a hiccup: it fails on the first try rather than
+    // spending two more round trips and the backoff on a file that is not there.
+    calls.length = 0;
+    globalThis.fetch = (async (url: string) => {
+      calls.push(String(url));
+      return reply({}, 404);
+    }) as typeof fetch;
+    await assert.rejects(() => loadShard(901), /HTTP 404/);
+    assert.equal(calls.length, 1, "a 404 is not retried");
+  } finally {
+    globalThis.fetch = realFetch;
   }
 });

@@ -598,10 +598,46 @@ export function shortCitation(arm: StudyArm): string {
 let _index: Promise<StudyIndex> | null = null;
 const _shards = new Map<number, Promise<PresenceShard>>();
 
+/** Statuses worth a second try: a transient edge or network hiccup, never a real 404. */
+const RETRY_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+
+/** Attempts per request, and the backoff before each retry. */
+const FETCH_TRIES = 3;
+const RETRY_DELAY_MS = 200;
+
+/** Fetch JSON, retrying a transient failure.
+ *
+ * The studies explorer asks for all 32 presence shards at once, so a single dropped
+ * request — a hiccup, or a deploy swapping files underneath an open page — used to reject
+ * the whole `Promise.all` and leave the view reading "Protein lists could not be loaded."
+ * with no way back. A 404 or other non-retryable status still throws on the first try.
+ */
+class HttpError extends Error {
+  constructor(readonly status: number, url: string) {
+    super(`${url}: HTTP ${status}`);
+    this.name = "HttpError";
+  }
+}
+
 async function getJson<T>(url: string): Promise<T> {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
-  return (await r.json()) as T;
+  let last: unknown;
+  for (let attempt = 0; attempt < FETCH_TRIES; attempt++) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new HttpError(r.status, url);
+      return (await r.json()) as T;
+    } catch (e) {
+      // A status the server meant (404, 403) is an answer, not a hiccup: fail now rather
+      // than sleep through two more attempts. Anything else — a dropped connection, a
+      // half-written body — is what the retries are for.
+      if (e instanceof HttpError && !RETRY_STATUS.has(e.status)) throw e;
+      last = e;
+    }
+    if (attempt < FETCH_TRIES - 1) {
+      await new Promise((res) => setTimeout(res, RETRY_DELAY_MS * 2 ** attempt));
+    }
+  }
+  throw last;
 }
 
 export function loadStudyIndex(): Promise<StudyIndex> {

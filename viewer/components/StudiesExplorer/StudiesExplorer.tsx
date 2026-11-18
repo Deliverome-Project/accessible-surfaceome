@@ -920,6 +920,8 @@ function SelectionPanel({
   const consensus = view !== null;
   const [presence, setPresence] = useState<PresenceShard | null>(null);
   const [error, setError] = useState(false);
+  // Bumped by the retry button, to re-run the load effect after a failure.
+  const [attempt, setAttempt] = useState(0);
   // Filters start from the URL (pf, tiers, min, mode, ps) so Back restores them.
   const restored = useRef(param("pf") != null || param("tiers") != null || param("min") != null || param("mode") != null);
   const [filter, setFilter] = useState(() => param("pf") ?? "");
@@ -971,8 +973,16 @@ function SelectionPanel({
   }, [filter, tierSel, minCounted, mode, sortKey, sortDir, maxDb, minPref, view]);
 
   useEffect(() => {
-    loadAllPresence().then(setPresence, () => setError(true));
-  }, []);
+    let live = true;
+    setError(false);
+    loadAllPresence().then(
+      (p) => live && setPresence(p),
+      () => live && setError(true),
+    );
+    return () => {
+      live = false;
+    };
+  }, [attempt]);
   // An intersection stops making sense once the selection changes under it.
   const selKey = selected.join(",");
   useEffect(() => {
@@ -1027,7 +1037,15 @@ function SelectionPanel({
     return [...m.values()].sort((a, b) => b.n - a.n || b.members.size - a.members.size);
   }, [proteins, selected]);
 
-  if (error) return <p className={styles.empty}>Protein lists could not be loaded.</p>;
+  if (error)
+    return (
+      <p className={styles.empty} role="alert">
+        Protein lists could not be loaded.{" "}
+        <button type="button" className={styles.linkButton} onClick={() => setAttempt((n) => n + 1)}>
+          Try again
+        </button>
+      </p>
+    );
   if (!presence) return <p className={styles.empty}>Loading protein lists…</p>;
 
   const single = selected.length === 1;
