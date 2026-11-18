@@ -25,6 +25,25 @@
   font-size: 0.92rem;
   background: var(--bg-soft);
   color: var(--ink);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+/* The catalog search box's focus style, drawn inside the border: the site-wide
+   outline sits outside it and .wrap's overflow-x: clip cut it off at the edge. */
+.search:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* Hide WebKit's bright-blue clear button, as the catalog search box does. */
+.search::-webkit-search-cancel-button,
+.search::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
 }
 
 /* Filter chips: the catalog's .filterChip / .filterChipOn styling. */
@@ -819,6 +838,16 @@
 .armRow td:nth-child(2) {
   padding-left: 1.1rem;
   border-left: 2px solid var(--line-soft);
+}
+
+/* A paper row's select-all checkbox, beside its expand button. */
+.paperPick {
+  white-space: nowrap;
+}
+
+.paperPick input {
+  margin-right: 0.4rem;
+  vertical-align: middle;
 }
 
 .expandButton {

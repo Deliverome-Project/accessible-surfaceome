@@ -45,6 +45,17 @@ export const statusShortLabel = (s: ArmStatus) =>
  *  ("author pre-filtered to …") sit right under it. */
 export const statusPillLabel = (s: ArmStatus) =>
   s === "annotation_selected" ? "Pre-filtered" : STATUS_LABEL[s];
+/** A dataset's own status label: as its status's, except the one comparator that is
+ *  not a membrane fraction (an intact-cell label that reaches the inner side of the
+ *  membrane), which "Membrane fraction" would misdescribe. */
+export const INNER_SIDE_LABEL = "Inner-side labeling";
+export function armStatusLabel(
+  arm: Pick<StudyArm, "status" | "method_class">,
+  form: "short" | "pill" = "short",
+): string {
+  if (arm.status === "comparator" && arm.method_class !== "fractionation") return INNER_SIDE_LABEL;
+  return form === "pill" ? statusPillLabel(arm.status) : statusShortLabel(arm.status);
+}
 export const ANNOTATION_SELECTED_METHODS =
   "Pre-filtered by surface annotation (shown, not counted): the published table was already restricted to proteins annotated or predicted as surface or membrane proteins. Such a table cannot add a candidate or reveal a miss, and it would inflate the share of known surface proteins that the quality screen measures, so it is shown, cited only as support for proteins already in the reference, and never counted.";
 /** Added to the held-arm wording with sweep-v15, verbatim. */
@@ -209,7 +220,7 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
   held: "Held",
   below_screen: "High background",
   annotation_selected: ANNOTATION_SELECTED_LABEL,
-  comparator: "Comparator",
+  comparator: "Membrane fraction",
   perturbed: "Other condition",
 };
 
@@ -222,7 +233,7 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
     "High background: intact-cell labeling, but under the surface screen (24% of its length-corrected amount, or 20% of its list when no amounts are published, are Canonical or Likely Surfaceome proteins), so it is mostly intracellular contamination. Listed, not counted.",
   annotation_selected: ANNOTATION_SELECTED_METHODS,
   comparator:
-    "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
+    "Membrane fraction: cells broken open and membranes purified, so it shows a protein is on a membrane (internal membranes included), not that it faces outward. Listed for comparison, not counted. One dataset here is instead an intact-cell label that reaches the inner side of the membrane, marked Inner-side labeling.",
   perturbed:
     "Other condition: the same study's samples after a change of state, such as senescence, infection, a knockout, a drug or a disease. Each study counts only its baseline (untreated, wild-type or healthy) samples; this list shows what was detected in the other condition. Listed, not counted by default; the \"Also count other conditions\" switch counts it when the study's baseline dataset is counted.",
 };
@@ -242,7 +253,7 @@ export const STATUS_DEFINITION: Record<ArmStatus, string> = {
   annotation_selected:
     "The published table was already restricted to proteins annotated or predicted as surface or membrane proteins; shown, never counted.",
   comparator:
-    "Shown for comparison, never counted: membrane fractionation, or labeling that reaches inside the cell, can't show a protein faces outward.",
+    "Shown for comparison, never counted: a membrane fraction (or a label that reaches inside the cell) shows a protein is on a membrane, not that it faces outward.",
   perturbed:
     "Shown, not counted by default: a non-baseline condition (senescent, infected, knockout, treated or diseased samples) of a study whose baseline list is shown separately. The \"Also count other conditions\" switch counts it when that baseline is counted.",
 };

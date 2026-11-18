@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  armStatusLabel,
   countableOtherConditions,
   countingRule,
   INCLUDE_OTHER_LABEL,
@@ -62,7 +63,7 @@ const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] 
   },
   {
     key: "comparator",
-    label: "Membrane preps, for context",
+    label: "Membrane fractions, for context",
     desc: "Cells broken open and membranes purified, or labels that reach inside the cell. Shows a protein is on a membrane, not that it faces outward.",
     statuses: ["comparator"],
   },
@@ -455,10 +456,9 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           <strong>Counted</strong> datasets label proteins on intact cells and
           pass review (core or provisional). <strong>Held</strong> and{" "}
           <strong>high-background</strong> datasets are listed but not counted.{" "}
-          <strong>Comparators</strong> (membrane fractionation, or labeling
-          that reaches the inner side of the membrane) show that a protein
-          co-purifies with membranes, not that it is reachable from outside
-          the cell.
+          <strong>Membrane fractions</strong> (and one label that reaches the
+          inner side of the membrane) show that a protein co-purifies with
+          membranes, not that it is reachable from outside the cell.
           <br />
           <br />
           The compendium covers whole-surface measurements: labeling of exposed proteins on intact cells, and membrane fractionation. It does not include targeted membrane enrichment of chosen proteins, such as proximity labeling around a single bait, antibody or affinity pulldowns, or lists restricted to a target panel.
@@ -623,7 +623,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                   </td>
                   <td>
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
-                      {statusPillLabel(arm.status)}
+                      {armStatusLabel(arm, "pill")}
                     </StatusPill>
                     {arm.status_reason ? (
                       <div className={styles.statusReason}>{arm.status_reason}</div>
@@ -659,7 +659,7 @@ function Dot({
 }) {
   const label =
     `${shortCitation(arm)}: ${arm.name}. ${hit ? "Detected" : "Not detected"}; ` +
-    `${statusShortLabel(arm.status)}${counted ? "" : ", not counted"}`;
+    `${armStatusLabel(arm)}${counted ? "" : ", not counted"}`;
   const cls = [
     styles.dot,
     hit ? `${styles[`fam_${arm.family.replace(/-/g, "_")}`] ?? ""} ${styles.hit}` : "",
@@ -704,8 +704,11 @@ function Dot({
           </span>
         ) : null}
         <span className={styles.tipLine}>
-          <span className={styles.tipMuted}>Status:</span> {statusShortLabel(arm.status)}.{" "}
-          {STATUS_DEFINITION[arm.status]}
+          <span className={styles.tipMuted}>Status:</span> {armStatusLabel(arm)}
+          {/* The dataset's own reason when it has one; the status's definition otherwise. */}
+          {arm.status_reason
+            ? `: ${arm.status_reason}.`
+            : `. ${STATUS_DEFINITION[arm.status]}`}
         </span>
         <span className={`${styles.tipLine} ${styles.tipMuted}`}>
           Click to open this dataset&apos;s protein list.

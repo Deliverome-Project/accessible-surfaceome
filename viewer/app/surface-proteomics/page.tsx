@@ -136,7 +136,7 @@ export default function SurfaceProteomicsPage() {
               capture, proximity label) went on before the cells were broken open, so it
               could only reach proteins facing outward. Membrane fractionation and labels
               that reach inside the cell fail this check.{" "}
-              <span className={styles.fails}>{countByStatus("comparator")} datasets → Comparator</span>
+              <span className={styles.fails}>{countByStatus("comparator")} datasets → Membrane fraction</span>
             </li>
             <li>
               <strong>Mostly surface proteins, not background.</strong> When the published

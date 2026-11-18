@@ -547,6 +547,136 @@ def load_perturbed(
     return manifest, list(csv.DictReader(io.StringIO(text), delimiter="\t"))
 
 
+# The condition part of an arm's name repeats the method, which the study's name
+# already carries. These phrases are method, not condition, and are dropped from it.
+_METHOD_PHRASES = re.compile(
+    r"\bMem-PER Plus membrane fraction\b|\b(?:crude )?membrane fraction\b|"
+    r"\bcrude membrane(?: \(differential ultracentrifugation\))?|\bSPION plasma-membrane isolate\b|"
+    r"\bmembrane-impermeable biotin surface capture\b|\bsurface capture\b|"
+    r"\bsucrose-gradient raft fraction\b|\bTX-114 detergent phase\b|\bintact-cell trypsin shaving\b|"
+    r"\bPierce cell-surface biotinylation\b|\bperiodate/biocytin-hydrazide intact cells\b|"
+    r"\bwhole-lysate hydrazide glycoprotein capture\b|\bplasma-membrane lipid rafts\b|"
+    r"\bPAL on-bead trypsin digest\b|\bintact-cell(?: [\w-]+)*|"
+    r"\bsulfo-NHS[\w-]*\b|\b[\w-]*biotin\b|\b(?:then )?PECSL\b|\bPMP\b|\bCSC\b|"
+    r"\blabell?ed\b|\bchannels?\b|\bpulldown\b|\bbaseline\b|\binferred\b|"
+    r"\bnot used for membership\b",
+    re.I,
+)
+# "X, proliferating vs senescent" / "X, wild type vs YIPF5 KO/mutant/rescue": the
+# paper's comparison, which each arm's own condition now replaces.
+_VS_CLAUSE = re.compile(r",\s*[^,()]*\bvs\.?\s[^,()]*")
+# "X, mock arm" / "X, control siRNA": a name that describes the baseline arm only.
+_BASELINE_TAIL = re.compile(
+    r",\s*(?:[^,()]*\barm|[^,()]*\bcontrol(?: channels| siRNA)?|parental arm)\s*$", re.I
+)
+# Hand labels where the rules read badly.
+STUDY_STEMS: dict[str, str] = {
+    "bakhshinyan-mb-glyco-2023": "Group 3 medulloblastoma PDX lysate N-glycopeptide capture",
+    "cohenyaron-hela-2026": "HeLa sulfo-NHS surfaceome with no-biotin controls",
+    "ehlers-ampd2-2021": "Sulfo-NHS-SS-biotin surface pulldown with no-biotin control, unstated human cell type",
+    "graessel-cd4t-pal-2015": "Primary human naive CD4+ T cell PAL surface glycoproteome",
+    "herhaus-8988t-2024": "PaTu 8988T pancreatic cancer sulfo-NHS-LC surfaceome with no-biotin control",
+    "kopecka-ht29-csc-2015": "HT29 colon carcinoma hydrazide cell surface capture",
+    "li-hepg2-pecsl-insulin-2023": "HepG2 10-s peroxidase-mediated (PECSL) surface biotinylation",
+    "mahameed-hepg2-2020": "HepG2 sulfo-NHS-SS-biotin surfaceome",
+    "ozlu-hela-mitosis-2015": "HeLa SILAC sulfo-NHS-SS-biotin surfaceome",
+    "srivastava-tnbc-cm-2026": "TNBC line crude membrane, DIA",
+    "srivastava-tnbc-csp-2026": "TNBC line surface biotinylation, DIA",
+    "vaish-hek293tshaving-2024": "HEK293T intact-cell trypsin shaving",
+    "weekes-hfff-qtv-2014": "Primary HFFF fibroblast plasma membrane profiling",
+    "yanagida-hl60-raft-2007": "HL-60 plasma-membrane lipid rafts",
+    "ye-mcf10a-csc-2016": "MCF10A hydrazide cell surface capture",
+    "ye-mcf10a-membrane-2016": "MCF10A carbonate-washed crude membrane shotgun proteome",
+}
+CONDITION_LABELS: dict[str, str] = {
+    "cohenyaron-hela-2026": "wild-type",
+    "ehlers-ampd2-2021": "normoxia (inferred)",
+    "ehlers-ampd2-2021--hox-sulfo-nhs-ss-biotin-pulldown": "hypoxia (inferred)",
+    "bakhshinyan-mb-glyco-2023": "untreated control xenograft, endpoint",
+    "friedlova-cervix-2025": "untreated",
+    "liu-ovcar8-hydrazide-2025": "sgGAL4 control",
+    "liu-ovcar8-hydrazide-2025--atg9a-knockout-periodate-biocytin-hydrazide-labelled": "ATG9A knockout",
+    "graessel-cd4t-pal-2015": "unstimulated (0 h), on-bead trypsin digest",
+    "mahameed-hepg2-2020": "thapsigargin alone 16 h",
+    "muller-monocyte-glyco-2017": "unstimulated 24 h culture",
+    "hammoud-mdm-raft-2022": "ethanol vehicle 1 h",
+    "harant-sma-srm-2023": "nine cell types",
+    "harant-sma-srm-2023--sma-resistant-membrane-fragments-of-jurkat-mutant-lines": "Jurkat mutant lines",
+    "heider-mm1s-2021": "DMSO solvent (inferred)",
+    "heider-mm1s-2021--lenalidomide-48-h-surface-capture": "lenalidomide 48 h (inferred)",
+    "oates-macrophage-2023": "M0 unpolarised",
+    "ozlu-hela-mitosis-2015": "interphase (thymidine-arrested)",
+    "ozlu-hela-mitosis-2015--mitotic-arrest-labelled": "mitotic arrest (S-trityl-L-cysteine)",
+    "srivastava-tnbc-cm-2026": "cisplatin-sensitive",
+    "srivastava-tnbc-cm-2026--cisplatin-resistant-crude-membrane": "cisplatin-resistant",
+    "srivastava-tnbc-csp-2026": "cisplatin-sensitive",
+    "srivastava-tnbc-csp-2026--cisplatin-resistant-membrane-impermeable-biotin-surface": "cisplatin-resistant",
+    "taggi-bbb-2025": "Ad-LacZ control",
+    "tharkeshwar-hela-pm-2017": "wild-type",
+    "tharkeshwar-hela-pm-2017--hela-npc1-ko-clone-1-npc1-knockout-spion-plasma-membrane-isolate": "NPC1 knockout, clone 1",
+    "tharkeshwar-hela-pm-2017--hela-npc1-ko-clone-2-npc1-knockout-spion-plasma-membrane-isolate": "NPC1 knockout, clone 2",
+    "vaish-hek293tshaving-2024": "untreated",
+    **{
+        f"graessel-cd4t-pal-2015--cd3-cd28-stimulated-{h}-pal-{k}": f"CD3/CD28 stimulated {h}, {prep}"
+        for h in ("3h", "6h", "12h", "24h", "48h")
+        for k, prep in (
+            ("pngase-f-released-n", "PNGase F-released glycopeptides"),
+            ("on-bead-trypsin-digest", "on-bead trypsin digest"),
+        )
+    },
+}
+
+
+def study_stem(name: str, study_id: str = "") -> str:
+    """A study's name without its citation, its "A vs B" comparison or a baseline-only tail."""
+    if study_id in STUDY_STEMS:
+        return STUDY_STEMS[study_id]
+    stem = _strip_citation(name)
+    stem = _VS_CLAUSE.sub("", stem)
+    stem = _BASELINE_TAIL.sub("", stem)
+    stem = re.sub(r"\s*\(", " (", stem).strip(" ,;·")
+    return stem or _strip_citation(name)
+
+
+def short_condition(text: str | None) -> str:
+    """A condition without its method phrases: "replicative senescence, Mem-PER Plus
+    membrane fraction" -> "replicative senescence"."""
+    text = _METHOD_PHRASES.sub("", text or "")
+    # Split on commas outside parentheses, so "(120 nM, 72 h)" stays whole.
+    pieces, depth, cur = [], 0, ""
+    for ch in text:
+        depth += (ch == "(") - (ch == ")")
+        if ch in ",;" and depth <= 0:
+            pieces.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    pieces.append(cur)
+    out = []
+    for p in pieces:
+        p = re.sub(r"\s+", " ", p)
+        p = re.sub(r"\(\s*[,;]?\s*", "(", p)
+        p = re.sub(r"\s*[,;]?\s*\)", ")", p)
+        p = re.sub(r"\(\s*\)", "", p).strip()
+        if p.count("(") > p.count(")"):
+            p = p.rstrip(" ,;") + ")"
+        p = p.strip(" ,;")
+        if p and p not in ("()",):
+            out.append(p)
+    return re.sub(r",\s*\(", " (", ", ".join(out))
+
+
+def baseline_condition(d: dict) -> str:
+    """The baseline group's own condition, from the extraction recipe."""
+    for e in d.get("extractions") or []:
+        for g in e.get("sample_groups") or []:
+            if g.get("use_for_membership", True):
+                label = short_condition(g.get("condition"))
+                if label and not re.fullmatch(r"(?i)baseline|control", label):
+                    return label
+    return "untreated"
+
+
 def add_perturbed_arms(
     manifest: dict, detections: list[dict], perturbed: dict, rows: list[dict]
 ) -> None:
@@ -558,11 +688,11 @@ def add_perturbed_arms(
     ``control_tsv_key`` here.
     """
     by_id = {d["study_id"]: d for d in manifest["datasets"]}
-    # Name each arm "<parent> · <condition>", adding the cell type only where one
-    # parent has two states with the same condition (two knockout clones, say).
+    # Name every arm of a study that has other conditions "<study> · <its own condition>",
+    # baseline included, so four arms of one paper don't all read "X, A vs B".
     seen: dict[tuple[str, str], int] = defaultdict(int)
     for d in perturbed["datasets"]:
-        seen[(d["parent_study_id"], d["condition"])] += 1
+        seen[(d["parent_study_id"], short_condition(d["condition"]))] += 1
     for d in perturbed["datasets"]:
         parent = by_id.get(d["parent_study_id"])
         if parent is None:
@@ -575,12 +705,19 @@ def add_perturbed_arms(
             if k not in ("control_tsv_key", "control_tsv_sha256")
         }
         entry["recovery_parent_study"] = d["parent_study_id"]
-        label = d["condition"]
-        if seen[(d["parent_study_id"], d["condition"])] > 1:
+        label = CONDITION_LABELS.get(d["study_id"]) or short_condition(d["condition"])
+        if (
+            d["study_id"] not in CONDITION_LABELS
+            and seen[(d["parent_study_id"], short_condition(d["condition"]))] > 1
+        ):
             label = f"{d['cell_or_tissue_type']}, {label}"
-        entry["name"] = f"{_strip_citation(parent['name'])} · {label}"
+        entry["name"] = f"{study_stem(parent['name'], d['parent_study_id'])} · {label}"
         entry["sources"] = parent.get("sources") or []
         manifest["datasets"].append(entry)
+    for sid in {d["parent_study_id"] for d in perturbed["datasets"]}:
+        parent = by_id[sid]
+        label = CONDITION_LABELS.get(sid) or baseline_condition(parent)
+        parent["name"] = f"{study_stem(parent['name'], sid)} · {label} (baseline)"
     detections.extend(
         {
             "uniprot_accession": r["uniprot_accession"],
@@ -1584,10 +1721,12 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
         what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
         return f"author pre-filtered to {what}"
     if status == "perturbed":
-        return f"{d.get('perturbation') or 'other condition'}: {d.get('condition')}"
+        cond = short_condition(d.get("condition")) or (d.get("condition") or "")
+        cls = d.get("perturbation") or "other condition"
+        return cond if cls.lower() in cond.lower() else f"{cls}: {cond}"
     if status == "comparator":
         if d.get("method_group") == "membrane-fractionation":
-            return "membrane fractionation, not intact-cell labeling"
+            return "cells broken open and membranes purified, so it can't show a protein faces outward"
         if "inner-leaflet" in (d.get("reason") or "").lower():
             return "labeling reaches the inner side of the membrane"
         return "not intact-cell surface labeling"

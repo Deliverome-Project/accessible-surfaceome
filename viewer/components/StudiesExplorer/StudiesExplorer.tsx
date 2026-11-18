@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
+  armStatusLabel,
   countableOtherConditions,
   countingRule,
   INCLUDE_OTHER_LABEL,
@@ -292,7 +293,16 @@ export function StudiesExplorer({ index }: Props) {
       // dataset's paper in the table and bring the first one into view.
       setMode("compare");
       setExpanded(new Set(sel.map((i) => arms[i].publication)));
-      scrollToRow(`arm-${arms[sel[0]].id}`);
+      if (sel.length > 1 && param("pf")) {
+        // A link that also names a protein (?pf=DPP4) is a comparison to read, not a
+        // selection to make: open on the results with the picker folded away.
+        setPickOpen(false);
+        requestAnimationFrame(() =>
+          document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        );
+      } else {
+        scrollToRow(`arm-${arms[sel[0]].id}`);
+      }
     }
     // Read the URL once; a later change of counting rule is handled below.
   }, [idxById, aliases, arms]);
@@ -451,7 +461,7 @@ export function StudiesExplorer({ index }: Props) {
                   </td>
                   <td>
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
-                      {statusPillLabel(arm.status)}
+                      {armStatusLabel(arm, "pill")}
                     </StatusPill>
                     <div className={counted ? styles.countedYes : styles.countedNo}>
                       {counted ? "counted" : "not counted"}
@@ -471,12 +481,33 @@ export function StudiesExplorer({ index }: Props) {
     const open = autoOpen || expanded.has(g.pub);
     const nCounted = all.filter(counts).length;
     const anySelected = g.items.some(({ i }) => selected.includes(i));
+    // Select or clear all of a paper's datasets at once (Kim et al. 2017's four, say).
+    const paperIdx = arms.flatMap((a, i) => (a.publication === g.pub ? [i] : []));
+    const allSelected = paperIdx.every((i) => selected.includes(i));
+    const togglePaper = () => {
+      if (allSelected) {
+        updateSelected(selected.filter((i) => !paperIdx.includes(i)));
+      } else {
+        updateSelected([...selected, ...paperIdx.filter((i) => !selected.includes(i))]);
+        if (!expanded.has(g.pub)) toggleExpanded(g.pub);
+      }
+    };
     const head = (
       <tr
         key={`paper-${g.pub}`}
         className={`${styles.paperRow} ${anySelected ? styles.selectedRow : ""} ${nCounted ? "" : styles.notCounted}`}
       >
-        <td>
+        <td className={styles.paperPick}>
+          <input
+            type="checkbox"
+            checked={allSelected}
+            ref={(el) => {
+              if (el) el.indeterminate = anySelected && !allSelected;
+            }}
+            onChange={togglePaper}
+            aria-label={`Select all ${all.length} datasets of ${shortCitation(first)}`}
+            title={`Select all ${all.length} datasets of this paper`}
+          />
           <button
             type="button"
             className={styles.expandButton}
@@ -838,6 +869,32 @@ function ChipGroup<T extends string>({
   );
 }
 
+/** When a filter finds nothing in "In all" (or an intersection) but the protein is in
+ *  some of the selected datasets, say so, so an empty table doesn't read as "not detected". */
+function OutsideModeHint({
+  matches,
+  total,
+  onAny,
+}: {
+  matches: { symbol: string; acc: string; arms: Set<number> }[];
+  total: number;
+  onAny: () => void;
+}) {
+  if (!matches.length) return null;
+  const first = matches[0];
+  const name = first.symbol || first.acc;
+  return (
+    <p className={styles.filterHint}>
+      {matches.length === 1
+        ? `${name} is in ${first.arms.size} of the ${total} selected datasets, so it is not listed here.`
+        : `${matches.length} matching proteins are in some of the selected datasets but not this set.`}{" "}
+      <button type="button" className={styles.linkButton} onClick={onAny}>
+        Show proteins in any selected dataset
+      </button>
+    </p>
+  );
+}
+
 /** Mode: "all" / "any" selected studies, or one exact intersection (sorted arm indices). */
 type Mode = "all" | "any" | `c:${string}`;
 
@@ -924,7 +981,8 @@ function SelectionPanel({
       restored.current = false;
       return;
     }
-    setMode(selKey.includes(",") && selKey.split(",").length <= MAX_UPSET ? "all" : "any");
+    // Every protein any selected dataset detected; "In all" narrows to the shared ones.
+    setMode("any");
     setLimit(PAGE);
   }, [selKey]);
 
@@ -1166,7 +1224,7 @@ function SelectionPanel({
                 <strong>{shortCitation(arms[i])}</strong> · {arms[i].name}{" "}
                 <span className={styles.sub}>
                   ({arms[i].n_proteins.toLocaleString("en-US")} proteins
-                  {counts(arms[i]) ? "" : `; ${statusShortLabel(arms[i].status).toLowerCase()}, not counted`})
+                  {counts(arms[i]) ? "" : `; ${armStatusLabel(arms[i]).toLowerCase()}, not counted`})
                 </span>
               </span>
             </li>
@@ -1180,7 +1238,7 @@ function SelectionPanel({
       {single && !consensus ? <MethodsPanel key={arms[selected[0]].id} arm={arms[selected[0]]} /> : null}
       {!single && selected.some((i) => !counts(arms[i])) ? (
         <p className={styles.caveat}>
-          The selection includes datasets that are not counted as surface evidence (held, high background, pre-filtered by surface annotation, comparators, or other conditions of a study's samples).
+          The selection includes datasets that are not counted as surface evidence (held, high background, pre-filtered by surface annotation, membrane fractions, or other conditions of a study's samples).
         </p>
       ) : null}
 
@@ -1399,8 +1457,20 @@ function SelectionPanel({
         Click a protein name to open its page in the Surfaceome viewer, with the full evidence
         record. Names in gray were not deep-dived, so they link to their UniProt entry instead.
       </p>
+      {shown.length === 0 && f && mode !== "any" ? (
+        <OutsideModeHint
+          matches={proteins.filter(
+            (p) =>
+              p.acc.includes(f) ||
+              p.symbol.toUpperCase().includes(f) ||
+              p.name.toUpperCase().includes(f),
+          )}
+          total={selected.length}
+          onAny={() => setMode("any")}
+        />
+      ) : null}
       <div className={styles.count}>
-        {shown.length.toLocaleString("en-US")} proteins
+        {shown.length.toLocaleString("en-US")} protein{shown.length === 1 ? "" : "s"}
         <button type="button" className={styles.linkButton} onClick={downloadCsv}>
           download CSV
         </button>
