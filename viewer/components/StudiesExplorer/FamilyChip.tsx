@@ -17,6 +17,7 @@ const TONE: Record<string, Tone> = {
 /** Short pill text where the full family name is too long for a table cell. */
 const SHORT: Record<string, string> = {
   "other-chemoproteomic": "Other chemistry",
+  "peroxidase-proximity": "Proximity labeling",
 };
 
 export function FamilyChip({ arm }: { arm: Pick<StudyArm, "family" | "family_label"> }) {
