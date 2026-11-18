@@ -64,7 +64,19 @@
 .altGrid label { display: flex; flex-direction: column; font-size: 0.75rem; color: var(--muted); gap: 0.15rem; }
 .altGrid input, .altGrid select, .altGrid textarea { font: inherit; font-size: 0.88rem; padding: 0.25rem; border: 1px solid var(--line); border-radius: var(--radius-sm); }
 .altReason { grid-column: 1 / -1; }
+/* Which arm the verdict is about, on its own line above the buttons: it changes what the
+   buttons mean, so it has to be read before them, not found afterwards. */
+.scope { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--muted); margin-bottom: var(--space-2); flex-wrap: wrap; }
+.scope select { font: inherit; font-size: 0.88rem; color: var(--fg-1); padding: 0.2rem 0.3rem; border: 1px solid var(--line); border-radius: var(--radius-sm); max-width: 100%; }
+.scope select:disabled { opacity: 0.5; }
+
 .history ul { margin: 0; padding-left: 1rem; font-size: 0.85rem; }
+/* One reviewer's point per block, wrapping rather than running off the panel: reasons
+   here are sentences, and the exchange is read as much as it is written. */
+.history li { margin-bottom: 0.3rem; overflow-wrap: anywhere; }
+/* An earlier verdict on the same arm by the same reviewer: kept by the append-only log,
+   no longer their position. Legible, but visibly not the current record. */
+.superseded { opacity: 0.55; }
 
 .modelRow { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin-bottom: var(--space-2); }
 .tab, .tabOn { font: inherit; font-size: 0.8rem; padding: 0.2rem 0.6rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: transparent; cursor: pointer; }

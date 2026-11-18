@@ -208,6 +208,12 @@ export function l1SiteLabel(site: L1Site, orderedLength: number | null): string 
   return `between ${before} and ${after}`;
 }
 
+/** The arm a site id names (`l1-p1088-a2` → `a2`), or null when it names none. */
+export function armLabel(siteId: string): string | null {
+  const m = /-(a\d+)$/.exec(siteId);
+  return m ? m[1] : null;
+}
+
 /** The member's current picks first, then alternatives by source and rank. */
 export function sortSites(sites: readonly L1Site[]): L1Site[] {
   const srcOrder: Record<string, number> = { rung_builder: 0, ranker: 1, agent_proposer: 2 };
@@ -427,11 +433,17 @@ export async function submitL1Review(
   }
 }
 
+/** What one verdict is a verdict on: a member, a reviewer and one of the member's tag
+ *  sites — or the member as a whole, which is what a null `site_id` means. */
+function reviewScope(r: L1ReviewRow): string {
+  return `${r.design_id}\u0000${r.reviewer}\u0000${r.site_id ?? ""}`;
+}
+
 /** Each reviewer's latest verdict per design id (the review log is append-only). */
 export function latestVerdicts(rows: readonly L1ReviewRow[]): Map<string, L1ReviewRow[]> {
   const latest = new Map<string, L1ReviewRow>();
   for (const r of [...rows].sort((a, b) => a.created_at.localeCompare(b.created_at))) {
-    latest.set(`${r.design_id}\u0000${r.reviewer}\u0000${r.site_id ?? ""}`, r);
+    latest.set(reviewScope(r), r);
   }
   const out = new Map<string, L1ReviewRow[]>();
   for (const r of latest.values()) {
@@ -440,6 +452,32 @@ export function latestVerdicts(rows: readonly L1ReviewRow[]): Map<string, L1Revi
     out.set(r.design_id, list);
   }
   return out;
+}
+
+/** The reviews that still stand: each reviewer's last word on each scope. The log keeps
+ *  every row, so an earlier verdict on the same scope is a changed mind, not a second
+ *  opinion, and reads as one unless it is marked. */
+export function standingReviewIds(rows: readonly L1ReviewRow[]): Set<string> {
+  const latest = new Map<string, string>();
+  for (const r of [...rows].sort((a, b) => a.created_at.localeCompare(b.created_at))) {
+    latest.set(reviewScope(r), r.review_id);
+  }
+  return new Set(latest.values());
+}
+
+/** How a verdict's scope reads: the member as a whole for a null site id, otherwise the
+ *  arm and where it inserts. A site id the current load no longer carries still names
+ *  its arm, so an older row stays legible. */
+export function reviewScopeLabel(
+  siteId: string | null,
+  sites: readonly L1Site[],
+  orderedLength: number | null,
+): string {
+  if (!siteId) return "the member as a whole";
+  const arm = armLabel(siteId);
+  const site = sites.find((s) => s.site_id === siteId);
+  if (!site) return arm ?? siteId;
+  return `${arm ? `${arm} — ` : ""}${l1SiteLabel(site, orderedLength)}${site.is_primary === false ? " (alternative)" : ""}`;
 }
 
 /** Map a residue picked on a model to the member's own numbering (native models only). */
