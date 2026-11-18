@@ -62,6 +62,12 @@ const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] 
     desc: "Cells broken open and membranes purified, or labels that reach inside the cell. Shows a protein is on a membrane, not that it faces outward.",
     statuses: ["comparator"],
   },
+  {
+    key: "perturbed",
+    label: "Other conditions in the same studies",
+    desc: "The same experiments after a change of state: senescent, infected, knockout, drug-treated or diseased samples. Each study counts only its baseline samples; these lists show what was detected in the other condition.",
+    statuses: ["perturbed"],
+  },
 ];
 
 /** Short labels shown above each technology's cluster of dots. */

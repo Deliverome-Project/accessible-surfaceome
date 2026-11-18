@@ -11,8 +11,9 @@
  *
  * Joins are on UniProt accession (isoform suffix stripped), never on symbol.
  * Only `core` / `provisional` arms count as surface detections; the rest are
- * shown but labeled (held, below the reference-overlap screen, or a
- * comparator). Whole-lysate arms are left out of the data entirely.
+ * shown but labeled (held, below the reference-overlap screen, a comparator,
+ * or another condition of a counted study's samples). Whole-lysate arms are
+ * left out of the data entirely.
  */
 
 export type ArmStatus =
@@ -21,7 +22,8 @@ export type ArmStatus =
   | "held"
   | "below_screen"
   | "annotation_selected"
-  | "comparator";
+  | "comparator"
+  | "perturbed";
 
 /** Every status, in the order the viewer lists them (counted first). */
 export const STATUS_ORDER: ArmStatus[] = [
@@ -31,6 +33,7 @@ export const STATUS_ORDER: ArmStatus[] = [
   "below_screen",
   "annotation_selected",
   "comparator",
+  "perturbed",
 ];
 
 /** Wording for the sweep-v15 annotation_selected role, verbatim from the S3E8 review. */
@@ -70,6 +73,12 @@ export interface StudyArm {
   intact_cell_verified: boolean;
   sample: string | null;
   status: ArmStatus;
+  /** For a `perturbed` arm: the arm whose baseline samples it departs from,
+   *  the condition ("replicative senescence, …") and its class
+   *  ("senescence", "infection", "genetic perturbation", …). */
+  parent?: string | null;
+  condition?: string | null;
+  perturbation?: string | null;
   /** Why this dataset isn't Core ("author pre-filtered to …", "values are
    *  imputed …"); null for Core. Derived in the build, not free text. */
   status_reason?: string | null;
@@ -195,6 +204,7 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
   below_screen: "High background",
   annotation_selected: ANNOTATION_SELECTED_LABEL,
   comparator: "Comparator",
+  perturbed: "Other condition",
 };
 
 export const STATUS_HELP: Record<ArmStatus, string> = {
@@ -207,6 +217,8 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
   annotation_selected: ANNOTATION_SELECTED_METHODS,
   comparator:
     "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
+  perturbed:
+    "Other condition: the same study's samples after a change of state, such as senescence, infection, a knockout, a drug or a disease. Each study counts only its baseline (untreated, wild-type or healthy) samples; this list shows what was detected in the other condition. Listed, never counted.",
 };
 
 /**
@@ -225,6 +237,8 @@ export const STATUS_DEFINITION: Record<ArmStatus, string> = {
     "The published table was already restricted to proteins annotated or predicted as surface or membrane proteins; shown, never counted.",
   comparator:
     "Shown for comparison, never counted: membrane fractionation, or labeling that reaches inside the cell, can't show a protein faces outward.",
+  perturbed:
+    "Shown, never counted: a non-baseline condition (senescent, infected, knockout, treated or diseased samples) of a study whose baseline list is shown separately.",
 };
 
 export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {

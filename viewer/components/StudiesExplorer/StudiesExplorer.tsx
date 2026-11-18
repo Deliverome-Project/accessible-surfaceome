@@ -712,7 +712,7 @@ function OverlapBar({
   const counted = status === "core" || status === "provisional";
   // A table pre-filtered by surface annotation has an inflated overlap by
   // construction, so it is drawn neutral rather than as a pass.
-  const tone = !intact || status === "annotation_selected"
+  const tone = !intact || status === "annotation_selected" || status === "perturbed"
     ? styles.na
     : status === "below_screen"
       ? styles.fail
@@ -1141,7 +1141,7 @@ function SelectionPanel({
       {single && !consensus ? <MethodsPanel key={arms[selected[0]].id} arm={arms[selected[0]]} /> : null}
       {!single && selected.some((i) => !isCounted(arms[i])) ? (
         <p className={styles.caveat}>
-          The selection includes datasets that are not counted as surface evidence (held, high background, pre-filtered by surface annotation, or comparators).
+          The selection includes datasets that are not counted as surface evidence (held, high background, pre-filtered by surface annotation, comparators, or other conditions of a study's samples).
         </p>
       ) : null}
 

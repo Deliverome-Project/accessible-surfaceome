@@ -156,6 +156,15 @@ export default function SurfaceProteomicsPage() {
             caveat, such as sitting within two points of the {Math.round(OVERLAP_SCREEN * 100)}%
             bar. Both count.
           </p>
+          <p className={styles.reviewLede}>
+            A study counts only its baseline samples: untreated, wild-type, uninfected or
+            healthy. When it also measured the same cells after a change of state (senescence,
+            infection, a knockout, a drug, a disease), that condition is listed as its own{" "}
+            <strong>Other condition</strong> dataset ({countByStatus("perturbed")}), never
+            counted. A condition is not listed when the published table reports every protein in
+            every sample, as multiplexed tables do, because it would only repeat the baseline
+            list.
+          </p>
         </section>
           <p className={styles.snapshot}>
             Data snapshot <code>{index.snapshot}</code>, built {index.generated_at}.

@@ -19,6 +19,11 @@ every human-only study arm we ingested, with the review decision for each:
   2026 was wired in after the sweep and is missing from the sweep-v5 manifest).
   A registry id the snapshot split into several arms becomes an alias, so a
   link to the parent id (``?arm=vilen-2022``) opens all of its arms.
+* the perturbed-state snapshot (``PERTURBED_SNAPSHOT``, built from the same sweep by
+  the analysis repo's ``perturbed_arms.py``) — one arm per non-baseline condition of an
+  input (senescent, infected, knockout, treated or diseased samples). Each is shown with
+  status ``perturbed`` ("Other condition") and never counted, and it takes its parent's
+  method audit, raw-data row, source files and cell-type group.
 
 Outputs (committed; the viewer serves them as static files):
 
@@ -100,6 +105,9 @@ OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
 SNAPSHOT = "2026-11-16-sweep-v17"
+# Non-baseline states of the sweep's inputs (senescent, infected, knockout, treated cells),
+# one shown-not-counted arm each; built by the analysis repo's perturbed_arms.py from SNAPSHOT.
+PERTURBED_SNAPSHOT = "2026-11-17-perturbed-v1"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -138,6 +146,8 @@ STATUS_BY_ROLE = {
     # sweep-v15: a table already restricted to annotated or predicted surface
     # proteins is shown but never counted (it cannot add a candidate).
     "annotation_selected": "annotation_selected",
+    # A non-baseline state of another arm's samples (perturbed_arms.py): shown, never counted.
+    "perturbed_state": "perturbed",
     # sources.json's role for an arm the registry admits as a primary input.
     "primary": "core",
 }
@@ -506,7 +516,74 @@ def load_inputs(args: argparse.Namespace) -> tuple[dict, list[dict], dict, dict]
         audit = json.loads(_git_show(args, METHOD_AUDIT_PATH))
         sources = json.loads(_git_show(args, SOURCES_PATH))
     detections = list(csv.DictReader(io.StringIO(detections_text), delimiter="\t"))
+    add_perturbed_arms(manifest, detections, *load_perturbed(args))
     return manifest, detections, audit, sources
+
+
+def load_perturbed(args: argparse.Namespace) -> tuple[dict, list[dict]]:
+    """The perturbed-state snapshot's manifest and detections (empty with --no-perturbed)."""
+    if args.no_perturbed:
+        return {"datasets": []}, []
+    if args.perturbed_dir:
+        src = Path(args.perturbed_dir)
+        manifest = json.loads((src / "manifest.json").read_text())
+        text = (src / "detections_long.tsv").read_text()
+    else:
+        import os
+
+        bucket = os.environ["S3_BUCKET_PROCESSED"]
+        prefix = f"{PROCESSED_PREFIX}/{args.perturbed_snapshot}"
+        manifest = json.loads(_read_s3(bucket, f"{prefix}/manifest.json"))
+        text = _read_s3(bucket, f"{prefix}/detections_long.tsv").decode()
+    if manifest.get("derived_from") not in (None, args.snapshot):
+        raise SystemExit(
+            f"perturbed snapshot was built from {manifest['derived_from']}, not {args.snapshot}"
+        )
+    return manifest, list(csv.DictReader(io.StringIO(text), delimiter="\t"))
+
+
+def add_perturbed_arms(
+    manifest: dict, detections: list[dict], perturbed: dict, rows: list[dict]
+) -> None:
+    """Append each perturbed-state arm to ``manifest``/``detections``.
+
+    The arm takes its parent's place in the method audit, raw-data audit and cell-type
+    groups (through ``recovery_parent_study``) and lists the parent's source files. Its
+    own protein table is not read for quantities (it carries none), so it has no
+    ``control_tsv_key`` here.
+    """
+    by_id = {d["study_id"]: d for d in manifest["datasets"]}
+    # Name each arm "<parent> · <condition>", adding the cell type only where one
+    # parent has two states with the same condition (two knockout clones, say).
+    seen: dict[tuple[str, str], int] = defaultdict(int)
+    for d in perturbed["datasets"]:
+        seen[(d["parent_study_id"], d["condition"])] += 1
+    for d in perturbed["datasets"]:
+        parent = by_id.get(d["parent_study_id"])
+        if parent is None:
+            raise SystemExit(
+                f"{d['study_id']}: parent {d['parent_study_id']} not in snapshot"
+            )
+        entry = {
+            k: v
+            for k, v in d.items()
+            if k not in ("control_tsv_key", "control_tsv_sha256")
+        }
+        entry["recovery_parent_study"] = d["parent_study_id"]
+        label = d["condition"]
+        if seen[(d["parent_study_id"], d["condition"])] > 1:
+            label = f"{d['cell_or_tissue_type']}, {label}"
+        entry["name"] = f"{_strip_citation(parent['name'])} · {label}"
+        entry["sources"] = parent.get("sources") or []
+        manifest["datasets"].append(entry)
+    detections.extend(
+        {
+            "uniprot_accession": r["uniprot_accession"],
+            "gene_symbol": r.get("gene_symbol") or "",
+            "study_id": r["study_id"],
+        }
+        for r in rows
+    )
 
 
 def _pick(columns: list[str], wanted: tuple[str, ...], first: str | None) -> str | None:
@@ -1480,6 +1557,8 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
     if status == "annotation_selected":
         what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
         return f"author pre-filtered to {what}"
+    if status == "perturbed":
+        return f"{d.get('perturbation') or 'other condition'}: {d.get('condition')}"
     if status == "comparator":
         if d.get("method_group") == "membrane-fractionation":
             return "membrane fractionation, not intact-cell labeling"
@@ -1555,6 +1634,11 @@ def build_arms(
                     d.get("human_sample_type") or d.get("cell_or_tissue_type")
                 ),
                 "status": STATUS_BY_ROLE.get(role, role),
+                # A perturbed-state arm: the arm whose baseline it departs from, the
+                # condition, and its class ("infection", "genetic perturbation", ...).
+                "parent": d.get("parent_study_id"),
+                "condition": americanize(d.get("condition")),
+                "perturbation": d.get("perturbation"),
                 "status_reason": status_reason(
                     d, STATUS_BY_ROLE.get(role, role), base_cutoff
                 ),
@@ -2023,6 +2107,14 @@ def main() -> None:
         "--source-dir",
         help="Local dir with manifest.json, detections_long.tsv, method_audit.json",
     )
+    p.add_argument("--perturbed-snapshot", default=PERTURBED_SNAPSHOT)
+    p.add_argument(
+        "--perturbed-dir",
+        help="Local dir with the perturbed snapshot's manifest.json and detections_long.tsv",
+    )
+    p.add_argument(
+        "--no-perturbed", action="store_true", help="Leave the perturbed-state arms out"
+    )
     p.add_argument("--env-file", type=Path, help=".env holding the S3_* credentials")
     p.add_argument(
         "--analysis-repo", default=str(Path.home() / "git" / "deliverome-analysis")
@@ -2067,6 +2159,10 @@ def main() -> None:
     excluded = sorted(a["id"] for a in built if a["method_class"] == "lysate")
     arms = [a for a in built if a["method_class"] != "lysate"]
     group_of = {sid: g for g, ids in CELL_GROUPS.items() for sid in ids}
+    # A perturbed-state arm is in its parent's group.
+    group_of.update(
+        {a["id"]: group_of[a["parent"]] for a in arms if a["parent"] in group_of}
+    )
     missing = [a["id"] for a in arms if a["id"] not in group_of]
     if missing:
         raise SystemExit(f"add these arms to CELL_GROUPS: {', '.join(missing)}")
@@ -2159,6 +2255,7 @@ def main() -> None:
         "_generated_by": "scripts/build/build_surface_proteomics_studies.py",
         "generated_at": datetime.now(UTC).strftime("%Y-%m-%d"),
         "snapshot": args.snapshot,
+        "perturbed_snapshot": None if args.no_perturbed else args.perturbed_snapshot,
         "source": f"S3E8 cross-method surfaceome compendium, processed snapshot {args.snapshot}",
         "n_shards": N_SHARDS,
         "n_arms": len(arms),
