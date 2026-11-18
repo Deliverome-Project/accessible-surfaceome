@@ -838,6 +838,32 @@ function ChipGroup<T extends string>({
   );
 }
 
+/** When a filter finds nothing in "In all" (or an intersection) but the protein is in
+ *  some of the selected datasets, say so, so an empty table doesn't read as "not detected". */
+function OutsideModeHint({
+  matches,
+  total,
+  onAny,
+}: {
+  matches: { symbol: string; acc: string; arms: Set<number> }[];
+  total: number;
+  onAny: () => void;
+}) {
+  if (!matches.length) return null;
+  const first = matches[0];
+  const name = first.symbol || first.acc;
+  return (
+    <p className={styles.filterHint}>
+      {matches.length === 1
+        ? `${name} is in ${first.arms.size} of the ${total} selected datasets, so it is not listed here.`
+        : `${matches.length} matching proteins are in some of the selected datasets but not this set.`}{" "}
+      <button type="button" className={styles.linkButton} onClick={onAny}>
+        Show proteins in any selected dataset
+      </button>
+    </p>
+  );
+}
+
 /** Mode: "all" / "any" selected studies, or one exact intersection (sorted arm indices). */
 type Mode = "all" | "any" | `c:${string}`;
 
@@ -924,7 +950,8 @@ function SelectionPanel({
       restored.current = false;
       return;
     }
-    setMode(selKey.includes(",") && selKey.split(",").length <= MAX_UPSET ? "all" : "any");
+    // Every protein any selected dataset detected; "In all" narrows to the shared ones.
+    setMode("any");
     setLimit(PAGE);
   }, [selKey]);
 
@@ -1399,8 +1426,20 @@ function SelectionPanel({
         Click a protein name to open its page in the Surfaceome viewer, with the full evidence
         record. Names in gray were not deep-dived, so they link to their UniProt entry instead.
       </p>
+      {shown.length === 0 && f && mode !== "any" ? (
+        <OutsideModeHint
+          matches={proteins.filter(
+            (p) =>
+              p.acc.includes(f) ||
+              p.symbol.toUpperCase().includes(f) ||
+              p.name.toUpperCase().includes(f),
+          )}
+          total={selected.length}
+          onAny={() => setMode("any")}
+        />
+      ) : null}
       <div className={styles.count}>
-        {shown.length.toLocaleString("en-US")} proteins
+        {shown.length.toLocaleString("en-US")} protein{shown.length === 1 ? "" : "s"}
         <button type="button" className={styles.linkButton} onClick={downloadCsv}>
           download CSV
         </button>
