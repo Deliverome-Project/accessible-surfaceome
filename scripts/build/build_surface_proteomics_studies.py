@@ -1465,6 +1465,12 @@ FILTER_UNIVERSE_LABEL = {
 # its real reason ("current table has imputed abundance and unresolved
 # input...", "non-imputed LFQ") gets the real reason.
 HELD_REASONS = (
+    # Before the generic keys: such a note goes on to mention "biological
+    # replicates", which the "biological" key below would otherwise claim.
+    (
+        r"defined by detection in the",
+        "the published table keeps only proteins detected in the other condition, so the baseline list is cut short",
+    ),
     (
         r"unresolved input",
         "the input sample and baseline can't be identified in the published table",

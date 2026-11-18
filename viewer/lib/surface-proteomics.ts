@@ -218,7 +218,7 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
   comparator:
     "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
   perturbed:
-    "Other condition: the same study's samples after a change of state, such as senescence, infection, a knockout, a drug or a disease. Each study counts only its baseline (untreated, wild-type or healthy) samples; this list shows what was detected in the other condition. Listed, never counted.",
+    "Other condition: the same study's samples after a change of state, such as senescence, infection, a knockout, a drug or a disease. Each study counts only its baseline (untreated, wild-type or healthy) samples; this list shows what was detected in the other condition. Listed, not counted by default; the \"Also count other conditions\" switch counts it when the study's baseline dataset is counted.",
 };
 
 /**
@@ -238,7 +238,7 @@ export const STATUS_DEFINITION: Record<ArmStatus, string> = {
   comparator:
     "Shown for comparison, never counted: membrane fractionation, or labeling that reaches inside the cell, can't show a protein faces outward.",
   perturbed:
-    "Shown, never counted: a non-baseline condition (senescent, infected, knockout, treated or diseased samples) of a study whose baseline list is shown separately.",
+    "Shown, not counted by default: a non-baseline condition (senescent, infected, knockout, treated or diseased samples) of a study whose baseline list is shown separately. The \"Also count other conditions\" switch counts it when that baseline is counted.",
 };
 
 export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {
