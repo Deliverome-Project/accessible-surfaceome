@@ -587,10 +587,14 @@ export const tooltips: Record<string, ReactNode> = {
   // (StudyArm.reference_overlap = proteins in the reference ÷ proteins listed).
   surface_overlap: (
     <>
-      <strong>Surface overlap</strong>: the share of a dataset&apos;s proteins
-      that are in the reference (Canonical or Likely in our Surfaceome
-      catalog). An intact-cell dataset needs at least 20% (the tick) to
-      count, or a higher bar if the authors pre-filtered its list.
+      <strong>Surface overlap</strong>: how much of a dataset is in the
+      reference (Canonical or Likely in our Surfaceome catalog). When the
+      published table reports per-protein amounts, it is the share of the
+      dataset&apos;s total amount, each protein&apos;s amount divided by its
+      length so the share counts molecules (marked &ldquo;amount&rdquo;), and the
+      dataset needs at least 24% to count. Otherwise it is the share of the
+      dataset&apos;s proteins, and it needs at least 20%, or a higher bar if
+      the authors pre-filtered its list. The tick marks the bar.
     </>
   ),
   reference: (

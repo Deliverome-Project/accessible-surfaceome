@@ -9,6 +9,7 @@ import {
   formatQuant,
   ordinalPct,
   shareBelow,
+  ABUNDANCE_SCREEN,
   countableOtherConditions,
   countingRule,
   isCounted,
@@ -151,4 +152,15 @@ test("other conditions are not counted unless the reader opts in, and then only 
   }
   const countable = countableOtherConditions(arms);
   assert.ok(countable.length > 0 && countable.length < other.length);
+});
+
+test("datasets with published amounts are screened on their amount, at the viewer's bar", () => {
+  const byAmount = index.arms.filter((a) => a.screen_basis === "abundance");
+  assert.ok(byAmount.length > 0, "the snapshot carries abundance-screened arms");
+  for (const a of byAmount) {
+    assert.equal(a.abundance_cutoff, ABUNDANCE_SCREEN, `${a.id}: cutoff matches ABUNDANCE_SCREEN`);
+    assert.ok(a.abundance_share != null, `${a.id}: has a share`);
+    const passes = a.abundance_share! + 1e-9 >= ABUNDANCE_SCREEN;
+    assert.equal(isCounted(a), passes, `${a.id}: counted exactly when its amount share passes`);
+  }
 });

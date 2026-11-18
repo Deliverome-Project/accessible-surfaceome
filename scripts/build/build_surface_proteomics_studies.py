@@ -104,7 +104,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-16-sweep-v17"
+SNAPSHOT = "2026-11-18-abundance-v1"
 # Non-baseline states of the sweep's inputs (senescent, infected, knockout, treated cells),
 # one shown-not-counted arm each; built by the analysis repo's perturbed_arms.py from SNAPSHOT.
 PERTURBED_SNAPSHOT = "2026-11-17-perturbed-v1"
@@ -516,11 +516,14 @@ def load_inputs(args: argparse.Namespace) -> tuple[dict, list[dict], dict, dict]
         audit = json.loads(_git_show(args, METHOD_AUDIT_PATH))
         sources = json.loads(_git_show(args, SOURCES_PATH))
     detections = list(csv.DictReader(io.StringIO(detections_text), delimiter="\t"))
-    add_perturbed_arms(manifest, detections, *load_perturbed(args))
+    base = (manifest.get("derived_from") or {}).get("snapshot")
+    add_perturbed_arms(manifest, detections, *load_perturbed(args, base))
     return manifest, detections, audit, sources
 
 
-def load_perturbed(args: argparse.Namespace) -> tuple[dict, list[dict]]:
+def load_perturbed(
+    args: argparse.Namespace, base: str | None = None
+) -> tuple[dict, list[dict]]:
     """The perturbed-state snapshot's manifest and detections (empty with --no-perturbed)."""
     if args.no_perturbed:
         return {"datasets": []}, []
@@ -535,7 +538,9 @@ def load_perturbed(args: argparse.Namespace) -> tuple[dict, list[dict]]:
         prefix = f"{PROCESSED_PREFIX}/{args.perturbed_snapshot}"
         manifest = json.loads(_read_s3(bucket, f"{prefix}/manifest.json"))
         text = _read_s3(bucket, f"{prefix}/detections_long.tsv").decode()
-    if manifest.get("derived_from") not in (None, args.snapshot):
+    # The main snapshot may itself be an overlay of a sweep (the abundance screen);
+    # the perturbed arms are then built from that same sweep.
+    if manifest.get("derived_from") not in (None, args.snapshot, base):
         raise SystemExit(
             f"perturbed snapshot was built from {manifest['derived_from']}, not {args.snapshot}"
         )
@@ -1246,7 +1251,8 @@ def write_downloads(
     cols = [
         "id", "name", "citation", "first_author", "year", "journal", "pmid", "doi", "repository",
         "repository_ids", "method_class", "family", "family_label", "cell_group",
-        "sample", "reference_overlap", "n_proteins", "admitted", "status",
+        "sample", "reference_overlap", "screen_basis", "abundance_share", "n_proteins",
+        "admitted", "status",
     ]  # fmt: skip
     with (out / "surface_proteomics_datasets.tsv").open("w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t", lineterminator="\n")
@@ -1532,6 +1538,10 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
     pct = d.get("pct_in_surf")
     universe = d.get("filter_universe")
     filtered = universe not in (None, "human")
+    share, cutoff = d.get("abundance_share"), d.get("abundance_cutoff")
+    by_amount = d.get("screen_basis") == "abundance" and share is not None
+    if status == "below_screen" and by_amount:
+        return f"{share:.1%} of its length-corrected amount in Canonical or Likely proteins, under {cutoff:.0%}"
     if status == "provisional":
         # sweep-v15: imputation alone no longer holds an arm.
         if "imput" in (d.get("reason") or "").lower():
@@ -1539,7 +1549,17 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
         if filtered:
             what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
             return f"author pre-filtered to {what}"
-        if pct is not None and pct < base:
+        # Passing by amount, but an earlier review had marked it low-overlap: its only
+        # comparison is biological (cell states, a scrambled guide), with no no-label control.
+        if by_amount and d.get("previous_review_role") == "low_overlap":
+            note = (d.get("previous_reason") or "").lower()
+            why = (
+                "its comparison is biological, with no no-label control"
+                if "biological" in note
+                else "an earlier review flagged its low overlap"
+            )
+            return f"counted by its length-corrected amount ({share:.1%}); {why}"
+        if pct is not None and pct < base and not by_amount:
             return f"within 2 points of the {base:.0%} screen ({pct:.1%})"
         # sweep-v17: an arm kept above its matched no-label control by our
         # own fold cutoff rather than the authors' published one (LaccID).
@@ -1651,6 +1671,16 @@ def build_arms(
                 "admitted": bool(d.get("admitted")),
                 "n_proteins": counts.get(sid, 0),
                 "reference_overlap": d.get("pct_in_surf"),
+                # The abundance screen (2026-11-18-abundance-v1): datasets whose table
+                # carries usable amounts are judged by the share of their length-corrected
+                # amount in Canonical or Likely proteins; the rest by reference_overlap.
+                "screen_basis": d.get("screen_basis"),
+                "abundance_share": (
+                    round(d["abundance_share"], 4)
+                    if d.get("abundance_share") is not None
+                    else None
+                ),
+                "abundance_cutoff": d.get("abundance_cutoff"),
                 "repository": (d.get("accession") or {}).get("repository"),
                 "repository_ids": (d.get("accession") or {}).get("ids") or [],
             }
@@ -1663,7 +1693,8 @@ _URL = re.compile(r"https?://[^\s)\"']+")
 # "hold: threshold 20.0000%; borderline allowance 0.0%. " — the screen numbers
 # are exported as fields of their own, so the rationale starts after them.
 _REASON_PREFIX = re.compile(
-    r"^[a-z_ ]+:\s*(?:threshold [\d.]+%;\s*borderline allowance [\d.]+%\.?\s*)?"
+    r"^[a-z_ ]+:\s*(?:threshold [\d.]+%;\s*borderline allowance [\d.]+%\.?\s*"
+    r"|abundance screen [\d.]+%;.*?of proteins\)\.\s*)?"
 )
 
 

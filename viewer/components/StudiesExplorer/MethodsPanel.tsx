@@ -88,6 +88,16 @@ export function MethodsBody({ arm, m }: { arm: StudyArm; m: ArmMethods }) {
               </dd>
             </>
           ) : null}
+          {arm.screen_basis === "abundance" && arm.abundance_share != null ? (
+            <>
+              <dt>Abundance screen</dt>
+              <dd>
+                {pct(arm.abundance_share)} of its length-corrected protein amount is Canonical or
+                Likely; screen {pct(arm.abundance_cutoff ?? 0.24)}. This dataset reports
+                per-protein amounts, so it is judged on them rather than on its protein list.
+              </dd>
+            </>
+          ) : null}
         </dl>
       </section>
 
