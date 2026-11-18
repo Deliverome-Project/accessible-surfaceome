@@ -4,7 +4,13 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { baseAccession, isCounted, type PresenceShard, type StudyIndex } from "./surface-proteomics";
+import {
+  baseAccession,
+  countingRule,
+  isCounted,
+  type PresenceShard,
+  type StudyIndex,
+} from "./surface-proteomics";
 import type { CatalogRow } from "./surfaceome";
 
 const DIR = path.join(process.cwd(), "public", "data", "surface-proteomics");
@@ -26,6 +32,36 @@ export function countedByAccession(): Map<string, number> {
     }
   }
   return out;
+}
+
+/**
+ * Counted datasets, papers and distinct proteins under one counting rule:
+ * baseline only (the default) or with the opt-in other conditions. Read
+ * from the committed presence shards so the page's headline agrees with
+ * what the study table shows under the same switch.
+ */
+export function countedTotals(includeOther: boolean): {
+  datasets: number;
+  papers: number;
+  proteins: number;
+} {
+  const indexPath = path.join(DIR, "studies.json");
+  if (!existsSync(indexPath)) return { datasets: 0, papers: 0, proteins: 0 };
+  const index = JSON.parse(readFileSync(indexPath, "utf8")) as StudyIndex;
+  const counts = countingRule(index.arms, includeOther);
+  const counted = new Set(index.arms.flatMap((a, i) => (counts(a) ? [i] : [])));
+  let proteins = 0;
+  for (let i = 0; i < index.n_shards; i++) {
+    const shard = JSON.parse(
+      readFileSync(path.join(DIR, "presence", `${String(i).padStart(2, "0")}.json`), "utf8"),
+    ) as PresenceShard;
+    for (const e of Object.values(shard)) if (e.a.some((j) => counted.has(j))) proteins++;
+  }
+  return {
+    datasets: counted.size,
+    papers: new Set([...counted].map((i) => index.arms[i].publication)).size,
+    proteins,
+  };
 }
 
 /** Number of counted datasets, for column headers and tooltips. */

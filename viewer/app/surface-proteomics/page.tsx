@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Shell } from "../../components/Shell/Shell";
 import { StudiesExplorer } from "../../components/StudiesExplorer/StudiesExplorer";
 import { TierPill } from "../../components/StudiesExplorer/TierPill";
+import { countedTotals } from "../../lib/surface-proteomics-server";
 import {
   DOWNLOADS,
   isCounted,
@@ -59,6 +60,8 @@ export default function SurfaceProteomicsPage() {
   const counted = index.arms.filter(isCounted);
   const countedPapers = new Set(counted.map((a) => a.publication)).size;
   const countByStatus = (s: ArmStatus) => index.arms.filter((a) => a.status === s).length;
+  // The same totals with the opt-in other conditions, so the headline shows both rules.
+  const withOther = countedTotals(true);
 
   return (
     <Shell>
@@ -75,6 +78,16 @@ export default function SurfaceProteomicsPage() {
             <strong>{index.n_accessions_admitted.toLocaleString("en-US")} proteins</strong>.
             The other {index.n_arms - counted.length} are listed for completeness
             and marked as not counted.
+          </p>
+          <p className={styles.lede}>
+            Those totals count each study&apos;s baseline samples only. The{" "}
+            {countByStatus("perturbed")} other-condition datasets (senescent, infected, knockout,
+            treated or diseased samples of the same studies) are not counted by default. Counting
+            the {withOther.datasets - counted.length} whose study&apos;s baseline dataset passes review
+            gives <strong>{withOther.datasets} datasets</strong> from {withOther.papers} papers
+            detecting <strong>{withOther.proteins.toLocaleString("en-US")} proteins</strong>; the
+            &ldquo;Also count other conditions&rdquo; switch below applies that rule to the study table and
+            every view.
           </p>
           <p className={styles.scope}>
             The compendium covers whole-surface measurements: labeling of exposed proteins on intact cells, and membrane fractionation. It does not include targeted membrane enrichment of chosen proteins, such as proximity labeling around a single bait, antibody or affinity pulldowns, or lists restricted to a target panel.
@@ -155,6 +168,16 @@ export default function SurfaceProteomicsPage() {
             <strong>Provisional</strong> ({countByStatus("provisional")}) when they pass with a
             caveat, such as sitting within two points of the {Math.round(OVERLAP_SCREEN * 100)}%
             bar. Both count.
+          </p>
+          <p className={styles.reviewLede}>
+            A study counts only its baseline samples: untreated, wild-type, uninfected or
+            healthy. When it also measured the same cells after a change of state (senescence,
+            infection, a knockout, a drug, a disease), that condition is listed as its own{" "}
+            <strong>Other condition</strong> dataset ({countByStatus("perturbed")}), not
+            counted by default. A reader can switch on &ldquo;Also count other conditions&rdquo;,
+            which counts one only when its study&apos;s baseline dataset passes review. A condition is not listed when the published table reports every protein in
+            every sample, as multiplexed tables do, because it would only repeat the baseline
+            list.
           </p>
         </section>
           <p className={styles.snapshot}>

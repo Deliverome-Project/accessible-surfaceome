@@ -9,6 +9,8 @@ import {
   formatQuant,
   ordinalPct,
   shareBelow,
+  countableOtherConditions,
+  countingRule,
   isCounted,
   letter,
   studyHref,
@@ -122,4 +124,31 @@ test("surface preference: differences, mean and verdict", () => {
   assert.equal(surfacePreference([97, 78, 85]).verdict, "enriched");
   assert.equal(surfacePreference([99, 97, 98]).verdict, "unclear");
   assert.equal(surfacePreference([80, null, 60]).mean, 20);
+});
+
+test("other conditions are not counted unless the reader opts in, and then only under a counted baseline", () => {
+  const arms = index.arms;
+  const other = arms.filter((a) => a.status === "perturbed");
+  assert.ok(other.length > 0, "the committed snapshot carries other-condition arms");
+  const byId = new Map(arms.map((a) => [a.id, a]));
+
+  // Default rule: identical to isCounted, so no other condition counts.
+  const base = countingRule(arms, false);
+  for (const a of arms) assert.equal(base(a), isCounted(a), a.id);
+  assert.ok(other.every((a) => !base(a)));
+
+  // Opt-in: every baseline arm still counts the same way, and an other
+  // condition counts exactly when its parent baseline arm is counted.
+  const opted = countingRule(arms, true);
+  for (const a of arms) {
+    if (a.status !== "perturbed") {
+      assert.equal(opted(a), isCounted(a), a.id);
+      continue;
+    }
+    const parent = a.parent ? byId.get(a.parent) : undefined;
+    assert.ok(parent, `${a.id} names a parent that exists`);
+    assert.equal(opted(a), isCounted(parent), a.id);
+  }
+  const countable = countableOtherConditions(arms);
+  assert.ok(countable.length > 0 && countable.length < other.length);
 });

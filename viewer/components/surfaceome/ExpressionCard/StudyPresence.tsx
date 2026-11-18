@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  isCounted,
+  countableOtherConditions,
+  countingRule,
+  INCLUDE_OTHER_LABEL,
+  INCLUDE_OTHER_PARAM,
+  includeOtherHelp,
   loadPresence,
   METHOD_CLASS_LABEL,
   paperUrl,
@@ -61,6 +65,12 @@ const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] 
     label: "Membrane preps, for context",
     desc: "Cells broken open and membranes purified, or labels that reach inside the cell. Shows a protein is on a membrane, not that it faces outward.",
     statuses: ["comparator"],
+  },
+  {
+    key: "perturbed",
+    label: "Other conditions in the same studies",
+    desc: "The same experiments after a change of state: senescent, infected, knockout, drug-treated or diseased samples. Each study counts only its baseline samples; these lists show what was detected in the other condition.",
+    statuses: ["perturbed"],
   },
 ];
 
@@ -322,6 +332,8 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
   const [error, setError] = useState(false);
   const [showOther, setShowOther] = useState(false);
   const [showMissing, setShowMissing] = useState(false);
+  // Opt-in: off by default, so each study counts only its baseline samples.
+  const [includeOther, setIncludeOther] = useState(false);
   const { sortKey, sortDir, onSort, ariaSort, sortRows } = useTableSort<RowSort>();
 
   useEffect(() => {
@@ -347,14 +359,18 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
 
   const summary = useMemo(() => {
     if (!data) return null;
+    const counts = countingRule(data.index.arms, includeOther);
     const arms = data.index.arms.map((arm, i) => ({ arm, i, hit: data.hits.has(i) }));
-    const counted = arms.filter((x) => isCounted(x.arm));
+    const counted = arms.filter((x) => counts(x.arm));
     const countedHits = counted.filter((x) => x.hit);
     const pubs = new Set(counted.map((x) => x.arm.publication));
     const pubHits = new Set(countedHits.map((x) => x.arm.publication));
-    const otherHits = arms.filter((x) => x.hit && !isCounted(x.arm)).length;
-    return { arms, counted, countedHits, pubs, pubHits, otherHits };
-  }, [data]);
+    const otherHits = arms.filter((x) => x.hit && !counts(x.arm)).length;
+    const nOther = data.index.arms.filter((a) => a.status === "perturbed").length;
+    const nCountableOther = countableOtherConditions(data.index.arms).length;
+    const otherCountedHits = countedHits.filter((x) => x.arm.status === "perturbed").length;
+    return { counts, arms, counted, countedHits, pubs, pubHits, otherHits, nOther, nCountableOther, otherCountedHits };
+  }, [data, includeOther]);
 
   if (error) {
     return <p className={styles.empty}>Study presence data could not be loaded.</p>;
@@ -363,14 +379,15 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
     return <p className={styles.empty}>Loading study presence…</p>;
   }
 
-  const { arms, counted, countedHits, pubs, pubHits, otherHits } = summary;
-  const filtered = arms.filter((x) => (showMissing || x.hit) && (showOther || isCounted(x.arm)));
+  const { counts, arms, counted, countedHits, pubs, pubHits, otherHits, nOther, nCountableOther, otherCountedHits } =
+    summary;
+  const filtered = arms.filter((x) => (showMissing || x.hit) && (showOther || counts(x.arm)));
   const rows =
     sortKey === null
       ? [...filtered].sort(
           (a, b) =>
             Number(b.hit) - Number(a.hit) ||
-            Number(isCounted(b.arm)) - Number(isCounted(a.arm)) ||
+            Number(counts(b.arm)) - Number(counts(a.arm)) ||
             // Most enriched over background first; datasets without a value last.
             (studyPrefMean(data.quant[String(b.i)]?.[1], data.refs) ?? -999) -
               (studyPrefMean(data.quant[String(a.i)]?.[1], data.refs) ?? -999) ||
@@ -412,11 +429,15 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           Detected in {countedHits.length} of {counted.length} counted datasets (
           {counted.length ? Math.round((100 * countedHits.length) / counted.length) : 0}%;{" "}
           {pubHits.size} of {pubs.size} papers)
+          {includeOther ? `, counting ${otherCountedHits} other-condition dataset${otherCountedHits === 1 ? "" : "s"}` : ""}
           {otherHits > 0 ? `, plus ${otherHits} not counted` : ""}.
           {countedHits.length + otherHits > 0 ? (
             <>
               {" "}
-              <Link href={`${STUDIES_PATH}?det=${encodeURIComponent(uniprotAcc)}`} className={styles.studiesLink}>
+              <Link
+                href={`${STUDIES_PATH}?det=${encodeURIComponent(uniprotAcc)}${includeOther ? `&${INCLUDE_OTHER_PARAM}=1` : ""}`}
+                className={styles.studiesLink}
+              >
                 See {countedHits.length + otherHits === 1 ? "this dataset" : `these ${countedHits.length + otherHits} datasets`}{" "}
                 in the study table →
               </Link>
@@ -481,7 +502,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                       </span>
                       <span className={styles.famDots}>
                         {inFam.map(({ arm, hit, i }) => (
-                          <Dot key={arm.id} arm={arm} hit={hit} q={data.quant[String(i)]} />
+                          <Dot key={arm.id} arm={arm} hit={hit} counted={counts(arm)} q={data.quant[String(i)]} />
                         ))}
                       </span>
                     </span>
@@ -500,6 +521,25 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           detected. Hover a dot for the study.
         </span>
       </p>
+
+      {nOther > 0 ? (
+        <p className={styles.otherNote} data-on={includeOther ? "true" : "false"}>
+          {includeOther
+            ? "Counting other conditions (not the default): the same studies' senescent, infected, knockout, treated or diseased samples count wherever the study's baseline dataset counts."
+            : "Other conditions of these studies (senescent, infected, knockout, treated or diseased samples) are shown but not counted: each study counts only its baseline samples."}{" "}
+          <label className={styles.otherToggle}>
+            <input
+              type="checkbox"
+              checked={includeOther}
+              onChange={(e) => setIncludeOther(e.target.checked)}
+            />{" "}
+            {INCLUDE_OTHER_LABEL}
+          </label>
+          <InfoTip wide label={`About ${INCLUDE_OTHER_LABEL.toLowerCase()}`}>
+            {includeOtherHelp(nCountableOther, nOther)}
+          </InfoTip>
+        </p>
+      ) : null}
 
       <p className={styles.actions}>
         <label>
@@ -544,7 +584,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
             {rows.map(({ arm, hit, i }) => {
               const url = paperUrl(arm);
               return (
-                <tr key={arm.id} className={isCounted(arm) ? undefined : styles.notCounted}>
+                <tr key={arm.id} className={counts(arm) ? undefined : styles.notCounted}>
                   <td className={styles.studyCell}>
                     {url ? (
                       <a href={url} target="_blank" rel="noreferrer">
@@ -606,8 +646,17 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
   );
 }
 
-function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number] }) {
-  const counted = isCounted(arm);
+function Dot({
+  arm,
+  hit,
+  counted,
+  q,
+}: {
+  arm: StudyArm;
+  hit: boolean;
+  counted: boolean;
+  q?: [number, number];
+}) {
   const label =
     `${shortCitation(arm)}: ${arm.name}. ${hit ? "Detected" : "Not detected"}; ` +
     `${statusShortLabel(arm.status)}${counted ? "" : ", not counted"}`;

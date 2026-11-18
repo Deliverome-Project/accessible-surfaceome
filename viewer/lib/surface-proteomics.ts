@@ -11,8 +11,9 @@
  *
  * Joins are on UniProt accession (isoform suffix stripped), never on symbol.
  * Only `core` / `provisional` arms count as surface detections; the rest are
- * shown but labeled (held, below the reference-overlap screen, or a
- * comparator). Whole-lysate arms are left out of the data entirely.
+ * shown but labeled (held, below the reference-overlap screen, a comparator,
+ * or another condition of a counted study's samples). Whole-lysate arms are
+ * left out of the data entirely.
  */
 
 export type ArmStatus =
@@ -21,7 +22,8 @@ export type ArmStatus =
   | "held"
   | "below_screen"
   | "annotation_selected"
-  | "comparator";
+  | "comparator"
+  | "perturbed";
 
 /** Every status, in the order the viewer lists them (counted first). */
 export const STATUS_ORDER: ArmStatus[] = [
@@ -31,6 +33,7 @@ export const STATUS_ORDER: ArmStatus[] = [
   "below_screen",
   "annotation_selected",
   "comparator",
+  "perturbed",
 ];
 
 /** Wording for the sweep-v15 annotation_selected role, verbatim from the S3E8 review. */
@@ -70,6 +73,12 @@ export interface StudyArm {
   intact_cell_verified: boolean;
   sample: string | null;
   status: ArmStatus;
+  /** For a `perturbed` arm: the arm whose baseline samples it departs from,
+   *  the condition ("replicative senescence, …") and its class
+   *  ("senescence", "infection", "genetic perturbation", …). */
+  parent?: string | null;
+  condition?: string | null;
+  perturbation?: string | null;
   /** Why this dataset isn't Core ("author pre-filtered to …", "values are
    *  imputed …"); null for Core. Derived in the build, not free text. */
   status_reason?: string | null;
@@ -195,6 +204,7 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
   below_screen: "High background",
   annotation_selected: ANNOTATION_SELECTED_LABEL,
   comparator: "Comparator",
+  perturbed: "Other condition",
 };
 
 export const STATUS_HELP: Record<ArmStatus, string> = {
@@ -207,6 +217,8 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
   annotation_selected: ANNOTATION_SELECTED_METHODS,
   comparator:
     "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
+  perturbed:
+    "Other condition: the same study's samples after a change of state, such as senescence, infection, a knockout, a drug or a disease. Each study counts only its baseline (untreated, wild-type or healthy) samples; this list shows what was detected in the other condition. Listed, not counted by default; the \"Also count other conditions\" switch counts it when the study's baseline dataset is counted.",
 };
 
 /**
@@ -225,6 +237,8 @@ export const STATUS_DEFINITION: Record<ArmStatus, string> = {
     "The published table was already restricted to proteins annotated or predicted as surface or membrane proteins; shown, never counted.",
   comparator:
     "Shown for comparison, never counted: membrane fractionation, or labeling that reaches inside the cell, can't show a protein faces outward.",
+  perturbed:
+    "Shown, not counted by default: a non-baseline condition (senescent, infected, knockout, treated or diseased samples) of a study whose baseline list is shown separately. The \"Also count other conditions\" switch counts it when that baseline is counted.",
 };
 
 export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {
@@ -463,6 +477,51 @@ export const PREF_LABEL: Record<PrefVerdict, string> = {
 
 export function isCounted(arm: StudyArm): boolean {
   return arm.status === "core" || arm.status === "provisional";
+}
+
+/**
+ * The counting rule a page applies. By default it is `isCounted`: each study
+ * counts only its baseline samples. A reader can opt in to also counting the
+ * other conditions (senescent, infected, knockout, treated, diseased), and
+ * then an other-condition arm counts only when its baseline arm is counted,
+ * so the same lab, method and quality screen stand behind it. Other
+ * conditions of held, high-background or comparator studies never count.
+ */
+export function countingRule(
+  arms: readonly StudyArm[],
+  includeOther: boolean,
+): (arm: StudyArm) => boolean {
+  if (!includeOther) return isCounted;
+  const byId = new Map(arms.map((a) => [a.id, a]));
+  return (arm) => {
+    if (isCounted(arm)) return true;
+    if (arm.status !== "perturbed" || !arm.parent) return false;
+    const parent = byId.get(arm.parent);
+    return parent ? isCounted(parent) : false;
+  };
+}
+
+/** Other-condition arms that would count with the opt-in (their baseline is counted). */
+export function countableOtherConditions(arms: readonly StudyArm[]): StudyArm[] {
+  const counts = countingRule(arms, true);
+  return arms.filter((a) => a.status === "perturbed" && counts(a));
+}
+
+/** URL parameter that turns the opt-in on (`?oc=1`), shared by the study
+ *  table and the gene-page link into it. */
+export const INCLUDE_OTHER_PARAM = "oc";
+
+export const INCLUDE_OTHER_LABEL = "Also count other conditions";
+
+/** Why the opt-in is off by default, for the toggle's tooltip. */
+export function includeOtherHelp(nCountable: number, nOther: number): string {
+  return (
+    `Off by default. Each study counts only its baseline samples (untreated, wild-type or healthy cells). ` +
+    `Switching this on also counts the same studies' other conditions, such as senescent, infected, knockout, ` +
+    `drug-treated, differentiated or diseased samples, but only where the study's baseline dataset is itself counted: ` +
+    `${nCountable} of the ${nOther} other-condition datasets qualify. Other conditions of held, high-background or ` +
+    `comparator studies stay uncounted. The totals at the top of the Surface proteomics page are always baseline-only.`
+  );
 }
 
 export function baseAccession(acc: string): string {
