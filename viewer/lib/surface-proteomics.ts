@@ -225,12 +225,12 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
 };
 
 export const STATUS_HELP: Record<ArmStatus, string> = {
-  core: "Core: intact-cell labeling that passes the surface screen: at least 24% of its length-corrected protein amount is Canonical or Likely Surfaceome proteins when the table reports amounts, otherwise at least 20% of its protein list. Counts as surface evidence.",
+  core: "Core: intact-cell labeling that passes the surface screen: at least 25% of its length-corrected protein amount is Canonical or Likely Surfaceome proteins when the table reports amounts, otherwise at least 20% of its protein list. Counts as surface evidence.",
   provisional:
     "Provisional: intact-cell labeling that passes with a caveat: it sits within 2 points below the 20% list screen (18–20%), it has no no-label control, it was built from a partial author export, or its values are imputed (presence counted, per-sample detection not available). Counts as surface evidence.",
   held: "Held: the published table can't yet tell us which proteins were detected, for example conditions are pooled with no separable baseline. Listed, not counted.",
   below_screen:
-    "High background: intact-cell labeling, but under the surface screen (24% of its length-corrected amount, or 20% of its list when no amounts are published, are Canonical or Likely Surfaceome proteins), so it is mostly intracellular contamination. Listed, not counted.",
+    "High background: intact-cell labeling, but under the surface screen (25% of its length-corrected amount, or 20% of its list when no amounts are published, are Canonical or Likely Surfaceome proteins), so it is mostly intracellular contamination. Listed, not counted.",
   annotation_selected: ANNOTATION_SELECTED_METHODS,
   comparator:
     "Membrane fraction: cells broken open and membranes purified, so it shows a protein is on a membrane (internal membranes included), not that it faces outward. Listed for comparison, not counted. One dataset here is instead an intact-cell label that reaches the inner side of the membrane, marked Inner-side labeling.",
@@ -244,12 +244,12 @@ export const STATUS_HELP: Record<ArmStatus, string> = {
  * CALIBRATED_INCLUSION.md, FRACTIONATION.md).
  */
 export const STATUS_DEFINITION: Record<ArmStatus, string> = {
-  core: "Counted. Intact-cell labeling, and at least 24% of its length-corrected protein amount (or, without published amounts, 20% of its proteins) is known surface proteins (Canonical or Likely).",
+  core: "Counted. Intact-cell labeling, and at least 25% of its length-corrected protein amount (or, without published amounts, 20% of its proteins) is known surface proteins (Canonical or Likely).",
   provisional:
     "Counted, with the caveat shown next to it: it falls within 2 points below the 20% list screen, it has no no-label control, it is a partial export, or its values are imputed (presence counted, per-sample detection not available).",
   held: "Shown, not counted until a data problem is resolved, such as pooled conditions or an unpublished sample map; the reason is shown next to it.",
   below_screen:
-    "Shown, not counted: too little of it is known surface proteins (under 24% of its length-corrected amount, under 20% of its proteins when no amounts are published, or under the higher bar for a pre-filtered list).",
+    "Shown, not counted: too little of it is known surface proteins (under 25% of its length-corrected amount, under 20% of its proteins when no amounts are published, or under the higher bar for a pre-filtered list).",
   annotation_selected:
     "The published table was already restricted to proteins annotated or predicted as surface or membrane proteins; shown, never counted.",
   comparator:
@@ -277,7 +277,7 @@ export const OVERLAP_SCREEN = 0.2;
  *  Likely when its table reports usable amounts (the S3E8 abundance screen; calibrated
  *  so it passes as many membrane preparations as the 20% list screen). Must match
  *  every arm's `abundance_cutoff`, which a test checks. */
-export const ABUNDANCE_SCREEN = 0.24;
+export const ABUNDANCE_SCREEN = 0.25;
 
 /** The number a dataset was screened on, and the bar it had to reach. */
 export function screenScore(arm: StudyArm): {

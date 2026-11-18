@@ -592,7 +592,7 @@ export const tooltips: Record<string, ReactNode> = {
       published table reports per-protein amounts, it is the share of the
       dataset&apos;s total amount, each protein&apos;s amount divided by its
       length so the share counts molecules (marked &ldquo;amount&rdquo;), and the
-      dataset needs at least 24% to count. Otherwise it is the share of the
+      dataset needs at least 25% to count. Otherwise it is the share of the
       dataset&apos;s proteins, and it needs at least 20%, or a higher bar if
       the authors pre-filtered its list. The tick marks the bar.
     </>
