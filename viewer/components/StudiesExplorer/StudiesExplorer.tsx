@@ -452,7 +452,7 @@ export function StudiesExplorer({ index }: Props) {
                       {METHOD_CLASS_LABEL[arm.method_class]}
                     </span>
                   </td>
-                  <td>
+                  <td className={styles.chemCell}>
                     <FamilyChip arm={arm} />
                   </td>
                   <td className={styles.sample}>
