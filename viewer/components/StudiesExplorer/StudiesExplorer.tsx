@@ -461,9 +461,11 @@ export function StudiesExplorer({ index }: Props) {
                       <div className={styles.sub}>{CELL_GROUP_LABEL[arm.cell_group]}</div>
                     ) : null}
                   </td>
-                  <td className={styles.num}>
+                  <td className={styles.countCell}>
                     {/* Bar inline with the number, like Surface overlap, so the
-                        two bars sit on the same line in every row. */}
+                        two bars sit on the same line in every row — and, like it,
+                        left-aligned, so the header sits over the start of the bar
+                        instead of floating in the middle of the bar-plus-number pair. */}
                     <span className={styles.countInline}>
                       <Bar value={arm.n_proteins / maxN} inline />
                       <span className={styles.countInlineNum}>{arm.n_proteins.toLocaleString("en-US")}</span>
@@ -717,7 +719,7 @@ export function StudiesExplorer({ index }: Props) {
               {header("method", "Method")}
               {header("family", "Chemistry")}
               {header("sample", "Cell type / sample")}
-              {header("n", "Proteins", true)}
+              {header("n", "Proteins")}
               {header("overlap", "Surface overlap", false, tooltips.surface_overlap)}
               {header("status", "Status", false, tooltips.arm_status)}
             </tr>
@@ -1524,7 +1526,7 @@ function SelectionPanel({
               {pHeader(
                 "pref",
                 "Surface pref.",
-                true,
+                false,
                 <>
                   How much higher the protein ranks in surface preps than in two backgrounds,
                   in percentile points. It averages two comparisons: its median percentile in
@@ -1585,7 +1587,9 @@ function SelectionPanel({
                   <span className={styles.countedNum}>{p.nCounted}</span>
                   <Bar value={p.nCounted / Math.max(1, countedIdx.length)} />
                 </td>
-                <td className={styles.num}>
+                {/* Left-aligned like Proteins: the cell is a widget, not a bare
+                    number, so a right-aligned header would sit well left of it. */}
+                <td className={styles.countCell}>
                   <PrefCell pref={p.pref} raw={p.prefRaw} />
                 </td>
                 {single && arms[selected[0]].quant_unit ? (

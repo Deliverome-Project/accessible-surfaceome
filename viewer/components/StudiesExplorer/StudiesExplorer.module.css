@@ -357,6 +357,14 @@
   overflow: hidden;
 }
 
+/* Proteins column: left-aligned like Surface overlap, so its header sits over the
+   start of the bar rather than over the gap between the bar and the number. */
+.countCell {
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 /* Proteins column: the bar sits left of the number on one line, matching the
    Surface overlap column, so both bars line up row by row. */
 .countInline {
