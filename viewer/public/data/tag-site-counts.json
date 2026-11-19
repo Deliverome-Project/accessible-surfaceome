@@ -81,7 +81,7 @@
     "cterm_ec": 0,
     "internal": 0,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 5
   },
   "ABCB11": {
     "nterm_ec": 0,
@@ -95,7 +95,7 @@
     "cterm_ec": 0,
     "internal": 0,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "ABCB5": {
     "nterm_ec": 0,
@@ -116,7 +116,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 5
   },
   "ABCC10": {
     "nterm_ec": 1,
@@ -174,6 +174,13 @@
     "disorder": 2,
     "lit_ec": 0
   },
+  "ABCG2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 0,
+    "lit_ec": 2
+  },
   "ABCG4": {
     "nterm_ec": 0,
     "cterm_ec": 0,
@@ -226,7 +233,7 @@
   "ACKR3": {
     "nterm_ec": 1,
     "cterm_ec": 0,
-    "internal": 1,
+    "internal": 0,
     "disorder": 2,
     "lit_ec": 0
   },
@@ -662,14 +669,14 @@
     "cterm_ec": 0,
     "internal": 10,
     "disorder": 14,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "ADGRL2": {
     "nterm_ec": 1,
     "cterm_ec": 0,
     "internal": 8,
     "disorder": 12,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "ADGRL3": {
     "nterm_ec": 1,
@@ -837,7 +844,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 19,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "ALCAM": {
     "nterm_ec": 1,
@@ -921,7 +928,7 @@
     "cterm_ec": 0,
     "internal": 5,
     "disorder": 3,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "ANO2": {
     "nterm_ec": 0,
@@ -1047,14 +1054,14 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 19,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "AQP1": {
     "nterm_ec": 0,
     "cterm_ec": 0,
     "internal": 4,
     "disorder": 0,
-    "lit_ec": 2
+    "lit_ec": 1
   },
   "AQP10": {
     "nterm_ec": 0,
@@ -1096,7 +1103,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "AQP7": {
     "nterm_ec": 0,
@@ -1285,7 +1292,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "ATP1A3": {
     "nterm_ec": 0,
@@ -1418,7 +1425,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 4,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "AXL": {
     "nterm_ec": 1,
@@ -1565,7 +1572,7 @@
     "cterm_ec": 1,
     "internal": 0,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "BTC": {
     "nterm_ec": 1,
@@ -1775,7 +1782,7 @@
     "cterm_ec": 0,
     "internal": 19,
     "disorder": 15,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "CACNA1C": {
     "nterm_ec": 0,
@@ -1803,7 +1810,7 @@
     "cterm_ec": 0,
     "internal": 14,
     "disorder": 9,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "CACNA2D2": {
     "nterm_ec": 1,
@@ -1817,7 +1824,7 @@
     "cterm_ec": 1,
     "internal": 14,
     "disorder": 9,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "CACNA2D4": {
     "nterm_ec": 1,
@@ -1971,7 +1978,7 @@
     "cterm_ec": 0,
     "internal": 5,
     "disorder": 5,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "CATSPERD": {
     "nterm_ec": 1,
@@ -2496,7 +2503,7 @@
     "cterm_ec": 1,
     "internal": 0,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "CD53": {
     "nterm_ec": 0,
@@ -2608,7 +2615,7 @@
     "cterm_ec": 0,
     "internal": 0,
     "disorder": 3,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "CD82": {
     "nterm_ec": 0,
@@ -3210,7 +3217,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "CLCN2": {
     "nterm_ec": 0,
@@ -3651,7 +3658,7 @@
     "cterm_ec": 0,
     "internal": 0,
     "disorder": 9,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "CNR2": {
     "nterm_ec": 1,
@@ -3833,7 +3840,7 @@
     "cterm_ec": 0,
     "internal": 10,
     "disorder": 19,
-    "lit_ec": 0
+    "lit_ec": 3
   },
   "CRB3": {
     "nterm_ec": 1,
@@ -4078,7 +4085,7 @@
     "cterm_ec": 0,
     "internal": 8,
     "disorder": 19,
-    "lit_ec": 0
+    "lit_ec": 3
   },
   "DAGLB": {
     "nterm_ec": 0,
@@ -4106,7 +4113,7 @@
     "cterm_ec": 0,
     "internal": 20,
     "disorder": 15,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "DCHS2": {
     "nterm_ec": 1,
@@ -4148,7 +4155,7 @@
     "cterm_ec": 0,
     "internal": 8,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 3
   },
   "DDR2": {
     "nterm_ec": 1,
@@ -4883,7 +4890,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 20,
-    "lit_ec": 0
+    "lit_ec": 4
   },
   "ESAM": {
     "nterm_ec": 1,
@@ -5534,7 +5541,7 @@
     "cterm_ec": 1,
     "internal": 4,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "GABRA2": {
     "nterm_ec": 1,
@@ -5555,14 +5562,14 @@
     "cterm_ec": 1,
     "internal": 4,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "GABRA5": {
     "nterm_ec": 1,
     "cterm_ec": 1,
     "internal": 4,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "GABRA6": {
     "nterm_ec": 1,
@@ -5611,21 +5618,21 @@
     "cterm_ec": 1,
     "internal": 4,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "GABRG2": {
     "nterm_ec": 1,
     "cterm_ec": 1,
     "internal": 4,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "GABRG3": {
     "nterm_ec": 1,
     "cterm_ec": 1,
     "internal": 4,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "GABRP": {
     "nterm_ec": 1,
@@ -5723,7 +5730,7 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "GFRA1": {
     "nterm_ec": 1,
@@ -6003,7 +6010,7 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 1,
-    "lit_ec": 1
+    "lit_ec": 4
   },
   "GLP2R": {
     "nterm_ec": 1,
@@ -6157,7 +6164,7 @@
     "cterm_ec": 1,
     "internal": 1,
     "disorder": 7,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "GPM6A": {
     "nterm_ec": 0,
@@ -6738,7 +6745,7 @@
     "cterm_ec": 0,
     "internal": 7,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "GRIA2": {
     "nterm_ec": 1,
@@ -6864,14 +6871,14 @@
     "cterm_ec": 0,
     "internal": 5,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "GRM2": {
     "nterm_ec": 1,
     "cterm_ec": 0,
     "internal": 7,
     "disorder": 3,
-    "lit_ec": 0
+    "lit_ec": 3
   },
   "GRM3": {
     "nterm_ec": 1,
@@ -7046,7 +7053,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "HCN3": {
     "nterm_ec": 0,
@@ -7543,7 +7550,7 @@
     "cterm_ec": 0,
     "internal": 9,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "IL10RA": {
     "nterm_ec": 1,
@@ -8054,7 +8061,7 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 7,
-    "lit_ec": 0
+    "lit_ec": 4
   },
   "ITGB8": {
     "nterm_ec": 1,
@@ -8187,7 +8194,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNA6": {
     "nterm_ec": 0,
@@ -8208,7 +8215,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNB2": {
     "nterm_ec": 0,
@@ -8222,7 +8229,7 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNC2": {
     "nterm_ec": 0,
@@ -8257,7 +8264,7 @@
     "cterm_ec": 0,
     "internal": 4,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "KCNE2": {
     "nterm_ec": 1,
@@ -8299,7 +8306,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 5,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNH2": {
     "nterm_ec": 0,
@@ -8341,7 +8348,7 @@
     "cterm_ec": 0,
     "internal": 4,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNH8": {
     "nterm_ec": 0,
@@ -8376,7 +8383,7 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNJ14": {
     "nterm_ec": 0,
@@ -8390,14 +8397,14 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNJ2": {
     "nterm_ec": 0,
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNJ3": {
     "nterm_ec": 0,
@@ -8453,7 +8460,7 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNK18": {
     "nterm_ec": 0,
@@ -8467,14 +8474,14 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNK3": {
     "nterm_ec": 0,
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "KCNK4": {
     "nterm_ec": 0,
@@ -8495,7 +8502,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "KCNMA1": {
     "nterm_ec": 1,
@@ -8509,7 +8516,14 @@
     "cterm_ec": 0,
     "internal": 0,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 1
+  },
+  "KCNMB2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 0,
+    "lit_ec": 1
   },
   "KCNMB3": {
     "nterm_ec": 0,
@@ -9489,7 +9503,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 3,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "LRRC8B": {
     "nterm_ec": 0,
@@ -9517,7 +9531,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 3,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "LRRN1": {
     "nterm_ec": 1,
@@ -10175,7 +10189,7 @@
     "cterm_ec": 0,
     "internal": 11,
     "disorder": 9,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "MMP15": {
     "nterm_ec": 1,
@@ -10376,7 +10390,7 @@
   "MS4A1": {
     "nterm_ec": 0,
     "cterm_ec": 0,
-    "internal": 2,
+    "internal": 1,
     "disorder": 0,
     "lit_ec": 0
   },
@@ -10546,7 +10560,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "MYADM": {
     "nterm_ec": 0,
@@ -10756,7 +10770,7 @@
     "cterm_ec": 0,
     "internal": 19,
     "disorder": 19,
-    "lit_ec": 0
+    "lit_ec": 7
   },
   "NGFR": {
     "nterm_ec": 1,
@@ -10952,7 +10966,7 @@
     "cterm_ec": 0,
     "internal": 12,
     "disorder": 7,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "NPDC1": {
     "nterm_ec": 1,
@@ -11064,7 +11078,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 9,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "NRG2": {
     "nterm_ec": 0,
@@ -11078,7 +11092,7 @@
     "cterm_ec": 0,
     "internal": 0,
     "disorder": 20,
-    "lit_ec": 0
+    "lit_ec": 4
   },
   "NRG4": {
     "nterm_ec": 1,
@@ -11127,7 +11141,7 @@
     "cterm_ec": 0,
     "internal": 4,
     "disorder": 16,
-    "lit_ec": 0
+    "lit_ec": 3
   },
   "NRXN2": {
     "nterm_ec": 1,
@@ -12688,7 +12702,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "OTOP2": {
     "nterm_ec": 0,
@@ -12772,7 +12786,7 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "P2RY1": {
     "nterm_ec": 1,
@@ -12849,7 +12863,7 @@
     "cterm_ec": 0,
     "internal": 4,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "PAM": {
     "nterm_ec": 1,
@@ -12919,7 +12933,7 @@
     "cterm_ec": 0,
     "internal": 14,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "PCDH11X": {
     "nterm_ec": 1,
@@ -14109,7 +14123,7 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 10,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "PTH2R": {
     "nterm_ec": 1,
@@ -14347,7 +14361,7 @@
     "cterm_ec": 1,
     "internal": 15,
     "disorder": 12,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "RELL1": {
     "nterm_ec": 1,
@@ -14837,7 +14851,7 @@
     "cterm_ec": 0,
     "internal": 9,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "SCNN1B": {
     "nterm_ec": 0,
@@ -14893,7 +14907,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 10,
-    "lit_ec": 0
+    "lit_ec": 3
   },
   "SDK1": {
     "nterm_ec": 0,
@@ -15047,7 +15061,7 @@
     "cterm_ec": 1,
     "internal": 13,
     "disorder": 3,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "SERINC1": {
     "nterm_ec": 0,
@@ -15068,7 +15082,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 8,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "SERINC4": {
     "nterm_ec": 0,
@@ -15082,7 +15096,7 @@
     "cterm_ec": 1,
     "internal": 1,
     "disorder": 4,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "SERTM2": {
     "nterm_ec": 1,
@@ -15187,7 +15201,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 7,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "SHISAL1": {
     "nterm_ec": 1,
@@ -15446,14 +15460,14 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "SLC12A3": {
     "nterm_ec": 0,
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "SLC12A4": {
     "nterm_ec": 0,
@@ -15467,7 +15481,7 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "SLC12A6": {
     "nterm_ec": 0,
@@ -15670,7 +15684,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 4,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "SLC1A3": {
     "nterm_ec": 0,
@@ -15866,7 +15880,7 @@
     "cterm_ec": 1,
     "internal": 2,
     "disorder": 7,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "SLC24A3": {
     "nterm_ec": 0,
@@ -16559,7 +16573,7 @@
     "cterm_ec": 0,
     "internal": 5,
     "disorder": 1,
-    "lit_ec": 2
+    "lit_ec": 1
   },
   "SLC4A10": {
     "nterm_ec": 0,
@@ -16573,14 +16587,14 @@
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "SLC4A2": {
     "nterm_ec": 0,
     "cterm_ec": 0,
     "internal": 3,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "SLC4A3": {
     "nterm_ec": 0,
@@ -16867,7 +16881,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 2,
-    "lit_ec": 7
+    "lit_ec": 4
   },
   "SLC6A4": {
     "nterm_ec": 0,
@@ -17259,7 +17273,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 3,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "SMPDL3B": {
     "nterm_ec": 1,
@@ -17280,7 +17294,7 @@
     "cterm_ec": 0,
     "internal": 5,
     "disorder": 19,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "SORCS2": {
     "nterm_ec": 1,
@@ -17308,7 +17322,7 @@
     "cterm_ec": 0,
     "internal": 6,
     "disorder": 7,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "SPACA1": {
     "nterm_ec": 1,
@@ -18120,7 +18134,7 @@
     "cterm_ec": 0,
     "internal": 0,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "TLCD2": {
     "nterm_ec": 1,
@@ -18792,7 +18806,7 @@
     "cterm_ec": 0,
     "internal": 1,
     "disorder": 0,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "TMIGD2": {
     "nterm_ec": 1,
@@ -19303,7 +19317,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 3,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "TRPM5": {
     "nterm_ec": 0,
@@ -19324,7 +19338,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 5,
-    "lit_ec": 0
+    "lit_ec": 3
   },
   "TRPV2": {
     "nterm_ec": 0,
@@ -19338,7 +19352,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 3,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "TRPV4": {
     "nterm_ec": 0,
@@ -19443,7 +19457,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 2,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "TSPAN3": {
     "nterm_ec": 0,
@@ -19604,7 +19618,7 @@
     "cterm_ec": 1,
     "internal": 7,
     "disorder": 7,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "UMODL1": {
     "nterm_ec": 1,
@@ -19758,7 +19772,7 @@
     "cterm_ec": 0,
     "internal": 4,
     "disorder": 6,
-    "lit_ec": 0
+    "lit_ec": 2
   },
   "VN1R1": {
     "nterm_ec": 1,
@@ -19954,7 +19968,7 @@
     "cterm_ec": 0,
     "internal": 2,
     "disorder": 1,
-    "lit_ec": 0
+    "lit_ec": 1
   },
   "ZACN": {
     "nterm_ec": 1,

@@ -198,25 +198,38 @@ export function StudiesExplorer({ index }: Props) {
   );
   // Opt-in (?oc=1): also count other conditions whose baseline arm counts.
   // Off by default, so each study counts only its baseline samples.
-  const [includeOther, setIncludeOther] = useState(() => param(INCLUDE_OTHER_PARAM) === "1");
+  const [includeOther, setIncludeOther] = useState(false);
   const counts = useMemo(() => countingRule(arms, includeOther), [arms, includeOther]);
   const nOther = useMemo(() => arms.filter((a) => a.status === "perturbed").length, [arms]);
   const nCountableOther = useMemo(() => countableOtherConditions(arms).length, [arms]);
   const countedIdx = useMemo(() => arms.flatMap((a, i) => (counts(a) ? [i] : [])), [arms, counts]);
-  const [query, setQuery] = useState(() => param("dq") ?? "");
+  const [query, setQuery] = useState("");
   // Catalog-style chips: nothing checked = no filter; checked values OR together.
-  const [statuses, setStatuses] = useState<Set<ArmStatus>>(
-    () => new Set((param("st")?.split(",").filter(Boolean) ?? []) as ArmStatus[]),
-  );
-  const [classes, setClasses] = useState<Set<MethodClass>>(
-    () => new Set((param("mc")?.split(",").filter(Boolean) ?? []) as MethodClass[]),
-  );
-  const [cellGroups, setCellGroups] = useState<Set<CellGroup>>(
-    () => new Set((param("cg")?.split(",").filter(Boolean) ?? []) as CellGroup[]),
-  );
-  const [families, setFamilies] = useState<Set<string>>(
-    () => new Set(param("fam")?.split(",").filter(Boolean) ?? []),
-  );
+  const [statuses, setStatuses] = useState<Set<ArmStatus>>(() => new Set());
+  const [classes, setClasses] = useState<Set<MethodClass>>(() => new Set());
+  const [cellGroups, setCellGroups] = useState<Set<CellGroup>>(() => new Set());
+  const [families, setFamilies] = useState<Set<string>>(() => new Set());
+  // The page is prerendered without query parameters, so these have to START at the
+  // prerendered defaults and take the URL only after mount — the same shape as the
+  // ?arm= effect below. Reading the URL in a useState initializer instead makes the
+  // first client render disagree with the HTML it is hydrating (?oc=1 rendered "129
+  // counted datasets" over a prerendered "92"), and React answers a text mismatch by
+  // throwing the whole prerendered page away and rebuilding it in the browser.
+  useEffect(() => {
+    const csv = <T,>(name: string): Set<T> =>
+      new Set((param(name)?.split(",").filter(Boolean) ?? []) as T[]);
+    if (param(INCLUDE_OTHER_PARAM) === "1") setIncludeOther(true);
+    const q = param("dq");
+    if (q) setQuery(q);
+    const st = csv<ArmStatus>("st");
+    if (st.size) setStatuses(st);
+    const mc = csv<MethodClass>("mc");
+    if (mc.size) setClasses(mc);
+    const cg = csv<CellGroup>("cg");
+    if (cg.size) setCellGroups(cg);
+    const fam = csv<string>("fam");
+    if (fam.size) setFamilies(fam);
+  }, []);
   const FAMILIES = useMemo(
     () => FAMILY_ORDER.filter((f) => arms.some((a) => a.family === f)),
     [arms],
@@ -924,6 +937,10 @@ function SelectionPanel({
   const [attempt, setAttempt] = useState(0);
   // Filters start from the URL (pf, tiers, min, mode, ps) so Back restores them.
   const restored = useRef(param("pf") != null || param("tiers") != null || param("min") != null || param("mode") != null);
+  // These may read the URL during render, unlike the page's own parameters above: this
+  // panel renders nothing but "Loading protein lists…" until the shards arrive on the
+  // client, so none of it reaches the prerendered HTML and none of it can mismatch on
+  // hydration. Anything moved above that early return has to move into an effect.
   const [filter, setFilter] = useState(() => param("pf") ?? "");
   const [mode, setMode] = useState<Mode>(() => (param("mode") as Mode | null) ?? "any");
   // Same as the catalog's tier filter: nothing checked = every tier; checked tiers OR together.
