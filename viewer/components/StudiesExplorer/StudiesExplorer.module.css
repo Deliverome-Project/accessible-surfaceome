@@ -122,15 +122,34 @@
    the styled (InfoTip) popovers inside it. */
 .tableScroll {
   max-width: 100%;
-  /* Always scroll inside the box: a table wider than the page must not
-     widen the page itself (it scrolls sideways here instead). */
-  overflow-x: auto;
+  /* No overflow of our own. The tables now lay out well inside the page
+     (min-content ~594px), so the only thing that ever stuck out was the
+     InfoTip popovers -- which are `visibility: hidden` rather than
+     `display: none`, so they still take layout, and under `overflow-x: auto`
+     they produced a horizontal scrollbar with nothing to scroll to. Letting
+     them overflow is also what a popover is meant to do. Keeping this
+     `visible` additionally lets the sticky header below stick to the PAGE:
+     an `overflow-x` other than visible makes this a scroll container on both
+     axes, and the header would then stick to this box instead. */
+  overflow: visible;
+}
+
+/* Below the tables' own min-content width there is nothing left to shrink,
+   so the box scrolls rather than widening the page. */
+@media (max-width: 640px) {
+  .tableScroll {
+    overflow-x: auto;
+  }
 }
 
 /* Columns size to their content: no stretching to fill the page width. */
 .table {
   width: auto;
-  border-collapse: collapse;
+  /* `separate` (not `collapse`) so the sticky header below actually sticks:
+     Chrome does not honour position: sticky on a th of a collapsed table.
+     Every border here is a single bottom rule, so nothing doubles up. */
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.86rem;
   line-height: 1.35;
 }
@@ -152,6 +171,15 @@
   /* Headers wrap: a nowrap header pins its column to one line of its own label,
      which (with nine columns) forced the table 377px wider than the page. */
   white-space: normal;
+  /* The column names stay put while the rows scroll past, tucked under the
+     Shell's own sticky header -- the same `--shell-header-h` offset and the
+     same abutting trick AnchorNav uses, and a z-index below the Shell's 20 so
+     the header stays on top rather than the table covering the nav. */
+  position: sticky;
+  top: var(--shell-header-h, 66px);
+  z-index: 5;
+  background: var(--bg-soft, #fff);
+  box-shadow: inset 0 -1px 0 var(--line-soft);
 }
 
 .notCounted td {
