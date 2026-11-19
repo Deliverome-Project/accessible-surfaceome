@@ -151,7 +151,9 @@ export default function SurfaceProteomicsPage() {
               dataset&apos;s proteins must be established surface proteins, and a list within{" "}
               {OVERLAP_ALLOWANCE_PTS} points below that counts only as Provisional. (A random set
               of human proteins scores about 15%.) When the authors pre-filtered their list to
-              annotated surface proteins, the bar is raised to match.{" "}
+              annotated surface proteins, the bar is raised to match — though such a list is not
+              counted either way, so the raised bar only decides whether it lands here or under
+              &ldquo;Pre-filtered by surface annotation&rdquo; below.{" "}
               <span className={styles.fails}>
                 {countByStatus("below_screen")} datasets → High background
               </span>
