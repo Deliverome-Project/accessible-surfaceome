@@ -138,7 +138,7 @@
 .table th,
 .table td {
   text-align: left;
-  padding: 0.35rem 0.9rem 0.35rem 0;
+  padding: 0.35rem 0.55rem 0.35rem 0;
   border-bottom: 1px solid var(--line-soft);
   vertical-align: top;
 }
@@ -149,7 +149,9 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   font-weight: var(--fw-medium);
-  white-space: nowrap;
+  /* Headers wrap: a nowrap header pins its column to one line of its own label,
+     which (with nine columns) forced the table 377px wider than the page. */
+  white-space: normal;
 }
 
 .notCounted td {
@@ -170,7 +172,7 @@
 }
 
 .sample {
-  min-width: 9rem;
+  min-width: 7rem;
   max-width: 16rem;
 }
 
@@ -317,7 +319,7 @@
 }
 
 .studyCell {
-  min-width: 12rem;
+  min-width: 10rem;
   max-width: 22rem;
 }
 
@@ -333,7 +335,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  white-space: nowrap;
+  /* Wraps: "Intact-cell labeling" on one line made this column 182px wide. */
+  white-space: normal;
 }
 
 .swatch {
@@ -349,7 +352,7 @@
 
 .bar {
   display: block;
-  width: 4.5rem;
+  width: 3.25rem;
   height: 4px;
   margin: 4px 0 0 auto;
   background: var(--line-soft);
@@ -424,7 +427,7 @@
 .overlapTrack {
   position: relative;
   display: inline-block;
-  width: 5.5rem;
+  width: 4rem;
   height: 8px;
   background: var(--line-soft);
   border-radius: 4px;
@@ -751,6 +754,8 @@
 }
 
 .statusReason {
+  /* Capped so one long reason cannot widen the whole column. */
+  max-width: 12rem;
   margin-top: 3px;
   font-size: 0.8rem;
   line-height: 1.35;
@@ -914,4 +919,14 @@
   font-weight: 600;
   color: var(--ink);
   cursor: pointer;
+}
+
+/* The chemistry pill wraps inside the study table: "GLYCOPROTEIN CAPTURE" on one
+   line held that column at 198px. */
+.chemCell {
+  max-width: 8.5rem;
+}
+
+.chemCell > * {
+  white-space: normal;
 }
