@@ -257,7 +257,9 @@ def fetch_fulltext_sections(
             full = fetch_fulltext(http=http, pmcid=paper.pmc_id, retraction_index=ri)
         except Exception:  # noqa: BLE001 - full text is best-effort
             continue
-        secs = {s.name: s.text for s in full.sections if s.name in ("methods", "results")}
+        secs: dict[str, str] = {
+            s.name: s.text for s in full.sections if s.name in ("methods", "results")
+        }
         if secs:
             out[sid] = secs
     return out

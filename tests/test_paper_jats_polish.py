@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import lxml.etree as ET  # ty: ignore[unresolved-import]
+import lxml.etree as ET  # ty: ignore[import-not-found]
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "paper"))
@@ -81,7 +81,7 @@ ASSETS = {"1": "figures/db_overlap_upset.svg"}  # no entry for supplementary-2
 
 
 def _polished():
-    from jats_polish import polish  # ty: ignore[unresolved-import]
+    from jats_polish import polish  # ty: ignore[import-not-found]
 
     root = ET.fromstring(RAW.encode())
     report = polish(root, graphic_for=ASSETS.get)
@@ -229,7 +229,7 @@ def test_table_rows_pandoc_read_as_headers_move_to_the_body() -> None:
 
 
 def test_a_manuscript_missing_its_parts_is_reported_not_crashed() -> None:
-    from jats_polish import polish  # ty: ignore[unresolved-import]
+    from jats_polish import polish  # ty: ignore[import-not-found]
 
     root = ET.fromstring(
         b"<article><front><article-meta/></front><body>"

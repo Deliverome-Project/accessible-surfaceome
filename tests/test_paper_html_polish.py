@@ -26,7 +26,7 @@ lxml_html = pytest.importorskip("lxml.html")
 # build.py imports its paper/ siblings by bare name; do the same.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "paper"))
 
-from html_polish import (  # noqa: E402  # ty: ignore[unresolved-import]
+from html_polish import (  # noqa: E402  # ty: ignore[import-not-found]
     captions_above_tables,
     demote_extra_header_rows,
     polish_print_html,

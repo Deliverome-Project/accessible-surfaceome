@@ -457,8 +457,7 @@ def db_panel(uniprot_acc: str, *, http: CachedHTTP) -> DBVotePanel:
             if rec.get("source_note"):
                 notes.append(rec["source_note"])
         # Dedupe WO numbers preserving order
-        seen: set[str] = set()
-        wo_numbers = [w for w in wo_numbers if not (w in seen or seen.add(w))]
+        wo_numbers = list(dict.fromkeys(wo_numbers))
         patent_evidence = {
             "wo_numbers": wo_numbers,
             "source_notes": notes,

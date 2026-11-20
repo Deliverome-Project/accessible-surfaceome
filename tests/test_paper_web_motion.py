@@ -50,7 +50,7 @@ def _png(path: Path, size: tuple[int, int]) -> Path:
 def test_image_hints_stamp_intrinsic_size(tmp_path: Path) -> None:
     """The <img> carries the real pixel dimensions, so the browser can
     reserve the box before the image decodes."""
-    from web_assets import apply_image_hints  # ty: ignore[unresolved-import]
+    from web_assets import apply_image_hints  # ty: ignore[import-not-found]
     from lxml import html as lxml_html
 
     img = lxml_html.fromstring('<img src="assets/00-fig.webp"/>')
@@ -63,7 +63,7 @@ def test_image_hints_stamp_intrinsic_size(tmp_path: Path) -> None:
 def test_image_hints_set_lazy_decode(tmp_path: Path) -> None:
     """Unmanaged decode of a dozen dense figure rasters is what actually
     stutters the scroll; hand the browser both hints."""
-    from web_assets import apply_image_hints  # ty: ignore[unresolved-import]
+    from web_assets import apply_image_hints  # ty: ignore[import-not-found]
     from lxml import html as lxml_html
 
     img = lxml_html.fromstring('<img src="assets/00-fig.webp"/>')
@@ -77,7 +77,7 @@ def test_image_hints_survive_an_unreadable_file(tmp_path: Path) -> None:
     """A missing or corrupt asset must not take the whole build down, and
     must not leave a bogus aspect ratio behind — worse than none, because
     the browser would reserve the WRONG box."""
-    from web_assets import apply_image_hints  # ty: ignore[unresolved-import]
+    from web_assets import apply_image_hints  # ty: ignore[import-not-found]
     from lxml import html as lxml_html
 
     img = lxml_html.fromstring('<img src="assets/00-fig.webp"/>')
@@ -92,7 +92,7 @@ def test_image_hints_survive_an_unreadable_file(tmp_path: Path) -> None:
 def test_image_hints_do_not_override_an_authored_size(tmp_path: Path) -> None:
     """If something upstream already decided the size, it wins — this
     helper's job is to supply a MISSING ratio, not to relitigate one."""
-    from web_assets import apply_image_hints  # ty: ignore[unresolved-import]
+    from web_assets import apply_image_hints  # ty: ignore[import-not-found]
     from lxml import html as lxml_html
 
     img = lxml_html.fromstring('<img src="x.webp" width="640" height="480"/>')
@@ -209,7 +209,7 @@ def test_bootstrap_sets_the_gate_inline_and_capability_checked() -> None:
     """The gate must be set before first paint, which means inline in
     <head> rather than from the deferred paper.js — and only when the
     browser can also UN-hide the content again."""
-    from web_assets import REVEAL_BOOTSTRAP_SCRIPT  # ty: ignore[unresolved-import]
+    from web_assets import REVEAL_BOOTSTRAP_SCRIPT  # ty: ignore[import-not-found]
 
     assert "js-reveal" in REVEAL_BOOTSTRAP_SCRIPT
     assert "src=" not in REVEAL_BOOTSTRAP_SCRIPT, (
@@ -232,7 +232,7 @@ def test_paper_js_arms_the_transition() -> None:
 def _marked(fragment: str) -> Any:
     from lxml import html as lxml_html
 
-    from web_assets import apply_reveal_markup  # ty: ignore[unresolved-import]
+    from web_assets import apply_reveal_markup  # ty: ignore[import-not-found]
 
     doc = lxml_html.fromstring(
         f'<html><body class="paper-root">{fragment}</body></html>'
@@ -323,7 +323,7 @@ def test_reference_list_staggers_with_a_capped_delay() -> None:
     where neither the anchor's parent nor its grandparent is the list.
     An earlier version stopped at the <li>, found one anchor, and
     silently staggered nothing in the real build."""
-    from web_assets import STAGGER_INDEX_CAP  # ty: ignore[unresolved-import]
+    from web_assets import STAGGER_INDEX_CAP  # ty: ignore[import-not-found]
 
     items = "".join(
         f'<li><p><span id="ref-{i}"></span>Reference {i}</p></li>'
@@ -370,7 +370,7 @@ def _svg(path: Path, attrs: str) -> Path:
 def test_svg_dimensions_come_from_width_and_height(tmp_path: Path) -> None:
     """Most figures in this paper are SVG, which Pillow cannot read — so
     without this the reservation misses exactly the images it is for."""
-    from web_assets import apply_image_hints  # ty: ignore[unresolved-import]
+    from web_assets import apply_image_hints  # ty: ignore[import-not-found]
     from lxml import html as lxml_html
 
     img = lxml_html.fromstring('<img src="assets/f.svg"/>')
@@ -379,7 +379,7 @@ def test_svg_dimensions_come_from_width_and_height(tmp_path: Path) -> None:
 
 
 def test_svg_dimensions_fall_back_to_the_viewbox(tmp_path: Path) -> None:
-    from web_assets import apply_image_hints  # ty: ignore[unresolved-import]
+    from web_assets import apply_image_hints  # ty: ignore[import-not-found]
     from lxml import html as lxml_html
 
     img = lxml_html.fromstring('<img src="assets/f.svg"/>')
@@ -390,7 +390,7 @@ def test_svg_dimensions_fall_back_to_the_viewbox(tmp_path: Path) -> None:
 def test_percentage_width_svg_uses_the_viewbox(tmp_path: Path) -> None:
     """A width of "100%" is not an intrinsic size; reserving a box 100
     units wide would be worse than reserving none."""
-    from web_assets import apply_image_hints  # ty: ignore[unresolved-import]
+    from web_assets import apply_image_hints  # ty: ignore[import-not-found]
     from lxml import html as lxml_html
 
     img = lxml_html.fromstring('<img src="assets/f.svg"/>')
@@ -405,7 +405,7 @@ def test_percentage_width_svg_uses_the_viewbox(tmp_path: Path) -> None:
 def test_title_band_images_are_not_lazy(tmp_path: Path) -> None:
     """The logo and resource icons sit in the opening screen; deferring
     them costs LCP and buys nothing."""
-    from web_assets import apply_image_hints  # ty: ignore[unresolved-import]
+    from web_assets import apply_image_hints  # ty: ignore[import-not-found]
     from lxml import html as lxml_html
 
     doc = lxml_html.fromstring(
@@ -439,7 +439,7 @@ def test_build_emits_preconnect_before_the_font_stylesheet() -> None:
     the point is to open the TLS connection while the HTML still parses.
     Both Google hosts are needed — the CSS and the woff2 are on
     different origins, and gstatic must be crossorigin."""
-    from web_assets import FONT_HEAD_LINKS  # ty: ignore[unresolved-import]
+    from web_assets import FONT_HEAD_LINKS  # ty: ignore[import-not-found]
 
     joined = "\n".join(FONT_HEAD_LINKS)
     assert joined.index("preconnect") < joined.index('rel="stylesheet"')

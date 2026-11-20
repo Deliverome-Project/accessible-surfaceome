@@ -187,9 +187,8 @@ def _per_ensp_surface_terms(df: pd.DataFrame) -> pd.Series:
     """Return a Series keyed on ENSP with comma-joined surface GO IDs seen."""
     if df.empty:
         return pd.Series(dtype=str)
-    return (
-        df.groupby("ensp")["go_id"]
-        .apply(lambda s: ",".join(sorted(set(s))))
+    return pd.Series(
+        df.groupby("ensp")["go_id"].apply(lambda s: ",".join(sorted(set(s))))
     )
 
 

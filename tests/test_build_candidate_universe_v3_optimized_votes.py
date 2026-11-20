@@ -26,7 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-import build_candidate_universe_v3 as m  # noqa: E402  # ty: ignore[unresolved-import]
+import build_candidate_universe_v3 as m  # noqa: E402  # ty: ignore[import-not-found]
 
 
 def _row(acc, uniprot, cspa, go=0, surfy=0, hpa=0):

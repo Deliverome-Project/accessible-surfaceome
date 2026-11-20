@@ -102,7 +102,7 @@ def test_modulator_observation_defaults_and_enums():
             perturbation="bogus",  # ty:ignore[invalid-argument-type]
         )
     with pytest.raises(ValidationError):
-        ModulatorObservation()  # modulator is required
+        ModulatorObservation()  # ty:ignore[missing-argument] -- modulator is required
 
 
 def test_modulator_observations_on_llm_out_and_track():

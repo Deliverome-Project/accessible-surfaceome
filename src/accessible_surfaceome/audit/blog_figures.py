@@ -74,7 +74,7 @@ def _patch_upsetplot_label_sizes() -> None:
         finally:
             np.diff = original_diff
 
-    UpSet._label_sizes = patched  # ty:ignore[invalid-assignment]
+    UpSet._label_sizes = patched
 
 
 _patch_upsetplot_label_sizes()

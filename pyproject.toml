@@ -101,7 +101,7 @@ dev = [
     "pre-commit>=4.3.0",
     "pytest>=8.4.0",
     "ruff>=0.16",
-    "ty>=0.0.34",
+    "ty==0.0.102",  # pinned: the org standard (Deliverome-Project/.github standards.toml [ty])
 ]
 
 [tool.ty.environment]
@@ -110,6 +110,16 @@ root = ["./src"]
 
 [tool.ty.src]
 include = ["src", "tests"]
+
+# binders/contact_coordinates.py is hashed into
+# data/analysis/deep_dive_binding_sites/reviewed_chemical_validation.json (validator_sha256), so
+# the file stays byte-identical until the next coordinate re-validation (see
+# docs/reports/2026-09-18-scalable-contact-curation.md). Its ignore comment still uses a rule name
+# ty renamed after 0.0.91; rename it, re-validate and drop this override together.
+[[tool.ty.overrides]]
+include = ["src/accessible_surfaceome/binders/contact_coordinates.py"]
+[tool.ty.overrides.rules]
+renamed-rule-in-ignore-comment = "ignore"
 
 [tool.pytest.ini_options]
 markers = [

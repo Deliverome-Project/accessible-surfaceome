@@ -89,7 +89,7 @@ def score_predictions(
         preds = predicted_by_gene.get(c.gene_symbol) or []
         if c.junction in preds:
             rep.outcomes[c.id] = "exact"
-        elif any(abs(p - c.junction) <= tolerance for p in preds):
+        elif c.junction is not None and any(abs(p - c.junction) <= tolerance for p in preds):
             rep.outcomes[c.id] = "near"
         else:
             rep.outcomes[c.id] = "miss"

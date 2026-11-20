@@ -23,7 +23,7 @@ from pathlib import Path
 # build script the same way it's invoked (python scripts/build_candidate_universe_v3.py).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-import build_candidate_universe_v3 as m  # noqa: E402  # ty: ignore[unresolved-import]
+import build_candidate_universe_v3 as m  # noqa: E402  # ty: ignore[import-not-found]
 
 
 def test_resolves_predicate_true_when_any_stable_id_present():
