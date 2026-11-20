@@ -81,7 +81,7 @@ def _run(mock: SimpleNamespace) -> SimpleNamespace:
     static type checker sees it as a descriptor object. The ty:ignore
     suppresses the false positive on what is in fact a working call.
     """
-    SurfaceomeRecord._check_state_dependence_consistent_with_modulation(  # ty:ignore[call-non-callable]
+    SurfaceomeRecord._check_state_dependence_consistent_with_modulation(  # ty:ignore[not-callable]
         mock
     )
     return mock

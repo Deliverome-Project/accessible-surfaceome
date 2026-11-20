@@ -33,7 +33,7 @@ pytest.importorskip("lxml")
 import sys  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "paper"))
 
-from figure_swap import (  # noqa: E402  # ty: ignore[unresolved-import]
+from figure_swap import (  # noqa: E402  # ty: ignore[import-not-found]
     FigureSpec,
     _key_from_span_id,
     compare_figures,
@@ -355,7 +355,7 @@ def test_missing_asset_keeps_docx_bitmap() -> None:
 
 
 def test_format_report_handles_empty_report() -> None:
-    from figure_swap import SwapReport  # ty: ignore[unresolved-import]
+    from figure_swap import SwapReport  # ty: ignore[import-not-found]
     out = format_report(SwapReport())
     assert "manifest empty" in out or "no figures matched" in out
 

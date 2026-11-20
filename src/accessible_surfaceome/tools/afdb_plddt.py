@@ -94,7 +94,7 @@ def _afdb_version_string(latest_version: object) -> AFDBVersion:
     else:
         candidate = "v4"
     if candidate in _VALID_AFDB_VERSIONS:
-        return candidate  # ty:ignore[invalid-return-type]
+        return candidate  # ty:ignore[invalid-explicit-return]
     # Beyond v9: log + clamp so the schema doesn't reject the record.
     # Widening _VALID_AFDB_VERSIONS is the right fix when this fires.
     logger.warning(

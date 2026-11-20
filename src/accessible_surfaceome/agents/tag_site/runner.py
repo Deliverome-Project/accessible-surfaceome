@@ -209,6 +209,7 @@ def format_evidence_ledger(evidence: Iterable[Any]) -> str:
     real clip. ``<label>`` surfaces the numeric PMID (``PMID 123``) when the
     source_id is a ``PMID:`` key, else the raw source_id (``PMC:...`` / ``DOI:...``)
     so a preprint clip is cited by DOI/PMC with ``supporting_pmid``=null."""
+    evidence = list(evidence)  # an iterator would always test truthy
     if not evidence:
         return (
             "EVIDENCE LEDGER: empty — no span-verified tag-insertion clips were "
