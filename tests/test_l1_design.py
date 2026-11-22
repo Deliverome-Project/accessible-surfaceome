@@ -16,8 +16,8 @@ Guards the regressions that would look fine and be wrong:
 * a source row joined on member id (still being renumbered) instead of design id +
   sequence sha256, or a stale row (sequence changed) loaded as current;
 * agent picks numbered on the canonical loaded onto a member whose protein differs;
-* the review endpoints accepting a write without the token, or running open when the
-  token secret is unset;
+* the review endpoints accepting a write without the token or a Turnstile check, or
+  running open when neither secret is set (Turnstile paths: test_worker_l1_review_auth.py);
 * the route serving a missing load as a 500 instead of ``load: null``.
 """
 
@@ -40,6 +40,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATION = ROOT / "cloudflare/migrations/l1_design_v1.sql"
 REVIEW_MIGRATION = ROOT / "cloudflare/migrations/l1_review_v1.sql"
+REVIEW_MIGRATION_V2 = ROOT / "cloudflare/migrations/l1_review_v2.sql"
 SCHEMA = ROOT / "cloudflare/d1_public_schema.sql"
 WORKER = ROOT / "cloudflare/workers/surfaceome_api/src/index.js"
 LOADER = ROOT / "scripts/cloud/build_l1_design_tables.py"
@@ -134,7 +135,13 @@ def test_review_inserts_match_the_review_migration():
         m = re.search(rf"INSERT INTO {table} \((.*?)\)", src, re.S)
         assert m, table
         cols = {c.strip() for c in m.group(1).split(",")}
-        assert cols == _columns(table, REVIEW_MIGRATION), table
+        added = set(
+            re.findall(
+                rf"ALTER TABLE {table} ADD COLUMN (\w+)",
+                REVIEW_MIGRATION_V2.read_text(),
+            )
+        )
+        assert cols == _columns(table, REVIEW_MIGRATION) | added, table
 
 
 def test_loader_columns_match_the_migration():
@@ -1225,10 +1232,11 @@ assert.equal(body.load, null);
 const verdict = { kind: "verdict", reviewer: "Becca", member_id: "l1-m0006", design_id: "l1-p0006",
   sequence_sha256: "f".repeat(64), gene_symbol: "GENEE", verdict: "no", reason: "glycan at 100",
   load_version: lv };
+// No token and no Turnstile secret in this env: writes are closed, not open.
 [status] = await call("/v1/l1-review", { method: "POST", body: verdict });
-assert.equal(status, 401);
+assert.equal(status, 503);
 [status] = await call("/v1/l1-review", { method: "POST", body: verdict, token: "wrong" });
-assert.equal(status, 401);
+assert.equal(status, 503);
 [status] = await call("/v1/l1-review", { method: "POST", body: verdict, token: "s3cret",
   envOverride: { ...env, L1_REVIEW_TOKEN: undefined } });
 assert.equal(status, 503);
@@ -1250,6 +1258,7 @@ assert.equal(status, 401);
 [status, body] = await call("/v1/l1-review", { token: "s3cret" });
 assert.equal(body.reviews.length, 1);
 assert.equal(body.alt_tags[0].insert_after_residue, 60);
+assert.equal(body.reviews[0].auth_method, "token");
 let res;
 [status, body, res] = await call("/v1/l1-review/export.tsv", { token: "s3cret" });
 assert.equal(status, 200);
@@ -1284,6 +1293,7 @@ def test_worker_routes_against_sqlite(built):
     priv = tmp / "private.sqlite"
     db = sqlite3.connect(priv)
     db.executescript(REVIEW_MIGRATION.read_text())
+    db.executescript(REVIEW_MIGRATION_V2.read_text())
     db.commit()
     db.close()
     empty = tmp / "empty.sqlite"
