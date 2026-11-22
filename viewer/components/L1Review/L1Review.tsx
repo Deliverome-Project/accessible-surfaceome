@@ -252,13 +252,13 @@ interface Draft {
   siteId?: string;
   /** One comment for every mode: the reason for a concern, or why the other site. */
   reason: string;
-  alt: { residue: string; placement: L1Placement; cassette: string };
+  alt: { residue: string; placement: "" | L1Placement; cassette: string };
 }
 
 const EMPTY_DRAFT: Draft = {
   mode: "",
   reason: "",
-  alt: { residue: "", placement: "internal", cassette: "" },
+  alt: { residue: "", placement: "", cassette: "" },
 };
 
 const MODES: { value: Exclude<ReviewMode, "">; label: string; key: string }[] = [
@@ -360,7 +360,7 @@ export function ReviewPanel({
     if (!name) return "Add your name at the top of the page first.";
     if (draft.mode === "no" && !draft.reason.trim()) return "Say what is wrong in the comment.";
     if (draft.mode === "alt") {
-      const needsResidue = draft.alt.placement === "internal" || draft.alt.placement === "after_sp";
+      const needsResidue = draft.alt.placement === "" || draft.alt.placement === "internal" || draft.alt.placement === "after_sp";
       if (needsResidue && draft.alt.residue === "") return "Give the residue the tag goes after, or click one on the structure.";
     }
     return null;
@@ -396,15 +396,22 @@ export function ReviewPanel({
     try {
       if (draft.mode === "alt") {
         const residue = draft.alt.residue === "" ? null : Number(draft.alt.residue);
+        const placement: L1Placement =
+          draft.alt.placement ||
+          (residue === 0
+            ? "n_term"
+            : residue != null && member.ordered_length_aa != null && residue >= member.ordered_length_aa
+              ? "c_term"
+              : "internal");
         const cassette = draft.alt.cassette || null;
         const r = await submitL1Review(API_BASE, t, {
-          ...base, kind: "alt_tag", placement: draft.alt.placement, insert_after_residue: residue,
+          ...base, kind: "alt_tag", placement, insert_after_residue: residue,
           cassette_variant: cassette, reason,
         });
         if (!r.ok) return setMsg({ ok: false, text: `Not saved: ${reviewErrorMessage(r.error)}` });
         const row: L1AltTagRow = {
           suggestion_id: r.id, created_at: r.created_at, ...base, design_id: member.design_id,
-          insert_after_residue: residue, placement: draft.alt.placement, cassette_variant: cassette, reason,
+          insert_after_residue: residue, placement, cassette_variant: cassette, reason,
         };
         patch({ mode: "", reason: "", alt: EMPTY_DRAFT.alt });
         setMsg({ ok: true, text: "Saved — thank you. Your suggested site is listed below." });
@@ -550,26 +557,35 @@ export function ReviewPanel({
             />
             <span id={`${fieldId}-residue-help`} className={styles.help}>
               or click a residue on the structure or topology bar
-              {member.ordered_length_aa ? ` · 1–${member.ordered_length_aa}` : ""}
+              {member.ordered_length_aa ? ` · 0–${member.ordered_length_aa}` : ""}
             </span>
           </label>
-          <label>
-            placement
-            <select value={draft.alt.placement} onChange={(e) => setAlt({ placement: e.target.value as L1Placement })}>
-              {(Object.keys(PLACEMENT_LABEL) as L1Placement[]).map((p) => (
-                <option key={p} value={p}>{PLACEMENT_LABEL[p]}</option>
-              ))}
-            </select>
-          </label>
-          {cassettes.length > 1 ? (
-            <label>
-              cassette
-              <select value={draft.alt.cassette} onChange={(e) => setAlt({ cassette: e.target.value })}>
-                <option value="">same as the current pick</option>
-                {cassettes.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </label>
-          ) : null}
+          <details className={styles.altOptions}>
+            <summary>
+              optional: placement{cassettes.length > 1 ? " & cassette" : ""}
+              {draft.alt.placement ? ` (${PLACEMENT_LABEL[draft.alt.placement]})` : ""}
+            </summary>
+            <div className={styles.altOptionsBody}>
+              <label>
+                placement
+                <select value={draft.alt.placement} onChange={(e) => setAlt({ placement: e.target.value as "" | L1Placement })}>
+                  <option value="">auto (from residue)</option>
+                  {(Object.keys(PLACEMENT_LABEL) as L1Placement[]).map((p) => (
+                    <option key={p} value={p}>{PLACEMENT_LABEL[p]}</option>
+                  ))}
+                </select>
+              </label>
+              {cassettes.length > 1 ? (
+                <label>
+                  cassette
+                  <select value={draft.alt.cassette} onChange={(e) => setAlt({ cassette: e.target.value })}>
+                    <option value="">same as the current pick</option>
+                    {cassettes.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </label>
+              ) : null}
+            </div>
+          </details>
         </div>
       ) : null}
       <textarea
