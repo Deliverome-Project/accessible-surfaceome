@@ -105,7 +105,7 @@
 /* Sized to the window so the whole model sits above the fold beside the strip and the
    review card: the pane starts ~300px down at 1440x900, and the tabs + key under it take
    ~110px more. */
-.viewer { position: relative; width: 100%; height: clamp(300px, calc(100vh - 480px), 640px); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
+.viewer { position: relative; width: 100%; height: clamp(300px, calc(100vh - 500px), 620px); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
 .viewerNote { position: absolute; top: 0.5rem; left: 0.75rem; margin: 0; color: var(--muted); font-size: 0.85rem; }
 .viewerCompact { height: 340px; }
 /* Membrane + side-shading key under the 3D model. The topology swatches are the gene
