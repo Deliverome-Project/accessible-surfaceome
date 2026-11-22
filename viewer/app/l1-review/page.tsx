@@ -42,7 +42,7 @@ export default function L1ReviewPage() {
               <strong>Suggest another site</strong> are how a reviewer overturns one. Membrane
               class is rule-based, for browsing only. The topology strip is the member&rsquo;s own
               DeepTMHMM prediction, coloured as on the gene pages, with the tag insert flagged in
-              orange.
+              blue.
             </p>
           </details>
         </header>

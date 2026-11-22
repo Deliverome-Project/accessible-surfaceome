@@ -273,8 +273,8 @@
    bands, has a labelled head, and --l1-insert-edge (the brand amber-dark) outlines it
    at >= 2:1 luminance against every band, which dichromats keep in full. */
 .strip {
-  --l1-insert: #D9480F;
-  --l1-insert-edge: #7c2406;
+  --l1-insert: #1D4ED8;
+  --l1-insert-edge: #1E3A8A;
   border: 1px solid var(--line-soft);
   border-left: 4px solid var(--l1-insert);
   border-radius: var(--radius-sm);

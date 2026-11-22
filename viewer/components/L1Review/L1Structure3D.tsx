@@ -223,7 +223,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
       );
     }
     for (const m of marks) {
-      if (m.stick) v.addStyle({ resi: m.resi }, { stick: { color: m.color, radius: 0.24 } });
+      if (m.stick) v.addStyle({ resi: m.resi }, { stick: { color: m.color, radius: 0.35 } });
       v.addStyle({ resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
       if (m.label) {
         v.addLabel(m.label, {

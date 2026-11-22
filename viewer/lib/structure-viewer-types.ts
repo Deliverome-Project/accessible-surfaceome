@@ -683,12 +683,12 @@ export interface StructureVariantLibraryInput {
   refold_verdict?: string | null;
 }
 
-/** The tag cassette (linkers + SpyTag003 + ALFA) on a tagged refold. Deep high-contrast
- *  orange (#D9480F, ~4.7:1 on white), matching `--l1-insert` on the review page's
- *  topology strip so the tag reads as one thing in 2D and 3D. Becca asked for the tag
- *  in orange (2026-11-22) and noted the earlier #FF7A00 (~2.6:1 on white) washed out
- *  under WebGL lighting and was hard to see against the white 3D canvas. */
-export const L1_CASSETTE_COLOR = "#D9480F";
+/** The tag cassette (linkers + SpyTag003 + ALFA) on a tagged refold. Cobalt blue
+ *  (#1D4ED8, ~6.7:1 on white), matching `--l1-insert` on the review page's topology
+ *  strip so the tag reads as one thing in 2D and 3D. Unused by the topology palette
+ *  (gray EC, yellow TM, green IC, red SP), colorblind-safe, and holds contrast under
+ *  WebGL lighting against the white 3D canvas. */
+export const L1_CASSETTE_COLOR = "#1D4ED8";
 /** Other non-native residues in a tagged refold (Igk leader remnant, snorkel TM
  *  module). Olive, also unused by every other palette. */
 export const L1_NONNATIVE_COLOR = "#8A8F3C";

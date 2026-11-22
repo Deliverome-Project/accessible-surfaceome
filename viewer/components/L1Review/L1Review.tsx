@@ -65,12 +65,12 @@ const API_BASE =
 export const COLORS = {
   pick: "#B3243B",
   ranker: "#E0A100",
-  agent: "#3F7FBF",
-  litHigh: "#0D9488",
-  litLower: "#2DD4BF",
-  uniprot: "#3730A3",
+  agent: "#C2410C",
+  litHigh: "#0F766E",
+  litLower: "#0369A1",
+  uniprot: "#1E1B4B",
   suggestion: "#FF1F8F",
-  curated: "#7C3AED",
+  curated: "#5B21B6",
 };
 
 const store = {
@@ -809,14 +809,14 @@ function MemberDetail({
       for (const c of curatedGene.sites) {
         for (const p of c.positions ?? []) {
           const resi = toModel(p);
-          if (resi != null) marks.push({ resi, color: COLORS.curated, radius: 2.2, stick: true });
+          if (resi != null) marks.push({ resi, color: COLORS.curated, radius: 2.8, stick: true });
         }
       }
     }
     if (showContacts) {
       for (const c of visibleContacts(member.contacts ?? [], showHidden)) {
         const resi = toModel(c.residue);
-        if (resi != null) marks.push({ resi, color: contactColor(c), radius: 2.2, stick: true });
+        if (resi != null) marks.push({ resi, color: contactColor(c), radius: 2.8, stick: true });
       }
     }
   }
@@ -1048,7 +1048,7 @@ function MemberDetail({
           <label><input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} /> <i style={{ background: COLORS.ranker }} /> ranker alternatives <i style={{ background: COLORS.agent }} /> agent proposals</label>
           {segments ? (
             <>
-              <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.curated }} /> curated (structures / databases) <i style={{ background: COLORS.litHigh }} /> literature contacts (lighter = modeling/homology) <i style={{ background: COLORS.uniprot }} /> UniProt binding</label>
+              <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.curated }} /> curated (structures / databases) <i style={{ background: COLORS.litHigh }} /> literature <i style={{ background: COLORS.litLower }} /> literature (modeling/homology) <i style={{ background: COLORS.uniprot }} /> UniProt binding</label>
               <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
             </>
           ) : (() => {
