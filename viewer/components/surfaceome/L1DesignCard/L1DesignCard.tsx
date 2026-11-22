@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { L1Structure3D } from "../../L1Review/L1Structure3D";
+import type { LibraryTopologyRow } from "../../../lib/structure-viewer-types";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
@@ -13,6 +15,8 @@ import {
   sortSites,
   fetchL1DesignResult,
   l1AbsenceReason,
+  l1MemberTopology,
+  l1ModelMap,
   l1SiteLabel,
   l1StructureUrl,
   type L1DesignFile,
@@ -165,11 +169,65 @@ export function ObligatePartnerAbsence({
   );
 }
 
+/**
+ * One 3D view for the whole card (one WebGL context however many members): buttons pick
+ * a member's native model or tagged refold, drawn with the membrane and each residue
+ * shaded by side from the member's own DeepTMHMM v1 topology.
+ */
+function L1ModelViewer({ members, topologies }: { members: L1Member[]; topologies: readonly LibraryTopologyRow[] }) {
+  const choices = members.flatMap((m) =>
+    m.structures
+      .filter((s) => s.is_chosen && l1StructureUrl(s))
+      .sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "tagged" ? -1 : 1))
+      .map((s) => ({ m, s })),
+  );
+  const [key, setKey] = useState<string>(choices[0]?.s.structure_id ?? "");
+  const pick = choices.find((c) => c.s.structure_id === key) ?? choices[0];
+  if (!pick) return null;
+  const { m, s } = pick;
+  const topo = l1MemberTopology(topologies, m)?.per_residue_topology ?? null;
+  const map = topo ? l1ModelMap(m, s, topo) : null;
+  const span: [number, number] | null =
+    s.kind === "native" && m.ordered_length_aa ? [(s.residue_offset ?? 0) + 1, (s.residue_offset ?? 0) + m.ordered_length_aa] : null;
+  const cassette: [number, number] | null =
+    s.kind === "tagged" && s.cassette_first_model_residue != null && s.cassette_last_model_residue != null
+      ? [s.cassette_first_model_residue, s.cassette_last_model_residue] : null;
+  return (
+    <div className={styles.viewerBlock}>
+      <div className={styles.viewerTabs} role="group" aria-label="L1 model">
+        {choices.map((c) => (
+          <button
+            key={c.s.structure_id}
+            type="button"
+            className={c === pick ? styles.viewerTabOn : styles.viewerTab}
+            aria-pressed={c === pick}
+            onClick={() => setKey(c.s.structure_id)}
+          >
+            {members.length > 1 ? `${c.m.member_id} · ` : ""}{c.s.kind === "tagged" ? "Tagged refold" : "Native"}
+          </button>
+        ))}
+      </div>
+      <L1Structure3D
+        key={s.structure_id}
+        pdbUrl={l1StructureUrl(s) as string}
+        span={span}
+        marks={[]}
+        cassette={cassette}
+        topology={topo}
+        map={map}
+        modelLength={s.model_length_aa ?? null}
+        compact
+      />
+    </div>
+  );
+}
+
 export function L1DesignCard({
   symbol,
   n,
   inFgLibrary = true,
   coReceptor = null,
+  topologies = [],
 }: {
   symbol: string;
   n: number;
@@ -181,6 +239,9 @@ export function L1DesignCard({
    *  the dependency (``filters.co_receptor_dependency`` is only a mirror, and
    *  is absent on pre-mirror records). */
   coReceptor?: CoReceptorRequirements | null;
+  /** ``deterministic_features.library_designed_topology`` from the record: each member's
+   *  own DeepTMHMM v1 topology, which shades the models and places the membrane. */
+  topologies?: readonly LibraryTopologyRow[] | null;
 }) {
   const [data, setData] = useState<L1DesignFile | null>(null);
   // "error" is deliberately distinct from "empty": a failed fetch must never
@@ -233,6 +294,7 @@ export function L1DesignCard({
         )}
         {state === "ok" && data && (
           <>
+            <L1ModelViewer key={symbol} members={data.members} topologies={topologies ?? []} />
             {data.members.map((m) => <L1MemberBlock key={m.member_id} m={m} />)}
             <p className={styles.muted}>
               Alternatives, scores and contact sites:{" "}

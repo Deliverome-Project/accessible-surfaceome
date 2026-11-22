@@ -739,12 +739,18 @@ export async function fetchL1MemberTopologies(
  */
 export function l1MemberTopology(
   rows: readonly LibraryTopologyRow[] | null | undefined,
-  member: Pick<L1Member, "design_id" | "ordered_length_aa">,
+  member: Pick<L1Member, "design_id" | "ordered_length_aa"> & { sequence_sha256?: string | null },
 ): LibraryTopologyRow | null {
   if (!rows?.length || !member.design_id) return null;
   const row = rows.find((r) => r.candidate_id && r.candidate_id === member.design_id);
   const topo = row?.per_residue_topology ?? "";
   if (!row || !topo) return null;
+  // Sequence is the match of record: when both sides carry a hash they must agree, so a
+  // redesigned member that kept its design id never borrows the old protein's topology.
+  const rowSha = row.sequence_sha256 ?? null;
+  if (member.sequence_sha256 && rowSha && rowSha !== member.sequence_sha256) return null;
+  // Only the v1 alphabet is drawn; a row from another tool is not this palette's input.
+  if (row.tool && row.tool !== "deeptmhmm_v1") return null;
   // `ordered_length_aa` arrives as a string on the record's rows and as a number on the
   // design payload, so compare numerically rather than by identity.
   const rowLen = Number(row.ordered_length_aa ?? NaN);
@@ -830,3 +836,80 @@ export function nextIndexByLetter(
   }
   return -1;
 }
+
+// ------------------------------------------------- membrane + side shading on L1 models
+
+/** How a model's residues relate to the member's ordered protein, for side shading. */
+export interface L1ModelMap {
+  /** member residue r is model residue r + offset, for unpLo <= r <= unpHi. */
+  segments: { unpLo: number; unpHi: number; offset: number }[];
+  /** Tagged refolds: the cassette, in model numbering. */
+  cassette: [number, number] | null;
+  /** Model residues that are neither native nor cassette (an Igk leader remnant). */
+  nonNative: [number, number][];
+  /** Topology state of the residue the cassette is inserted after (residue 1 for an
+   *  N-terminal or Igk-led tag): the side of the membrane the tag is designed to sit on. */
+  cassetteSide: string | null;
+}
+
+/**
+ * Map one of a member's models onto the member's own numbering, so the member's v1
+ * topology can be painted on it. Native: one shift by `residue_offset`. Tagged: the
+ * piecewise layout around the cassette ({@link taggedModelLayout}). Null when the
+ * numbers do not describe one construct; the caller then draws no shading rather than
+ * shading drawn from a wrong map.
+ */
+export function l1ModelMap(
+  member: Pick<L1Member, "ordered_length_aa" | "sites">,
+  model: Pick<L1Structure, "kind" | "site_id" | "residue_offset" | "cassette_first_model_residue" | "cassette_last_model_residue" | "model_length_aa">,
+  topology: string,
+): L1ModelMap | null {
+  const L = member.ordered_length_aa ?? topology.length;
+  if (!topology || L !== topology.length) return null;
+  if (model.kind === "native") {
+    return { segments: [{ unpLo: 1, unpHi: L, offset: model.residue_offset ?? 0 }], cassette: null, nonNative: [], cassetteSide: null };
+  }
+  const site = member.sites.find((s) => s.site_id === model.site_id);
+  if (!site) return null;
+  const layout = taggedModelLayout({
+    memberLength: L,
+    insertAfter: site.insert_after_residue,
+    leader: site.leader,
+    cassetteFirst: model.cassette_first_model_residue,
+    cassetteLast: model.cassette_last_model_residue,
+    modelLength: model.model_length_aa,
+  });
+  if (!layout) return null;
+  const ins = site.insert_after_residue ?? 0;
+  const at = site.leader || ins < 1 ? 1 : Math.min(ins, L);
+  return { segments: layout.segments, cassette: layout.cassette, nonNative: layout.nonNative, cassetteSide: topology.charAt(at - 1) || null };
+}
+
+/** Runs of one topology state, already projected into MODEL numbering. */
+export function l1ModelStateRuns(topology: string, map: Pick<L1ModelMap, "segments">): { state: string; lo: number; hi: number }[] {
+  const out: { state: string; lo: number; hi: number }[] = [];
+  let start = 1;
+  for (let i = 1; i <= topology.length; i += 1) {
+    const st = topology.charAt(i - 1);
+    if (i < topology.length && topology.charAt(i) === st) continue;
+    for (const seg of map.segments) {
+      const a = Math.max(start, seg.unpLo);
+      const b = Math.min(i, seg.unpHi);
+      if (b >= a) out.push({ state: st, lo: a + seg.offset, hi: b + seg.offset });
+    }
+    start = i + 1;
+  }
+  return out;
+}
+
+/** Model residue -> member residue through a map's segments; null off the native chain. */
+export function l1ModelToMember(map: Pick<L1ModelMap, "segments">): (modelResi: number) => number | null {
+  return (r: number) => {
+    for (const s of map.segments) if (r >= s.unpLo + s.offset && r <= s.unpHi + s.offset) return r - s.offset;
+    return null;
+  };
+}
+
+/** Half-thickness of the drawn bilayer, from the TM-helix midplane: the ~30 Å
+ *  hydrocarbon core. */
+export const L1_MEMBRANE_HALF_THICKNESS = 15;

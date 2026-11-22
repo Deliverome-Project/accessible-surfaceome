@@ -16,6 +16,7 @@ import {
   groupByGene,
   l1MemberTabLabel,
   l1MemberTopology,
+  l1ModelMap,
   l1SiteLabel,
   l1StructureUrl,
   latestVerdicts,
@@ -572,6 +573,7 @@ function MemberDetail({
 
   const topology = topologyRow?.per_residue_topology ?? "";
   const flags = insertFlags(sites, member.ordered_length_aa);
+  const modelMap = topology && model ? l1ModelMap(member, model, topology) : null;
 
   return (
     <div className={styles.detailBody}>
@@ -621,7 +623,16 @@ function MemberDetail({
           {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
         </div>
         {url ? (
-          <L1Structure3D pdbUrl={url} span={span} marks={marks} cassette={cassette} onPick={model?.kind === "native" ? pick : undefined} />
+          <L1Structure3D
+            pdbUrl={url}
+            span={span}
+            marks={marks}
+            cassette={cassette}
+            onPick={model?.kind === "native" ? pick : undefined}
+            topology={topology || null}
+            map={modelMap}
+            modelLength={model?.model_length_aa ?? null}
+          />
         ) : (
           <p className={styles.muted}>No model for this member.</p>
         )}
@@ -630,7 +641,6 @@ function MemberDetail({
           <label><input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} /> <i style={{ background: COLORS.ranker }} /> ranker alternatives <i style={{ background: COLORS.agent }} /> agent proposals</label>
           <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.litHigh }} /> literature contacts (agent-extracted; lighter = modeling/homology only) <i style={{ background: COLORS.uniprot }} /> UniProt binding <i style={{ background: COLORS.curated }} /> curated (structures / databases)</label>
           <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
-          {model?.kind === "tagged" ? <span><i style={{ background: "#7C5CBF" }} /> cassette</span> : null}
           <span><i style={{ background: COLORS.suggestion }} /> your suggested residue (click the model)</span>
         </div>
         {model?.note || model?.proteoform_match ? (

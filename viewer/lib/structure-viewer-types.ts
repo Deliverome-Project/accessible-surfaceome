@@ -462,6 +462,8 @@ export interface LibraryTopologyRow {
    *  topology whose length disagrees with the member it was paired to. */
   ordered_length_aa?: string | number | null;
   species?: string | null;
+  /** SHA-256 of the ordered protein the topology was computed on. */
+  sequence_sha256?: string | null;
 }
 
 export interface LibraryStructureRow {
