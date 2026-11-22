@@ -151,28 +151,53 @@ const panel = (over: Partial<Parameters<typeof ReviewPanel>[0]> = {}) =>
   renderToStaticMarkup(
     React.createElement(ReviewPanel, {
       member: member({ sites: twoArms }), loadVersion: "l1d-3", reviews: null,
-      auth: { take: () => "ts-token", status: "ready" }, reviewer: "Becca", pickedResidue: null,
+      auth: { take: () => "ts-token", status: "ready" }, reviewer: "Becca", onEditName: () => {}, pickedResidue: null,
       drafts: {}, setDrafts: () => {}, onSaved: () => {}, ...over,
     }),
   );
 
-test("the review panel asks which arm the verdict is about, before the buttons", () => {
+const withDraft = (draft: Record<string, unknown>) =>
+  panel({ drafts: { "l1-p0006": { mode: "", reason: "", alt: { residue: "", placement: "internal", cassette: "" }, ...draft } as never } });
+
+test("the verdict is one segmented control of three radios, and Submit waits for a choice", () => {
   const html = panel();
-  assert.match(html, /the member as a whole/);
-  assert.match(html, /a1 — between V94 and S95/);
-  assert.match(html, /a2 — between H151 and D152 \(alternative\)/);
-  // The choice changes what the buttons mean, so it is read before them.
-  assert.ok(html.indexOf("the member as a whole") < html.indexOf("Looks good"));
+  const radios = html.match(/<input type="radio"[^>]*>/g) ?? [];
+  assert.equal(radios.length, 3);
+  for (const label of ["Site looks right", "Concern", "Suggest another site"]) assert.match(html, new RegExp(label));
+  assert.match(html, /<button type="button"[^>]*disabled=""[^>]*>Submit<\/button>/);
+  assert.doesNotMatch(withDraft({ mode: "good" }), /disabled=""[^>]*>Submit/);
+  // No token wording anywhere, and the old oversized buttons are gone.
+  assert.doesNotMatch(html, /token/i);
+  assert.doesNotMatch(html, /Looks good|Save suggestion/);
 });
 
-test("without a name the panel's text fields are closed, not only its buttons", () => {
-  // A nameless visitor could write 4,000 characters into a textarea whose save button
-  // was greyed out above it, and lose every one of them.
-  const locked = panel({ reviewer: "   " });
-  assert.match(locked, /<textarea[^>]*disabled/);
-  assert.match(locked, /Add your name above/);
-  assert.doesNotMatch(locked, /token/i);
-  assert.doesNotMatch(panel(), /<textarea[^>]*disabled/);
+test("a verdict asks which arm it is about, defaulting to the current pick", () => {
+  const html = withDraft({ mode: "no" });
+  assert.match(html, /a1 — between V94 and S95/);
+  assert.match(html, /a2 — between H151 and D152 \(alternative\)/);
+  assert.match(html, /the member as a whole/);
+  assert.match(html, /<option value="l1-p0006-a1" selected="">/);
+  assert.ok(html.indexOf("the member as a whole") < html.indexOf(">Submit<"));
+  assert.match(html, /What should change, and why\?/);
+});
+
+test("'Suggest another site' alone shows the residue and placement fields", () => {
+  assert.doesNotMatch(panel(), /after residue \(ordered-protein numbering\)/);
+  const html = withDraft({ mode: "alt" });
+  assert.match(html, /after residue \(ordered-protein numbering\)/);
+  assert.match(html, /<input type="number"/);
+  assert.match(html, /or click a residue on the structure/);
+  assert.match(html, /placement/);
+  // No free-text cassette; a select appears only when the member's sites carry real options.
+  assert.doesNotMatch(html, /cassette variant/);
+  assert.doesNotMatch(html, /about<select/);
+});
+
+test("without a name the card says so, but nothing typed is locked away", () => {
+  const html = panel({ reviewer: "   " });
+  assert.match(html, /Add your name/);
+  assert.doesNotMatch(html, /<textarea[^>]*disabled/);
+  assert.match(panel(), /Reviewing as[\s\S]*Becca/);
 });
 
 test("a write sends the name and the Turnstile token in the body, and no token header", async () => {
