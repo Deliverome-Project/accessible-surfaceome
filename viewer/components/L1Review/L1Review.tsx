@@ -26,6 +26,7 @@ import {
   reviewScopeLabel,
   sortSites,
   standingReviewIds,
+  reviewErrorMessage,
   submitL1Review,
   visibleContacts,
   type L1Contact,
@@ -34,6 +35,8 @@ import {
   type L1IndexMember,
   type L1Member,
   type L1Placement,
+  type L1AltTagRow,
+  type L1ReviewRow,
   type L1Reviews,
   type L1Site,
   type L1Structure,
@@ -42,6 +45,7 @@ import type { LibraryTopologyRow } from "../../lib/structure-viewer-types";
 import { L1TopologyStrip, insertFlags } from "./L1TopologyStrip";
 import { L1Structure3D, type L1Mark } from "./L1Structure3D";
 import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
+import { useTurnstile, type ReviewAuth } from "./useTurnstile";
 import styles from "./L1Review.module.css";
 
 // Same Worker base the other client-fetched pages use; NEXT_PUBLIC_L1_DESIGN_API_BASE
@@ -189,26 +193,37 @@ export function SiteCard({ site, length }: { site: L1Site; length: number | null
   );
 }
 
-/** What a reviewer has typed for one member and not yet saved. */
+/** What a reviewer has chosen for one member and not yet saved. */
+type ReviewMode = "" | "good" | "no" | "alt";
 interface Draft {
-  /** The tag site the verdict is about; "" is the member as a whole (a null `site_id`). */
-  siteId: string;
+  mode: ReviewMode;
+  /** The tag site a verdict is about: undefined = not chosen yet (defaults to the current
+   *  pick), "" = the member as a whole (a null `site_id`). */
+  siteId?: string;
+  /** One comment for every mode: the reason for a concern, or why the other site. */
   reason: string;
-  alt: { residue: string; placement: L1Placement; cassette: string; reason: string };
+  alt: { residue: string; placement: L1Placement; cassette: string };
 }
 
 const EMPTY_DRAFT: Draft = {
-  siteId: "",
+  mode: "",
   reason: "",
-  alt: { residue: "", placement: "internal", cassette: "", reason: "" },
+  alt: { residue: "", placement: "internal", cassette: "" },
 };
+
+const MODES: { value: Exclude<ReviewMode, "">; label: string }[] = [
+  { value: "good", label: "Site looks right" },
+  { value: "no", label: "Concern" },
+  { value: "alt", label: "Suggest another site" },
+];
 
 export function ReviewPanel({
   member,
   loadVersion,
   reviews,
-  token,
+  auth,
   reviewer,
+  onEditName,
   pickedResidue,
   drafts,
   setDrafts,
@@ -217,12 +232,14 @@ export function ReviewPanel({
   member: L1Member;
   loadVersion: string;
   reviews: L1Reviews | null;
-  token: string;
+  auth: ReviewAuth;
   reviewer: string;
+  /** Opens the reviewer bar at the top of the page and focuses the name field. */
+  onEditName: () => void;
   pickedResidue: number | null;
   drafts: Record<string, Draft>;
   setDrafts: Dispatch<SetStateAction<Record<string, Draft>>>;
-  onSaved: () => void;
+  onSaved: (saved: Partial<L1Reviews>) => void;
 }) {
   // Drafts are held per member for as long as the page is open, rather than cleared when
   // the member changes. Reading a neighbouring member before finishing a sentence is the
@@ -234,7 +251,8 @@ export function ReviewPanel({
   // parent, so panel-local state cannot survive the very move that loses the text. Only
   // the page component stays mounted across it.
   const key = member.design_id ?? member.member_id;
-  const [msg, setMsg] = useState("");
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [saving, setSaving] = useState(false);
   const draft = drafts[key] ?? EMPTY_DRAFT;
   const patch = useCallback(
     (p: Partial<Draft>) => setDrafts((d) => ({ ...d, [key]: { ...(d[key] ?? EMPTY_DRAFT), ...p } })),
@@ -250,11 +268,12 @@ export function ReviewPanel({
   );
   // The save message belongs to the member it was about; the draft text does not.
   useEffect(() => {
-    setMsg("");
+    setMsg(null);
   }, [key]);
   // Deps stay on `pickedResidue` alone, and the member is read through a ref: with `key`
   // in the deps this would re-run on a member change, while the parent has not yet reset
   // the pick to null, and write the old member's residue into the new member's draft.
+  // Clicking a residue on the structure is a suggestion, so it also picks that mode.
   const keyRef = useRef(key);
   keyRef.current = key;
   useEffect(() => {
@@ -262,136 +281,230 @@ export function ReviewPanel({
     const k = keyRef.current;
     setDrafts((d) => {
       const cur = d[k] ?? EMPTY_DRAFT;
-      return { ...d, [k]: { ...cur, alt: { ...cur.alt, residue: String(pickedResidue) } } };
+      return { ...d, [k]: { ...cur, mode: "alt", alt: { ...cur.alt, residue: String(pickedResidue) } } };
     });
   }, [pickedResidue]);
 
   const sites = useMemo(() => sortSites(member.sites), [member.sites]);
-  const base = {
-    reviewer, member_id: member.member_id, design_id: member.design_id, gene_symbol: member.gene_symbol,
-    sequence_sha256: member.sequence_sha256 ?? null, load_version: loadVersion,
-  };
-  const canWrite = Boolean(token && reviewer && member.design_id);
+  // "This site" by default: the verdict is on the tag site we plan to use.
+  const defaultSite = sites.find((s) => s.is_primary)?.site_id ?? "";
+  const siteId = draft.siteId ?? defaultSite;
+  // Real cassettes this member's sites carry; no free text.
+  const cassettes = useMemo(
+    () => [...new Set(sites.map((s) => s.cassette).filter((c): c is string => !!c))].sort(),
+    [sites],
+  );
+  const name = reviewer.trim();
   const mine = (reviews?.reviews ?? []).filter((r) => r.design_id === member.design_id);
   const alts = (reviews?.alt_tags ?? []).filter((r) => r.design_id === member.design_id);
   const standing = useMemo(() => standingReviewIds(reviews?.reviews ?? []), [reviews]);
+  const fieldId = `l1-review-${key}`;
 
-  async function verdict(v: "good" | "no") {
-    if (v === "no" && !draft.reason.trim()) {
-      setMsg("Say why it is a no.");
+  function problem(): string | null {
+    if (!name) return "Add your name at the top of the page first.";
+    if (draft.mode === "no" && !draft.reason.trim()) return "Say what is wrong in the comment.";
+    if (draft.mode === "alt") {
+      const needsResidue = draft.alt.placement === "internal" || draft.alt.placement === "after_sp";
+      if (needsResidue && draft.alt.residue === "") return "Give the residue the tag goes after, or click one on the structure.";
+    }
+    return null;
+  }
+
+  async function submit() {
+    if (!draft.mode || saving || !member.design_id) return;
+    const p = problem();
+    if (p) {
+      setMsg({ ok: false, text: p });
+      if (!name) onEditName();
       return;
     }
-    const r = await submitL1Review(API_BASE, token, {
-      ...base, kind: "verdict", verdict: v, reason: draft.reason,
-      // "" is the member as a whole, which the table stores as NULL.
-      site_id: draft.siteId || null,
-    });
-    const about = reviewScopeLabel(draft.siteId || null, sites, member.ordered_length_aa);
-    setMsg(r.ok ? `Saved: ${v === "good" ? "looks good" : "no"} on ${about}.` : `Not saved: ${r.error}`);
-    if (r.ok) {
-      patch({ reason: "" });
-      onSaved();
+    // Every submit spends the current Turnstile token, so a fresh one is fetched after it.
+    const t = auth.take();
+    if (!t) {
+      setMsg({
+        ok: false,
+        text: auth.status === "off"
+          ? "Not saved: the anti-bot check is not available on this build."
+          : auth.status === "error"
+            ? `Not saved: ${reviewErrorMessage("turnstile_failed")}`
+            : "Not saved: the anti-bot check is still running. Wait a second and submit again.",
+      });
+      return;
+    }
+    const base = {
+      reviewer: name, member_id: member.member_id, design_id: member.design_id, gene_symbol: member.gene_symbol,
+      sequence_sha256: member.sequence_sha256 ?? null, load_version: loadVersion,
+    };
+    const reason = draft.reason.trim() || null;
+    setSaving(true);
+    try {
+      if (draft.mode === "alt") {
+        const residue = draft.alt.residue === "" ? null : Number(draft.alt.residue);
+        const cassette = draft.alt.cassette || null;
+        const r = await submitL1Review(API_BASE, t, {
+          ...base, kind: "alt_tag", placement: draft.alt.placement, insert_after_residue: residue,
+          cassette_variant: cassette, reason,
+        });
+        if (!r.ok) return setMsg({ ok: false, text: `Not saved: ${reviewErrorMessage(r.error)}` });
+        const row: L1AltTagRow = {
+          suggestion_id: r.id, created_at: r.created_at, ...base, design_id: member.design_id,
+          insert_after_residue: residue, placement: draft.alt.placement, cassette_variant: cassette, reason,
+        };
+        patch({ mode: "", reason: "", alt: EMPTY_DRAFT.alt });
+        setMsg({ ok: true, text: "Saved — thank you. Your suggested site is listed below." });
+        onSaved({ alt_tags: [row] });
+        return;
+      }
+      const v = draft.mode;
+      const site = siteId || null; // "" is the member as a whole, stored as NULL
+      const r = await submitL1Review(API_BASE, t, { ...base, kind: "verdict", verdict: v, reason, site_id: site });
+      if (!r.ok) return setMsg({ ok: false, text: `Not saved: ${reviewErrorMessage(r.error)}` });
+      const row: L1ReviewRow = {
+        review_id: r.id, created_at: r.created_at, ...base, design_id: member.design_id, site_id: site, verdict: v, reason,
+      };
+      patch({ mode: "", reason: "" });
+      const about = reviewScopeLabel(site, sites, member.ordered_length_aa);
+      setMsg({ ok: true, text: `Saved — thank you. ${v === "good" ? "Looks right" : "Concern"} on ${about}.` });
+      onSaved({ reviews: [row] });
+    } finally {
+      setSaving(false);
     }
   }
 
-  async function suggest() {
-    const r = await submitL1Review(API_BASE, token, {
-      ...base, kind: "alt_tag", placement: draft.alt.placement,
-      insert_after_residue: draft.alt.residue === "" ? null : Number(draft.alt.residue),
-      cassette_variant: draft.alt.cassette, reason: draft.alt.reason,
-    });
-    setMsg(r.ok ? "Alternative tag saved." : `Not saved: ${r.error}`);
-    if (r.ok) {
-      setAlt({ residue: "", cassette: "", reason: "" });
-      onSaved();
-    }
-  }
+  const placeholder =
+    draft.mode === "good" ? "Anything to add? (optional)"
+      : draft.mode === "alt" ? "Why this site instead? (optional)"
+        : "What should change, and why?";
 
   return (
     <section className={styles.review} aria-label="Review">
       {/* Not "your review": the list below carries every reviewer's rows, which is what
           makes answering someone else's point possible at all. */}
       <h3 className={styles.h3}>Review</h3>
-      {!canWrite ? (
-        <p className={styles.muted}>Set your name and review token (top of the page) to record a review.</p>
-      ) : null}
-      {/* A verdict on one arm rather than on the member: the r2 agent round rejects arms,
-          not members, so "a2 is in the pore, a1 and a3 are fine" needs somewhere to go. */}
-      <label className={styles.scope}>
-        about
-        <select
-          value={draft.siteId}
-          disabled={!canWrite}
-          onChange={(e) => patch({ siteId: e.target.value })}
-        >
-          <option value="">the member as a whole</option>
-          {sites.map((s) => (
-            <option key={s.site_id} value={s.site_id}>
-              {reviewScopeLabel(s.site_id, sites, member.ordered_length_aa)}
-            </option>
-          ))}
-        </select>
-      </label>
+      <p className={styles.reviewIntro}>
+        {name ? (
+          <>
+            Reviewing as{" "}
+            <button type="button" className={styles.nameButton} onClick={onEditName} title="Change your name">
+              {name} ▾
+            </button>{" "}
+            — your verdict on this member&apos;s tag site.
+          </>
+        ) : (
+          <>
+            <button type="button" className={styles.nameButton} onClick={onEditName}>
+              Add your name ▾
+            </button>{" "}
+            to review this member&apos;s tag site.
+          </>
+        )}
+      </p>
+      {/* Radio inputs, not buttons: they are reachable by Tab, arrow between options, and
+          the page's letter and arrow shortcuts stand aside while one has focus. */}
       <div className={styles.verdictRow}>
-        <button type="button" className={styles.good} disabled={!canWrite} onClick={() => verdict("good")}>
-          Looks good
-        </button>
-        <button type="button" className={styles.no} disabled={!canWrite} onClick={() => verdict("no")}>
-          No
-        </button>
-        <textarea
-          className={styles.reason}
-          placeholder={canWrite ? "Why not? (required for No; optional otherwise)" : "Set your name and token above to write a review"}
-          value={draft.reason}
-          disabled={!canWrite}
-          onChange={(e) => patch({ reason: e.target.value })}
-          rows={2}
-        />
+        <fieldset className={styles.segmented}>
+          <legend className={styles.srOnly}>Your verdict</legend>
+          {MODES.map((m) => (
+            <label key={m.value} className={draft.mode === m.value ? styles.segOn : styles.seg}>
+              <input
+                type="radio"
+                name={`${fieldId}-mode`}
+                value={m.value}
+                checked={draft.mode === m.value}
+                onChange={() => { patch({ mode: m.value }); setMsg(null); }}
+              />
+              {m.label}
+            </label>
+          ))}
+        </fieldset>
+        {draft.mode === "good" || draft.mode === "no" ? (
+          // A verdict on one arm rather than on the member: the r2 agent round rejects
+          // arms, not members, so "a2 is in the pore, a1 and a3 are fine" needs somewhere to go.
+          <label className={styles.scope}>
+            about
+            <select value={siteId} onChange={(e) => patch({ siteId: e.target.value })}>
+              {sites.map((s) => (
+                <option key={s.site_id} value={s.site_id}>
+                  {reviewScopeLabel(s.site_id, sites, member.ordered_length_aa)}
+                </option>
+              ))}
+              <option value="">the member as a whole</option>
+            </select>
+          </label>
+        ) : null}
       </div>
-      <details className={styles.altForm} open={pickedResidue != null}>
-        <summary>Suggest an alternative tag</summary>
+      {draft.mode === "alt" ? (
         <div className={styles.altGrid}>
           <label>
-            residue (member numbering; or click the structure)
+            after residue (ordered-protein numbering)
             <input
-              inputMode="numeric"
+              type="number"
+              min={0}
+              max={member.ordered_length_aa ?? undefined}
+              step={1}
               value={draft.alt.residue}
-              disabled={!canWrite}
               onChange={(e) => setAlt({ residue: e.target.value.replace(/[^0-9]/g, "") })}
-              placeholder={member.ordered_length_aa ? `1–${member.ordered_length_aa}` : ""}
+              aria-describedby={`${fieldId}-residue-help`}
             />
+            <span id={`${fieldId}-residue-help`} className={styles.help}>
+              or click a residue on the structure
+              {member.ordered_length_aa ? ` · 1–${member.ordered_length_aa}` : ""}
+            </span>
           </label>
           <label>
             placement
-            <select
-              value={draft.alt.placement}
-              disabled={!canWrite}
-              onChange={(e) => setAlt({ placement: e.target.value as L1Placement })}
-            >
+            <select value={draft.alt.placement} onChange={(e) => setAlt({ placement: e.target.value as L1Placement })}>
               {(Object.keys(PLACEMENT_LABEL) as L1Placement[]).map((p) => (
                 <option key={p} value={p}>{PLACEMENT_LABEL[p]}</option>
               ))}
             </select>
           </label>
-          <label>
-            cassette variant (optional)
-            <input value={draft.alt.cassette} disabled={!canWrite} onChange={(e) => setAlt({ cassette: e.target.value })} placeholder="e.g. linkers-only" />
-          </label>
-          <label className={styles.altReason}>
-            reason
-            <textarea rows={2} value={draft.alt.reason} disabled={!canWrite} onChange={(e) => setAlt({ reason: e.target.value })} />
-          </label>
+          {cassettes.length > 1 ? (
+            <label>
+              cassette
+              <select value={draft.alt.cassette} onChange={(e) => setAlt({ cassette: e.target.value })}>
+                <option value="">same as the current pick</option>
+                {cassettes.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
+          ) : null}
         </div>
-        <button type="button" disabled={!canWrite} onClick={suggest}>Save suggestion</button>
-      </details>
-      {msg ? <p className={styles.msg} role="status">{msg}</p> : null}
+      ) : null}
+      <textarea
+        id={`${fieldId}-comment`}
+        className={styles.reason}
+        aria-label="Comment"
+        placeholder={placeholder}
+        value={draft.reason}
+        onChange={(e) => patch({ reason: e.target.value })}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            submit();
+          }
+        }}
+        rows={3}
+      />
+      <div className={styles.submitRow}>
+        <button type="button" className={styles.primary} disabled={!draft.mode || saving} onClick={submit}>
+          {saving ? "Saving…" : "Submit"}
+        </button>
+        <span className={styles.help}>
+          {draft.mode ? "⌘/Ctrl + Enter from the comment" : "Choose a verdict to submit"}
+        </span>
+        {msg ? (
+          <span className={msg.ok ? styles.saved : styles.error} role={msg.ok ? "status" : "alert"}>
+            {msg.text}
+          </span>
+        ) : null}
+      </div>
       {mine.length || alts.length ? (
         <div className={styles.history}>
           <h4 className={styles.h4}>Recorded for this member, every reviewer, oldest first</h4>
           <ul>
             {mine.map((r) => (
               <li key={r.review_id} className={standing.has(r.review_id) ? undefined : styles.superseded}>
-                <span className={r.verdict === "good" ? styles.goodText : styles.noText}>{r.verdict === "good" ? "looks good" : "no"}</span>{" "}
+                <span className={r.verdict === "good" ? styles.goodText : styles.noText}>{r.verdict === "good" ? "looks right" : "concern"}</span>{" "}
                 · {reviewScopeLabel(r.site_id, sites, member.ordered_length_aa)} · {r.reviewer} ·{" "}
                 {r.created_at.slice(0, 16).replace("T", " ")}
                 {standing.has(r.review_id) ? "" : " · superseded by a later row"}
@@ -400,7 +513,7 @@ export function ReviewPanel({
             ))}
             {alts.map((a) => (
               <li key={a.suggestion_id}>
-                <span className={styles.swatch} style={{ background: COLORS.suggestion }} /> alt tag:{" "}
+                <span className={styles.swatch} style={{ background: COLORS.suggestion }} /> another site:{" "}
                 {PLACEMENT_LABEL[a.placement]}
                 {a.insert_after_residue != null ? ` after ${a.insert_after_residue}` : ""}
                 {a.cassette_variant ? ` · ${a.cassette_variant}` : ""} · {a.reviewer} ·{" "}
@@ -491,8 +604,9 @@ function MemberDetail({
   topologyRow,
   loadVersion,
   reviews,
-  token,
+  auth,
   reviewer,
+  onEditName,
   drafts,
   setDrafts,
   onSaved,
@@ -501,11 +615,12 @@ function MemberDetail({
   topologyRow: LibraryTopologyRow | null;
   loadVersion: string;
   reviews: L1Reviews | null;
-  token: string;
+  auth: ReviewAuth;
   reviewer: string;
+  onEditName: () => void;
   drafts: Record<string, Draft>;
   setDrafts: Dispatch<SetStateAction<Record<string, Draft>>>;
-  onSaved: () => void;
+  onSaved: (saved: Partial<L1Reviews>) => void;
 }) {
   const sites = sortSites(member.sites);
   // The fold (tagged refold) first and open by default: it is the construct being
@@ -646,8 +761,9 @@ function MemberDetail({
         member={member}
         loadVersion={loadVersion}
         reviews={reviews}
-        token={token}
+        auth={auth}
         reviewer={reviewer}
+        onEditName={onEditName}
         pickedResidue={picked}
         drafts={drafts}
         setDrafts={setDrafts}
@@ -742,10 +858,26 @@ export function L1Review() {
   const [index, setIndex] = useState<L1Index | null | "loading">("loading");
   const [filters, setFilters] = useState(readUrl);
   const [detail, setDetail] = useState<L1DesignFile | null>(null);
-  const [token, setToken] = useState("");
   const [reviewer, setReviewer] = useState("");
-  const [reviews, setReviews] = useState<L1Reviews | null>(null);
-  const [authMsg, setAuthMsg] = useState("");
+  // Rows from the Worker's read endpoint (token-gated, so normally null on this page)
+  // plus the rows this browser saved since the page opened, so a reviewer sees their own.
+  const [serverReviews, setServerReviews] = useState<L1Reviews | null>(null);
+  const [savedHere, setSavedHere] = useState<L1Reviews>({ reviews: [], alt_tags: [] });
+  const turnstile = useTurnstile();
+  // The reviewer bar starts folded to one line, even with no name yet: open, it pushes the
+  // structure below the fold at 1440x900. It opens on the first write attempt without a
+  // name, or from the card's "Reviewing as … ▾" / "Add your name ▾", with the cursor in
+  // the name field.
+  const [identityOpen, setIdentityOpen] = useState(false);
+  const nameRef = useRef<HTMLInputElement | null>(null);
+  const editName = useCallback(() => {
+    setIdentityOpen(true);
+    window.setTimeout(() => {
+      nameRef.current?.scrollIntoView({ block: "nearest" });
+      nameRef.current?.focus();
+    }, 0);
+  }, []);
+  const auth: ReviewAuth = useMemo(() => ({ take: turnstile.take, status: turnstile.status }), [turnstile.take, turnstile.status]);
   // Unsaved review text, per member, for as long as the page is open. Held here because
   // this component outlives the detail panel: stepping to another gene empties `detail`
   // while the next design is fetched, which unmounts the panel the text was typed into.
@@ -760,28 +892,36 @@ export function L1Review() {
   const [keyHelpOpen, setKeyHelpOpen] = useState(false);
 
   useEffect(() => {
-    setToken(store.get("l1-review-token"));
     setReviewer(store.get("l1-review-reviewer"));
     fetchL1Index(API_BASE).then((d) => setIndex(d));
   }, []);
 
   const loadReviews = useCallback(async () => {
-    if (!token) {
-      setReviews(null);
-      return;
-    }
-    const r = await fetchL1Reviews(API_BASE, token);
-    if (r === "unauthorized") {
-      setAuthMsg("That review token was not accepted.");
-      setReviews(null);
-    } else {
-      setAuthMsg(r ? "" : "Reviews are unavailable (the review endpoints are not enabled on this API).");
-      setReviews(r);
-    }
-  }, [token]);
+    const r = await fetchL1Reviews(API_BASE);
+    setServerReviews(r && r !== "unauthorized" ? r : null);
+  }, []);
   useEffect(() => {
     loadReviews();
   }, [loadReviews]);
+  const onSaved = useCallback(
+    (saved: Partial<L1Reviews>) => {
+      setSavedHere((cur) => ({
+        reviews: [...cur.reviews, ...(saved.reviews ?? [])],
+        alt_tags: [...cur.alt_tags, ...(saved.alt_tags ?? [])],
+      }));
+      loadReviews();
+    },
+    [loadReviews],
+  );
+  const reviews = useMemo<L1Reviews | null>(() => {
+    if (!serverReviews && !savedHere.reviews.length && !savedHere.alt_tags.length) return null;
+    const seenR = new Set((serverReviews?.reviews ?? []).map((r) => r.review_id));
+    const seenA = new Set((serverReviews?.alt_tags ?? []).map((r) => r.suggestion_id));
+    return {
+      reviews: [...(serverReviews?.reviews ?? []), ...savedHere.reviews.filter((r) => !seenR.has(r.review_id))],
+      alt_tags: [...(serverReviews?.alt_tags ?? []), ...savedHere.alt_tags.filter((r) => !seenA.has(r.suggestion_id))],
+    };
+  }, [serverReviews, savedHere]);
 
   const members = index && index !== "loading" ? index.members : [];
   const visible = useMemo(
@@ -1000,43 +1140,45 @@ export function L1Review() {
 
   return (
     <div className={styles.app}>
-      {/* Name and token are set once per browser, so they are folded away: on a 1280x800
-          laptop the row they used to occupy was the difference between the detail panel
-          starting above the fold and below it. Opened automatically until a token is in
-          hand, so a first-time reviewer still lands on it. */}
-      <details className={styles.identity} open={!token || !reviewer}>
-        <summary>
-          {reviewer ? `Reviewing as ${reviewer}` : "Set your name and review token"}
-          {token ? "" : " · no token yet (read-only)"}
-          {reviews ? ` · ${reviewedN} of ${members.length} members reviewed` : ""}
-          {" · "}
-          <span className={styles.mono}>load {index.load.load_version}</span>
-        </summary>
-        <div className={styles.settings}>
-          <label>
-            reviewer
-            <input value={reviewer} onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }} placeholder="your name" />
-          </label>
-          <label>
-            review token
-            <input type="password" value={token} onChange={(e) => { setToken(e.target.value); store.set("l1-review-token", e.target.value); }} placeholder="paste once; kept in this browser" />
-          </label>
-          {reviews ? (
-            <span className={styles.muted}>
-              <a href={`${API_BASE}/v1/l1-review/export.tsv`} onClick={async (e) => {
-                e.preventDefault();
-                const res = await fetch(`${API_BASE}/v1/l1-review/export.tsv`, { headers: { "X-L1-Review-Token": token } });
-                const blob = await res.blob();
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = "l1_reviews.tsv";
-                a.click();
-              }}>export reviews + suggestions (TSV)</a>
-            </span>
-          ) : null}
-          {authMsg ? <span className={styles.warn}>{authMsg}</span> : null}
-        </div>
-      </details>
+      {/* One slim line when folded. No token: the name is trusted as typed and Cloudflare
+          Turnstile (beside it, invisible unless it needs a click) keeps bots out. */}
+      <div className={styles.identityRow}>
+        <details
+          className={styles.identity}
+          open={identityOpen}
+          onToggle={(e) => setIdentityOpen((e.currentTarget as HTMLDetailsElement).open)}
+        >
+          <summary>
+            {reviewer.trim() ? `Reviewing as ${reviewer.trim()}` : "Add your name to review"}
+            {reviews ? ` · ${reviewedN} of ${members.length} members reviewed` : ""}
+            {" · "}
+            <span className={styles.mono}>load {index.load.load_version}</span>
+          </summary>
+          <div className={styles.settings}>
+            <label>
+              your name
+              <input
+                ref={nameRef}
+                value={reviewer}
+                maxLength={80}
+                autoComplete="name"
+                onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }}
+                placeholder="your name"
+                title="Shown with each review; kept in this browser"
+              />
+            </label>
+            {serverReviews ? null : (
+              <span className={styles.muted}>Reviews you save here are listed under each member; other reviewers&apos; are collected for the design team.</span>
+            )}
+          </div>
+        </details>
+        <div ref={turnstile.slotRef} className={styles.turnstile} aria-label="anti-bot check" />
+        {turnstile.status === "error" ? (
+          <span className={styles.warn}>The anti-bot check could not load. Reload the page to retry.</span>
+        ) : turnstile.status === "off" ? (
+          <span className={styles.warn}>The anti-bot check is not configured on this build, so saving will fail.</span>
+        ) : null}
+      </div>
 
       {/* Filters are set once per session and then left alone, so they fold into one line
           that says what is applied; the search box stays out, since it is used all day. */}
@@ -1234,11 +1376,12 @@ export function L1Review() {
                   topologyRow={l1MemberTopology(topologies, member)}
                   loadVersion={index.load.load_version}
                   reviews={reviews}
-                  token={token}
+                  auth={auth}
                   reviewer={reviewer}
+                  onEditName={editName}
                   drafts={drafts}
                   setDrafts={setDrafts}
-                  onSaved={loadReviews}
+                  onSaved={onSaved}
                 />
               ) : (
                 <p className={styles.muted}>Loading {current.gene_symbol}…</p>

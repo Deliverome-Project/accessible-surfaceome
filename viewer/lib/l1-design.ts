@@ -402,9 +402,12 @@ export interface L1Reviews {
 
 export const REVIEW_HEADER = "X-L1-Review-Token";
 
-export async function fetchL1Reviews(apiBase: string, token: string): Promise<L1Reviews | "unauthorized" | null> {
+/** Reads stay token-gated on the Worker; the page calls this without a token, so it
+ *  answers "unauthorized" unless the read endpoints are opened. */
+export async function fetchL1Reviews(apiBase: string, token = ""): Promise<L1Reviews | "unauthorized" | null> {
   try {
-    const res = await fetch(`${apiBase}/v1/l1-review`, { headers: { [REVIEW_HEADER]: token }, cache: "no-store" });
+    const headers: Record<string, string> = token ? { [REVIEW_HEADER]: token } : {};
+    const res = await fetch(`${apiBase}/v1/l1-review`, { headers, cache: "no-store" });
     if (res.status === 401) return "unauthorized";
     if (!res.ok) return null;
     const body = (await res.json()) as L1Reviews;
@@ -414,22 +417,46 @@ export async function fetchL1Reviews(apiBase: string, token: string): Promise<L1
   }
 }
 
+/** Writes need the reviewer's name and a fresh Cloudflare Turnstile token (single use). */
 export async function submitL1Review(
   apiBase: string,
-  token: string,
+  turnstileToken: string,
   body: Record<string, unknown>,
-): Promise<{ ok: true } | { ok: false; error: string }> {
+): Promise<{ ok: true; id: string; created_at: string } | { ok: false; error: string }> {
   try {
     const res = await fetch(`${apiBase}/v1/l1-review`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", [REVIEW_HEADER]: token },
-      body: JSON.stringify(body),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...body, turnstile_token: turnstileToken }),
     });
-    if (res.ok) return { ok: true };
+    if (res.ok) {
+      const ok = (await res.json().catch(() => ({}))) as { review_id?: string; suggestion_id?: string; created_at?: string };
+      return { ok: true, id: ok.review_id ?? ok.suggestion_id ?? "", created_at: ok.created_at ?? new Date().toISOString() };
+    }
     const err = (await res.json().catch(() => ({}))) as { error?: string };
     return { ok: false, error: err.error ?? `HTTP ${res.status}` };
   } catch (e) {
     return { ok: false, error: String(e) };
+  }
+}
+
+/** Plain-language message for a review-write error code from the Worker. */
+export function reviewErrorMessage(code: string): string {
+  switch (code) {
+    case "invalid_reviewer":
+      return "Add your name at the top of the page first (up to 80 characters).";
+    case "turnstile_failed":
+      return "The anti-bot check failed or expired. It has been reset: wait a moment, then submit again.";
+    case "rate_limited":
+      return "Too many submissions from this network in the last hour (limit 30). Please try again later.";
+    case "review_disabled":
+      return "Saving reviews is not switched on for this API yet.";
+    case "reason_required":
+      return "Say why it is a no.";
+    case "residue_required":
+      return "Give the residue the tag goes after.";
+    default:
+      return code;
   }
 }
 
