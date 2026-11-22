@@ -40,6 +40,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATION = ROOT / "cloudflare/migrations/l1_design_v1.sql"
 REVIEW_MIGRATION = ROOT / "cloudflare/migrations/l1_review_v1.sql"
+ANNOT_MIGRATION = ROOT / "cloudflare/migrations/l1_member_annotation_v1.sql"
 REVIEW_MIGRATION_V2 = ROOT / "cloudflare/migrations/l1_review_v2.sql"
 SCHEMA = ROOT / "cloudflare/d1_public_schema.sql"
 WORKER = ROOT / "cloudflare/workers/surfaceome_api/src/index.js"
@@ -86,6 +87,7 @@ def _loader():
 
 def test_public_schema_mirrors_the_migration():
     assert MIGRATION.read_text() in SCHEMA.read_text()
+    assert ANNOT_MIGRATION.read_text() in SCHEMA.read_text()
 
 
 def test_review_tables_are_not_in_the_public_schema():
@@ -102,6 +104,7 @@ def test_review_tables_are_not_in_the_public_schema():
         "l1_tag_site_design_public",
         "l1_structure_design_public",
         "l1_contact_site_public",
+        "l1_member_annotation_public",
     ],
 )
 def test_every_column_the_worker_selects_exists(table):
@@ -109,7 +112,9 @@ def test_every_column_the_worker_selects_exists(table):
         _worker_fn("handleL1Design")
         + _worker_fn("handleL1DesignIndex")
         + _worker_fn("l1Load")
+        + _worker_fn("l1Annotations")
     )
+    migration = ANNOT_MIGRATION if table == "l1_member_annotation_public" else MIGRATION
     load_cols = re.search(r'L1_LOAD_COLS =\s*"([^"]+)"', WORKER.read_text())
     assert load_cols, "L1_LOAD_COLS moved"
     src = src.replace("${L1_LOAD_COLS}", load_cols.group(1))
@@ -122,7 +127,11 @@ def test_every_column_the_worker_selects_exists(table):
             re.sub(r"\s+AS\s+\w+$", "", c.strip()) for c in m.group(1).split(",")
         }
         selected = {c for c in selected if not c.upper().startswith("COUNT(")}
-        missing = selected - _columns(table)
+        # An aggregate selects the column inside it: MAX(leader) reads `leader`.
+        selected = {
+            re.sub(r"^(?:MAX|MIN)\((\w+)\)$", r"\1", c, flags=re.I) for c in selected
+        }
+        missing = selected - _columns(table, migration)
         assert not missing, (
             f"{table}: Worker selects undefined columns {sorted(missing)}"
         )
@@ -146,7 +155,10 @@ def test_review_inserts_match_the_review_migration():
 
 def test_loader_columns_match_the_migration():
     for table, cols in _loader().TABLES.values():
-        assert set(cols) | {"load_version"} == _columns(table), table
+        migration = (
+            ANNOT_MIGRATION if table == "l1_member_annotation_public" else MIGRATION
+        )
+        assert set(cols) | {"load_version"} == _columns(table, migration), table
 
 
 # --------------------------------------------------------------------------- fixture
@@ -183,6 +195,42 @@ def _ranker(design, gene, sha, res, rank, **kw):
 
 
 GIT_TABLES = {
+    # Member annotations (SP status, UniProt comparison): GENEB keeps a stale row out.
+    "annotations.tsv": [
+        {
+            "design_id": "l1-p0003",
+            "sequence_sha256": SHA["C"],
+            "sp_status": "igk_swap",
+            "native_sp_last_residue": "22",
+            "sp_evidence": "DeepTMHMM v2 + mouse ortholog",
+            "uniprot_canonical_acc": "P00003",
+            "uniprot_canonical_length": "900",
+            "matches_uniprot_canonical": "0",
+            "uniprot_diff_json": '[{"kind":"n_truncation","member_start":null,"member_end":null,"uniprot_start":1,"uniprot_end":6}]',
+        },
+        {
+            "design_id": "l1-p0001",
+            "sequence_sha256": SHA["A"],
+            "sp_status": "none",
+            "native_sp_last_residue": "",
+            "sp_evidence": "",
+            "uniprot_canonical_acc": "P00001",
+            "uniprot_canonical_length": "760",
+            "matches_uniprot_canonical": "1",
+            "uniprot_diff_json": "[]",
+        },
+        {
+            "design_id": "l1-p0002",
+            "sequence_sha256": "9" * 64,
+            "sp_status": "native",
+            "native_sp_last_residue": "20",
+            "sp_evidence": "",
+            "uniprot_canonical_acc": "",
+            "uniprot_canonical_length": "",
+            "matches_uniprot_canonical": "",
+            "uniprot_diff_json": "",
+        },
+    ],  # fmt: skip
     "renum.tsv": [
         {"design_id": f"l1-p000{i}", "candidate_id": f"l1-m000{i}"} for i in range(1, 9)
     ],
@@ -761,6 +809,7 @@ PINS = {
     "proteoform_decisions": "proteoform.tsv", "cterm_decisions": "cterm_decisions.tsv",
     "internal_constructs": "internal_constructs.tsv",
     "insert_numbering": "insert_numbering.tsv",
+    "member_annotations": "annotations.tsv",
 }  # fmt: skip
 OBJECT_PINS = {
     "internal_decisions": "decisions.tsv", "internal_proposed": "proposed.tsv",
@@ -1086,7 +1135,7 @@ def test_membrane_classes(built):
 def _apply(sql: Path, db: sqlite3.Connection) -> dict[str, int]:
     db.executescript(sql.read_text())
     tables = ("l1_member_public", "l1_tag_site_design_public", "l1_structure_design_public",
-              "l1_contact_site_public", "l1_design_load_public")  # fmt: skip
+              "l1_contact_site_public", "l1_member_annotation_public", "l1_design_load_public")  # fmt: skip
     return {t: db.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0] for t in tables}
 
 
@@ -1105,15 +1154,18 @@ def test_sql_is_insert_only_idempotent_and_load_row_last(built):
 
     db = sqlite3.connect(":memory:")
     db.executescript(MIGRATION.read_text())
+    db.executescript(ANNOT_MIGRATION.read_text())
     first = _apply(built["sql"], db)
     assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 11, "l1_structure_design_public": 5,
-                     "l1_contact_site_public": 4, "l1_design_load_public": 1}  # fmt: skip
+                     "l1_contact_site_public": 4, "l1_member_annotation_public": 2,
+                     "l1_design_load_public": 1}  # fmt: skip
     assert _apply(built["sql"], db) == first
 
 
 def test_redacted_sql_drops_the_internal_record(built):
     db = sqlite3.connect(":memory:")
     db.executescript(MIGRATION.read_text())
+    db.executescript(ANNOT_MIGRATION.read_text())
     _apply(built["redacted"], db)
     L = _loader()
     rows = db.execute(
@@ -1168,7 +1220,7 @@ const d1 = (path) => {
   };
 };
 const ctx = { waitUntil() {}, passThroughOnException() {} };
-const [pub, empty, priv] = process.argv.slice(2);
+const [pub, empty, priv, noannot] = process.argv.slice(2);
 const env = { DB: d1(pub), FEEDBACK_DB: d1(priv), L1_REVIEW_TOKEN: "s3cret" };
 const call = async (path, { method = "GET", body, token, envOverride } = {}) => {
   const headers = { "Content-Type": "application/json" };
@@ -1227,6 +1279,32 @@ assert.equal(status, 400);
 [status, body] = await call("/v1/l1-design/TFRC", { envOverride: { DB: d1(empty) } });
 assert.equal(status, 200);
 assert.equal(body.load, null);
+
+// --- member annotations (SP status, UniProt comparison) and the pick leader ---
+[status, body] = await call("/v1/l1-design");
+const byId = Object.fromEntries(body.members.map((m) => [m.design_id, m]));
+assert.equal(byId["l1-p0003"].sp_status, "igk_swap");
+assert.equal(byId["l1-p0003"].matches_uniprot_canonical, false);
+assert.equal(byId["l1-p0001"].matches_uniprot_canonical, true);
+assert.equal(byId["l1-p0002"].sp_status, null, "a stale annotation row (sha changed) is not served");
+assert.ok(body.members.every((m) => "pick_leader" in m));
+[status, body] = await call("/v1/l1-design/GENEB");
+const b = body.members[0];
+assert.equal(b.native_sp_last_residue, 22);
+assert.equal(b.sp_evidence, "DeepTMHMM v2 + mouse ortholog");
+assert.equal(b.uniprot_canonical_length, 900);
+assert.deepEqual(b.uniprot_diff.map((d) => d.kind), ["n_truncation"]);
+[status, body] = await call("/v1/l1-design/GENEA");
+assert.deepEqual(body.members[0].uniprot_diff, []);
+assert.equal(body.members[1].uniprot_diff, null, "no annotation -> null, not []");
+// Without the annotation table the routes still answer, annotations null.
+[status, body] = await call("/v1/l1-design/GENEB", { envOverride: { ...env, DB: d1(noannot) } });
+assert.equal(status, 200);
+assert.equal(body.members[0].sp_status, null);
+assert.equal(body.members[0].sites.length > 0, true);
+[status, body] = await call("/v1/l1-design", { envOverride: { ...env, DB: d1(noannot) } });
+assert.equal(status, 200);
+assert.equal(body.members.length, 8);
 
 // --- reviews ---
 const verdict = { kind: "verdict", reviewer: "Becca", member_id: "l1-m0006", design_id: "l1-p0006",
@@ -1287,7 +1365,16 @@ def test_worker_routes_against_sqlite(built):
     pub = tmp / "public.sqlite"
     db = sqlite3.connect(pub)
     db.executescript(MIGRATION.read_text())
+    db.executescript(ANNOT_MIGRATION.read_text())
     db.executescript(built["sql"].read_text())
+    db.commit()
+    db.close()
+    # The same load on a database whose annotation migration was never applied: the
+    # routes must still serve, with the annotation fields null.
+    noannot = tmp / "noannot.sqlite"
+    shutil.copy2(pub, noannot)
+    db = sqlite3.connect(noannot)
+    db.execute("DROP TABLE l1_member_annotation_public")
     db.commit()
     db.close()
     priv = tmp / "private.sqlite"
@@ -1309,7 +1396,7 @@ def test_worker_routes_against_sqlite(built):
     (tmp / "worker.mjs").write_text(source)
     (tmp / "test.mjs").write_text(NODE_TEST)
     res = subprocess.run(
-        [node, "test.mjs", str(pub), str(empty), str(priv)],
+        [node, "test.mjs", str(pub), str(empty), str(priv), str(noannot)],
         cwd=tmp,
         capture_output=True,
         text=True,
@@ -1455,3 +1542,37 @@ def test_fold_of_a_retired_twin_links_to_the_member_building_the_same_protein():
         L._tagged_refold_v1(spec, (head + row).encode(), b"", R, {"l1-p0001": [site]})
         == []
     )
+
+
+def test_member_annotations_are_checked_not_trusted():
+    L = _loader()
+    members = {"l1-m0001": {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G",
+                            "sequence_sha256": "a" * 64}}  # fmt: skip
+    R = L.Resolver(members)
+    ok = L._annotations([{"design_id": "l1-p0001", "sequence_sha256": "a" * 64, "sp_status": "native",
+                          "native_sp_last_residue": "21", "matches_uniprot_canonical": "1",
+                          "uniprot_diff_json": "[]"}], R)  # fmt: skip
+    assert ok[0]["sp_status"] == "native" and ok[0]["native_sp_last_residue"] == 21
+    assert (
+        ok[0]["matches_uniprot_canonical"] == 1 and ok[0]["uniprot_diff_json"] == "[]"
+    )
+    for bad in ({"sp_status": "signal"}, {"uniprot_diff_json": '{"kind": "x"}'},
+                {"matches_uniprot_canonical": "yes"}):  # fmt: skip
+        with pytest.raises(SystemExit):
+            L._annotations(
+                [{"design_id": "l1-p0001", "sequence_sha256": "a" * 64, **bad}], R
+            )
+    assert (
+        L._annotations(
+            [
+                {
+                    "design_id": "l1-p0001",
+                    "sequence_sha256": "b" * 64,
+                    "sp_status": "none",
+                }
+            ],
+            R,
+        )
+        == []
+    )
+    assert R.dropped["member_annotations"]

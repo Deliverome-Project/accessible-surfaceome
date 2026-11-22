@@ -4647,11 +4647,31 @@ function l1LoadJson(load, withInputs) {
 
 // The whole library, one compact row per member, for the L1 review page's browser:
 // rung, membrane class and the status of the member's current pick(s).
+// Per-member SP status and UniProt comparison (l1_member_annotation_public). The
+// table is newer than the rest of the overlay: if it is missing (migration not applied
+// yet) or the query fails, the routes serve these fields as null instead of failing,
+// so this read can never take the L1 page down. Returns Map(member_id -> row).
+async function l1Annotations(env, lv, symbol = null) {
+  try {
+    const sql = `SELECT member_id, sp_status, native_sp_last_residue, sp_evidence, uniprot_canonical_acc,
+                        uniprot_canonical_length, matches_uniprot_canonical, uniprot_diff_json
+                   FROM l1_member_annotation_public
+                  WHERE load_version = ?${symbol ? " AND gene_symbol = ? COLLATE NOCASE" : ""}`;
+    const stmt = env.DB.prepare(sql);
+    const res = await (symbol ? stmt.bind(lv, symbol) : stmt.bind(lv)).all();
+    return new Map((res?.results ?? []).map((a) => [a.member_id, a]));
+  } catch {
+    return new Map();
+  }
+}
+
+const l1Bool = (v) => (v == null ? null : Number(v) === 1);
+
 async function handleL1DesignIndex(env) {
   const load = await l1Load(env, null);
   if (!load) return l1Fresh({ load: null, members: [] });
   const lv = load.load_version;
-  const [members, picks] = await Promise.all([
+  const [members, picks, leaders, annotations] = await Promise.all([
     env.DB.prepare(
       `SELECT member_id, design_id, gene_symbol, species, candidate_set, rung, membrane_class,
               n_tm, ordered_length_aa, sequence_sha256
@@ -4661,7 +4681,15 @@ async function handleL1DesignIndex(env) {
       `SELECT member_id, status, COUNT(*) AS n FROM l1_tag_site_design_public
         WHERE load_version = ? AND is_primary = 1 GROUP BY member_id, status`
     ).bind(lv).all().then((r) => r?.results ?? []),
+    // The leader of the member's current pick(s), so the review page can filter by SP
+    // type (native SP / Igk replaces it / Igk at residue 1) without one call per gene.
+    env.DB.prepare(
+      `SELECT member_id, MAX(leader) AS leader FROM l1_tag_site_design_public
+        WHERE load_version = ? AND is_primary = 1 GROUP BY member_id`
+    ).bind(lv).all().then((r) => r?.results ?? []),
+    l1Annotations(env, lv),
   ]);
+  const leaderBy = new Map(leaders.map((r) => [r.member_id, r.leader ?? null]));
   const statusBy = new Map();
   for (const p of picks) {
     const list = statusBy.get(p.member_id) ?? [];
@@ -4683,6 +4711,9 @@ async function handleL1DesignIndex(env) {
         ordered_length_aa: m.ordered_length_aa == null ? null : Number(m.ordered_length_aa),
         sequence_sha256: m.sequence_sha256 ?? null,
         pick_status: (statusBy.get(m.member_id) ?? []).sort(),
+        pick_leader: leaderBy.get(m.member_id) ?? null,
+        sp_status: annotations.get(m.member_id)?.sp_status ?? null,
+        matches_uniprot_canonical: l1Bool(annotations.get(m.member_id)?.matches_uniprot_canonical),
       })),
     },
   );
@@ -4699,7 +4730,7 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
   }
   const lv = load.load_version;
   const q = (sql) => env.DB.prepare(sql).bind(lv, sym).all().then((r) => r?.results ?? []);
-  const [memberRows, siteRows, structRows, contactRows] = await Promise.all([
+  const [memberRows, siteRows, structRows, contactRows, annotations] = await Promise.all([
     q(`SELECT member_id, design_id, gene_symbol, species, candidate_set, rung, membrane_class,
               n_tm, ordered_length_aa, sequence_sha256, topology_version, uniprot_acc, proteoform_json
          FROM l1_member_public
@@ -4724,6 +4755,7 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
          FROM l1_contact_site_public
         WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
         ORDER BY member_id, residue, source`),
+    l1Annotations(env, lv, sym),
   ]);
   const num = (v) => (v == null ? null : Number(v));
   const parse = (s) => {
@@ -4749,6 +4781,20 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
     uniprot_acc: m.uniprot_acc ?? null,
     // The proteoform audit's decision for this member (keep / swap / repair / redraw).
     proteoform: parse(m.proteoform_json),
+    // SP status and UniProt comparison from the member annotations; null when this
+    // load (or this deployment's database) has none.
+    ...(() => {
+      const a = annotations.get(m.member_id);
+      return {
+        sp_status: a?.sp_status ?? null,
+        native_sp_last_residue: num(a?.native_sp_last_residue),
+        sp_evidence: a?.sp_evidence ?? null,
+        uniprot_canonical_acc: a?.uniprot_canonical_acc ?? null,
+        uniprot_canonical_length: num(a?.uniprot_canonical_length),
+        matches_uniprot_canonical: l1Bool(a?.matches_uniprot_canonical),
+        uniprot_diff: a ? parse(a.uniprot_diff_json) : null,
+      };
+    })(),
     sites: siteRows
       .filter((s) => s.member_id === m.member_id)
       .map((s) => ({
