@@ -151,7 +151,7 @@ const panel = (over: Partial<Parameters<typeof ReviewPanel>[0]> = {}) =>
   renderToStaticMarkup(
     React.createElement(ReviewPanel, {
       member: member({ sites: twoArms }), loadVersion: "l1d-3", reviews: null,
-      token: "t", reviewer: "Becca", pickedResidue: null,
+      auth: { take: () => "ts-token", status: "ready" }, reviewer: "Becca", pickedResidue: null,
       drafts: {}, setDrafts: () => {}, onSaved: () => {}, ...over,
     }),
   );
@@ -165,13 +165,40 @@ test("the review panel asks which arm the verdict is about, before the buttons",
   assert.ok(html.indexOf("the member as a whole") < html.indexOf("Looks good"));
 });
 
-test("without a token the panel's text fields are closed, not only its buttons", () => {
-  // A tokenless visitor could write 4,000 characters into a textarea whose save button
+test("without a name the panel's text fields are closed, not only its buttons", () => {
+  // A nameless visitor could write 4,000 characters into a textarea whose save button
   // was greyed out above it, and lose every one of them.
-  const locked = panel({ token: "" });
+  const locked = panel({ reviewer: "   " });
   assert.match(locked, /<textarea[^>]*disabled/);
-  assert.match(locked, /Set your name and token above/);
+  assert.match(locked, /Add your name above/);
+  assert.doesNotMatch(locked, /token/i);
   assert.doesNotMatch(panel(), /<textarea[^>]*disabled/);
+});
+
+test("a write sends the name and the Turnstile token in the body, and no token header", async () => {
+  const { submitL1Review } = await import("../lib/l1-design");
+  const seen: { headers: Record<string, string>; body: Record<string, unknown> }[] = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (async (_url: string, init: RequestInit) => {
+    seen.push({ headers: init.headers as Record<string, string>, body: JSON.parse(String(init.body)) });
+    return new Response(JSON.stringify({ ok: true, review_id: "r1", created_at: "2026-11-22T10:00:00Z" }), { status: 201 });
+  }) as typeof fetch;
+  try {
+    const r = await submitL1Review("https://api.test", "ts-token", { kind: "verdict", reviewer: "Ada" });
+    assert.deepEqual(r, { ok: true, id: "r1", created_at: "2026-11-22T10:00:00Z" });
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+  assert.equal(seen[0].body.turnstile_token, "ts-token");
+  assert.equal(seen[0].body.reviewer, "Ada");
+  assert.ok(!Object.keys(seen[0].headers).some((h) => /review-token/i.test(h)));
+});
+
+test("Worker error codes read as instructions, not codes", async () => {
+  const { reviewErrorMessage } = await import("../lib/l1-design");
+  assert.match(reviewErrorMessage("invalid_reviewer"), /Add your name/);
+  assert.match(reviewErrorMessage("turnstile_failed"), /submit again/);
+  assert.match(reviewErrorMessage("rate_limited"), /Too many submissions/);
 });
 
 test("an earlier verdict on the same arm shows as superseded, not as a second opinion", () => {

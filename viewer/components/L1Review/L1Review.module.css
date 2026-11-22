@@ -222,3 +222,7 @@
 .identity > summary { cursor: pointer; font-size: 0.8rem; color: var(--muted); }
 .identity[open] .settings { margin-top: var(--space-2); }
 .identity .settings { border-bottom: 0; padding-top: 0; }
+/* Name + Turnstile. The widget renders with appearance "interaction-only", so its slot
+   takes no visible space unless Cloudflare asks the reviewer to click. */
+.identityRow { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-3); }
+.identityRow > .identity { flex: 1 1 20rem; }
