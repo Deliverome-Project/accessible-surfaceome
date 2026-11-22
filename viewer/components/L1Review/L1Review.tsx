@@ -789,8 +789,10 @@ export function L1Review() {
   const [serverReviews, setServerReviews] = useState<L1Reviews | null>(null);
   const [savedHere, setSavedHere] = useState<L1Reviews>({ reviews: [], alt_tags: [] });
   const turnstile = useTurnstile();
-  // The reviewer bar is folded once a name is in hand; the card's "Reviewing as … ▾"
-  // opens it again and puts the cursor in the name field.
+  // The reviewer bar starts folded to one line, even with no name yet: open, it pushes the
+  // structure below the fold at 1440x900. It opens on the first write attempt without a
+  // name, or from the card's "Reviewing as … ▾" / "Add your name ▾", with the cursor in
+  // the name field.
   const [identityOpen, setIdentityOpen] = useState(false);
   const nameRef = useRef<HTMLInputElement | null>(null);
   const editName = useCallback(() => {
@@ -815,9 +817,7 @@ export function L1Review() {
   const [keyHelpOpen, setKeyHelpOpen] = useState(false);
 
   useEffect(() => {
-    const saved = store.get("l1-review-reviewer");
-    setReviewer(saved);
-    setIdentityOpen(!saved.trim());
+    setReviewer(store.get("l1-review-reviewer"));
     fetchL1Index(API_BASE).then((d) => setIndex(d));
   }, []);
 
@@ -1065,11 +1065,8 @@ export function L1Review() {
 
   return (
     <div className={styles.app}>
-      {/* The name is set once per browser, so it is folded away: on a 1280x800 laptop the
-          row it used to occupy was the difference between the detail panel starting above
-          the fold and below it. Opened automatically until a name is in hand, so a
-          first-time reviewer still lands on it. No token: the name is trusted as typed and
-          Cloudflare Turnstile (beside it, invisible unless it needs a click) keeps bots out. */}
+      {/* One slim line when folded. No token: the name is trusted as typed and Cloudflare
+          Turnstile (beside it, invisible unless it needs a click) keeps bots out. */}
       <div className={styles.identityRow}>
         <details
           className={styles.identity}
