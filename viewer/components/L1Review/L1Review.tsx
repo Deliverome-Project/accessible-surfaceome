@@ -65,12 +65,12 @@ const API_BASE =
 export const COLORS = {
   pick: "#B3243B",
   ranker: "#E0A100",
-  agent: "#3F7FBF",
-  litHigh: "#14967F",
-  litLower: "#7CC9BA",
-  uniprot: "#6B7280",
+  agent: "#C2410C",
+  litHigh: "#0F766E",
+  litLower: "#0369A1",
+  uniprot: "#1E1B4B",
   suggestion: "#FF1F8F",
-  curated: "#E8590C",
+  curated: "#5B21B6",
 };
 
 const store = {
@@ -206,7 +206,21 @@ export function SiteCard({
         {site.reason ? (<><dt>reason</dt><dd>{site.reason}</dd></>) : null}
         {site.rejected_alternative ? (<><dt>rejected alternative</dt><dd>{site.rejected_alternative}</dd></>) : null}
         {site.decision ? (<><dt>decision</dt><dd>{site.decision}</dd></>) : null}
-        {site.status_detail ? (<><dt>detail</dt><dd>{site.status_detail}</dd></>) : null}
+        {site.status_detail ? (() => {
+          const parts = site.status_detail.split(/\s*;\s*/).filter(Boolean);
+          return (
+            <>
+              <dt>detail</dt>
+              <dd>
+                {parts.length > 1 ? (
+                  <ul className={styles.detailChips}>
+                    {parts.map((part, idx) => <li key={idx}>{part}</li>)}
+                  </ul>
+                ) : site.status_detail}
+              </dd>
+            </>
+          );
+        })() : null}
       </dl>
       <details className={styles.more}>
         <summary>rationale, scores and source</summary>
@@ -247,10 +261,10 @@ const EMPTY_DRAFT: Draft = {
   alt: { residue: "", placement: "internal", cassette: "" },
 };
 
-const MODES: { value: Exclude<ReviewMode, "">; label: string }[] = [
-  { value: "good", label: "Site looks right" },
-  { value: "no", label: "Concern" },
-  { value: "alt", label: "Suggest another site" },
+const MODES: { value: Exclude<ReviewMode, "">; label: string; key: string }[] = [
+  { value: "good", label: "Site looks right", key: "=" },
+  { value: "no", label: "Concern", key: "-" },
+  { value: "alt", label: "Suggest another site", key: "." },
 ];
 
 export function ReviewPanel({
@@ -293,6 +307,8 @@ export function ReviewPanel({
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
+  const commentRef = useRef<HTMLTextAreaElement | null>(null);
+  const residueRef = useRef<HTMLInputElement | null>(null);
   const draft = drafts[key] ?? EMPTY_DRAFT;
   const patch = useCallback(
     (p: Partial<Draft>) => setDrafts((d) => ({ ...d, [key]: { ...(d[key] ?? EMPTY_DRAFT), ...p } })),
@@ -411,6 +427,48 @@ export function ReviewPanel({
     }
   }
 
+  const submitRef = useRef(submit);
+  submitRef.current = submit;
+  const draftModeRef = useRef(draft.mode);
+  draftModeRef.current = draft.mode;
+
+  // Fast verdict shortcuts without colliding with A–Z gene jumping:
+  // `=` / `+` = Site looks right, `-` = Concern (focuses comment), `.` = Suggest another site,
+  // and ⌘/Ctrl + Enter submits from anywhere once a verdict is selected.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        if (draftModeRef.current) {
+          e.preventDefault();
+          submitRef.current();
+        }
+        return;
+      }
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "=" || e.key === "+") {
+        e.preventDefault();
+        patch({ mode: draftModeRef.current === "good" ? "" : "good" });
+        setMsg(null);
+      } else if (e.key === "-") {
+        e.preventDefault();
+        const next = draftModeRef.current === "no" ? "" : "no";
+        patch({ mode: next });
+        setMsg(null);
+        if (next === "no") window.setTimeout(() => commentRef.current?.focus(), 0);
+      } else if (e.key === ".") {
+        e.preventDefault();
+        const next = draftModeRef.current === "alt" ? "" : "alt";
+        patch({ mode: next });
+        setMsg(null);
+        if (next === "alt") window.setTimeout(() => residueRef.current?.focus(), 0);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [patch]);
+
   const placeholder =
     draft.mode === "good" ? "Anything to add? (optional)"
       : draft.mode === "alt" ? "Why this site instead? (optional)"
@@ -443,17 +501,22 @@ export function ReviewPanel({
           reviewer pressing → to change member and changing the verdict instead. */}
       <div className={styles.verdictRow}>
         <div className={styles.segmented} role="group" aria-label="Your verdict">
-          {MODES.map((m) => (
-            <button
-              key={m.value}
-              type="button"
-              aria-pressed={draft.mode === m.value}
-              className={draft.mode === m.value ? styles.segOn : styles.seg}
-              onClick={() => { patch({ mode: draft.mode === m.value ? "" : m.value }); setMsg(null); }}
-            >
-              {m.label}
-            </button>
-          ))}
+          {MODES.map((m) => {
+            const on = draft.mode === m.value;
+            const tone = m.value === "good" ? styles.segGood : m.value === "no" ? styles.segNo : "";
+            return (
+              <button
+                key={m.value}
+                type="button"
+                aria-pressed={on}
+                className={on ? `${styles.segOn} ${tone}` : styles.seg}
+                title={`${m.label} (shortcut: ${m.key})`}
+                onClick={() => { patch({ mode: on ? "" : m.value }); setMsg(null); }}
+              >
+                {m.label} <kbd className={styles.segKey}>{m.key}</kbd>
+              </button>
+            );
+          })}
         </div>
         {draft.mode === "good" || draft.mode === "no" ? (
           // A verdict on one arm rather than on the member: the r2 agent round rejects
@@ -476,6 +539,7 @@ export function ReviewPanel({
           <label>
             after residue (ordered-protein numbering)
             <input
+              ref={residueRef}
               type="number"
               min={0}
               max={member.ordered_length_aa ?? undefined}
@@ -485,7 +549,7 @@ export function ReviewPanel({
               aria-describedby={`${fieldId}-residue-help`}
             />
             <span id={`${fieldId}-residue-help`} className={styles.help}>
-              or click a residue on the structure
+              or click a residue on the structure or topology bar
               {member.ordered_length_aa ? ` · 1–${member.ordered_length_aa}` : ""}
             </span>
           </label>
@@ -509,18 +573,13 @@ export function ReviewPanel({
         </div>
       ) : null}
       <textarea
+        ref={commentRef}
         id={`${fieldId}-comment`}
         className={styles.reason}
         aria-label="Comment"
         placeholder={placeholder}
         value={draft.reason}
         onChange={(e) => patch({ reason: e.target.value })}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            submit();
-          }
-        }}
         onFocus={() => setCommentOpen(true)}
         onBlur={() => setCommentOpen(false)}
         // One line until it is used: open while focused or holding text.
@@ -531,7 +590,7 @@ export function ReviewPanel({
           {saving ? "Saving…" : "Submit"}
         </button>
         <span className={styles.help}>
-          {draft.mode ? "⌘/Ctrl + Enter from the comment" : "Choose a verdict to submit"}
+          {draft.mode ? "⌘/Ctrl + Enter to submit" : "Choose a verdict (= / - / .) to submit"}
         </span>
         {msg ? (
           <span className={msg.ok ? styles.saved : styles.error} role={msg.ok ? "status" : "alert"}>
@@ -640,6 +699,32 @@ function memberChipText(m: Pick<L1Member, "candidate_set" | "species">, topo: Li
   return protein ? `${l1MemberRoleLabel(m)} · ${protein}` : l1MemberRoleLabel(m);
 }
 
+/** Label for a structure view tab. When a member carries multiple tagged refolds,
+ *  name the arm/insertion residue so tabs are distinguishable before clicking. */
+export function structureTabLabel(
+  m: Pick<L1Structure, "kind" | "site_id" | "mean_plddt" | "refold_verdict">,
+  sites: readonly Pick<L1Site, "site_id" | "insert_after_residue">[],
+  multiFold: boolean,
+): string {
+  let base = m.kind === "tagged" ? "Fold" : "Native";
+  if (m.kind === "tagged" && multiFold && m.site_id) {
+    const site = sites.find((s) => s.site_id === m.site_id);
+    const arm = armLabel(m.site_id);
+    const res = site?.insert_after_residue;
+    const tag =
+      arm && res != null ? `${arm} · ${res}`
+        : arm ? arm
+          : res != null ? `after ${res}`
+            : null;
+    if (tag) base = `Fold (${tag})`;
+  }
+  return [
+    base,
+    m.mean_plddt != null ? `pLDDT ${m.mean_plddt.toFixed(0)}` : null,
+    m.refold_verdict ?? null,
+  ].filter(Boolean).join(" · ");
+}
+
 function MemberDetail({
   member,
   topologyRow,
@@ -682,6 +767,7 @@ function MemberDetail({
   const [picked, setPicked] = useState<{ r: number; n: number } | null>(null);
   // The arm being looked at (clicked on the strip or a tag-site card).
   const [focusSite, setFocusSite] = useState<string | null>(null);
+  const [resetSeq, setResetSeq] = useState(0);
   const [curated, setCurated] = useState<CuratedContactsData | null | "loading">(null);
   const acc = member.uniprot_acc && /^[A-Z0-9]{6,10}$/.test(member.uniprot_acc) ? member.uniprot_acc : null;
   useEffect(() => {
@@ -718,15 +804,19 @@ function MemberDetail({
       ? Number(draft.alt.residue)
       : null;
   const marks: L1Mark[] = [];
-  if (model?.kind === "native") {
+  if (segments) {
     if (showContacts && curatedAligned && curatedGene) {
       for (const c of curatedGene.sites) {
-        for (const p of c.positions ?? []) marks.push({ resi: p + offset, color: COLORS.curated, radius: 1.3 });
+        for (const p of c.positions ?? []) {
+          const resi = toModel(p);
+          if (resi != null) marks.push({ resi, color: COLORS.curated, radius: 2.8, stick: true });
+        }
       }
     }
     if (showContacts) {
       for (const c of visibleContacts(member.contacts ?? [], showHidden)) {
-        marks.push({ resi: c.residue + offset, color: contactColor(c), radius: 1.5 });
+        const resi = toModel(c.residue);
+        if (resi != null) marks.push({ resi, color: contactColor(c), radius: 2.8, stick: true });
       }
     }
   }
@@ -763,6 +853,11 @@ function MemberDetail({
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "0") {
+        e.preventDefault();
+        setResetSeq((n) => n + 1);
+        return;
+      }
       const i = /^[1-9]$/.test(e.key) ? Number(e.key) - 1 : -1;
       if (i < 0 || i >= models.length) return;
       e.preventDefault();
@@ -867,6 +962,7 @@ function MemberDetail({
           nAlternatives={sites.filter((s) => s.is_primary === false).length}
           focusSiteId={focusSite}
           onFlagClick={showSite}
+          onPickResidue={(r) => setPicked({ r, n: Date.now() })}
           suggestedResidue={suggested}
         />
       ) : null}
@@ -895,27 +991,28 @@ function MemberDetail({
       <section className={styles.structurePane} aria-label="Structure">
         <div className={styles.modelRow} role="tablist" aria-label="Structure view (keys 1–9; up / down when focused)" onKeyDown={onTabKey}>
           <h3 className={styles.h3inline}>Structure</h3>
-          {models.map((m, i) => {
-            const on = m.structure_id === model?.structure_id;
-            return (
-              <button
-                key={m.structure_id}
-                ref={(el) => { tabRefs.current[i] = el; }}
-                type="button"
-                role="tab"
-                aria-selected={on}
-                tabIndex={on ? 0 : -1}
-                className={on ? styles.tabOn : styles.tab}
-                onClick={() => setModelId(m.structure_id)}
-                title={`${m.kind === "tagged" ? "The ordered tagged protein, folded whole" : "The member's protein without the tag"} · ${m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"} · key ${i + 1}`}
-              >
-                {i < 9 ? <kbd className={styles.tabKey}>{i + 1}</kbd> : null}
-                {m.kind === "tagged" ? "Fold" : "Native"}
-                {m.mean_plddt != null ? ` · pLDDT ${m.mean_plddt.toFixed(0)}` : ""}
-                {m.refold_verdict ? ` · ${m.refold_verdict}` : ""}
-              </button>
-            );
-          })}
+          {(() => {
+            const multiFold = models.filter((x) => x.kind === "tagged").length > 1;
+            return models.map((m, i) => {
+              const on = m.structure_id === model?.structure_id;
+              return (
+                <button
+                  key={m.structure_id}
+                  ref={(el) => { tabRefs.current[i] = el; }}
+                  type="button"
+                  role="tab"
+                  aria-selected={on}
+                  tabIndex={on ? 0 : -1}
+                  className={on ? styles.tabOn : styles.tab}
+                  onClick={() => setModelId(m.structure_id)}
+                  title={`${m.kind === "tagged" ? "The ordered tagged protein, folded whole" : "The member's protein without the tag"} · ${m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"} · key ${i + 1}`}
+                >
+                  {i < 9 ? <kbd className={styles.tabKey}>{i + 1}</kbd> : null}
+                  {structureTabLabel(m, sites, multiFold)}
+                </button>
+              );
+            });
+          })()}
           {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
         </div>
         {url ? (
@@ -925,10 +1022,13 @@ function MemberDetail({
             marks={marks}
             cassette={cassette}
             onPick={segments ? pick : undefined}
+            modelToMemberResi={segments ? (resi) => modelToMember(resi, segments) : undefined}
             focusResi={(() => {
               const f = sites.find((x) => x.site_id === focusSite);
               return f?.insert_after_residue != null ? toModel(f.insert_after_residue) : null;
             })()}
+            onReset={() => setFocusSite(null)}
+            resetSeq={resetSeq}
             topology={topology || null}
             map={modelMap}
             modelLength={model?.model_length_aa ?? null}
@@ -941,19 +1041,21 @@ function MemberDetail({
         ) : (
           <p className={styles.muted}>No model for this member.</p>
         )}
-        {/* Picks, the focused arm and your suggestion are drawn on both views; contacts
-            only on the native model, whose numbering is the member's own. */}
+        {/* Picks, contacts, the focused arm and your suggestion are mapped through the
+            model's residue segments so they appear on both Fold and Native views. */}
         <div className={styles.legend}>
           <span><i style={{ background: COLORS.pick }} /> current pick (click a flag or &ldquo;show on structure&rdquo; to focus an arm)</span>
           <label><input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} /> <i style={{ background: COLORS.ranker }} /> ranker alternatives <i style={{ background: COLORS.agent }} /> agent proposals</label>
-          {model?.kind === "native" ? (
+          {segments ? (
             <>
-              <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.litHigh }} /> literature contacts (agent-extracted; lighter = modeling/homology only) <i style={{ background: COLORS.uniprot }} /> UniProt binding <i style={{ background: COLORS.curated }} /> curated (structures / databases)</label>
+              <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.curated }} /> curated (structures / databases) <i style={{ background: COLORS.litHigh }} /> literature <i style={{ background: COLORS.litLower }} /> literature (modeling/homology) <i style={{ background: COLORS.uniprot }} /> UniProt binding</label>
               <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
             </>
-          ) : (
-            <span className={styles.muted}>contact sites: native model (key 2)</span>
-          )}
+          ) : (() => {
+            const nativeIdx = models.findIndex((m) => m.kind === "native");
+            const keyHint = nativeIdx >= 0 && nativeIdx < 9 ? ` (key ${nativeIdx + 1})` : "";
+            return <span className={styles.muted}>contact sites: native model{keyHint}</span>;
+          })()}
           <span><i style={{ background: COLORS.suggestion }} /> your suggested residue (click the model, or type it under &ldquo;Suggest another site&rdquo;)</span>
         </div>
         {model?.note || model?.proteoform_match ? (
@@ -1187,14 +1289,23 @@ export function L1Review() {
       // unconditional write is how those turn into loops.
       if (Math.abs(want - parseFloat(el.style.maxHeight || "0")) > 1) el.style.maxHeight = `${want}px`;
     };
+    let raf = 0;
+    const scheduleFit = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        fit();
+      });
+    };
     fit();
-    window.addEventListener("resize", fit);
-    window.addEventListener("scroll", fit, { passive: true });
-    const ro = new ResizeObserver(fit);
+    window.addEventListener("resize", scheduleFit);
+    window.addEventListener("scroll", scheduleFit, { passive: true });
+    const ro = new ResizeObserver(scheduleFit);
     ro.observe(document.body);
     return () => {
-      window.removeEventListener("resize", fit);
-      window.removeEventListener("scroll", fit);
+      if (raf) window.cancelAnimationFrame(raf);
+      window.removeEventListener("resize", scheduleFit);
+      window.removeEventListener("scroll", scheduleFit);
       ro.disconnect();
     };
     // Keyed on `index` because the list element does not exist while the library is
@@ -1239,6 +1350,10 @@ export function L1Review() {
       }
       // Never steal a browser or OS shortcut (⌘L, ctrl-F, alt-←).
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "Escape") {
+        setKeyHelpOpen(false);
+        return;
+      }
       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
         e.preventDefault();
         go(1);
@@ -1301,6 +1416,7 @@ export function L1Review() {
     s === "" ? forStatus.length : forStatus.filter((m) => (s === "none" ? !m.pick_status.length : m.pick_status.includes(s as L1Site["status"]))).length;
   const forSp = without("sp");
   const spKnown = members.some((m) => indexSpStatus(m) !== null);
+  const spHasNone = members.some((m) => m.sp_status != null);
   const spCount = (k: string) => (k === "" ? forSp.length : forSp.filter((m) => indexSpStatus(m) === k).length);
   const forDiff = without("diff");
   const diffKnown = members.some((m) => uniprotDiffers(m) !== null);
@@ -1417,7 +1533,9 @@ export function L1Review() {
         {spKnown ? (
           <div>
             <span className={styles.facetLabel} title="Signal peptide / leader at the N-terminus, from the primary pick (or the design export when it says)">SP</span>
-            {["", "native", "igk_swap", "igk_res1", "none"].map((k) => (
+            {(spHasNone || filters.sp === "none"
+              ? ["", "native", "igk_swap", "igk_res1", "none"]
+              : ["", "native", "igk_swap", "igk_res1"]).map((k) => (
               <button key={k || "all"} type="button" className={filters.sp === k ? styles.chipOn : styles.chip} onClick={() => update({ sp: k })}>
                 {k === "" ? "all" : SP_LABEL[k as keyof typeof SP_LABEL]} <span className={styles.n}>{spCount(k)}</span>
               </button>
@@ -1482,7 +1600,7 @@ export function L1Review() {
               <summary>
                 <span className={styles.keys}>
                   <span><kbd>←</kbd><kbd>→</kbd> member</span>
-                  <span><kbd>A</kbd>–<kbd>Z</kbd> gene</span>
+                  <span><kbd>=</kbd><kbd>-</kbd> verdict</span>
                   <span><kbd>1</kbd><kbd>2</kbd> view</span>
                   <span><kbd>?</kbd> keys</span>
                 </span>
@@ -1490,16 +1608,20 @@ export function L1Review() {
               <dl className={styles.keyTable}>
                 <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt>
                 <dd>previous / next member in this filter (orthologs and isoforms included)</dd>
+                <dt><kbd>=</kbd> <kbd>-</kbd> <kbd>.</kbd></dt>
+                <dd>verdict: = site looks right, - concern (focuses comment), . suggest another site</dd>
+                <dt><kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>↵</kbd></dt>
+                <dd>submit the chosen verdict from anywhere on the page</dd>
                 <dt><kbd>A</kbd>–<kbd>Z</kbd></dt>
                 <dd>jump to the next gene starting with that letter; press it again to walk them</dd>
-                <dt><kbd>1</kbd>–<kbd>9</kbd></dt>
-                <dd>structure view: 1 = fold (tagged refold, the default), 2 = native model</dd>
+                <dt><kbd>1</kbd>–<kbd>9</kbd> / <kbd>0</kbd></dt>
+                <dd>switch structure view (tagged fold(s) first, then native) / 0 resets camera</dd>
                 <dt><kbd>Home</kbd> <kbd>End</kbd></dt>
                 <dd>first / last member in this filter</dd>
                 <dt><kbd>/</kbd></dt>
                 <dd>focus the search box</dd>
                 <dt><kbd>Esc</kbd></dt>
-                <dd>leave a text field, so the keys above work again</dd>
+                <dd>leave a text field or close this list</dd>
                 <dt><kbd>?</kbd></dt>
                 <dd>show or hide this list</dd>
               </dl>
@@ -1554,6 +1676,7 @@ export function L1Review() {
                             onClick={() => update({ m: m.design_id ?? m.member_id })}
                           >
                             {l1MemberRoleLabel(m)}
+                            {on && m.member_id !== primary.member_id ? <span className={styles.mono}>· {m.member_id}</span> : null}
                             {(verdicts.get(m.design_id ?? "") ?? []).map((r) => (
                               <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} />
                             ))}
@@ -1565,7 +1688,7 @@ export function L1Review() {
                 </li>
               );
             })}
-            {!visible.length ? <li className={styles.muted}>No member matches these filters.</li> : null}
+            {!visible.length ? <li className={styles.listEmpty}>No member matches these filters.</li> : null}
           </ol>
         </div>
 
@@ -1576,15 +1699,21 @@ export function L1Review() {
                 <button type="button" onClick={() => go(-1)} aria-label="Previous member">←</button>
                 <div>
                   <h2 className={styles.h2}>
-                    {current.gene_symbol} <span className={styles.mono}>{current.member_id}</span>{" "}
-                    <span className={`${styles.mono} ${styles.muted}`}>{current.design_id}</span>
+                    {current.gene_symbol} <span className={styles.mono}>{current.member_id}</span>
+                    {current.design_id && current.design_id !== current.member_id ? (
+                      <> <span className={`${styles.mono} ${styles.muted}`}>{current.design_id}</span></>
+                    ) : null}
                   </h2>
                   <p className={styles.muted}>
                     {current.species} {current.candidate_set?.replace(/_/g, " ")} · {current.rung} · {current.membrane_class}
                     {current.n_tm != null ? ` · ${current.n_tm} TM` : ""}
                     {current.ordered_length_aa ? ` · ${current.ordered_length_aa} aa` : ""} ·{" "}
                     <a href={`/${encodeURIComponent(current.gene_symbol)}`}>gene page</a>
-                    {pos >= 0 ? ` · ${pos + 1} of ${visible.length} in this view (← → keys)` : " · not in the current filter"}
+                    {pos >= 0 ? (
+                      ` · ${pos + 1} of ${visible.length} in this view (← → keys)`
+                    ) : (
+                      <> · <span className={styles.badge}>not in the current filter</span></>
+                    )}
                   </p>
                   {/* The gene's other forms, so the human reference and its cyno or mouse
                       ortholog are one click apart. Each keeps its own residue numbering —

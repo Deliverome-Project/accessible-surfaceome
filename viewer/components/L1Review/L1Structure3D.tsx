@@ -23,6 +23,8 @@ export interface L1Mark {
   color: string;
   /** Sphere radius; picks are drawn larger than contacts. */
   radius: number;
+  /** Also draw full-residue sidechain sticks (used for contact sites so they stand out from the ribbon). */
+  stick?: boolean;
   label?: string;
 }
 
@@ -35,6 +37,8 @@ interface Props {
   cassette: [number, number] | null;
   /** Called with the MODEL residue number the reader clicked. */
   onPick?: (modelResidue: number) => void;
+  /** Maps a MODEL residue number to this member's residue number for hover tooltips. */
+  modelToMemberResi?: (modelResidue: number) => number | null;
   /** Key text for the model residues that are not the member's own (an Igk leader
    *  construct's residues, a snorkel module). */
   nonNativeLabel?: string;
@@ -49,6 +53,10 @@ interface Props {
   modelLength?: number | null;
   /** Shorter canvas for the gene page's card. */
   compact?: boolean;
+  /** Called when the user clicks the ↺ reset-view button (e.g. to clear a focused arm). */
+  onReset?: () => void;
+  /** Increment to trigger a camera reset from a keyboard shortcut (key 0). */
+  resetSeq?: number;
 }
 
 type Viewer = {
@@ -60,8 +68,16 @@ type Viewer = {
   addLabel: (text: string, opts: object) => void;
   removeAllLabels: () => void;
   setClickable: (sel: object, on: boolean, cb: (atom: { resi: number }) => void) => void;
+  setHoverable?: (
+    sel: object,
+    on: boolean,
+    hoverCb: (atom: { resi: number; resn?: string }) => void,
+    unhoverCb: () => void,
+  ) => void;
   zoomTo: (sel?: object) => void;
   center: (sel?: object, animationDuration?: number) => void;
+  getView?: () => number[];
+  setView?: (view: number[]) => void;
   render: () => void;
   clear: () => void;
   resize: () => void;
@@ -119,14 +135,16 @@ function orient(text: string, topology: string | null | undefined, map: L1ModelM
  * Deliberately separate from the gene page's StructureViewer: this one draws one model,
  * the member's membrane and side shading, a few marked residues and a click-to-pick.
  */
-export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology, map, modelLength, compact, nonNativeLabel, focusResi }: Props) {
+export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMemberResi, topology, map, modelLength, compact, nonNativeLabel, focusResi, onReset, resetSeq = 0 }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
+  const initialViewRef = useRef<number[] | null>(null);
   const pickRef = useRef(onPick);
   pickRef.current = onPick;
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [loaded, setLoaded] = useState(0);
   const [membrane, setMembrane] = useState<MembraneSlab | null>(null);
+  const [hoverAtom, setHoverAtom] = useState<{ resi: number; resn?: string } | null>(null);
   const shaded = !!(topology && map);
   // Orientation depends on the topology and map, so a change in either reloads the model.
   const orientKey = shaded ? JSON.stringify([topology, map?.segments]) : "";
@@ -136,6 +154,8 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
     let live = true;
     setState("loading");
     setMembrane(null);
+    setHoverAtom(null);
+    initialViewRef.current = null;
     (async () => {
       try {
         type Mod3D = typeof import("3dmol");
@@ -196,8 +216,14 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
       v.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 1 } });
       if (span) v.setStyle({ resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
     }
-    if (cassette) v.setStyle({ resi: `${cassette[0]}-${cassette[1]}` }, { cartoon: { color: L1_CASSETTE_COLOR } });
+    if (cassette) {
+      v.setStyle(
+        { resi: `${cassette[0]}-${cassette[1]}` },
+        { cartoon: { color: L1_CASSETTE_COLOR, thickness: 0.65 }, line: { color: L1_CASSETTE_COLOR, linewidth: 1.4 } },
+      );
+    }
     for (const m of marks) {
+      if (m.stick) v.addStyle({ resi: m.resi }, { stick: { color: m.color, radius: 0.35 } });
       v.addStyle({ resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
       if (m.label) {
         v.addLabel(m.label, {
@@ -206,9 +232,16 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
         } as object);
       }
     }
-    // Clickability binds to the styled atoms, so it is re-applied after every restyle.
+    // Clickability and hover bind to the styled atoms, so both are re-applied after every restyle.
     v.setClickable({}, true, (atom) => pickRef.current?.(atom.resi));
-    if (zoomedFor.current !== loaded) {
+    v.setHoverable?.(
+      {},
+      true,
+      (atom) => setHoverAtom({ resi: atom.resi, resn: atom.resn }),
+      () => setHoverAtom(null),
+    );
+    const firstZoom = zoomedFor.current !== loaded;
+    if (firstZoom) {
       v.zoomTo(span ? { resi: `${span[0]}-${span[1]}` } : {});
       zoomedFor.current = loaded;
       if (membrane) {
@@ -225,17 +258,75 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
       }
     }
     v.render();
+    if (firstZoom) {
+      try {
+        initialViewRef.current = v.getView?.() ?? null;
+      } catch {
+        initialViewRef.current = null;
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styleKey, state, loaded, membrane, shaded]);
+
+  const handleReset = () => {
+    const v = viewerRef.current;
+    if (!v) return;
+    if (initialViewRef.current && v.setView) {
+      v.setView(initialViewRef.current);
+    } else {
+      v.zoomTo(span ? { resi: `${span[0]}-${span[1]}` } : {});
+    }
+    v.render();
+    onReset?.();
+  };
+
+  useEffect(() => {
+    if (!resetSeq || state !== "ready") return;
+    handleReset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetSeq]);
 
   const outside =
     !!map?.nonNative.length || !!(span && (span[0] > 1 || (modelLength != null && modelLength > span[1])));
   const side = map?.cassetteSide ? SIDE_LABEL[map.cassetteSide] ?? null : null;
+  const hoverLabel = (() => {
+    if (!hoverAtom) return null;
+    if (cassette && hoverAtom.resi >= cassette[0] && hoverAtom.resi <= cassette[1]) {
+      return `tag cassette (model ${hoverAtom.resi})`;
+    }
+    const memRes = modelToMemberResi ? modelToMemberResi(hoverAtom.resi) : null;
+    if (memRes != null && memRes >= 1) {
+      const st = topology && memRes <= topology.length ? SIDE_LABEL[topology[memRes - 1]] : null;
+      const prefix = hoverAtom.resn ? `${hoverAtom.resn} ${memRes}` : `residue ${memRes}`;
+      return `${prefix}${st ? ` · ${st}` : ""}${onPick ? " — click to suggest" : ""}`;
+    }
+    if (!onPick) return `model ${hoverAtom.resi} — switch to Native to click-pick`;
+    return `model ${hoverAtom.resi} (not in member sequence)`;
+  })();
   return (
     <div className={styles.viewerWrap}>
-      <div ref={ref} className={compact ? `${styles.viewer} ${styles.viewerCompact}` : styles.viewer} />
-      {state === "loading" && <p className={styles.viewerNote}>Loading model…</p>}
-      {state === "error" && <p className={styles.viewerNote}>Could not load {pdbUrl}</p>}
+      <div className={styles.viewerStage}>
+        <div ref={ref} className={compact ? `${styles.viewer} ${styles.viewerCompact}` : styles.viewer} />
+        {state === "loading" && <p className={styles.viewerNote} role="status" aria-live="polite">Loading model…</p>}
+        {state === "error" && <p className={styles.viewerNote} role="alert">Could not load {pdbUrl}</p>}
+        {state === "ready" && hoverLabel ? (
+          <span className={styles.viewerHover} aria-live="polite">{hoverLabel}</span>
+        ) : null}
+        {state === "ready" && !hoverLabel && onPick ? (
+          <span className={styles.viewerHint}>Click a residue to suggest a site</span>
+        ) : null}
+        {state === "ready" && (
+          <button
+            type="button"
+            className={styles.resetSymbol}
+            onClick={handleReset}
+            title="Reset view"
+            aria-label="Reset structure view"
+          >
+            ↺
+          </button>
+        )}
+      </div>
       {state === "ready" ? (
         <div className={styles.sideLegend} aria-label="Membrane and side shading">
           {shaded && topology ? (
