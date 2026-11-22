@@ -15,6 +15,7 @@ import {
   sortSites,
   fetchL1DesignResult,
   l1AbsenceReason,
+  l1MemberRoleLabel,
   l1MemberTopology,
   l1ModelMap,
   l1SiteLabel,
@@ -203,7 +204,7 @@ function L1ModelViewer({ members, topologies }: { members: L1Member[]; topologie
             aria-pressed={c === pick}
             onClick={() => setKey(c.s.structure_id)}
           >
-            {members.length > 1 ? `${c.m.member_id} · ` : ""}{c.s.kind === "tagged" ? "Tagged refold" : "Native"}
+            {members.length > 1 ? `${l1MemberRoleLabel(c.m)} · ` : ""}{c.s.kind === "tagged" ? "Fold (tagged)" : "Native"}
           </button>
         ))}
       </div>

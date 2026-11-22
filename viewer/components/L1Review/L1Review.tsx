@@ -510,9 +510,12 @@ function MemberDetail({
   const sites = sortSites(member.sites);
   // The fold (tagged refold) first and open by default: it is the construct being
   // reviewed, tag and all. The native model is the comparison.
-  const models = member.structures
-    .filter((s) => s.is_chosen)
-    .sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "tagged" ? -1 : 1));
+  const models = useMemo(
+    () => member.structures
+      .filter((s) => s.is_chosen)
+      .sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "tagged" ? -1 : 1)),
+    [member.structures],
+  );
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [modelId, setModelId] = useState<string>("");
   const [showAlts, setShowAlts] = useState(true);
