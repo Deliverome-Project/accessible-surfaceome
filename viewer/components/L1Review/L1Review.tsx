@@ -28,6 +28,11 @@ import {
   standingReviewIds,
   reviewErrorMessage,
   submitL1Review,
+  SP_LABEL,
+  indexSpStatus,
+  memberSp,
+  uniprotDiffers,
+  uniprotDiffLines,
   visibleContacts,
   type L1Contact,
   type L1DesignFile,
@@ -83,18 +88,26 @@ const store = {
   },
 };
 
-function readUrl(): { m: string; rung: string; cls: string; status: string; q: string } {
-  if (typeof window === "undefined") return { m: "", rung: "", cls: "", status: "", q: "" };
+interface UrlFilters { m: string; rung: string; cls: string; status: string; q: string; sp: string; diff: string; rev: string }
+
+function readUrl(): UrlFilters {
+  if (typeof window === "undefined") return { m: "", rung: "", cls: "", status: "", q: "", sp: "", diff: "", rev: "" };
   const p = new URLSearchParams(window.location.search);
-  return { m: p.get("m") ?? "", rung: p.get("rung") ?? "", cls: p.get("class") ?? "", status: p.get("status") ?? "", q: p.get("q") ?? "" };
+  return {
+    m: p.get("m") ?? "", rung: p.get("rung") ?? "", cls: p.get("class") ?? "", status: p.get("status") ?? "",
+    q: p.get("q") ?? "", sp: p.get("sp") ?? "", diff: p.get("diff") ?? "", rev: p.get("reviewed") ?? "",
+  };
 }
 
-function writeUrl(s: { m: string; rung: string; cls: string; status: string; q: string }) {
+function writeUrl(s: UrlFilters) {
   const p = new URLSearchParams();
   if (s.m) p.set("m", s.m);
   if (s.rung) p.set("rung", s.rung);
   if (s.cls) p.set("class", s.cls);
   if (s.status) p.set("status", s.status);
+  if (s.sp) p.set("sp", s.sp);
+  if (s.diff) p.set("diff", s.diff);
+  if (s.rev) p.set("reviewed", s.rev);
   if (s.q) p.set("q", s.q);
   const qs = p.toString();
   window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
@@ -253,6 +266,7 @@ export function ReviewPanel({
   const key = member.design_id ?? member.member_id;
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [commentOpen, setCommentOpen] = useState(false);
   const draft = drafts[key] ?? EMPTY_DRAFT;
   const patch = useCallback(
     (p: Partial<Draft>) => setDrafts((d) => ({ ...d, [key]: { ...(d[key] ?? EMPTY_DRAFT), ...p } })),
@@ -399,24 +413,22 @@ export function ReviewPanel({
           </>
         )}
       </p>
-      {/* Radio inputs, not buttons: they are reachable by Tab, arrow between options, and
-          the page's letter and arrow shortcuts stand aside while one has focus. */}
+      {/* Toggle buttons, not radios: a focused radio takes the arrow keys, which left a
+          reviewer pressing → to change member and changing the verdict instead. */}
       <div className={styles.verdictRow}>
-        <fieldset className={styles.segmented}>
-          <legend className={styles.srOnly}>Your verdict</legend>
+        <div className={styles.segmented} role="group" aria-label="Your verdict">
           {MODES.map((m) => (
-            <label key={m.value} className={draft.mode === m.value ? styles.segOn : styles.seg}>
-              <input
-                type="radio"
-                name={`${fieldId}-mode`}
-                value={m.value}
-                checked={draft.mode === m.value}
-                onChange={() => { patch({ mode: m.value }); setMsg(null); }}
-              />
+            <button
+              key={m.value}
+              type="button"
+              aria-pressed={draft.mode === m.value}
+              className={draft.mode === m.value ? styles.segOn : styles.seg}
+              onClick={() => { patch({ mode: draft.mode === m.value ? "" : m.value }); setMsg(null); }}
+            >
               {m.label}
-            </label>
+            </button>
           ))}
-        </fieldset>
+        </div>
         {draft.mode === "good" || draft.mode === "no" ? (
           // A verdict on one arm rather than on the member: the r2 agent round rejects
           // arms, not members, so "a2 is in the pore, a1 and a3 are fine" needs somewhere to go.
@@ -483,7 +495,10 @@ export function ReviewPanel({
             submit();
           }
         }}
-        rows={3}
+        onFocus={() => setCommentOpen(true)}
+        onBlur={() => setCommentOpen(false)}
+        // One line until it is used: open while focused or holding text.
+        rows={commentOpen || draft.reason ? 3 : 1}
       />
       <div className={styles.submitRow}>
         <button type="button" className={styles.primary} disabled={!draft.mode || saving} onClick={submit}>
@@ -712,8 +727,10 @@ function MemberDetail({
   const onTabKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     const cur = models.findIndex((m) => m.structure_id === model?.structure_id);
     let next = -1;
-    if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (cur + 1) % models.length;
-    else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (cur - 1 + models.length) % models.length;
+    // Up / down only: left / right always step to the next member, even with a view
+    // tab focused (clicking a tab used to capture them, which read as "arrows broken").
+    if (e.key === "ArrowDown") next = (cur + 1) % models.length;
+    else if (e.key === "ArrowUp") next = (cur - 1 + models.length) % models.length;
     else if (e.key === "Home") next = 0;
     else if (e.key === "End") next = models.length - 1;
     if (next < 0) return;
@@ -735,14 +752,53 @@ function MemberDetail({
   const topology = topologyRow?.per_residue_topology ?? "";
   const flags = insertFlags(sites, member.ordered_length_aa);
   const modelMap = topology && model ? l1ModelMap(member, model, topology) : null;
+  const sp = memberSp(member, topology || null);
+  const pickLeader = sites.find((s) => s.is_primary !== false)?.leader ?? null;
+  const differs = uniprotDiffers(member);
+  const diffLines = uniprotDiffLines(member.uniprot_diff ?? []);
 
   return (
     <div className={styles.detailBody}>
       <div className={styles.topGrid}>
       <div className={styles.topLeft}>
+      {/* What the construct does at the N-terminus and how the ordered protein compares
+          with UniProt: the two facts a reviewer otherwise has to reconstruct. */}
+      <dl className={styles.facts}>
+        <dt>N-terminus</dt>
+        <dd title={`from ${sp.source}`}>
+          {sp.status ? <span className={styles.spTag}>{SP_LABEL[sp.status]}</span> : null} {sp.text}
+          <span className={styles.muted}> · from {sp.source}</span>
+        </dd>
+        <dt>UniProt</dt>
+        <dd>
+          {member.uniprot_canonical_acc || member.uniprot_acc ? (
+            <a href={`https://www.uniprot.org/uniprotkb/${member.uniprot_canonical_acc ?? member.uniprot_acc}/entry`} target="_blank" rel="noreferrer">
+              {member.uniprot_canonical_acc ?? member.uniprot_acc}
+            </a>
+          ) : "no accession"}
+          {member.uniprot_canonical_length ? ` · canonical ${member.uniprot_canonical_length} aa` : ""}
+          {member.ordered_length_aa ? ` · ordered ${member.ordered_length_aa} aa` : ""}
+          {differs === null ? (
+            <span className={styles.muted}> · comparison with the canonical not in this load</span>
+          ) : differs ? (
+            <>
+              {" · "}<strong>differs from the canonical</strong>
+              {diffLines.length ? (
+                <ul className={styles.diffList}>
+                  {diffLines.slice(0, 8).map((l, i) => <li key={i}>{l}</li>)}
+                  {diffLines.length > 8 ? <li className={styles.muted}>+{diffLines.length - 8} more</li> : null}
+                </ul>
+              ) : null}
+            </>
+          ) : (
+            " · identical to the canonical"
+          )}
+        </dd>
+      </dl>
       {topology ? (
         <L1TopologyStrip
           topology={topology}
+          sp={sp.band ? { ...sp.band, label: sp.text } : null}
           flags={flags}
           gene={member.gene_symbol}
           variantLabel={memberChipText(member, topologyRow)}
@@ -771,7 +827,7 @@ function MemberDetail({
       />
       </div>
       <section className={styles.structurePane} aria-label="Structure">
-        <div className={styles.modelRow} role="tablist" aria-label="Structure view (keys 1–9; arrows when focused)" onKeyDown={onTabKey}>
+        <div className={styles.modelRow} role="tablist" aria-label="Structure view (keys 1–9; up / down when focused)" onKeyDown={onTabKey}>
           <h3 className={styles.h3inline}>Structure</h3>
           {models.map((m, i) => {
             const on = m.structure_id === model?.structure_id;
@@ -806,6 +862,11 @@ function MemberDetail({
             topology={topology || null}
             map={modelMap}
             modelLength={model?.model_length_aa ?? null}
+            nonNativeLabel={
+              pickLeader?.toLowerCase().startsWith("igk")
+                ? "Igκ leader construct residues (not this protein's own)"
+                : "added residues (not this protein's own)"
+            }
           />
         ) : (
           <p className={styles.muted}>No model for this member.</p>
@@ -903,15 +964,33 @@ export function L1Review() {
   useEffect(() => {
     loadReviews();
   }, [loadReviews]);
+  // Design ids this reviewer has saved something on, kept per name in this browser:
+  // the Worker's read endpoint is token-gated, so the page cannot ask it.
+  const mineKey = `l1-review-mine:${reviewer.trim().toLowerCase()}`;
+  const [mineIds, setMineIds] = useState<string[]>([]);
+  useEffect(() => {
+    if (!reviewer.trim()) return setMineIds([]);
+    try {
+      setMineIds(JSON.parse(store.get(mineKey) || "[]"));
+    } catch {
+      setMineIds([]);
+    }
+  }, [mineKey]);
   const onSaved = useCallback(
     (saved: Partial<L1Reviews>) => {
+      const ids = [...(saved.reviews ?? []), ...(saved.alt_tags ?? [])].map((r) => r.design_id);
+      setMineIds((cur) => {
+        const next = [...new Set([...cur, ...ids])];
+        store.set(mineKey, JSON.stringify(next));
+        return next;
+      });
       setSavedHere((cur) => ({
         reviews: [...cur.reviews, ...(saved.reviews ?? [])],
         alt_tags: [...cur.alt_tags, ...(saved.alt_tags ?? [])],
       }));
       loadReviews();
     },
-    [loadReviews],
+    [loadReviews, mineKey],
   );
   const reviews = useMemo<L1Reviews | null>(() => {
     if (!serverReviews && !savedHere.reviews.length && !savedHere.alt_tags.length) return null;
@@ -924,10 +1003,17 @@ export function L1Review() {
   }, [serverReviews, savedHere]);
 
   const members = index && index !== "loading" ? index.members : [];
-  const visible = useMemo(
-    () => filterIndex(members, { rung: filters.rung, membraneClass: filters.cls, status: filters.status, query: filters.q }),
-    [members, filters.rung, filters.cls, filters.status, filters.q],
-  );
+  const reviewedByMe = useMemo(() => {
+    const name = reviewer.trim().toLowerCase();
+    const fromRows = (reviews?.reviews ?? []).filter((r) => r.reviewer.trim().toLowerCase() === name).map((r) => r.design_id);
+    const fromAlts = (reviews?.alt_tags ?? []).filter((r) => r.reviewer.trim().toLowerCase() === name).map((r) => r.design_id);
+    return new Set([...mineIds, ...(name ? [...fromRows, ...fromAlts] : [])]);
+  }, [mineIds, reviews, reviewer]);
+  const facetBase = {
+    rung: filters.rung, membraneClass: filters.cls, status: filters.status, query: filters.q,
+    sp: filters.sp, diff: filters.diff, reviewed: filters.rev, reviewedByMe,
+  };
+  const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe]); // eslint-disable-line react-hooks/exhaustive-deps
   const current: L1IndexMember | undefined =
     members.find((m) => m.design_id === filters.m || m.member_id === filters.m) ?? undefined;
   const pos = current ? visible.findIndex((m) => m.member_id === current.member_id) : -1;
@@ -947,6 +1033,11 @@ export function L1Review() {
   const go = useCallback(
     (delta: number) => {
       if (!visible.length) return;
+      // One member in view (a search for one gene): say why nothing moved.
+      if (visible.length === 1 && pos === 0) {
+        setLetterMsg("only one member in this filter — clear the search or filters to step through the rest");
+        return;
+      }
       const i = pos < 0 ? 0 : (pos + delta + visible.length) % visible.length;
       update({ m: visible[i].design_id ?? visible[i].member_id });
     },
@@ -1126,8 +1217,30 @@ export function L1Review() {
   const member = detail?.members.find((m) =>
     current?.design_id ? m.design_id === current.design_id : m.member_id === current?.member_id,
   );
-  const rungCounts = countBy(members.filter((m) => !filters.cls || m.membrane_class === filters.cls), (m) => m.rung);
-  const classCounts = countBy(members.filter((m) => !filters.rung || m.rung === filters.rung), (m) => m.membrane_class);
+  // Every chip counts the members it would show with the OTHER filters as they are, so a
+  // number always means "click this and get that many".
+  const without = (k: keyof typeof facetBase) => filterIndex(members, { ...facetBase, [k]: "" });
+  const rungCounts = countBy(without("rung"), (m) => m.rung);
+  const classCounts = countBy(without("membraneClass"), (m) => m.membrane_class);
+  const forStatus = without("status");
+  const statusCount = (s: string) =>
+    s === "" ? forStatus.length : forStatus.filter((m) => (s === "none" ? !m.pick_status.length : m.pick_status.includes(s as L1Site["status"]))).length;
+  const forSp = without("sp");
+  const spKnown = members.some((m) => indexSpStatus(m) !== null);
+  const spCount = (k: string) => (k === "" ? forSp.length : forSp.filter((m) => indexSpStatus(m) === k).length);
+  const forDiff = without("diff");
+  const diffKnown = members.some((m) => uniprotDiffers(m) !== null);
+  const diffCount = (k: string) => (k === "" ? forDiff.length : forDiff.filter((m) => uniprotDiffers(m) === (k === "yes")).length);
+  const forRev = without("reviewed");
+  const revCount = (k: string) => (k === "" ? forRev.length : forRev.filter((m) => reviewedByMe.has(m.design_id ?? m.member_id) === (k === "mine")).length);
+  const filterSummary = [
+    filters.rung && `rung: ${filters.rung}`,
+    filters.cls && `class: ${filters.cls}`,
+    filters.status && `pick: ${filters.status === "none" ? "no pick yet" : STATUS_LABEL[filters.status as L1Site["status"]] ?? filters.status}`,
+    filters.sp && `SP: ${SP_LABEL[filters.sp as keyof typeof SP_LABEL] ?? filters.sp}`,
+    filters.diff && (filters.diff === "yes" ? "differs from UniProt" : "same as UniProt"),
+    filters.rev && (filters.rev === "mine" ? "reviewed by me" : "not reviewed by me"),
+  ].filter(Boolean).join(" · ") || "none";
   const reviewedN = new Set((reviews?.reviews ?? []).map((r) => r.design_id)).size;
 
   const groups = groupByGene(visible);
@@ -1172,7 +1285,14 @@ export function L1Review() {
             )}
           </div>
         </details>
-        <div ref={turnstile.slotRef} className={styles.turnstile} aria-label="anti-bot check" />
+        {/* One Turnstile widget for the page, beside the name. It runs invisibly; the slot
+            opens only while Cloudflare wants a click and folds away once passed. */}
+        <div
+          ref={turnstile.slotRef}
+          className={turnstile.needsClick ? styles.turnstile : `${styles.turnstile} ${styles.turnstileFolded}`}
+          aria-label="anti-bot check"
+          aria-hidden={!turnstile.needsClick}
+        />
         {turnstile.status === "error" ? (
           <span className={styles.warn}>The anti-bot check could not load. Reload the page to retry.</span>
         ) : turnstile.status === "off" ? (
@@ -1181,20 +1301,19 @@ export function L1Review() {
       </div>
 
       {/* Filters are set once per session and then left alone, so they fold into one line
-          that says what is applied; the search box stays out, since it is used all day. */}
+          that says what is applied. The search box lives on the gene list itself. */}
       <div className={styles.filterBar}>
       <details className={styles.filters}>
         <summary>
           Filters
-          <span className={styles.filterNow}>
-            rung: {filters.rung || "all"} · class: {filters.cls || "all"} · pick:{" "}
-            {filters.status === "" ? "all" : filters.status === "none" ? "no pick yet" : STATUS_LABEL[filters.status as L1Site["status"]] ?? filters.status}
-          </span>
+          <span className={styles.filterNow}>{filterSummary}</span>
         </summary>
       <div className={styles.facets}>
         <div>
           <span className={styles.facetLabel}>Rung</span>
-          <button type="button" className={!filters.rung ? styles.chipOn : styles.chip} onClick={() => update({ rung: "" })}>all</button>
+          <button type="button" className={!filters.rung ? styles.chipOn : styles.chip} onClick={() => update({ rung: "" })}>
+            all <span className={styles.n}>{without("rung").length}</span>
+          </button>
           {rungCounts.map(([r, n]) => (
             <button key={r} type="button" className={filters.rung === r ? styles.chipOn : styles.chip} onClick={() => update({ rung: filters.rung === r ? "" : r })}>
               {r} <span className={styles.n}>{n}</span>
@@ -1203,7 +1322,9 @@ export function L1Review() {
         </div>
         <div>
           <span className={styles.facetLabel} title="Rule-based: GPCR flag, HGNC transporter/channel families, rung and DeepTMHMM helix count">Class</span>
-          <button type="button" className={!filters.cls ? styles.chipOn : styles.chip} onClick={() => update({ cls: "" })}>all</button>
+          <button type="button" className={!filters.cls ? styles.chipOn : styles.chip} onClick={() => update({ cls: "" })}>
+            all <span className={styles.n}>{without("membraneClass").length}</span>
+          </button>
           {classCounts.map(([c, n]) => (
             <button key={c} type="button" className={filters.cls === c ? styles.chipOn : styles.chip} onClick={() => update({ cls: filters.cls === c ? "" : c })}>
               {c} <span className={styles.n}>{n}</span>
@@ -1212,19 +1333,67 @@ export function L1Review() {
         </div>
         <div>
           <span className={styles.facetLabel}>Pick</span>
-          {["", "built", "decided_not_built", "pending", "no_tag", "none"].map((s) => (
-            <button key={s || "all"} type="button" className={filters.status === s ? styles.chipOn : styles.chip} onClick={() => update({ status: s })}>
-              {s === "" ? "all" : s === "none" ? "no pick yet" : STATUS_LABEL[s as L1Site["status"]]}
+          {["", "built", "decided_not_built", "pending", "no_tag", "none"].map((st) => (
+            <button key={st || "all"} type="button" className={filters.status === st ? styles.chipOn : styles.chip} onClick={() => update({ status: st })}>
+              {st === "" ? "all" : st === "none" ? "no pick yet" : STATUS_LABEL[st as L1Site["status"]]}{" "}
+              <span className={styles.n}>{statusCount(st)}</span>
+            </button>
+          ))}
+        </div>
+        {spKnown ? (
+          <div>
+            <span className={styles.facetLabel} title="Signal peptide / leader at the N-terminus, from the primary pick (or the design export when it says)">SP</span>
+            {["", "native", "igk_swap", "igk_res1", "none"].map((k) => (
+              <button key={k || "all"} type="button" className={filters.sp === k ? styles.chipOn : styles.chip} onClick={() => update({ sp: k })}>
+                {k === "" ? "all" : SP_LABEL[k as keyof typeof SP_LABEL]} <span className={styles.n}>{spCount(k)}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+        {diffKnown ? (
+          <div>
+            <span className={styles.facetLabel} title="The ordered protein compared with the UniProt canonical sequence">UniProt</span>
+            {[["", "all"], ["yes", "differs from canonical"], ["no", "same as canonical"]].map(([k, label]) => (
+              <button key={k || "all"} type="button" className={filters.diff === k ? styles.chipOn : styles.chip} onClick={() => update({ diff: k })}>
+                {label} <span className={styles.n}>{diffCount(k)}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+        <div>
+          <span className={styles.facetLabel} title="Members you saved a review or suggestion on, in this browser">Reviewed</span>
+          {[["", "all"], ["notmine", "not reviewed by me"], ["mine", "reviewed by me"]].map(([k, label]) => (
+            <button key={k || "all"} type="button" className={filters.rev === k ? styles.chipOn : styles.chip} onClick={() => update({ rev: k })}>
+              {label} <span className={styles.n}>{revCount(k)}</span>
             </button>
           ))}
         </div>
       </div>
       </details>
-          <input ref={searchRef} className={styles.search} value={filters.q} onChange={(e) => update({ q: e.target.value })} placeholder="gene, l1-m…, l1-p…  ( / )" aria-label="Search members" />
       </div>
 
       <div className={styles.split}>
         <div className={styles.listCol}>
+          {/* On the list it filters. ↓ / ↑ step through the matches without leaving the
+              box; Enter or Esc hands the keys back to the page. */}
+          <input
+            ref={searchRef}
+            className={styles.search}
+            value={filters.q}
+            onChange={(e) => update({ q: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                e.preventDefault();
+                go(e.key === "ArrowDown" ? 1 : -1);
+              } else if (e.key === "Enter") {
+                e.preventDefault();
+                if (pos < 0 && visible.length) goTo(0);
+                e.currentTarget.blur();
+              }
+            }}
+            placeholder="gene, class, rung, igk, l1-p…  ( / )"
+            aria-label="Search members by gene, class, rung or SP type"
+          />
           <div className={styles.listHead}>
             <span className={styles.listCount}>
               {groups.length} gene{groups.length === 1 ? "" : "s"} · {visible.length} member

@@ -36,6 +36,9 @@ interface Props {
   cassette: [number, number] | null;
   /** Called with the MODEL residue number the reader clicked. */
   onPick?: (modelResidue: number) => void;
+  /** Key text for the model residues that are not the member's own (an Igk leader
+   *  construct's residues, a snorkel module). */
+  nonNativeLabel?: string;
   /** DeepTMHMM v1 per-residue topology of the member's ordered protein (matched by
    *  design id, length and sequence hash), or null when there is none. */
   topology?: string | null;
@@ -97,7 +100,7 @@ function orient(text: string, topology: string | null | undefined, map: L1ModelM
  * Deliberately separate from the gene page's StructureViewer: this one draws one model,
  * the member's membrane and side shading, a few marked residues and a click-to-pick.
  */
-export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology, map, modelLength, compact }: Props) {
+export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology, map, modelLength, compact, nonNativeLabel }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
   const pickRef = useRef(onPick);
@@ -211,7 +214,12 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
                 {cassette ? (
                   <li><i style={{ background: L1_CASSETTE_COLOR }} /> tag cassette{side ? ` (inserted on the ${side} side)` : ""}</li>
                 ) : null}
-                {map?.nonNative.length ? <li><i style={{ background: L1_NONNATIVE_COLOR }} /> non-native (leader remnant)</li> : null}
+                {map?.nonNative.length ? (
+                  <li title="Model residues before the tag that are not part of this member's protein">
+                    <i style={{ background: L1_NONNATIVE_COLOR }} /> {nonNativeLabel ?? "added residues (not this protein's own)"}
+                    {` (model ${map.nonNative.map(([a, b]) => (a === b ? `${a}` : `${a}–${b}`)).join(", ")})`}
+                  </li>
+                ) : null}
                 {outside ? <li><i style={{ background: OUTSIDE_COLOR }} /> not in the member</li> : null}
               </ul>
               {map?.unlistedSiteInsertAfter != null ? (

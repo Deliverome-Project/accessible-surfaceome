@@ -70,7 +70,11 @@ export function L1TopologyStrip({
   gene,
   variantLabel,
   nAlternatives,
+  sp,
 }: {
+  /** Native residues the N-terminus line is about: the native SP, or the stretch an Igk
+   *  leader replaces. Drawn as a bracket over the bands, member numbering. */
+  sp?: { from: number; to: number; kind: "native_sp" | "replaced"; label: string } | null;
   /** Per-residue DeepTMHMM topology of THIS member's ordered protein. */
   topology: string;
   flags: InsertFlag[];
@@ -102,6 +106,14 @@ export function L1TopologyStrip({
           topology={topology}
           ariaLabel={`${gene} ${variantLabel} topology, ${n} residues`}
         />
+        {sp && sp.to >= sp.from ? (
+          <span
+            className={sp.kind === "replaced" ? `${styles.spBand} ${styles.spReplaced}` : styles.spBand}
+            style={{ left: `${pct(sp.from - 1)}%`, width: `${Math.max(0.6, pct(sp.to) - pct(sp.from - 1))}%` }}
+            title={sp.label}
+            aria-hidden="true"
+          />
+        ) : null}
         {flags.map((f) => {
           const x = pct(f.insertAfterResidue);
           // The head is wider than the 6px mark it sits on, so a flag at either end
@@ -131,6 +143,12 @@ export function L1TopologyStrip({
               ? ` — ${flags.map((f) => f.legend).join("; ")}`
               : " — none picked for this member"}
           </li>
+          {sp && sp.to >= sp.from ? (
+            <li>
+              <span className={sp.kind === "replaced" ? `${styles.spSwatch} ${styles.spReplaced}` : styles.spSwatch} aria-hidden="true" />{" "}
+              {sp.kind === "replaced" ? `replaced by the Igκ leader: residues ${sp.from}–${sp.to}` : `native signal peptide: ${sp.from}–${sp.to}`}
+            </li>
+          ) : null}
           {nAlternatives ? (
             <li className={styles.muted}>
               {nAlternatives} alternative{nAlternatives === 1 ? "" : "s"} not drawn here — see the

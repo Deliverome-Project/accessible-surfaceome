@@ -116,6 +116,15 @@ export interface L1Member {
   sequence_sha256?: string | null;
   /** UniProt accession of the member's chosen native model. */
   uniprot_acc?: string | null;
+  /** Signal-peptide status and UniProt comparison, from the member annotations export
+   *  (absent from loads that predate it; see memberSp / uniprotDiffSummary). */
+  sp_status?: L1SpStatus | null;
+  native_sp_last_residue?: number | null;
+  sp_evidence?: string | null;
+  uniprot_canonical_acc?: string | null;
+  uniprot_canonical_length?: number | null;
+  matches_uniprot_canonical?: boolean | number | null;
+  uniprot_diff?: L1UniprotDiff[] | null;
   /** The proteoform audit's decision for this member, when it has one. */
   proteoform?: {
     decision?: string; target?: string; status?: string; flags?: string; reason?: string;
@@ -149,6 +158,11 @@ export interface L1IndexMember {
   ordered_length_aa: number | null;
   sequence_sha256: string | null;
   pick_status: L1SiteStatus[];
+  /** Leader of the member's primary pick ("igk" or null); undefined when the index
+   *  predates the field, which keeps the SP filter hidden rather than wrong. */
+  pick_leader?: string | null;
+  sp_status?: L1SpStatus | null;
+  matches_uniprot_canonical?: boolean | number | null;
 }
 
 export interface L1Index {
@@ -235,21 +249,167 @@ export function visibleContacts(contacts: readonly L1Contact[], showHidden: bool
 /** Members in the browser's order, filtered by rung / class / free text. */
 export function filterIndex(
   members: readonly L1IndexMember[],
-  f: { rung?: string; membraneClass?: string; query?: string; status?: string },
+  f: {
+    rung?: string; membraneClass?: string; query?: string; status?: string;
+    /** "native" | "igk_swap" | "igk_res1" | "none" */
+    sp?: string;
+    /** "yes" = differs from the UniProt canonical, "no" = identical */
+    diff?: string;
+    /** "mine" | "notmine", against `reviewedByMe` (design ids) */
+    reviewed?: string;
+    reviewedByMe?: ReadonlySet<string>;
+  },
 ): L1IndexMember[] {
   const q = (f.query ?? "").trim().toUpperCase();
+  const mine = f.reviewedByMe ?? new Set<string>();
   return members
     .filter((m) => !f.rung || m.rung === f.rung)
     .filter((m) => !f.membraneClass || m.membrane_class === f.membraneClass)
     .filter((m) => !f.status || (f.status === "none" ? m.pick_status.length === 0 : m.pick_status.includes(f.status as L1SiteStatus)))
+    .filter((m) => !f.sp || indexSpStatus(m) === f.sp)
+    .filter((m) => !f.diff || (f.diff === "yes" ? uniprotDiffers(m) === true : uniprotDiffers(m) === false))
+    .filter((m) => !f.reviewed || (f.reviewed === "mine") === mine.has(m.design_id ?? m.member_id))
     .filter(
       (m) =>
         !q ||
         m.gene_symbol.toUpperCase().includes(q) ||
         m.member_id.toUpperCase() === q ||
-        (m.design_id ?? "").toUpperCase() === q,
+        (m.design_id ?? "").toUpperCase() === q ||
+        // Words that name a class, a rung or an SP type match those too, so "gpcr",
+        // "c-terminal" or "igk" find members without opening the filters.
+        (q.length >= 3 &&
+          (m.membrane_class.toUpperCase().includes(q) ||
+            m.rung.toUpperCase().includes(q) ||
+            SP_SEARCH[indexSpStatus(m) ?? ""]?.some((w) => w.includes(q)) === true)),
     )
     .sort((a, b) => a.gene_symbol.localeCompare(b.gene_symbol) || a.member_id.localeCompare(b.member_id));
+}
+
+// ------------------------------------------------------------ signal peptide / UniProt
+
+export type L1SpStatus = "native" | "igk_swap" | "igk_res1" | "none";
+
+export const SP_LABEL: Record<L1SpStatus, string> = {
+  native: "native SP",
+  igk_swap: "Igκ replaces native SP",
+  igk_res1: "Igκ added at residue 1",
+  none: "no SP or leader",
+};
+
+const SP_SEARCH: Record<string, string[]> = {
+  native: ["NATIVE SP", "SIGNAL PEPTIDE"],
+  igk_swap: ["IGK", "IGΚ", "IGK SWAP", "LEADER"],
+  igk_res1: ["IGK", "IGΚ", "IGK RES1", "LEADER"],
+  none: [],
+};
+
+/**
+ * SP status of an index row. The export's own `sp_status` wins; without it the status
+ * is read off the primary pick: an Igk leader on an "N after SP" pick replaces the
+ * native SP, on an "N at residue 1" pick it is added in front; no leader on "N after SP"
+ * keeps the native SP. Other rungs say nothing about the SP, so they are "none" only
+ * when the export says so and otherwise null (unknown). Null too when the index
+ * predates `pick_leader`, so a filter cannot silently drop every member.
+ */
+export function indexSpStatus(m: Pick<L1IndexMember, "rung"> & { sp_status?: L1SpStatus | null; pick_leader?: string | null }): L1SpStatus | null {
+  if (m.sp_status) return m.sp_status;
+  if (m.pick_leader === undefined) return null;
+  const lead = (m.pick_leader ?? "").toLowerCase();
+  if (lead.startsWith("igk")) return m.rung.startsWith("N at residue 1") ? "igk_res1" : "igk_swap";
+  if (m.rung.startsWith("N after SP")) return "native";
+  return null;
+}
+
+/** true / false from the export; null when this load does not say. */
+export function uniprotDiffers(m: { matches_uniprot_canonical?: boolean | number | null }): boolean | null {
+  const v = m.matches_uniprot_canonical;
+  if (v === null || v === undefined) return null;
+  return !(v === true || v === 1);
+}
+
+export interface L1UniprotDiff {
+  kind: string;
+  member_start: number | null;
+  member_end: number | null;
+  uniprot_start: number | null;
+  uniprot_end: number | null;
+  member_aa?: string | null;
+  uniprot_aa?: string | null;
+}
+
+/** "a substitution at 412 (A→V)", "residues 1–24 not in UniProt", ... one line each. */
+export function uniprotDiffLines(diffs: readonly L1UniprotDiff[]): string[] {
+  const span = (a: number | null, b: number | null) => (a == null ? "?" : a === b || b == null ? `${a}` : `${a}–${b}`);
+  return diffs.map((d) => {
+    const here = span(d.member_start, d.member_end);
+    const there = span(d.uniprot_start, d.uniprot_end);
+    const aa = d.member_aa || d.uniprot_aa ? ` (${d.uniprot_aa || "–"} → ${d.member_aa || "–"})` : "";
+    switch (d.kind) {
+      case "substitution": return `member ${here} differs from UniProt ${there}${aa}`;
+      case "insertion": return `member ${here} not in UniProt${aa}`;
+      case "deletion": return `UniProt ${there} missing from the member${aa}`;
+      case "n_extension": return `member starts earlier: ${here} before UniProt residue 1`;
+      case "c_extension": return `member runs past the UniProt C-terminus: ${here}`;
+      case "n_truncation": return `member starts later: UniProt ${there} not ordered`;
+      case "c_truncation": return `member ends early: UniProt ${there} not ordered`;
+      default: return `${d.kind}: member ${here}, UniProt ${there}${aa}`;
+    }
+  });
+}
+
+export interface L1SpDescription {
+  status: L1SpStatus | null;
+  /** One line for the member header. */
+  text: string;
+  /** Native residues this describes, member numbering, for the topology strip. */
+  band: { from: number; to: number; kind: "native_sp" | "replaced" } | null;
+  /** Where the statement comes from. */
+  source: string;
+}
+
+/**
+ * What the member does at its N-terminus, in words, from (best first) the export's
+ * `sp_status` + `native_sp_last_residue`, the primary pick, or the member's own v1
+ * topology (leading "S" residues).
+ */
+export function memberSp(member: Pick<L1Member, "rung" | "sites" | "sp_status" | "native_sp_last_residue" | "sp_evidence">, topology?: string | null): L1SpDescription {
+  const pick = member.sites.find((s) => s.is_primary !== false);
+  const leader = (pick?.leader ?? "").toLowerCase();
+  const ins = pick?.insert_after_residue ?? null;
+  const spEnd = member.native_sp_last_residue ?? null;
+  const topoSp = topology ? (/^S+/.exec(topology)?.[0].length ?? 0) : 0;
+  const status: L1SpStatus | null =
+    member.sp_status ?? indexSpStatus({ rung: member.rung, pick_leader: pick ? pick.leader ?? null : undefined }) ??
+    (topology ? (topoSp ? "native" : "none") : null);
+  const evidence = member.sp_evidence ? ` (${member.sp_evidence})` : "";
+  const source = member.sp_status ? `design export${evidence}` : pick && (leader || member.rung.startsWith("N after SP")) ? "the primary pick" : topology ? "DeepTMHMM v1 topology" : "not known";
+  if (status === "igk_swap") {
+    const removed = ins != null && ins > 0 ? ins : spEnd;
+    const sp = spEnd ? `native SP 1–${spEnd}` : "the native SP";
+    const extra = removed && spEnd && removed > spEnd ? `; native 1–${removed} not in the construct` : "";
+    return {
+      status,
+      text: spEnd
+        ? `Igκ leader replaces ${sp}${extra}`
+        : `Igκ leader replaces the native N-terminus${removed ? ` (native residues 1–${removed})` : ""}`,
+      band: removed ? { from: 1, to: removed, kind: "replaced" } : null,
+      source,
+    };
+  }
+  if (status === "igk_res1") {
+    return { status, text: "Igκ leader added before residue 1 (no native signal peptide)", band: null, source };
+  }
+  if (status === "native") {
+    const end = spEnd ?? (topoSp || null);
+    return {
+      status,
+      text: `native signal peptide${end ? ` (cleaved 1–${end})` : ""}, kept${ins != null && member.rung.startsWith("N after SP") ? `; tag after residue ${ins}` : ""}`,
+      band: end ? { from: 1, to: end, kind: "native_sp" } : null,
+      source: spEnd ? source : end ? "DeepTMHMM v1 topology" : source,
+    };
+  }
+  if (status === "none") return { status, text: "no signal peptide and no leader", band: null, source };
+  return { status: null, text: "signal peptide: not stated for this member", band: null, source };
 }
 
 export function countBy<T>(rows: readonly T[], key: (r: T) => string): [string, number][] {

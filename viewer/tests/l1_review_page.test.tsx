@@ -159,16 +159,20 @@ const panel = (over: Partial<Parameters<typeof ReviewPanel>[0]> = {}) =>
 const withDraft = (draft: Record<string, unknown>) =>
   panel({ drafts: { "l1-p0006": { mode: "", reason: "", alt: { residue: "", placement: "internal", cassette: "" }, ...draft } as never } });
 
-test("the verdict is one segmented control of three radios, and Submit waits for a choice", () => {
+test("the verdict is three toggle buttons, and Submit waits for a choice", () => {
   const html = panel();
-  const radios = html.match(/<input type="radio"[^>]*>/g) ?? [];
-  assert.equal(radios.length, 3);
+  // Buttons, not radios: a focused radio swallowed the page's arrow keys.
+  assert.equal((html.match(/<input type="radio"/g) ?? []).length, 0);
+  assert.equal((html.match(/aria-pressed="false"/g) ?? []).length, 3);
   for (const label of ["Site looks right", "Concern", "Suggest another site"]) assert.match(html, new RegExp(label));
   assert.match(html, /<button type="button"[^>]*disabled=""[^>]*>Submit<\/button>/);
-  assert.doesNotMatch(withDraft({ mode: "good" }), /disabled=""[^>]*>Submit/);
-  // No token wording anywhere, and the old oversized buttons are gone.
+  const chosen = withDraft({ mode: "good" });
+  assert.doesNotMatch(chosen, /disabled=""[^>]*>Submit/);
+  assert.match(chosen, /aria-pressed="true"[^>]*>Site looks right/);
   assert.doesNotMatch(html, /token/i);
-  assert.doesNotMatch(html, /Looks good|Save suggestion/);
+  // The comment box is one line until it is used.
+  assert.match(html, /<textarea[^>]*rows="1"/);
+  assert.match(withDraft({ mode: "no", reason: "pore" }), /<textarea[^>]*rows="3"/);
 });
 
 test("a verdict asks which arm it is about, defaulting to the current pick", () => {
@@ -375,5 +379,69 @@ test("a member with no topology gets no strip rather than one drawn from somethi
       }),
     ),
     "",
+  );
+});
+
+// ------------------------------------------------- filters, SP status, UniProt comparison
+
+test("SP status comes from the export when present, else from the primary pick", async () => {
+  const { indexSpStatus } = await import("../lib/l1-design");
+  const row = (rung: string, over: Record<string, unknown> = {}) => ({ rung, ...over });
+  assert.equal(indexSpStatus(row("N after SP")), null, "an index without pick_leader says nothing");
+  assert.equal(indexSpStatus(row("N after SP", { pick_leader: "igk" })), "igk_swap");
+  assert.equal(indexSpStatus(row("N at residue 1, multipass", { pick_leader: "igk" })), "igk_res1");
+  assert.equal(indexSpStatus(row("N after SP", { pick_leader: null })), "native");
+  assert.equal(indexSpStatus(row("internal", { pick_leader: null })), null);
+  assert.equal(indexSpStatus(row("internal", { pick_leader: null, sp_status: "none" })), "none");
+});
+
+test("GLP2R reads as the Igκ swap, with the SP end once the export carries it", async () => {
+  const { memberSp } = await import("../lib/l1-design");
+  const glp2r = member({
+    gene_symbol: "GLP2R", rung: "N after SP", ordered_length_aa: 553,
+    sites: [site({ site_id: "l1-p0724-nsp-68", rung: "N after SP", insert_after_residue: 68, leader: "igk", decision: "igk_swap", status: "built" })],
+  });
+  const now = memberSp(glp2r);
+  assert.equal(now.status, "igk_swap");
+  assert.match(now.text, /Igκ leader replaces the native N-terminus \(native residues 1–68\)/);
+  assert.deepEqual(now.band, { from: 1, to: 68, kind: "replaced" });
+  const later = memberSp({ ...glp2r, sp_status: "igk_swap", native_sp_last_residue: 66, sp_evidence: "DeepTMHMM v2 + mouse ortholog" });
+  assert.match(later.text, /Igκ leader replaces native SP 1–66; native 1–68 not in the construct/);
+  assert.match(later.source, /mouse ortholog/);
+  const kept = memberSp(member({ rung: "N after SP", sites: [site({ insert_after_residue: 24, leader: null, rung: "N after SP" })] }), "SSSSSSSSSSSSSSSSSSSSSSOOOO");
+  assert.match(kept.text, /native signal peptide \(cleaved 1–22\), kept; tag after residue 24/);
+});
+
+test("filters: SP type, UniProt difference and reviewed-by-me; search matches class and rung words", () => {
+  const rows = [
+    { ...m("l1-m0001", "GLP2R", "N after SP", "multipass (other)", ["built"]), pick_leader: "igk", matches_uniprot_canonical: 0 },
+    { ...m("l1-m0002", "AXL", "N after SP", "single-pass type I", ["built"]), pick_leader: null, matches_uniprot_canonical: 1 },
+    { ...m("l1-m0003", "ADRB2", "C-terminal", "GPCR", ["built"]), pick_leader: null, matches_uniprot_canonical: 1 },
+  ];
+  const genes = (f: Parameters<typeof filterIndex>[1]) => filterIndex(rows, f).map((x) => x.gene_symbol);
+  assert.deepEqual(genes({ sp: "igk_swap" }), ["GLP2R"]);
+  assert.deepEqual(genes({ sp: "native" }), ["AXL"]);
+  assert.deepEqual(genes({ diff: "yes" }), ["GLP2R"]);
+  assert.deepEqual(genes({ diff: "no" }), ["ADRB2", "AXL"]);
+  const mine = new Set(["l1-p0002"]);
+  assert.deepEqual(genes({ reviewed: "mine", reviewedByMe: mine }), ["AXL"]);
+  assert.deepEqual(genes({ reviewed: "notmine", reviewedByMe: mine }), ["ADRB2", "GLP2R"]);
+  assert.deepEqual(genes({ query: "gpcr" }), ["ADRB2"]);
+  assert.deepEqual(genes({ query: "c-term" }), ["ADRB2"]);
+  assert.deepEqual(genes({ query: "igk" }), ["GLP2R"]);
+  // Two letters still search gene symbols only, so "AX" does not drag in classes.
+  assert.deepEqual(genes({ query: "ax" }), ["AXL"]);
+});
+
+test("UniProt differences read as sentences", async () => {
+  const { uniprotDiffLines, uniprotDiffers } = await import("../lib/l1-design");
+  assert.equal(uniprotDiffers({}), null);
+  assert.equal(uniprotDiffers({ matches_uniprot_canonical: 0 }), true);
+  assert.deepEqual(
+    uniprotDiffLines([
+      { kind: "substitution", member_start: 412, member_end: 412, uniprot_start: 412, uniprot_end: 412, member_aa: "V", uniprot_aa: "A" },
+      { kind: "n_truncation", member_start: null, member_end: null, uniprot_start: 1, uniprot_end: 24 },
+    ]),
+    ["member 412 differs from UniProt 412 (A → V)", "member starts later: UniProt 1–24 not ordered"],
   );
 });
