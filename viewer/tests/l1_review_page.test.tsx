@@ -487,6 +487,13 @@ test("strip flags and tag-site cards are buttons that focus an arm", async () =>
   assert.match(html, /title="your suggested site: after residue 250"/);
   const card = renderToStaticMarkup(React.createElement(SiteCard, { site: twoArms[0], length: 400, focused: false, onShow: () => {} }));
   assert.match(card, /<button[^>]*aria-pressed="false"[^>]*>show on structure<\/button>/);
+  const clickableStrip = renderToStaticMarkup(
+    React.createElement(L1TopologyStrip, {
+      topology: "O".repeat(400), flags, gene: "G", variantLabel: "ref", nAlternatives: 0,
+      onPickResidue: () => {},
+    }),
+  );
+  assert.match(clickableStrip, /click bar to suggest a site/);
 });
 
 test("multiple fold tabs name their arm and residue so identical pLDDT/verdict tabs stay distinct", () => {

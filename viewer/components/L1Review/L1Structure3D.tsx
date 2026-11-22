@@ -35,6 +35,8 @@ interface Props {
   cassette: [number, number] | null;
   /** Called with the MODEL residue number the reader clicked. */
   onPick?: (modelResidue: number) => void;
+  /** Maps a MODEL residue number to this member's residue number for hover tooltips. */
+  modelToMemberResi?: (modelResidue: number) => number | null;
   /** Key text for the model residues that are not the member's own (an Igk leader
    *  construct's residues, a snorkel module). */
   nonNativeLabel?: string;
@@ -62,6 +64,12 @@ type Viewer = {
   addLabel: (text: string, opts: object) => void;
   removeAllLabels: () => void;
   setClickable: (sel: object, on: boolean, cb: (atom: { resi: number }) => void) => void;
+  setHoverable?: (
+    sel: object,
+    on: boolean,
+    hoverCb: (atom: { resi: number; resn?: string }) => void,
+    unhoverCb: () => void,
+  ) => void;
   zoomTo: (sel?: object) => void;
   center: (sel?: object, animationDuration?: number) => void;
   getView?: () => number[];
@@ -123,7 +131,7 @@ function orient(text: string, topology: string | null | undefined, map: L1ModelM
  * Deliberately separate from the gene page's StructureViewer: this one draws one model,
  * the member's membrane and side shading, a few marked residues and a click-to-pick.
  */
-export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology, map, modelLength, compact, nonNativeLabel, focusResi, onReset }: Props) {
+export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMemberResi, topology, map, modelLength, compact, nonNativeLabel, focusResi, onReset }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
   const initialViewRef = useRef<number[] | null>(null);
@@ -132,6 +140,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [loaded, setLoaded] = useState(0);
   const [membrane, setMembrane] = useState<MembraneSlab | null>(null);
+  const [hoverAtom, setHoverAtom] = useState<{ resi: number; resn?: string } | null>(null);
   const shaded = !!(topology && map);
   // Orientation depends on the topology and map, so a change in either reloads the model.
   const orientKey = shaded ? JSON.stringify([topology, map?.segments]) : "";
@@ -141,6 +150,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
     let live = true;
     setState("loading");
     setMembrane(null);
+    setHoverAtom(null);
     initialViewRef.current = null;
     (async () => {
       try {
@@ -212,8 +222,14 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
         } as object);
       }
     }
-    // Clickability binds to the styled atoms, so it is re-applied after every restyle.
+    // Clickability and hover bind to the styled atoms, so both are re-applied after every restyle.
     v.setClickable({}, true, (atom) => pickRef.current?.(atom.resi));
+    v.setHoverable?.(
+      {},
+      true,
+      (atom) => setHoverAtom({ resi: atom.resi, resn: atom.resn }),
+      () => setHoverAtom(null),
+    );
     const firstZoom = zoomedFor.current !== loaded;
     if (firstZoom) {
       v.zoomTo(span ? { resi: `${span[0]}-${span[1]}` } : {});
@@ -257,12 +273,32 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
   const outside =
     !!map?.nonNative.length || !!(span && (span[0] > 1 || (modelLength != null && modelLength > span[1])));
   const side = map?.cassetteSide ? SIDE_LABEL[map.cassetteSide] ?? null : null;
+  const hoverLabel = (() => {
+    if (!hoverAtom) return null;
+    if (cassette && hoverAtom.resi >= cassette[0] && hoverAtom.resi <= cassette[1]) {
+      return `tag cassette (model ${hoverAtom.resi})`;
+    }
+    const memRes = modelToMemberResi ? modelToMemberResi(hoverAtom.resi) : null;
+    if (memRes != null && memRes >= 1) {
+      const st = topology && memRes <= topology.length ? SIDE_LABEL[topology[memRes - 1]] : null;
+      const prefix = hoverAtom.resn ? `${hoverAtom.resn} ${memRes}` : `residue ${memRes}`;
+      return `${prefix}${st ? ` · ${st}` : ""}${onPick ? " — click to suggest" : ""}`;
+    }
+    if (!onPick) return `model ${hoverAtom.resi} — switch to Native to click-pick`;
+    return `model ${hoverAtom.resi} (not in member sequence)`;
+  })();
   return (
     <div className={styles.viewerWrap}>
       <div className={styles.viewerStage}>
         <div ref={ref} className={compact ? `${styles.viewer} ${styles.viewerCompact}` : styles.viewer} />
         {state === "loading" && <p className={styles.viewerNote} role="status" aria-live="polite">Loading model…</p>}
         {state === "error" && <p className={styles.viewerNote} role="alert">Could not load {pdbUrl}</p>}
+        {state === "ready" && hoverLabel ? (
+          <span className={styles.viewerHover} aria-live="polite">{hoverLabel}</span>
+        ) : null}
+        {state === "ready" && !hoverLabel && onPick ? (
+          <span className={styles.viewerHint}>Click a residue to suggest a site</span>
+        ) : null}
         {state === "ready" && (
           <button
             type="button"

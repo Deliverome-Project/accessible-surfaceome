@@ -485,7 +485,7 @@ export function ReviewPanel({
               aria-describedby={`${fieldId}-residue-help`}
             />
             <span id={`${fieldId}-residue-help`} className={styles.help}>
-              or click a residue on the structure
+              or click a residue on the structure or topology bar
               {member.ordered_length_aa ? ` · 1–${member.ordered_length_aa}` : ""}
             </span>
           </label>
@@ -893,6 +893,7 @@ function MemberDetail({
           nAlternatives={sites.filter((s) => s.is_primary === false).length}
           focusSiteId={focusSite}
           onFlagClick={showSite}
+          onPickResidue={(r) => setPicked({ r, n: Date.now() })}
           suggestedResidue={suggested}
         />
       ) : null}
@@ -952,6 +953,7 @@ function MemberDetail({
             marks={marks}
             cassette={cassette}
             onPick={segments ? pick : undefined}
+            modelToMemberResi={segments ? (resi) => modelToMember(resi, segments) : undefined}
             focusResi={(() => {
               const f = sites.find((x) => x.site_id === focusSite);
               return f?.insert_after_residue != null ? toModel(f.insert_after_residue) : null;

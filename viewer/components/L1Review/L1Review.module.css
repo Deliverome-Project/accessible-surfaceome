@@ -143,6 +143,14 @@
   background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 .resetSymbol:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.viewerHover, .viewerHint {
+  position: absolute; left: 8px; z-index: 2; pointer-events: none;
+  font-size: 0.74rem; line-height: 1.3; padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-pill); border: 1px solid var(--line-soft);
+  background: rgba(255, 255, 255, 0.88);
+}
+.viewerHover { top: 8px; color: var(--ink); font-family: var(--font-mono); }
+.viewerHint { bottom: 8px; color: var(--muted); }
 .viewerCompact { height: 340px; }
 /* Membrane + side-shading key under the 3D model. The topology swatches are the gene
    page's TopologyLegend; these rules only lay out what this view adds (cassette,

@@ -73,12 +73,15 @@ export function L1TopologyStrip({
   sp,
   focusSiteId,
   onFlagClick,
+  onPickResidue,
   suggestedResidue,
 }: {
   /** The arm being looked at: its flag is drawn emphasised. */
   focusSiteId?: string | null;
   /** Clicking a flag focuses that arm on the structure. */
   onFlagClick?: (siteId: string) => void;
+  /** Clicking the topology bar itself suggests inserting a tag after that residue. */
+  onPickResidue?: (residue: number) => void;
   /** The reviewer's suggested insert residue (typed or clicked), drawn as its own flag. */
   suggestedResidue?: number | null;
   /** Native residues the N-terminus line is about: the native SP, or the stretch an Igk
@@ -108,12 +111,14 @@ export function L1TopologyStrip({
         </span>
         <span className={styles.muted}>
           {gene} · {variantLabel} · {n} aa, this member&rsquo;s own numbering
+          {onPickResidue ? " · click bar to suggest a site" : ""}
         </span>
       </div>
       <div className={styles.stripBody}>
         <TopologyBar
           topology={topology}
           ariaLabel={`${gene} ${variantLabel} topology, ${n} residues`}
+          onResidueClick={onPickResidue}
         />
         {sp && sp.to >= sp.from ? (
           <span
