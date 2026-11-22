@@ -186,6 +186,12 @@
 }
 .tab:hover { border-color: var(--ink-soft); background: var(--bg-warm); }
 .tabOn { border-color: var(--accent); background: var(--maroon-soft); color: var(--accent-deep); font-weight: var(--fw-medium); }
+.earlierToggle {
+  font: inherit; font-size: 0.74rem; padding: 0.16rem 0.45rem;
+  border: 1px dashed var(--line); border-radius: var(--radius-sm);
+  background: transparent; color: var(--muted); cursor: pointer;
+}
+.earlierToggle:hover { color: var(--ink); border-color: var(--ink-soft); }
 .viewerWrap { position: relative; }
 .viewerStage { position: relative; }
 /* Tall enough that the 3D protein is the hero of the page while keeping the tabs,

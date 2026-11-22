@@ -8,7 +8,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ReviewPanel, SiteCard, structureTabLabel } from "../components/L1Review/L1Review";
+import { ReviewPanel, SiteCard, partitionModels, structureTabLabel } from "../components/L1Review/L1Review";
 import {
   filterIndex,
   latestVerdicts,
@@ -497,18 +497,40 @@ test("strip flags and tag-site cards are buttons that focus an arm", async () =>
 });
 
 test("multiple fold tabs name their arm and residue so identical pLDDT/verdict tabs stay distinct", () => {
-  const foldA = { kind: "tagged" as const, site_id: "l1-p0006-a1", mean_plddt: 69.2, refold_verdict: "pass" };
-  const foldB = { kind: "tagged" as const, site_id: "l1-p0006-a2", mean_plddt: 69.1, refold_verdict: "pass" };
-  const foldNoArm = { kind: "tagged" as const, site_id: "l1-p0006-internal-94", mean_plddt: 72.0, refold_verdict: "fail" };
-  const native = { kind: "native" as const, site_id: null, mean_plddt: 84.4, refold_verdict: null };
+  const foldA = { kind: "tagged" as const, site_id: "l1-p0006-a1", mean_plddt: 69.2, refold_verdict: "pass", note: null };
+  const foldB = { kind: "tagged" as const, site_id: "l1-p0006-a2", mean_plddt: 69.1, refold_verdict: "pass", note: null };
+  const foldNoArm = { kind: "tagged" as const, site_id: "l1-p0006-internal-94", mean_plddt: 72.0, refold_verdict: "fail", note: null };
+  const foldFromNote = { kind: "tagged" as const, site_id: null, mean_plddt: 68.8, refold_verdict: "fail", note: "rung nterm; insert after 29; ALFA buried" };
+  const native = { kind: "native" as const, site_id: null, mean_plddt: 84.4, refold_verdict: null, note: null };
   // Single fold stays concise.
   assert.equal(structureTabLabel(foldA, twoArms, false), "Fold · pLDDT 69 · pass");
   // Multi-fold disambiguates by arm and insertion residue.
   assert.equal(structureTabLabel(foldA, twoArms, true), "Fold (a1 · 94) · pLDDT 69 · pass");
   assert.equal(structureTabLabel(foldB, twoArms, true), "Fold (a2 · 151) · pLDDT 69 · pass");
-  // A site without an -aK suffix falls back to its insertion residue.
+  // A site without an -aK suffix falls back to its insertion residue; an unlisted fold reads `insert after N` from note.
   assert.equal(structureTabLabel(foldNoArm, [site({})], true), "Fold (after 94) · pLDDT 72 · fail");
+  assert.equal(structureTabLabel(foldFromNote, [], true), "Fold (after 29) · pLDDT 69 · fail");
   assert.equal(structureTabLabel(native, twoArms, true), "Native · pLDDT 84");
+});
+
+test("partitionModels puts current-pick folds first and tucks unlisted failed sweep refolds away (GLP1R case)", () => {
+  const mk = (id: string, kind: "tagged" | "native", site_id: string | null, refold_verdict: string | null) => ({
+    structure_id: id, kind, site_id, source: "colabfold", release: null, r2_key: null, model_url: null,
+    proteoform_match: null, residue_offset: 0, is_chosen: true, mean_plddt: 69,
+    cassette_first_model_residue: 25, cassette_last_model_residue: 75, refold_verdict, note: null,
+  });
+  const glp1rSites = [site({ site_id: "l1-p0723-nsp-24", is_primary: true, insert_after_residue: 24 })];
+  const { primary, earlier } = partitionModels(
+    [
+      mk("native", "native", null, null),
+      mk("fail-29", "tagged", null, "fail"),
+      mk("fail-25", "tagged", null, "fail"),
+      mk("pass-24", "tagged", "l1-p0723-nsp-24", "pass"),
+    ],
+    glp1rSites,
+  );
+  assert.deepEqual(primary.map((x) => x.structure_id), ["pass-24", "native"]);
+  assert.deepEqual(earlier.map((x) => x.structure_id), ["fail-29", "fail-25"]);
 });
 
 test("verdict buttons advertise = / - / . shortcuts and SiteCard chips semicolon-delimited detail", () => {
