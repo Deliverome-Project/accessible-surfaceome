@@ -31,18 +31,6 @@ export default function L1ReviewPage() {
           <p className={styles.lede}>
             <strong>Residue numbers are each member&rsquo;s own</strong> (isoforms/orthologs differ from canonical).
           </p>
-          <details className={styles.about}>
-            <summary>what the fields mean</summary>
-            <p>
-              The rung logic, scores, gate and refold results, who decided each pick and the
-              alternative it beat are all on the member&rsquo;s card. Agent sessions make these calls
-              under delegation; <strong>Site looks right / Concern</strong> and{" "}
-              <strong>Suggest another site</strong> are how a reviewer overturns one. Membrane
-              class is rule-based, for browsing only. The topology strip is the member&rsquo;s own
-              DeepTMHMM prediction, coloured as on the gene pages, with the tag insert flagged in
-              blue.
-            </p>
-          </details>
         </header>
         <L1Review />
       </section>

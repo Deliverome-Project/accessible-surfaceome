@@ -5,7 +5,3 @@
 .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem var(--space-3); margin-bottom: var(--space-1); }
 .title { margin: 0; font-size: 1.25rem; }
 .lede { color: var(--muted); margin: 0; font-size: 0.82rem; }
-.about { font-size: 0.8rem; color: var(--muted); }
-.about > summary { cursor: pointer; }
-.about[open] { flex-basis: 100%; }
-.about p { margin: var(--space-1) 0 0; max-width: 72ch; }
