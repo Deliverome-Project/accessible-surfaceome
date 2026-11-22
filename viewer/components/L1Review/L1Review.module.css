@@ -119,6 +119,7 @@
 .tab, .tabOn { font: inherit; font-size: 0.8rem; padding: 0.2rem 0.6rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: transparent; cursor: pointer; }
 .tabOn { border-color: var(--accent); color: var(--accent); font-weight: var(--fw-medium); }
 .viewerWrap { position: relative; }
+.viewerStage { position: relative; }
 /* Sized to the window so the whole model sits above the fold beside the strip and the
    review card: the pane starts ~300px down at 1440x900, and the tabs + key under it take
    ~110px more. */
@@ -129,6 +130,19 @@
   background: var(--bg-soft, #f8f8f7); border: 1px solid var(--line-soft);
   color: var(--muted); font-size: 0.85rem; pointer-events: none; z-index: 3;
 }
+/* Inlaid reset button in the canvas's bottom-right corner, matching the gene page's
+   StructureViewer. z-index keeps it above the WebGL canvas that 3Dmol appends. */
+.resetSymbol {
+  position: absolute; bottom: 8px; right: 8px; width: 28px; height: 28px; z-index: 2;
+  appearance: none; background: rgba(255, 255, 255, 0.82); color: var(--ink-soft, #555);
+  border: 1px solid var(--line-soft); border-radius: 50%; padding: 0; cursor: pointer;
+  font-size: 16px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.resetSymbol:hover, .resetSymbol:focus-visible {
+  background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+.resetSymbol:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .viewerCompact { height: 340px; }
 /* Membrane + side-shading key under the 3D model. The topology swatches are the gene
    page's TopologyLegend; these rules only lay out what this view adds (cassette,

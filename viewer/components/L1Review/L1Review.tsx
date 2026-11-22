@@ -956,6 +956,7 @@ function MemberDetail({
               const f = sites.find((x) => x.site_id === focusSite);
               return f?.insert_after_residue != null ? toModel(f.insert_after_residue) : null;
             })()}
+            onReset={() => setFocusSite(null)}
             topology={topology || null}
             map={modelMap}
             modelLength={model?.model_length_aa ?? null}

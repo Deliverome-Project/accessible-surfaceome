@@ -49,6 +49,8 @@ interface Props {
   modelLength?: number | null;
   /** Shorter canvas for the gene page's card. */
   compact?: boolean;
+  /** Called when the user clicks the ↺ reset-view button (e.g. to clear a focused arm). */
+  onReset?: () => void;
 }
 
 type Viewer = {
@@ -62,6 +64,8 @@ type Viewer = {
   setClickable: (sel: object, on: boolean, cb: (atom: { resi: number }) => void) => void;
   zoomTo: (sel?: object) => void;
   center: (sel?: object, animationDuration?: number) => void;
+  getView?: () => number[];
+  setView?: (view: number[]) => void;
   render: () => void;
   clear: () => void;
   resize: () => void;
@@ -119,9 +123,10 @@ function orient(text: string, topology: string | null | undefined, map: L1ModelM
  * Deliberately separate from the gene page's StructureViewer: this one draws one model,
  * the member's membrane and side shading, a few marked residues and a click-to-pick.
  */
-export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology, map, modelLength, compact, nonNativeLabel, focusResi }: Props) {
+export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology, map, modelLength, compact, nonNativeLabel, focusResi, onReset }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
+  const initialViewRef = useRef<number[] | null>(null);
   const pickRef = useRef(onPick);
   pickRef.current = onPick;
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
@@ -136,6 +141,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
     let live = true;
     setState("loading");
     setMembrane(null);
+    initialViewRef.current = null;
     (async () => {
       try {
         type Mod3D = typeof import("3dmol");
@@ -208,7 +214,8 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
     }
     // Clickability binds to the styled atoms, so it is re-applied after every restyle.
     v.setClickable({}, true, (atom) => pickRef.current?.(atom.resi));
-    if (zoomedFor.current !== loaded) {
+    const firstZoom = zoomedFor.current !== loaded;
+    if (firstZoom) {
       v.zoomTo(span ? { resi: `${span[0]}-${span[1]}` } : {});
       zoomedFor.current = loaded;
       if (membrane) {
@@ -225,17 +232,49 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
       }
     }
     v.render();
+    if (firstZoom) {
+      try {
+        initialViewRef.current = v.getView?.() ?? null;
+      } catch {
+        initialViewRef.current = null;
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styleKey, state, loaded, membrane, shaded]);
+
+  const handleReset = () => {
+    const v = viewerRef.current;
+    if (!v) return;
+    if (initialViewRef.current && v.setView) {
+      v.setView(initialViewRef.current);
+    } else {
+      v.zoomTo(span ? { resi: `${span[0]}-${span[1]}` } : {});
+    }
+    v.render();
+    onReset?.();
+  };
 
   const outside =
     !!map?.nonNative.length || !!(span && (span[0] > 1 || (modelLength != null && modelLength > span[1])));
   const side = map?.cassetteSide ? SIDE_LABEL[map.cassetteSide] ?? null : null;
   return (
     <div className={styles.viewerWrap}>
-      <div ref={ref} className={compact ? `${styles.viewer} ${styles.viewerCompact}` : styles.viewer} />
-      {state === "loading" && <p className={styles.viewerNote} role="status" aria-live="polite">Loading model…</p>}
-      {state === "error" && <p className={styles.viewerNote} role="alert">Could not load {pdbUrl}</p>}
+      <div className={styles.viewerStage}>
+        <div ref={ref} className={compact ? `${styles.viewer} ${styles.viewerCompact}` : styles.viewer} />
+        {state === "loading" && <p className={styles.viewerNote} role="status" aria-live="polite">Loading model…</p>}
+        {state === "error" && <p className={styles.viewerNote} role="alert">Could not load {pdbUrl}</p>}
+        {state === "ready" && (
+          <button
+            type="button"
+            className={styles.resetSymbol}
+            onClick={handleReset}
+            title="Reset view"
+            aria-label="Reset structure view"
+          >
+            ↺
+          </button>
+        )}
+      </div>
       {state === "ready" ? (
         <div className={styles.sideLegend} aria-label="Membrane and side shading">
           {shaded && topology ? (
