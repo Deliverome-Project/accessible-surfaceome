@@ -23,6 +23,8 @@ export interface L1Mark {
   color: string;
   /** Sphere radius; picks are drawn larger than contacts. */
   radius: number;
+  /** Also draw full-residue sidechain sticks (used for contact sites so they stand out from the ribbon). */
+  stick?: boolean;
   label?: string;
 }
 
@@ -221,6 +223,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
       );
     }
     for (const m of marks) {
+      if (m.stick) v.addStyle({ resi: m.resi }, { stick: { color: m.color, radius: 0.24 } });
       v.addStyle({ resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
       if (m.label) {
         v.addLabel(m.label, {

@@ -66,11 +66,11 @@ export const COLORS = {
   pick: "#B3243B",
   ranker: "#E0A100",
   agent: "#3F7FBF",
-  litHigh: "#14967F",
-  litLower: "#7CC9BA",
-  uniprot: "#6B7280",
+  litHigh: "#0D9488",
+  litLower: "#2DD4BF",
+  uniprot: "#3730A3",
   suggestion: "#FF1F8F",
-  curated: "#E8590C",
+  curated: "#7C3AED",
 };
 
 const store = {
@@ -804,15 +804,19 @@ function MemberDetail({
       ? Number(draft.alt.residue)
       : null;
   const marks: L1Mark[] = [];
-  if (model?.kind === "native") {
+  if (segments) {
     if (showContacts && curatedAligned && curatedGene) {
       for (const c of curatedGene.sites) {
-        for (const p of c.positions ?? []) marks.push({ resi: p + offset, color: COLORS.curated, radius: 1.3 });
+        for (const p of c.positions ?? []) {
+          const resi = toModel(p);
+          if (resi != null) marks.push({ resi, color: COLORS.curated, radius: 2.2, stick: true });
+        }
       }
     }
     if (showContacts) {
       for (const c of visibleContacts(member.contacts ?? [], showHidden)) {
-        marks.push({ resi: c.residue + offset, color: contactColor(c), radius: 1.5 });
+        const resi = toModel(c.residue);
+        if (resi != null) marks.push({ resi, color: contactColor(c), radius: 2.2, stick: true });
       }
     }
   }
@@ -1037,14 +1041,14 @@ function MemberDetail({
         ) : (
           <p className={styles.muted}>No model for this member.</p>
         )}
-        {/* Picks, the focused arm and your suggestion are drawn on both views; contacts
-            only on the native model, whose numbering is the member's own. */}
+        {/* Picks, contacts, the focused arm and your suggestion are mapped through the
+            model's residue segments so they appear on both Fold and Native views. */}
         <div className={styles.legend}>
           <span><i style={{ background: COLORS.pick }} /> current pick (click a flag or &ldquo;show on structure&rdquo; to focus an arm)</span>
           <label><input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} /> <i style={{ background: COLORS.ranker }} /> ranker alternatives <i style={{ background: COLORS.agent }} /> agent proposals</label>
-          {model?.kind === "native" ? (
+          {segments ? (
             <>
-              <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.litHigh }} /> literature contacts (agent-extracted; lighter = modeling/homology only) <i style={{ background: COLORS.uniprot }} /> UniProt binding <i style={{ background: COLORS.curated }} /> curated (structures / databases)</label>
+              <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.curated }} /> curated (structures / databases) <i style={{ background: COLORS.litHigh }} /> literature contacts (lighter = modeling/homology) <i style={{ background: COLORS.uniprot }} /> UniProt binding</label>
               <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
             </>
           ) : (() => {
