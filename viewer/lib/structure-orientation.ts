@@ -275,6 +275,7 @@ function computeOrientationTransform(
   parsed: ParsedPdb,
   residueOffset = 0,
   resiToTopo?: (pdbResi: number) => number | null,
+  minSideResidues = 6,
 ): OrientationTransform | null {
   if (!topology || parsed.atoms.length === 0 || parsed.caByResidue.size === 0) {
     return null;
@@ -284,7 +285,7 @@ function computeOrientationTransform(
   );
   // Need a minimum count per class so centroids are statistically
   // meaningful; matches the deliverome-internal threshold.
-  if (states.M.length < 6 || states.O.length < 6 || states.I.length < 6) {
+  if (states.M.length < 6 || states.O.length < minSideResidues || states.I.length < minSideResidues) {
     return null;
   }
   const membraneCenter = centroid(states.M);
@@ -466,6 +467,12 @@ export interface OrientPdbOptions {
    *  Return `null` for resSeq values that don't map onto the topology
    *  (unmapped fusion partners, ligands, gaps). */
   resiToTopo?: (pdbResi: number) => number | null;
+  /** Fewest extracellular (O) and intracellular (I) CAs each side needs before the
+   *  O→I axis is trusted. Default 6, the deliverome-internal threshold the gene page
+   *  keeps. The L1 views lower it to 1 on a retry so a single-pass member with a
+   *  2–5-residue cytoplasmic tail still gets a membrane instead of none; the TM-helix
+   *  count stays at 6 either way. */
+  minSideResidues?: number;
 }
 
 /**
@@ -495,7 +502,7 @@ export function orientPdbForTopology(
   const resiToTopo = options?.resiToTopo;
   const parsed = parsePdbForOrientation(pdbText, chainFilter);
   const transform = computeOrientationTransform(
-    topology, parsed, residueOffset, resiToTopo,
+    topology, parsed, residueOffset, resiToTopo, options?.minSideResidues ?? 6,
   );
   return applyOrientationTransform(
     pdbText, topology, transform, chainFilter, residueOffset, resiToTopo,

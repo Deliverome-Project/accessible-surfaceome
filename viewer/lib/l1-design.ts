@@ -636,7 +636,7 @@ export function l1TaggedStructureVariants(
       display_range: null,
       note:
         `The ordered tagged protein (${m.rung}, ${m.member_id}), folded whole: ` +
-        `the ${layout.cassette[1] - layout.cassette[0] + 1}-aa cassette is charcoal` +
+        `the ${layout.cassette[1] - layout.cassette[0] + 1}-aa cassette is orange` +
         (layout.nonNative.length ? ", other non-native residues olive" : "") +
         `${verdict}.` +
         (topo ? "" : " No topology for this exact sequence yet, so the native chain is uncoloured."),
@@ -739,12 +739,18 @@ export async function fetchL1MemberTopologies(
  */
 export function l1MemberTopology(
   rows: readonly LibraryTopologyRow[] | null | undefined,
-  member: Pick<L1Member, "design_id" | "ordered_length_aa">,
+  member: Pick<L1Member, "design_id" | "ordered_length_aa"> & { sequence_sha256?: string | null },
 ): LibraryTopologyRow | null {
   if (!rows?.length || !member.design_id) return null;
   const row = rows.find((r) => r.candidate_id && r.candidate_id === member.design_id);
   const topo = row?.per_residue_topology ?? "";
   if (!row || !topo) return null;
+  // Sequence is the match of record: when both sides carry a hash they must agree, so a
+  // redesigned member that kept its design id never borrows the old protein's topology.
+  const rowSha = row.sequence_sha256 ?? null;
+  if (member.sequence_sha256 && rowSha && rowSha !== member.sequence_sha256) return null;
+  // Only the v1 alphabet is drawn; a row from another tool is not this palette's input.
+  if (row.tool && row.tool !== "deeptmhmm_v1") return null;
   // `ordered_length_aa` arrives as a string on the record's rows and as a number on the
   // design payload, so compare numerically rather than by identity.
   const rowLen = Number(row.ordered_length_aa ?? NaN);
@@ -809,6 +815,41 @@ export function l1MemberTabLabel(
 }
 
 /**
+ * Member chip wording on the review page. Every chip is a DESIGNED member, so the first
+ * word says which library CDS it is (reference / isoform / ortholog), never a word that
+ * could read as "the design vs something else". With the member's topology row in hand
+ * it adds the protein that CDS orders: "UniProt canonical" when the reference orders
+ * exactly UniProt's canonical sequence, "designed ORF" for an Ensembl-transcript
+ * product with no UniProt entry of its own. SMIM7 is the case that read wrongly:
+ * "Canonical 75 aa" and "Designed ORF 103 aa" looked like a canonical-vs-design toggle,
+ * when they are the reference member and the isoform member, both ordered.
+ */
+export function l1MemberRoleLabel(member: Pick<L1IndexMember, "candidate_set" | "species">): string {
+  const set = (member.candidate_set ?? "").toLowerCase();
+  const species = (member.species ?? "").toLowerCase();
+  const sp = species ? `${species[0].toUpperCase()}${species.slice(1)}` : "";
+  if (set === "library_reference") return species && species !== "human" ? `${sp} reference CDS` : "Reference CDS";
+  if (set === "isoform") return "Isoform CDS";
+  if (set === "ortholog") return sp ? `${sp} ortholog CDS` : "Ortholog CDS";
+  if (set === "expression_rescue") return "Rescue-arm CDS";
+  return set ? `${set.replace(/_/g, " ")} CDS` : "Member CDS";
+}
+
+/** What protein a member's CDS orders, from its topology row's cohort; null if unknown. */
+export function l1OrderedProteinLabel(topology: LibraryTopologyRow | null | undefined): string | null {
+  if (!topology) return null;
+  const cohort = (topology.cohort ?? "").toLowerCase();
+  if (cohort === "human_canonical") return "UniProt canonical";
+  if (cohort.startsWith("human_isoform")) {
+    const m = /-(\d+)$/.exec(topology.topology_acc ?? "");
+    return m ? `UniProt isoform ${m[1]}` : "UniProt isoform";
+  }
+  if (cohort === "library_designed_orf") return "designed ORF (no UniProt entry)";
+  if (cohort.startsWith("cyno") || cohort.startsWith("mouse")) return topology.topology_acc ? `UniProt ${topology.topology_acc}` : null;
+  return null;
+}
+
+/**
  * Index of the next member whose gene starts with `letter`, searching forward from
  * `from` and wrapping, so pressing the same letter again walks that letter's genes
  * instead of sticking on the first one. -1 when no gene in view starts with it.
@@ -830,3 +871,97 @@ export function nextIndexByLetter(
   }
   return -1;
 }
+
+// ------------------------------------------------- membrane + side shading on L1 models
+
+/** How a model's residues relate to the member's ordered protein, for side shading. */
+export interface L1ModelMap {
+  /** member residue r is model residue r + offset, for unpLo <= r <= unpHi. */
+  segments: { unpLo: number; unpHi: number; offset: number }[];
+  /** Tagged refolds: the cassette, in model numbering. */
+  cassette: [number, number] | null;
+  /** Model residues that are neither native nor cassette (an Igk leader remnant). */
+  nonNative: [number, number][];
+  /** Topology state of the residue the cassette is inserted after (residue 1 for an
+   *  N-terminal or Igk-led tag): the side of the membrane the tag is designed to sit on. */
+  cassetteSide: string | null;
+  /** Set when the refold's site is not in the member's site list (a refold of an earlier
+   *  pick): the residue its cassette follows, read off the model itself. */
+  unlistedSiteInsertAfter?: number | null;
+}
+
+/**
+ * Map one of a member's models onto the member's own numbering, so the member's v1
+ * topology can be painted on it. Native: one shift by `residue_offset`. Tagged: the
+ * piecewise layout around the cassette ({@link taggedModelLayout}). Null when the
+ * numbers do not describe one construct; the caller then draws no shading rather than
+ * shading drawn from a wrong map.
+ */
+export function l1ModelMap(
+  member: Pick<L1Member, "ordered_length_aa" | "sites">,
+  model: Pick<L1Structure, "kind" | "site_id" | "residue_offset" | "cassette_first_model_residue" | "cassette_last_model_residue" | "model_length_aa">,
+  topology: string,
+): L1ModelMap | null {
+  const L = member.ordered_length_aa ?? topology.length;
+  if (!topology || L !== topology.length) return null;
+  if (model.kind === "native") {
+    return { segments: [{ unpLo: 1, unpHi: L, offset: model.residue_offset ?? 0 }], cassette: null, nonNative: [], cassetteSide: null };
+  }
+  const site = member.sites.find((s) => s.site_id === model.site_id);
+  if (!site) {
+    // A refold whose site id is no longer among the member's sites (a refold of an
+    // earlier pick). Map it from the model alone, and only when the numbers leave no
+    // room for a leader or any other non-native residue: native 1..k, cassette, then
+    // native k+1..L to the end of the model.
+    const cf = model.cassette_first_model_residue, cl = model.cassette_last_model_residue, ml = model.model_length_aa;
+    if (cf == null || cl == null || ml == null || cf - 1 + (ml - cl) !== L || cf < 1) return null;
+    const after = cf - 1;
+    const layout = taggedModelLayout({ memberLength: L, insertAfter: after, leader: null, cassetteFirst: cf, cassetteLast: cl, modelLength: ml });
+    if (!layout || layout.nonNative.length) return null;
+    return {
+      segments: layout.segments, cassette: layout.cassette, nonNative: [],
+      cassetteSide: topology.charAt(Math.max(after, 1) - 1) || null, unlistedSiteInsertAfter: after,
+    };
+  }
+  const layout = taggedModelLayout({
+    memberLength: L,
+    insertAfter: site.insert_after_residue,
+    leader: site.leader,
+    cassetteFirst: model.cassette_first_model_residue,
+    cassetteLast: model.cassette_last_model_residue,
+    modelLength: model.model_length_aa,
+  });
+  if (!layout) return null;
+  const ins = site.insert_after_residue ?? 0;
+  const at = site.leader || ins < 1 ? 1 : Math.min(ins, L);
+  return { segments: layout.segments, cassette: layout.cassette, nonNative: layout.nonNative, cassetteSide: topology.charAt(at - 1) || null };
+}
+
+/** Runs of one topology state, already projected into MODEL numbering. */
+export function l1ModelStateRuns(topology: string, map: Pick<L1ModelMap, "segments">): { state: string; lo: number; hi: number }[] {
+  const out: { state: string; lo: number; hi: number }[] = [];
+  let start = 1;
+  for (let i = 1; i <= topology.length; i += 1) {
+    const st = topology.charAt(i - 1);
+    if (i < topology.length && topology.charAt(i) === st) continue;
+    for (const seg of map.segments) {
+      const a = Math.max(start, seg.unpLo);
+      const b = Math.min(i, seg.unpHi);
+      if (b >= a) out.push({ state: st, lo: a + seg.offset, hi: b + seg.offset });
+    }
+    start = i + 1;
+  }
+  return out;
+}
+
+/** Model residue -> member residue through a map's segments; null off the native chain. */
+export function l1ModelToMember(map: Pick<L1ModelMap, "segments">): (modelResi: number) => number | null {
+  return (r: number) => {
+    for (const s of map.segments) if (r >= s.unpLo + s.offset && r <= s.unpHi + s.offset) return r - s.offset;
+    return null;
+  };
+}
+
+/** Half-thickness of the drawn bilayer, from the TM-helix midplane: the ~30 Å
+ *  hydrocarbon core. */
+export const L1_MEMBRANE_HALF_THICKNESS = 15;

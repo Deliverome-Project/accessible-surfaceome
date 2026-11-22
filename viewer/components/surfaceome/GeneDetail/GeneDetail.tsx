@@ -11,6 +11,7 @@ import { AccessibilityRisksCard } from "../AccessibilityRisksCard/AccessibilityR
 import { InternalizationCard } from "../InternalizationCard/InternalizationCard";
 import { TaggedSitesCard } from "../TaggedSitesCard/TaggedSitesCard";
 import { L1DesignCard } from "../L1DesignCard/L1DesignCard";
+import type { LibraryTopologyRow } from "../../../lib/structure-viewer-types";
 import { l1AbsenceReason } from "../../../lib/l1-design";
 import { withoutComputedCandidates } from "../../../lib/tag-sites-overlay";
 import { BenchmarkRow } from "../BenchmarkRow/BenchmarkRow";
@@ -290,6 +291,7 @@ export function GeneDetail({
                 n={n}
                 inFgLibrary={inFgLibrary}
                 coReceptor={coReceptor}
+                topologies={rec.deterministic_features?.library_designed_topology as LibraryTopologyRow[] | undefined}
               />
             ),
           },

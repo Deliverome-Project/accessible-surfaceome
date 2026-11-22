@@ -1,7 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { L1_CASSETTE_COLOR } from "../../lib/structure-viewer-types";
+import {
+  L1_CASSETTE_COLOR,
+  L1_NONNATIVE_COLOR,
+  MEMBRANE_COLOR,
+  TOPOLOGY_COLORS,
+} from "../../lib/structure-viewer-types";
+import { orientPdbForTopology, type MembraneSlab } from "../../lib/structure-orientation";
+import {
+  L1_MEMBRANE_HALF_THICKNESS,
+  l1ModelStateRuns,
+  l1ModelToMember,
+  topologyStatesPresent,
+  type L1ModelMap,
+} from "../../lib/l1-design";
+import { TopologyLegend } from "../surfaceome/IsoformsCard/TopologyBar";
 import styles from "./L1Review.module.css";
 
 /** One residue to mark, in MODEL numbering. */
@@ -22,6 +36,15 @@ interface Props {
   cassette: [number, number] | null;
   /** Called with the MODEL residue number the reader clicked. */
   onPick?: (modelResidue: number) => void;
+  /** DeepTMHMM v1 per-residue topology of the member's ordered protein (matched by
+   *  design id, length and sequence hash), or null when there is none. */
+  topology?: string | null;
+  /** How this model's residues map onto that topology; null draws no shading. */
+  map?: L1ModelMap | null;
+  /** Residues in the model file, so the key lists "not in the member" only when some are. */
+  modelLength?: number | null;
+  /** Shorter canvas for the gene page's card. */
+  compact?: boolean;
 }
 
 type Viewer = {
@@ -29,6 +52,7 @@ type Viewer = {
   setStyle: (sel: object, style: object) => void;
   addStyle: (sel: object, style: object) => void;
   addSphere: (spec: object) => void;
+  addBox: (spec: object) => void;
   addLabel: (text: string, opts: object) => void;
   removeAllLabels: () => void;
   setClickable: (sel: object, on: boolean, cb: (atom: { resi: number }) => void) => void;
@@ -38,23 +62,58 @@ type Viewer = {
   resize: () => void;
 };
 
+/** The membrane drawn on the gene page has the same colour and opacity. */
+const MEMBRANE_OPACITY = 0.34;
+const OUTSIDE_COLOR = "#E4E7EB";
+/** Smallest half-width of the drawn bilayer. The orientation sizes the slab to the TM
+ *  bundle (+12 Å), which for a single helix is a 50 Å tile that reads as a box rather
+ *  than a membrane; 45 Å each way keeps it a sheet without dwarfing a multipass bundle. */
+const MIN_SLAB_HALF_WIDTH = 45;
+
+const SIDE_LABEL: Record<string, string> = {
+  O: "extracellular",
+  I: "cytoplasmic",
+  M: "membrane",
+  S: "signal peptide",
+};
+
 /**
- * A small 3Dmol view for the L1 review page. Deliberately separate from the gene page's
- * StructureViewer (topology colouring, experimental structures, contact projections):
- * this one only needs a model, a few marked residues and a click-to-pick.
+ * Orient the model so the membrane is horizontal (extracellular up) and return where the
+ * bilayer sits. The plane comes from the model itself: its normal is the axis between
+ * the member's extracellular and cytoplasmic Cα centroids, its midplane the mean height
+ * of the TM-helix Cαs, and the drawn slab is ±15 Å around that midplane. A member with a
+ * very short cytoplasmic tail fails the default 6-residue minimum, so it is retried at 1.
  */
-export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick }: Props) {
+function orient(text: string, topology: string | null | undefined, map: L1ModelMap | null | undefined) {
+  if (!topology || !map || !topology.includes("M")) return { pdbText: text, membrane: null as MembraneSlab | null };
+  const resiToTopo = l1ModelToMember(map);
+  const first = orientPdbForTopology(text, topology, { resiToTopo });
+  if (first.membrane) return first;
+  return orientPdbForTopology(text, topology, { resiToTopo, minSideResidues: 1 });
+}
+
+/**
+ * A small 3Dmol view for L1 members (review page and the gene page's L1 design card).
+ * Deliberately separate from the gene page's StructureViewer: this one draws one model,
+ * the member's membrane and side shading, a few marked residues and a click-to-pick.
+ */
+export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology, map, modelLength, compact }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
   const pickRef = useRef(onPick);
   pickRef.current = onPick;
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [loaded, setLoaded] = useState(0);
+  const [membrane, setMembrane] = useState<MembraneSlab | null>(null);
+  const shaded = !!(topology && map);
+  // Orientation depends on the topology and map, so a change in either reloads the model.
+  const orientKey = shaded ? JSON.stringify([topology, map?.segments]) : "";
 
-  // (1) Load the model once per URL. Restyling never refetches or resets the camera.
+  // (1) Load + orient the model once per URL/topology. Restyling never refetches.
   useEffect(() => {
     let live = true;
     setState("loading");
+    setMembrane(null);
     (async () => {
       try {
         type Mod3D = typeof import("3dmol");
@@ -62,12 +121,14 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick }: Props) 
         const $3Dmol = (Mod.default ?? Mod) as unknown as { createViewer: (el: HTMLElement, o: object) => Viewer };
         const res = await fetch(pdbUrl);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const text = await res.text();
+        const raw = await res.text();
         if (!live || !ref.current) return;
+        const { pdbText, membrane: slab } = orient(raw, topology, map);
         ref.current.innerHTML = "";
         const v = $3Dmol.createViewer(ref.current, { backgroundColor: "white", antialias: true });
-        v.addModel(text, "pdb");
+        v.addModel(pdbText, "pdb");
         viewerRef.current = v;
+        setMembrane(slab);
         setState("ready");
         setLoaded((n) => n + 1);
       } catch {
@@ -79,17 +140,28 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick }: Props) 
       viewerRef.current?.clear();
       viewerRef.current = null;
     };
-  }, [pdbUrl]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pdbUrl, orientKey]);
 
-  // (2) Style: cartoon, member span, cassette, marked residues. Zoom only on first load.
-  const styleKey = JSON.stringify([span, cassette, marks]);
+  // (2) Style: side shading (or plain span), cassette, marked residues. Zoom only on first
+  // load, then add the membrane so the wider slab never pulls the camera out.
+  const styleKey = JSON.stringify([span, cassette, marks, map?.nonNative]);
   const zoomedFor = useRef(-1);
   useEffect(() => {
     const v = viewerRef.current;
     if (!v || state !== "ready") return;
     v.removeAllLabels();
-    v.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 1 } });
-    if (span) v.setStyle({ resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
+    if (shaded && topology && map) {
+      v.setStyle({}, { cartoon: { color: OUTSIDE_COLOR, opacity: 1 } });
+      for (const r of l1ModelStateRuns(topology, map)) {
+        const color = TOPOLOGY_COLORS[r.state];
+        if (color) v.setStyle({ resi: `${r.lo}-${r.hi}` }, { cartoon: { color } });
+      }
+      for (const [lo, hi] of map.nonNative) v.setStyle({ resi: `${lo}-${hi}` }, { cartoon: { color: L1_NONNATIVE_COLOR } });
+    } else {
+      v.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 1 } });
+      if (span) v.setStyle({ resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
+    }
     if (cassette) v.setStyle({ resi: `${cassette[0]}-${cassette[1]}` }, { cartoon: { color: L1_CASSETTE_COLOR } });
     for (const m of marks) {
       v.addStyle({ resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
@@ -105,16 +177,65 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick }: Props) 
     if (zoomedFor.current !== loaded) {
       v.zoomTo(span ? { resi: `${span[0]}-${span[1]}` } : {});
       zoomedFor.current = loaded;
+      if (membrane) {
+        const h = L1_MEMBRANE_HALF_THICKNESS;
+        const hx = Math.max(membrane.xExtent, MIN_SLAB_HALF_WIDTH);
+        const hz = Math.max(membrane.zExtent, MIN_SLAB_HALF_WIDTH);
+        v.addBox({
+          corner: { x: membrane.xCenter - hx, y: -h, z: membrane.zCenter - hz },
+          dimensions: { w: hx * 2, h: 2 * h, d: hz * 2 },
+          color: MEMBRANE_COLOR,
+          opacity: MEMBRANE_OPACITY,
+          wireframe: false,
+        });
+      }
     }
     v.render();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [styleKey, state, loaded]);
+  }, [styleKey, state, loaded, membrane, shaded]);
 
+  const outside =
+    !!map?.nonNative.length || !!(span && (span[0] > 1 || (modelLength != null && modelLength > span[1])));
+  const side = map?.cassetteSide ? SIDE_LABEL[map.cassetteSide] ?? null : null;
   return (
     <div className={styles.viewerWrap}>
-      <div ref={ref} className={styles.viewer} />
+      <div ref={ref} className={compact ? `${styles.viewer} ${styles.viewerCompact}` : styles.viewer} />
       {state === "loading" && <p className={styles.viewerNote}>Loading model…</p>}
       {state === "error" && <p className={styles.viewerNote}>Could not load {pdbUrl}</p>}
+      {state === "ready" ? (
+        <div className={styles.sideLegend} aria-label="Membrane and side shading">
+          {shaded && topology ? (
+            <>
+              <TopologyLegend presentStates={topologyStatesPresent(topology)} showMembrane={!!membrane} />
+              <ul className={styles.sideExtra}>
+                {cassette ? (
+                  <li><i style={{ background: L1_CASSETTE_COLOR }} /> tag cassette{side ? ` (inserted on the ${side} side)` : ""}</li>
+                ) : null}
+                {map?.nonNative.length ? <li><i style={{ background: L1_NONNATIVE_COLOR }} /> non-native (leader remnant)</li> : null}
+                {outside ? <li><i style={{ background: OUTSIDE_COLOR }} /> not in the member</li> : null}
+              </ul>
+              {map?.unlistedSiteInsertAfter != null ? (
+                <p className={styles.sideWarn}>
+                  This refold carries the tag after residue {map.unlistedSiteInsertAfter}, a site that is not among
+                  this member&rsquo;s current picks: it was folded for an earlier pick.
+                </p>
+              ) : null}
+              <p className={styles.sideNote}>
+                Shading: DeepTMHMM v1 topology of this member&rsquo;s ordered protein, matched by sequence
+                {map?.cassette ? ", mapped around the cassette" : ""}.{" "}
+                {membrane
+                  ? "Membrane: estimated from this model (normal through the extracellular and cytoplasmic centroids, ±15 Å around the TM-helix midplane), extracellular up."
+                  : "No membrane drawn: the model has too few TM, extracellular or cytoplasmic residues to place one."}
+              </p>
+            </>
+          ) : (
+            <p className={styles.sideNote}>
+              No side shading or membrane: no DeepTMHMM v1 topology matches this member&rsquo;s sequence yet
+              {topology ? ", or this model's residues could not be mapped onto it" : ""}.
+            </p>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 .page { padding-top: var(--space-3); padding-bottom: var(--space-6); }
 .head { margin-bottom: var(--space-2); }
 .title { margin: 0; font-size: 1.5rem; }
-.lede { max-width: 86ch; color: var(--ink); margin: 0.15rem 0 0; font-size: 0.9rem; }
-.about { max-width: 86ch; font-size: 0.85rem; color: var(--muted); margin-top: 0.1rem; }
+.lede { color: var(--ink); margin: 0.15rem 0 0; font-size: 0.9rem; }
+.about { font-size: 0.85rem; color: var(--muted); margin-top: 0.1rem; }
 .about > summary { cursor: pointer; }
 .about p { margin: var(--space-2) 0 0; }
