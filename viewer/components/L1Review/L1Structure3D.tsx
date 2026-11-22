@@ -15,7 +15,6 @@ import {
   topologyStatesPresent,
   type L1ModelMap,
 } from "../../lib/l1-design";
-import { TopologyLegend } from "../surfaceome/IsoformsCard/TopologyBar";
 import styles from "./L1Review.module.css";
 
 /** One residue to mark, in MODEL numbering. */
@@ -67,7 +66,24 @@ type Viewer = {
 
 /** The membrane drawn on the gene page has the same colour and opacity. */
 const MEMBRANE_OPACITY = 0.34;
-const OUTSIDE_COLOR = "#E4E7EB";
+const OUTSIDE_COLOR = "#ECEEF1";
+/** Side colours on L1 models. Extracellular is a neutral slate gray (Becca, 2026-11-22:
+ *  "the ec is gray so the orange stand out more"): the orange cassette sits on the
+ *  extracellular side, so the side it touches carries no hue of its own. Darker than the
+ *  translucent membrane slab and the pale "not in the member" gray, so the three grays
+ *  stay apart; TM yellow, cytoplasmic green and signal-peptide red are the site palette.
+ *  Only these L1 views use it; the gene page's Structure card and the 2D strips keep
+ *  TOPOLOGY_COLORS. */
+const L1_SIDE_COLORS: Record<string, string> = { ...TOPOLOGY_COLORS, O: "#7B8290" };
+const L1_SIDE_LABELS: Record<string, string> = {
+  M: "TM helix",
+  O: "Extracellular",
+  I: "Cytoplasmic",
+  S: "Signal peptide",
+  B: "β strand",
+};
+/** The legend swatch for the slab, drawn as the slab renders (translucent on white). */
+const MEMBRANE_SWATCH = "rgba(160, 164, 171, 0.34)";
 /** Smallest half-width of the drawn bilayer. The orientation sizes the slab to the TM
  *  bundle (+12 Å), which for a single helix is a 50 Å tile that reads as a box rather
  *  than a membrane; 45 Å each way keeps it a sheet without dwarfing a multipass bundle. */
@@ -157,7 +173,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
     if (shaded && topology && map) {
       v.setStyle({}, { cartoon: { color: OUTSIDE_COLOR, opacity: 1 } });
       for (const r of l1ModelStateRuns(topology, map)) {
-        const color = TOPOLOGY_COLORS[r.state];
+        const color = L1_SIDE_COLORS[r.state];
         if (color) v.setStyle({ resi: `${r.lo}-${r.hi}` }, { cartoon: { color } });
       }
       for (const [lo, hi] of map.nonNative) v.setStyle({ resi: `${lo}-${hi}` }, { cartoon: { color: L1_NONNATIVE_COLOR } });
@@ -209,8 +225,11 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
         <div className={styles.sideLegend} aria-label="Membrane and side shading">
           {shaded && topology ? (
             <>
-              <TopologyLegend presentStates={topologyStatesPresent(topology)} showMembrane={!!membrane} />
               <ul className={styles.sideExtra}>
+                {topologyStatesPresent(topology).map((st) => (
+                  <li key={st}><i style={{ background: L1_SIDE_COLORS[st] }} /> {L1_SIDE_LABELS[st] ?? st}</li>
+                ))}
+                {membrane ? <li><i style={{ background: MEMBRANE_SWATCH }} /> membrane (estimated)</li> : null}
                 {cassette ? (
                   <li><i style={{ background: L1_CASSETTE_COLOR }} /> tag cassette{side ? ` (inserted on the ${side} side)` : ""}</li>
                 ) : null}
