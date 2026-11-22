@@ -107,11 +107,10 @@ export function L1TopologyStrip({
     <div className={styles.strip}>
       <div className={styles.stripHead}>
         <span className={styles.stripTitle}>
-          Topology and tag insert{flags.length > 1 ? `s (${flags.length} arms)` : ""}
+          Topology &amp; tag insert{flags.length > 1 ? `s (${flags.length} arms)` : ""}
         </span>
         <span className={styles.muted}>
-          {gene} · {variantLabel} · {n} aa, this member&rsquo;s own numbering
-          {onPickResidue ? " · click bar to suggest a site" : ""}
+          {n} aa{onPickResidue ? " · click bar to suggest a site" : ""}
         </span>
       </div>
       <div className={styles.stripBody}>

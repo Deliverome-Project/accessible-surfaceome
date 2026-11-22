@@ -345,7 +345,19 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
                     {` (model ${map.nonNative.map(([a, b]) => (a === b ? `${a}` : `${a}–${b}`)).join(", ")})`}
                   </li>
                 ) : null}
-                {outside ? <li><i style={{ background: OUTSIDE_COLOR }} /> not in the member</li> : null}
+                {outside ? <li><i style={{ background: OUTSIDE_COLOR }} /> not in member</li> : null}
+                <li>
+                  <details className={styles.sideInfo}>
+                    <summary>about shading</summary>
+                    <p className={styles.sideNote}>
+                      Shading: DeepTMHMM v1 topology of this member&rsquo;s ordered protein, matched by sequence
+                      {map?.cassette ? ", mapped around the cassette" : ""}.{" "}
+                      {membrane
+                        ? "Membrane: estimated from this model (normal through the extracellular and cytoplasmic centroids, ±15 Å around the TM-helix midplane), extracellular up."
+                        : "No membrane drawn: the model has too few TM, extracellular or cytoplasmic residues to place one."}
+                    </p>
+                  </details>
+                </li>
               </ul>
               {map?.unlistedSiteInsertAfter != null ? (
                 <p className={styles.sideWarn}>
@@ -353,13 +365,6 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
                   this member&rsquo;s current picks: it was folded for an earlier pick.
                 </p>
               ) : null}
-              <p className={styles.sideNote}>
-                Shading: DeepTMHMM v1 topology of this member&rsquo;s ordered protein, matched by sequence
-                {map?.cassette ? ", mapped around the cassette" : ""}.{" "}
-                {membrane
-                  ? "Membrane: estimated from this model (normal through the extracellular and cytoplasmic centroids, ±15 Å around the TM-helix midplane), extracellular up."
-                  : "No membrane drawn: the model has too few TM, extracellular or cytoplasmic residues to place one."}
-              </p>
             </>
           ) : (
             <p className={styles.sideNote}>

@@ -25,13 +25,11 @@ export const metadata: Metadata = {
 export default function L1ReviewPage() {
   return (
     <Shell>
-      <section className={`${styles.page} page-width`}>
+      <section className={styles.page}>
         <header className={styles.head}>
           <h1 className={`h-data ${styles.title}`}>L1 library review</h1>
           <p className={styles.lede}>
-            Every member with the tag site we plan to use and why.{" "}
-            <strong>Residue numbers are each member&rsquo;s own</strong> — an isoform or ortholog is not
-            numbered like the canonical.
+            <strong>Residue numbers are each member&rsquo;s own</strong> (isoforms/orthologs differ from canonical).
           </p>
           <details className={styles.about}>
             <summary>what the fields mean</summary>

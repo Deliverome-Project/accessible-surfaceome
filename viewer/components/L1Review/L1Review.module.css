@@ -27,18 +27,19 @@
   transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 .search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
-/* One line of filters until opened: what is applied, then the always-visible search. */
-.filterBar {
-  display: flex; gap: var(--space-3); align-items: flex-start; flex-wrap: wrap;
-  background: var(--bg-warm); border: 1px solid var(--line-soft); border-radius: var(--radius-sm);
-  padding: 0.35rem 0.75rem;
+/* Single hairline-separated utility row: Filters on the left, Reviewer identity on the right. */
+.utilityBar {
+  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+  gap: 0.35rem var(--space-4); padding: 0.25rem 0 0.4rem;
+  border-bottom: 1px solid var(--line-soft);
 }
-.filters { flex: 1; min-width: 16rem; font-size: 0.85rem; }
-.filters > summary { cursor: pointer; color: var(--ink); font-weight: var(--fw-medium); padding: 0.15rem 0; }
+.filters { flex: 1 1 auto; min-width: 12rem; font-size: 0.84rem; }
+.filters[open] { flex-basis: 100%; }
+.filters > summary { cursor: pointer; color: var(--ink); font-weight: var(--fw-medium); padding: 0.1rem 0; }
 .filters[open] > summary { margin-bottom: var(--space-2); }
 .filterNow { font-weight: normal; color: var(--muted); margin-left: 0.5rem; }
 
-.split { display: grid; grid-template-columns: minmax(16rem, 22rem) 1fr; gap: var(--space-4); align-items: start; }
+.split { display: grid; grid-template-columns: minmax(13.5rem, 16rem) 1fr; gap: var(--space-3); align-items: start; }
 /* Sized to what is actually on screen, not to 78vh. The list starts ~16rem down the
    page, so a 78vh list ran a third of its height below the fold: arrow-stepping scrolled
    the selected row into the list's view and out of the window's. The sticky wrapper
@@ -87,7 +88,7 @@
 .review {
   border: 1px solid var(--line); border-radius: var(--radius-md, 8px);
   background: var(--bg-soft); box-shadow: 0 1px 3px rgba(31, 23, 24, 0.04);
-  padding: var(--space-3); margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3); margin-top: var(--space-2); display: flex; flex-direction: column; gap: 0.45rem;
 }
 .review .h3 { margin: 0; }
 .reviewIntro { margin: 0; font-size: 0.85rem; color: var(--muted); }
@@ -150,20 +151,35 @@
    no longer their position. Legible, but visibly not the current record. */
 .superseded { opacity: 0.55; }
 
-.modelRow { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin-bottom: var(--space-2); }
-.h3inline { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-deep); margin: 0 var(--space-2) 0 0; }
+.structureHeader {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 0.35rem var(--space-3); margin-bottom: 0.4rem;
+}
+.modelRow { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+.structureControls { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; font-size: 0.76rem; }
+.ctrl, .ctrlOn {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.16rem 0.5rem; border-radius: var(--radius-pill);
+  border: 1px solid var(--line); background: var(--bg-soft); color: var(--muted);
+  cursor: pointer; user-select: none; line-height: 1.25;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.ctrl input, .ctrlOn input { margin: 0; accent-color: var(--accent); cursor: pointer; }
+.ctrl:hover { border-color: var(--ink-soft); color: var(--ink); }
+.ctrlOn { border-color: var(--line); background: var(--bg); color: var(--ink); font-weight: var(--fw-medium); }
+.h3inline { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-deep); margin: 0 var(--space-1) 0 0; }
 .tabKey { font-family: var(--font-mono); font-size: 0.7rem; border: 1px solid var(--line); border-radius: 3px; padding: 0 0.25rem; margin-right: 0.35rem; color: var(--muted); }
 .tab:focus-visible, .tabOn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .legendNote { font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0; }
-/* Strip + review card on the left, the structure on the right, both above the fold on a
-   laptop; stacked below 1200px, where side by side would squeeze the model. */
-.topGrid { display: grid; grid-template-columns: minmax(22rem, 0.85fr) minmax(0, 1.15fr); gap: var(--space-3); align-items: start; }
+/* Strip + review card on the left (~32%), large 3D structure on the right (~68%),
+   both fitting above the fold; stacked below 1120px. */
+.topGrid { display: grid; grid-template-columns: minmax(18.5rem, 0.65fr) minmax(0, 1.35fr); gap: var(--space-3); align-items: start; }
 .topLeft { min-width: 0; display: flex; flex-direction: column; }
 .topLeft > :first-child { margin-top: 0; }
 .structurePane { min-width: 0; }
-@media (max-width: 1200px) { .topGrid { grid-template-columns: 1fr; } }
+@media (max-width: 1120px) { .topGrid { grid-template-columns: 1fr; } }
 .tab, .tabOn {
-  font: inherit; font-size: 0.8rem; padding: 0.25rem 0.65rem;
+  font: inherit; font-size: 0.8rem; padding: 0.22rem 0.6rem;
   border: 1px solid var(--line); border-radius: var(--radius-sm);
   background: var(--bg-soft); color: var(--ink); cursor: pointer;
   transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
@@ -172,11 +188,10 @@
 .tabOn { border-color: var(--accent); background: var(--maroon-soft); color: var(--accent-deep); font-weight: var(--fw-medium); }
 .viewerWrap { position: relative; }
 .viewerStage { position: relative; }
-/* Sized to the window so the whole model sits above the fold beside the strip and the
-   review card: the pane starts ~300px down at 1440x900, and the tabs + key under it take
-   ~110px more. */
+/* Tall enough that the 3D protein is the hero of the page while keeping the tabs,
+   overlay toggles and compact color key all above the fold. */
 .viewer {
-  position: relative; width: 100%; height: clamp(300px, calc(100vh - 500px), 620px);
+  position: relative; width: 100%; height: clamp(380px, calc(100vh - 295px), 680px);
   border: 1px solid var(--line); border-radius: var(--radius-md, 8px); overflow: hidden;
   background: var(--bg-soft); box-shadow: 0 1px 3px rgba(31, 23, 24, 0.04);
 }
@@ -211,13 +226,18 @@
 /* Membrane + side-shading key under the 3D model. The topology swatches are the gene
    page's TopologyLegend; these rules only lay out what this view adds (cassette,
    leader remnant, residues outside the member) and the data note. */
-.sideLegend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem var(--space-3); margin-top: var(--space-2); }
-.sideExtra { display: flex; flex-wrap: wrap; gap: 0.2rem var(--space-3); list-style: none; margin: 0; padding: 0; font-size: 0.78rem; color: var(--muted); }
-.sideExtra i { display: inline-block; width: 0.75rem; height: 0.75rem; border-radius: 2px; vertical-align: -0.1rem; margin-right: 0.3rem; border: 1px solid var(--line-soft); }
-.sideWarn { flex-basis: 100%; margin: 0.2rem 0 0; font-size: 0.8rem; color: var(--maroon-dark); }
-.sideNote { flex-basis: 100%; margin: 0.2rem 0 0; font-size: 0.76rem; color: var(--muted); }
-.legend { display: flex; flex-wrap: wrap; gap: 0.3rem var(--space-3); font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0; }
-.legend i { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 50%; vertical-align: -0.05rem; margin: 0 0.15rem; }
+.sideLegend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem var(--space-3); margin-top: 0.35rem; }
+.sideExtra { display: flex; flex-wrap: wrap; gap: 0.15rem var(--space-3); list-style: none; margin: 0; padding: 0; font-size: 0.74rem; color: var(--muted); }
+.sideExtra i { display: inline-block; width: 0.68rem; height: 0.68rem; border-radius: 2px; vertical-align: -0.08rem; margin-right: 0.25rem; border: 1px solid var(--line-soft); }
+.sideInfo { display: inline; font-size: 0.72rem; color: var(--muted); }
+.sideInfo > summary { cursor: pointer; display: inline; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 2px; list-style: none; }
+.sideInfo > summary::-webkit-details-marker { display: none; }
+.sideInfo[open] { display: block; margin-top: 0.2rem; }
+.sideWarn { flex-basis: 100%; margin: 0.2rem 0 0; font-size: 0.78rem; color: var(--maroon-dark); }
+.sideNote { flex-basis: 100%; margin: 0.2rem 0 0; font-size: 0.74rem; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 0.2rem var(--space-3); font-size: 0.74rem; color: var(--muted); margin: 0.25rem 0 0; }
+.legend i { display: inline-block; width: 0.62rem; height: 0.62rem; border-radius: 50%; vertical-align: -0.04rem; margin: 0 0.15rem; }
+.modelNote { font-size: 0.74rem; color: var(--muted); margin: 0.2rem 0 0; }
 .swatch { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%; margin-right: 0.3rem; vertical-align: -0.03rem; }
 
 .site {
@@ -275,11 +295,11 @@
 .strip {
   --l1-insert: #1D4ED8;
   --l1-insert-edge: #1E3A8A;
-  border: 1px solid var(--line-soft);
+  border: 1px solid var(--line);
   border-left: 4px solid var(--l1-insert);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2) var(--space-3) 0.35rem;
-  margin: var(--space-2) 0 var(--space-3);
+  border-radius: var(--radius-md, 8px);
+  padding: 0.45rem var(--space-3) 0.3rem;
+  margin: var(--space-1) 0 var(--space-2);
   background: var(--bg-soft);
 }
 .stripHead { display: flex; flex-wrap: wrap; gap: 0.35rem var(--space-3); align-items: baseline; }
@@ -371,15 +391,15 @@
 .identity .settings { border-bottom: 0; padding-top: 0; }
 /* Name + Turnstile. The widget renders with appearance "interaction-only", so its slot
    takes no visible space unless Cloudflare asks the reviewer to click. */
-.identityRow { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-3); }
-.identityRow > .identity { flex: 1 1 20rem; }
+.identityRow { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-2); }
+.identityRow > .identity { flex: 0 1 auto; }
 
-/* N-terminus and UniProt facts above the topology strip. */
+/* N-terminus and UniProt facts above the topology strip — clean hairline layout, no box. */
 .facts {
-  display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem var(--space-3);
-  margin: 0 0 var(--space-2); padding: 0.5rem 0.75rem;
-  background: var(--bg-warm); border: 1px solid var(--line-soft); border-radius: var(--radius-sm);
-  font-size: 0.82rem;
+  display: grid; grid-template-columns: max-content 1fr; gap: 0.2rem var(--space-2);
+  margin: 0 0 var(--space-2); padding: 0 0 0.45rem;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.78rem; line-height: 1.4;
 }
 .facts dt { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 0.12rem; }
 .facts dd { margin: 0; }

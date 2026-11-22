@@ -989,31 +989,57 @@ function MemberDetail({
       />
       </div>
       <section className={styles.structurePane} aria-label="Structure">
-        <div className={styles.modelRow} role="tablist" aria-label="Structure view (keys 1–9; up / down when focused)" onKeyDown={onTabKey}>
-          <h3 className={styles.h3inline}>Structure</h3>
-          {(() => {
-            const multiFold = models.filter((x) => x.kind === "tagged").length > 1;
-            return models.map((m, i) => {
-              const on = m.structure_id === model?.structure_id;
-              return (
-                <button
-                  key={m.structure_id}
-                  ref={(el) => { tabRefs.current[i] = el; }}
-                  type="button"
-                  role="tab"
-                  aria-selected={on}
-                  tabIndex={on ? 0 : -1}
-                  className={on ? styles.tabOn : styles.tab}
-                  onClick={() => setModelId(m.structure_id)}
-                  title={`${m.kind === "tagged" ? "The ordered tagged protein, folded whole" : "The member's protein without the tag"} · ${m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"} · key ${i + 1}`}
-                >
-                  {i < 9 ? <kbd className={styles.tabKey}>{i + 1}</kbd> : null}
-                  {structureTabLabel(m, sites, multiFold)}
-                </button>
-              );
-            });
-          })()}
-          {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
+        <div className={styles.structureHeader}>
+          <div className={styles.modelRow} role="tablist" aria-label="Structure view (keys 1–9; up / down when focused)" onKeyDown={onTabKey}>
+            <h3 className={styles.h3inline}>Structure</h3>
+            {(() => {
+              const multiFold = models.filter((x) => x.kind === "tagged").length > 1;
+              return models.map((m, i) => {
+                const on = m.structure_id === model?.structure_id;
+                return (
+                  <button
+                    key={m.structure_id}
+                    ref={(el) => { tabRefs.current[i] = el; }}
+                    type="button"
+                    role="tab"
+                    aria-selected={on}
+                    tabIndex={on ? 0 : -1}
+                    className={on ? styles.tabOn : styles.tab}
+                    onClick={() => setModelId(m.structure_id)}
+                    title={`${m.kind === "tagged" ? "The ordered tagged protein, folded whole" : "The member's protein without the tag"} · ${m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"} · key ${i + 1}`}
+                  >
+                    {i < 9 ? <kbd className={styles.tabKey}>{i + 1}</kbd> : null}
+                    {structureTabLabel(m, sites, multiFold)}
+                  </button>
+                );
+              });
+            })()}
+            {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
+          </div>
+          <div className={styles.structureControls} aria-label="Structure overlays">
+            <label className={showAlts ? styles.ctrlOn : styles.ctrl}>
+              <input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} />
+              Alternatives
+            </label>
+            {segments ? (
+              <>
+                <label className={showContacts ? styles.ctrlOn : styles.ctrl}>
+                  <input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} />
+                  Contacts
+                </label>
+                {showContacts ? (
+                  <label className={showHidden ? styles.ctrlOn : styles.ctrl} title="Include ion sites and crystallization additives">
+                    <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
+                    Ion / add.
+                  </label>
+                ) : null}
+              </>
+            ) : (() => {
+              const nativeIdx = models.findIndex((m) => m.kind === "native");
+              const keyHint = nativeIdx >= 0 && nativeIdx < 9 ? ` (key ${nativeIdx + 1})` : "";
+              return <span className={styles.muted}>contacts: native{keyHint}</span>;
+            })()}
+          </div>
         </div>
         {url ? (
           <L1Structure3D
@@ -1041,25 +1067,27 @@ function MemberDetail({
         ) : (
           <p className={styles.muted}>No model for this member.</p>
         )}
-        {/* Picks, contacts, the focused arm and your suggestion are mapped through the
-            model's residue segments so they appear on both Fold and Native views. */}
+        {/* Compact color key directly under the canvas so everything stays above the fold. */}
         <div className={styles.legend}>
-          <span><i style={{ background: COLORS.pick }} /> current pick (click a flag or &ldquo;show on structure&rdquo; to focus an arm)</span>
-          <label><input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} /> <i style={{ background: COLORS.ranker }} /> ranker alternatives <i style={{ background: COLORS.agent }} /> agent proposals</label>
-          {segments ? (
+          <span><i style={{ background: COLORS.pick }} /> pick</span>
+          {showAlts ? (
             <>
-              <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.curated }} /> curated (structures / databases) <i style={{ background: COLORS.litHigh }} /> literature <i style={{ background: COLORS.litLower }} /> literature (modeling/homology) <i style={{ background: COLORS.uniprot }} /> UniProt binding</label>
-              <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
+              <span><i style={{ background: COLORS.ranker }} /> ranker alt</span>
+              <span><i style={{ background: COLORS.agent }} /> agent alt</span>
             </>
-          ) : (() => {
-            const nativeIdx = models.findIndex((m) => m.kind === "native");
-            const keyHint = nativeIdx >= 0 && nativeIdx < 9 ? ` (key ${nativeIdx + 1})` : "";
-            return <span className={styles.muted}>contact sites: native model{keyHint}</span>;
-          })()}
-          <span><i style={{ background: COLORS.suggestion }} /> your suggested residue (click the model, or type it under &ldquo;Suggest another site&rdquo;)</span>
+          ) : null}
+          {segments && showContacts ? (
+            <>
+              <span><i style={{ background: COLORS.curated }} /> curated</span>
+              <span><i style={{ background: COLORS.litHigh }} /> lit</span>
+              <span><i style={{ background: COLORS.litLower }} /> lit (model)</span>
+              <span><i style={{ background: COLORS.uniprot }} /> UniProt</span>
+            </>
+          ) : null}
+          <span><i style={{ background: COLORS.suggestion }} /> your pick</span>
         </div>
         {model?.note || model?.proteoform_match ? (
-          <p className={styles.muted}>
+          <p className={styles.modelNote}>
             Model: {model.proteoform_match}{model.residue_offset ? `, member residue i = model residue i + ${model.residue_offset}` : ""}
             {model.note ? ` · ${model.note}` : ""}
           </p>
@@ -1443,56 +1471,9 @@ export function L1Review() {
 
   return (
     <div className={styles.app}>
-      {/* One slim line when folded. No token: the name is trusted as typed and Cloudflare
-          Turnstile (beside it, invisible unless it needs a click) keeps bots out. */}
-      <div className={styles.identityRow}>
-        <details
-          className={styles.identity}
-          open={identityOpen}
-          onToggle={(e) => setIdentityOpen((e.currentTarget as HTMLDetailsElement).open)}
-        >
-          <summary>
-            {reviewer.trim() ? `Reviewing as ${reviewer.trim()}` : "Add your name to review"}
-            {reviews ? ` · ${reviewedN} of ${members.length} members reviewed` : ""}
-            {" · "}
-            <span className={styles.mono}>load {index.load.load_version}</span>
-          </summary>
-          <div className={styles.settings}>
-            <label>
-              your name
-              <input
-                ref={nameRef}
-                value={reviewer}
-                maxLength={80}
-                autoComplete="name"
-                onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }}
-                placeholder="your name"
-                title="Shown with each review; kept in this browser"
-              />
-            </label>
-            {serverReviews ? null : (
-              <span className={styles.muted}>Reviews you save here are listed under each member; other reviewers&apos; are collected for the design team.</span>
-            )}
-          </div>
-        </details>
-        {/* One Turnstile widget for the page, beside the name. It runs invisibly; the slot
-            opens only while Cloudflare wants a click and folds away once passed. */}
-        <div
-          ref={turnstile.slotRef}
-          className={turnstile.needsClick ? styles.turnstile : `${styles.turnstile} ${styles.turnstileFolded}`}
-          aria-label="anti-bot check"
-          aria-hidden={!turnstile.needsClick}
-        />
-        {turnstile.status === "error" ? (
-          <span className={styles.warn}>The anti-bot check could not load. Reload the page to retry.</span>
-        ) : turnstile.status === "off" ? (
-          <span className={styles.warn}>The anti-bot check is not configured on this build, so saving will fail.</span>
-        ) : null}
-      </div>
-
-      {/* Filters are set once per session and then left alone, so they fold into one line
-          that says what is applied. The search box lives on the gene list itself. */}
-      <div className={styles.filterBar}>
+      {/* Filters and reviewer identity share one slim hairline strip so the member list,
+          review card and 3D structure all start high above the fold. */}
+      <div className={styles.utilityBar}>
       <details className={styles.filters}>
         <summary>
           Filters
@@ -1562,6 +1543,48 @@ export function L1Review() {
         </div>
       </div>
       </details>
+        <div className={styles.identityRow}>
+          <details
+            className={styles.identity}
+            open={identityOpen}
+            onToggle={(e) => setIdentityOpen((e.currentTarget as HTMLDetailsElement).open)}
+          >
+            <summary>
+              {reviewer.trim() ? `Reviewing as ${reviewer.trim()}` : "Add your name to review"}
+              {reviews ? ` · ${reviewedN} of ${members.length} reviewed` : ""}
+              {" · "}
+              <span className={styles.mono}>load {index.load.load_version}</span>
+            </summary>
+            <div className={styles.settings}>
+              <label>
+                your name
+                <input
+                  ref={nameRef}
+                  value={reviewer}
+                  maxLength={80}
+                  autoComplete="name"
+                  onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }}
+                  placeholder="your name"
+                  title="Shown with each review; kept in this browser"
+                />
+              </label>
+              {serverReviews ? null : (
+                <span className={styles.muted}>Reviews you save here are listed under each member; other reviewers&apos; are collected for the design team.</span>
+              )}
+            </div>
+          </details>
+          <div
+            ref={turnstile.slotRef}
+            className={turnstile.needsClick ? styles.turnstile : `${styles.turnstile} ${styles.turnstileFolded}`}
+            aria-label="anti-bot check"
+            aria-hidden={!turnstile.needsClick}
+          />
+          {turnstile.status === "error" ? (
+            <span className={styles.warn}>The anti-bot check could not load. Reload the page to retry.</span>
+          ) : turnstile.status === "off" ? (
+            <span className={styles.warn}>The anti-bot check is not configured on this build, so saving will fail.</span>
+          ) : null}
+        </div>
       </div>
 
       <div className={styles.split}>
