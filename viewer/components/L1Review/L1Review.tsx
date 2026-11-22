@@ -640,6 +640,32 @@ function memberChipText(m: Pick<L1Member, "candidate_set" | "species">, topo: Li
   return protein ? `${l1MemberRoleLabel(m)} · ${protein}` : l1MemberRoleLabel(m);
 }
 
+/** Label for a structure view tab. When a member carries multiple tagged refolds,
+ *  name the arm/insertion residue so tabs are distinguishable before clicking. */
+export function structureTabLabel(
+  m: Pick<L1Structure, "kind" | "site_id" | "mean_plddt" | "refold_verdict">,
+  sites: readonly Pick<L1Site, "site_id" | "insert_after_residue">[],
+  multiFold: boolean,
+): string {
+  let base = m.kind === "tagged" ? "Fold" : "Native";
+  if (m.kind === "tagged" && multiFold && m.site_id) {
+    const site = sites.find((s) => s.site_id === m.site_id);
+    const arm = armLabel(m.site_id);
+    const res = site?.insert_after_residue;
+    const tag =
+      arm && res != null ? `${arm} · ${res}`
+        : arm ? arm
+          : res != null ? `after ${res}`
+            : null;
+    if (tag) base = `Fold (${tag})`;
+  }
+  return [
+    base,
+    m.mean_plddt != null ? `pLDDT ${m.mean_plddt.toFixed(0)}` : null,
+    m.refold_verdict ?? null,
+  ].filter(Boolean).join(" · ");
+}
+
 function MemberDetail({
   member,
   topologyRow,
@@ -895,27 +921,28 @@ function MemberDetail({
       <section className={styles.structurePane} aria-label="Structure">
         <div className={styles.modelRow} role="tablist" aria-label="Structure view (keys 1–9; up / down when focused)" onKeyDown={onTabKey}>
           <h3 className={styles.h3inline}>Structure</h3>
-          {models.map((m, i) => {
-            const on = m.structure_id === model?.structure_id;
-            return (
-              <button
-                key={m.structure_id}
-                ref={(el) => { tabRefs.current[i] = el; }}
-                type="button"
-                role="tab"
-                aria-selected={on}
-                tabIndex={on ? 0 : -1}
-                className={on ? styles.tabOn : styles.tab}
-                onClick={() => setModelId(m.structure_id)}
-                title={`${m.kind === "tagged" ? "The ordered tagged protein, folded whole" : "The member's protein without the tag"} · ${m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"} · key ${i + 1}`}
-              >
-                {i < 9 ? <kbd className={styles.tabKey}>{i + 1}</kbd> : null}
-                {m.kind === "tagged" ? "Fold" : "Native"}
-                {m.mean_plddt != null ? ` · pLDDT ${m.mean_plddt.toFixed(0)}` : ""}
-                {m.refold_verdict ? ` · ${m.refold_verdict}` : ""}
-              </button>
-            );
-          })}
+          {(() => {
+            const multiFold = models.filter((x) => x.kind === "tagged").length > 1;
+            return models.map((m, i) => {
+              const on = m.structure_id === model?.structure_id;
+              return (
+                <button
+                  key={m.structure_id}
+                  ref={(el) => { tabRefs.current[i] = el; }}
+                  type="button"
+                  role="tab"
+                  aria-selected={on}
+                  tabIndex={on ? 0 : -1}
+                  className={on ? styles.tabOn : styles.tab}
+                  onClick={() => setModelId(m.structure_id)}
+                  title={`${m.kind === "tagged" ? "The ordered tagged protein, folded whole" : "The member's protein without the tag"} · ${m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"} · key ${i + 1}`}
+                >
+                  {i < 9 ? <kbd className={styles.tabKey}>{i + 1}</kbd> : null}
+                  {structureTabLabel(m, sites, multiFold)}
+                </button>
+              );
+            });
+          })()}
           {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
         </div>
         {url ? (
@@ -951,9 +978,11 @@ function MemberDetail({
               <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.litHigh }} /> literature contacts (agent-extracted; lighter = modeling/homology only) <i style={{ background: COLORS.uniprot }} /> UniProt binding <i style={{ background: COLORS.curated }} /> curated (structures / databases)</label>
               <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
             </>
-          ) : (
-            <span className={styles.muted}>contact sites: native model (key 2)</span>
-          )}
+          ) : (() => {
+            const nativeIdx = models.findIndex((m) => m.kind === "native");
+            const keyHint = nativeIdx >= 0 && nativeIdx < 9 ? ` (key ${nativeIdx + 1})` : "";
+            return <span className={styles.muted}>contact sites: native model{keyHint}</span>;
+          })()}
           <span><i style={{ background: COLORS.suggestion }} /> your suggested residue (click the model, or type it under &ldquo;Suggest another site&rdquo;)</span>
         </div>
         {model?.note || model?.proteoform_match ? (
@@ -1187,14 +1216,23 @@ export function L1Review() {
       // unconditional write is how those turn into loops.
       if (Math.abs(want - parseFloat(el.style.maxHeight || "0")) > 1) el.style.maxHeight = `${want}px`;
     };
+    let raf = 0;
+    const scheduleFit = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = 0;
+        fit();
+      });
+    };
     fit();
-    window.addEventListener("resize", fit);
-    window.addEventListener("scroll", fit, { passive: true });
-    const ro = new ResizeObserver(fit);
+    window.addEventListener("resize", scheduleFit);
+    window.addEventListener("scroll", scheduleFit, { passive: true });
+    const ro = new ResizeObserver(scheduleFit);
     ro.observe(document.body);
     return () => {
-      window.removeEventListener("resize", fit);
-      window.removeEventListener("scroll", fit);
+      if (raf) window.cancelAnimationFrame(raf);
+      window.removeEventListener("resize", scheduleFit);
+      window.removeEventListener("scroll", scheduleFit);
       ro.disconnect();
     };
     // Keyed on `index` because the list element does not exist while the library is
@@ -1239,6 +1277,10 @@ export function L1Review() {
       }
       // Never steal a browser or OS shortcut (⌘L, ctrl-F, alt-←).
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "Escape") {
+        setKeyHelpOpen(false);
+        return;
+      }
       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
         e.preventDefault();
         go(1);
@@ -1301,6 +1343,7 @@ export function L1Review() {
     s === "" ? forStatus.length : forStatus.filter((m) => (s === "none" ? !m.pick_status.length : m.pick_status.includes(s as L1Site["status"]))).length;
   const forSp = without("sp");
   const spKnown = members.some((m) => indexSpStatus(m) !== null);
+  const spHasNone = members.some((m) => m.sp_status != null);
   const spCount = (k: string) => (k === "" ? forSp.length : forSp.filter((m) => indexSpStatus(m) === k).length);
   const forDiff = without("diff");
   const diffKnown = members.some((m) => uniprotDiffers(m) !== null);
@@ -1417,7 +1460,9 @@ export function L1Review() {
         {spKnown ? (
           <div>
             <span className={styles.facetLabel} title="Signal peptide / leader at the N-terminus, from the primary pick (or the design export when it says)">SP</span>
-            {["", "native", "igk_swap", "igk_res1", "none"].map((k) => (
+            {(spHasNone || filters.sp === "none"
+              ? ["", "native", "igk_swap", "igk_res1", "none"]
+              : ["", "native", "igk_swap", "igk_res1"]).map((k) => (
               <button key={k || "all"} type="button" className={filters.sp === k ? styles.chipOn : styles.chip} onClick={() => update({ sp: k })}>
                 {k === "" ? "all" : SP_LABEL[k as keyof typeof SP_LABEL]} <span className={styles.n}>{spCount(k)}</span>
               </button>
@@ -1493,13 +1538,13 @@ export function L1Review() {
                 <dt><kbd>A</kbd>–<kbd>Z</kbd></dt>
                 <dd>jump to the next gene starting with that letter; press it again to walk them</dd>
                 <dt><kbd>1</kbd>–<kbd>9</kbd></dt>
-                <dd>structure view: 1 = fold (tagged refold, the default), 2 = native model</dd>
+                <dd>switch structure view (tagged fold(s) first, then native model)</dd>
                 <dt><kbd>Home</kbd> <kbd>End</kbd></dt>
                 <dd>first / last member in this filter</dd>
                 <dt><kbd>/</kbd></dt>
                 <dd>focus the search box</dd>
                 <dt><kbd>Esc</kbd></dt>
-                <dd>leave a text field, so the keys above work again</dd>
+                <dd>leave a text field or close this list</dd>
                 <dt><kbd>?</kbd></dt>
                 <dd>show or hide this list</dd>
               </dl>
@@ -1554,6 +1599,7 @@ export function L1Review() {
                             onClick={() => update({ m: m.design_id ?? m.member_id })}
                           >
                             {l1MemberRoleLabel(m)}
+                            {on && m.member_id !== primary.member_id ? <span className={styles.mono}>· {m.member_id}</span> : null}
                             {(verdicts.get(m.design_id ?? "") ?? []).map((r) => (
                               <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} />
                             ))}
@@ -1576,15 +1622,21 @@ export function L1Review() {
                 <button type="button" onClick={() => go(-1)} aria-label="Previous member">←</button>
                 <div>
                   <h2 className={styles.h2}>
-                    {current.gene_symbol} <span className={styles.mono}>{current.member_id}</span>{" "}
-                    <span className={`${styles.mono} ${styles.muted}`}>{current.design_id}</span>
+                    {current.gene_symbol} <span className={styles.mono}>{current.member_id}</span>
+                    {current.design_id && current.design_id !== current.member_id ? (
+                      <> <span className={`${styles.mono} ${styles.muted}`}>{current.design_id}</span></>
+                    ) : null}
                   </h2>
                   <p className={styles.muted}>
                     {current.species} {current.candidate_set?.replace(/_/g, " ")} · {current.rung} · {current.membrane_class}
                     {current.n_tm != null ? ` · ${current.n_tm} TM` : ""}
                     {current.ordered_length_aa ? ` · ${current.ordered_length_aa} aa` : ""} ·{" "}
                     <a href={`/${encodeURIComponent(current.gene_symbol)}`}>gene page</a>
-                    {pos >= 0 ? ` · ${pos + 1} of ${visible.length} in this view (← → keys)` : " · not in the current filter"}
+                    {pos >= 0 ? (
+                      ` · ${pos + 1} of ${visible.length} in this view (← → keys)`
+                    ) : (
+                      <> · <span className={styles.badge}>not in the current filter</span></>
+                    )}
                   </p>
                   {/* The gene's other forms, so the human reference and its cyno or mouse
                       ortholog are one click apart. Each keeps its own residue numbering —

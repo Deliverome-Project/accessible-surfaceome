@@ -27,13 +27,13 @@
 .filterNow { font-weight: normal; color: var(--muted); margin-left: 0.5rem; }
 
 .split { display: grid; grid-template-columns: minmax(16rem, 22rem) 1fr; gap: var(--space-4); align-items: start; }
-@media (max-width: 900px) { .split { grid-template-columns: 1fr; } .listCol { position: static; } .list { max-height: 40vh; } }
 /* Sized to what is actually on screen, not to 78vh. The list starts ~16rem down the
    page, so a 78vh list ran a third of its height below the fold: arrow-stepping scrolled
    the selected row into the list's view and out of the window's. The sticky wrapper
    keeps that same height pinned once the page scrolls. */
 .listCol { position: sticky; top: var(--space-2); }
 .list { list-style: none; margin: 0; padding: 0; max-height: calc(100vh - 22rem); min-height: 14rem; overflow-y: auto; border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
+@media (max-width: 900px) { .split { grid-template-columns: 1fr; } .listCol { position: static; } .list { max-height: 40vh; } }
 .row, .rowOn {
   font: inherit; width: 100%; text-align: left; display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
   padding: 0.35rem 0.6rem; border: 0; border-bottom: 1px solid var(--line-soft); background: transparent; cursor: pointer; color: var(--ink);
@@ -123,7 +123,12 @@
    review card: the pane starts ~300px down at 1440x900, and the tabs + key under it take
    ~110px more. */
 .viewer { position: relative; width: 100%; height: clamp(300px, calc(100vh - 500px), 620px); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
-.viewerNote { position: absolute; top: 0.5rem; left: 0.75rem; margin: 0; color: var(--muted); font-size: 0.85rem; }
+.viewerNote {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  margin: 0; padding: 0.35rem 0.75rem; border-radius: var(--radius-pill);
+  background: var(--bg-soft, #f8f8f7); border: 1px solid var(--line-soft);
+  color: var(--muted); font-size: 0.85rem; pointer-events: none; z-index: 3;
+}
 .viewerCompact { height: 340px; }
 /* Membrane + side-shading key under the 3D model. The topology swatches are the gene
    page's TopologyLegend; these rules only lay out what this view adds (cassette,
@@ -253,11 +258,17 @@
   border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px;
   background: var(--bg-soft); color: var(--ink);
 }
-.keyHelp { margin: 0; }
+.keyHelp { position: relative; margin: 0; }
 .keyHelp > summary { cursor: pointer; font-size: 0.75rem; color: var(--muted); list-style: none; }
 .keyHelp > summary::-webkit-details-marker { display: none; }
-.keyHelp[open] > summary { margin-bottom: 0.3rem; }
-.keyTable { display: grid; grid-template-columns: max-content 1fr; gap: 0.1rem var(--space-3); font-size: 0.78rem; margin: 0; }
+.keyTable {
+  position: absolute; top: calc(100% + 0.35rem); left: 0; z-index: 15;
+  display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem var(--space-3);
+  font-size: 0.78rem; margin: 0; padding: var(--space-2) var(--space-3);
+  width: min(24rem, calc(100vw - 2rem));
+  background: var(--bg, #fff); border: 1px solid var(--line); border-radius: var(--radius-sm);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
 .keyTable dt { color: var(--ink); }
 .keyTable dd { margin: 0; color: var(--muted); }
 .letterToast {

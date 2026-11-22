@@ -55,6 +55,7 @@ export function useTurnstile() {
       widgetRef.current = ts.render(slotRef.current, {
         sitekey: SITE_KEY,
         appearance: "interaction-only",
+        theme: "light",
         action: "l1-review",
         callback: (t: string) => {
           tokenRef.current = t;

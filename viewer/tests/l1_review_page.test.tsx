@@ -8,7 +8,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ReviewPanel, SiteCard } from "../components/L1Review/L1Review";
+import { ReviewPanel, SiteCard, structureTabLabel } from "../components/L1Review/L1Review";
 import {
   filterIndex,
   latestVerdicts,
@@ -487,4 +487,19 @@ test("strip flags and tag-site cards are buttons that focus an arm", async () =>
   assert.match(html, /title="your suggested site: after residue 250"/);
   const card = renderToStaticMarkup(React.createElement(SiteCard, { site: twoArms[0], length: 400, focused: false, onShow: () => {} }));
   assert.match(card, /<button[^>]*aria-pressed="false"[^>]*>show on structure<\/button>/);
+});
+
+test("multiple fold tabs name their arm and residue so identical pLDDT/verdict tabs stay distinct", () => {
+  const foldA = { kind: "tagged" as const, site_id: "l1-p0006-a1", mean_plddt: 69.2, refold_verdict: "pass" };
+  const foldB = { kind: "tagged" as const, site_id: "l1-p0006-a2", mean_plddt: 69.1, refold_verdict: "pass" };
+  const foldNoArm = { kind: "tagged" as const, site_id: "l1-p0006-internal-94", mean_plddt: 72.0, refold_verdict: "fail" };
+  const native = { kind: "native" as const, site_id: null, mean_plddt: 84.4, refold_verdict: null };
+  // Single fold stays concise.
+  assert.equal(structureTabLabel(foldA, twoArms, false), "Fold · pLDDT 69 · pass");
+  // Multi-fold disambiguates by arm and insertion residue.
+  assert.equal(structureTabLabel(foldA, twoArms, true), "Fold (a1 · 94) · pLDDT 69 · pass");
+  assert.equal(structureTabLabel(foldB, twoArms, true), "Fold (a2 · 151) · pLDDT 69 · pass");
+  // A site without an -aK suffix falls back to its insertion residue.
+  assert.equal(structureTabLabel(foldNoArm, [site({})], true), "Fold (after 94) · pLDDT 72 · fail");
+  assert.equal(structureTabLabel(native, twoArms, true), "Native · pLDDT 84");
 });

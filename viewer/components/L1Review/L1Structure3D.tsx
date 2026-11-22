@@ -234,8 +234,8 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
   return (
     <div className={styles.viewerWrap}>
       <div ref={ref} className={compact ? `${styles.viewer} ${styles.viewerCompact}` : styles.viewer} />
-      {state === "loading" && <p className={styles.viewerNote}>Loading model…</p>}
-      {state === "error" && <p className={styles.viewerNote}>Could not load {pdbUrl}</p>}
+      {state === "loading" && <p className={styles.viewerNote} role="status" aria-live="polite">Loading model…</p>}
+      {state === "error" && <p className={styles.viewerNote} role="alert">Could not load {pdbUrl}</p>}
       {state === "ready" ? (
         <div className={styles.sideLegend} aria-label="Membrane and side shading">
           {shaded && topology ? (
