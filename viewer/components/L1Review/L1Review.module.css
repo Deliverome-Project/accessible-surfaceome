@@ -208,8 +208,8 @@
    bands, has a labelled head, and --l1-insert-edge (the brand amber-dark) outlines it
    at >= 2:1 luminance against every band, which dichromats keep in full. */
 .strip {
-  --l1-insert: #FF7A00;
-  --l1-insert-edge: var(--amber-dark);
+  --l1-insert: #D9480F;
+  --l1-insert-edge: #7c2406;
   border: 1px solid var(--line-soft);
   border-left: 4px solid var(--l1-insert);
   border-radius: var(--radius-sm);
@@ -244,7 +244,7 @@
   background: var(--l1-insert);
   border: 1px solid var(--l1-insert-edge);
   border-radius: var(--radius-sm);
-  color: #26120a;                  /* dark on orange: 7.4:1, so the arm id is readable */
+  color: #ffffff;                  /* white on #D9480F: 4.7:1, crisp on the deep orange */
   font-family: var(--font-mono);
   font-size: 0.66rem;
   font-weight: var(--fw-medium);

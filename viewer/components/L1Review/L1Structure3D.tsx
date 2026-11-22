@@ -212,7 +212,12 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
       v.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 1 } });
       if (span) v.setStyle({ resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
     }
-    if (cassette) v.setStyle({ resi: `${cassette[0]}-${cassette[1]}` }, { cartoon: { color: L1_CASSETTE_COLOR } });
+    if (cassette) {
+      v.setStyle(
+        { resi: `${cassette[0]}-${cassette[1]}` },
+        { cartoon: { color: L1_CASSETTE_COLOR, thickness: 0.65 }, line: { color: L1_CASSETTE_COLOR, linewidth: 1.4 } },
+      );
+    }
     for (const m of marks) {
       v.addStyle({ resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
       if (m.label) {
