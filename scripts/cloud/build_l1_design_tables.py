@@ -116,17 +116,30 @@ CONTACT_COLS = [
     "source", "evidence_types", "contact_classes", "confidence_tier", "ion_site",
     "additive_only", "in_extracellular", "topology_state", "ligands", "pmids",
 ]  # fmt: skip
+#: Per-member SP status and UniProt comparison (cloudflare/migrations/
+#: l1_member_annotation_v1.sql), from the optional `member_annotations` source.
+ANNOT_COLS = [
+    "member_id", "design_id", "gene_symbol", "sp_status", "native_sp_last_residue",
+    "sp_evidence", "uniprot_canonical_acc", "uniprot_canonical_length",
+    "matches_uniprot_canonical", "uniprot_diff_json",
+]  # fmt: skip
+SP_STATUSES = {"native", "igk_swap", "igk_res1", "none"}
+#: Tables written only when they have rows, so a load without that source keeps the
+#: content hash (and load_version) it had before the table existed.
+OPTIONAL_TABLES = {"annotations"}
 TABLES = {
     "members": ("l1_member_public", MEMBER_COLS),
     "sites": ("l1_tag_site_design_public", SITE_COLS),
     "structures": ("l1_structure_design_public", STRUCT_COLS),
     "contacts": ("l1_contact_site_public", CONTACT_COLS),
+    "annotations": ("l1_member_annotation_public", ANNOT_COLS),
 }
 INT_COLS = {
     "n_tm", "ordered_length_aa", "insert_after_residue", "cassette_aa", "rank",
     "source_pr", "residue_offset", "model_length_aa", "is_chosen", "is_primary",
     "cassette_first_model_residue", "cassette_last_model_residue", "residue",
     "canonical_residue", "ion_site", "additive_only", "in_extracellular",
+    "native_sp_last_residue", "uniprot_canonical_length", "matches_uniprot_canonical",
 }  # fmt: skip
 STATUSES = {"built", "decided_not_built", "no_tag", "pending", "alternative"}
 #: Which ranked runners-up a reviewer sees, and how far an alternative must sit from the
@@ -1227,6 +1240,55 @@ def _tagged_refold_v1(
     return out
 
 
+# --------------------------------------------------------------------------- annotations
+
+
+def _annotations(rows: list[dict], R: "Resolver") -> list[dict]:
+    """Member annotations (SP status, UniProt comparison), joined on design id + sha.
+
+    A row whose sha no longer matches the member is dropped as stale, like every other
+    source. Values are checked, not trusted: an unknown sp_status or a diff that is not
+    a JSON list raises, so a malformed export cannot reach the public API.
+    """
+    out = []
+    for r in rows:
+        m = R.get(
+            "member_annotations",
+            r.get("design_id"),
+            sha=r.get("sequence_sha256") or None,
+        )
+        if not m:
+            continue
+        sp = (r.get("sp_status") or "").strip() or None
+        if sp is not None and sp not in SP_STATUSES:
+            raise SystemExit(
+                f"member_annotations {r.get('design_id')}: unknown sp_status {sp!r}"
+            )
+        diff = (r.get("uniprot_diff_json") or "").strip() or None
+        if diff is not None:
+            parsed = json.loads(diff)
+            if not isinstance(parsed, list):
+                raise SystemExit(
+                    f"member_annotations {r.get('design_id')}: uniprot_diff_json is not a list"
+                )
+            diff = json.dumps(parsed, sort_keys=True, separators=(",", ":"))
+        match = (r.get("matches_uniprot_canonical") or "").strip()
+        if match not in ("", "0", "1"):
+            raise SystemExit(
+                f"member_annotations {r.get('design_id')}: matches_uniprot_canonical must be 0/1"
+            )
+        out.append({
+            "member_id": m["member_id"], "design_id": m["design_id"], "gene_symbol": m["gene_symbol"],
+            "sp_status": sp, "native_sp_last_residue": _int(r.get("native_sp_last_residue") or ""),
+            "sp_evidence": (r.get("sp_evidence") or "").strip() or None,
+            "uniprot_canonical_acc": (r.get("uniprot_canonical_acc") or "").strip() or None,
+            "uniprot_canonical_length": _int(r.get("uniprot_canonical_length") or ""),
+            "matches_uniprot_canonical": int(match) if match else None,
+            "uniprot_diff_json": diff,
+        })  # fmt: skip
+    return sorted(out, key=lambda a: a["member_id"])
+
+
 # --------------------------------------------------------------------------- build
 
 
@@ -1392,6 +1454,7 @@ def build(args) -> int:
     inputs["tagged_structures"] = tagged_inputs
     contacts = _contacts(T["lit_contacts"], R)
 
+    annotations = _annotations(T.get("member_annotations", []), R)
     members_rows = sorted(members.values(), key=lambda r: r["member_id"])
     sites, alts_dropped = _keep_alternatives(sites)
     sites.sort(key=lambda r: (r["member_id"], -r["is_primary"], r["site_id"]))
@@ -1405,9 +1468,13 @@ def build(args) -> int:
         "sites": sites,
         "structures": structures,
         "contacts": contacts,
+        "annotations": annotations,
     }
     for name, rows in tables.items():
         cols = TABLES[name][1]
+        if name in OPTIONAL_TABLES and not rows:
+            (out_dir / f"l1_design_{name}.tsv").unlink(missing_ok=True)
+            continue
         buf = io.StringIO()
         w = csv.DictWriter(
             buf, cols, delimiter="\t", lineterminator="\n", extrasaction="raise"
@@ -1423,7 +1490,7 @@ def build(args) -> int:
     with_site = {s["member_id"] for s in sites if s["is_primary"]}
     counts = {
         "members": len(members_rows), "sites": len(sites), "structures": len(structures),
-        "contacts": len(contacts),
+        "contacts": len(contacts), "annotations": len(annotations),
         "sites_by_rung_status": _count(sites, "rung", "status"),
         "sites_by_source": _count(sites, "site_source", "is_primary"),
         "alternatives_rule": {
@@ -1587,10 +1654,14 @@ def sql(args) -> int:
     lines = [
         f"-- L1 design overlay load {lv} (content {manifest['content_sha256']}).",
         "-- INSERT OR IGNORE only: re-applying is a no-op; no row is updated or deleted.",
-        "-- Apply cloudflare/migrations/l1_design_v1.sql first.",
+        "-- Apply cloudflare/migrations/l1_design_v1.sql first (and l1_member_annotation_v1.sql",
+        "-- when this load carries member annotations).",
     ]
     for name, (table, cols) in TABLES.items():
-        text = (out_dir / f"l1_design_{name}.tsv").read_text()
+        path = out_dir / f"l1_design_{name}.tsv"
+        if name in OPTIONAL_TABLES and not path.exists():
+            continue
+        text = path.read_text()
         content.update(text.encode())
         rows = list(csv.DictReader(io.StringIO(text), delimiter="\t"))
         head = f"INSERT OR IGNORE INTO {table} ({', '.join(['load_version', *cols])}) VALUES\n  "

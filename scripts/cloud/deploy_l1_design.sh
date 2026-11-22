@@ -16,7 +16,7 @@
 # What it does (each step is additive and re-runnable):
 #   1. shared-API checks from CLAUDE.md: HEAD == origin/main for the Worker source,
 #      no route that exists only on origin/dev, Worker contract tests;
-#   2. public D1: CREATE TABLE IF NOT EXISTS for the L1 tables;
+#   2. public D1: CREATE TABLE IF NOT EXISTS for the L1 tables (incl. member annotations);
 #   3. public D1: the load (INSERT OR IGNORE; the load row last);
 #   4. private D1 (surfaceome_agents): the review tables;
 #   5. R2: tagged-refold PDBs under library-colabfold-tagged/<release>/ (existing keys skipped);
@@ -71,6 +71,7 @@ echo "load: $(head -1 "$LOAD")"
 
 echo "== 2-3. public D1: L1 tables + the load"
 run "$WRANGLER d1 execute surfaceome_public --remote --file '$ROOT/cloudflare/migrations/l1_design_v1.sql'"
+run "$WRANGLER d1 execute surfaceome_public --remote --file '$ROOT/cloudflare/migrations/l1_member_annotation_v1.sql'"
 run "$WRANGLER d1 execute surfaceome_public --remote --file '$LOAD'"
 
 echo "== 4. private D1: review tables"
