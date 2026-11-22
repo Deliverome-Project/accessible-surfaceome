@@ -30,6 +30,9 @@ export function useTurnstile() {
   const tokenRef = useRef("");
   const widgetRef = useRef("");
   const [status, setStatus] = useState<TurnstileStatus>(SITE_KEY ? "loading" : "off");
+  // True only while Cloudflare shows an interactive challenge; the page folds the
+  // widget's slot away otherwise, including the "Success" tick after a pass.
+  const [needsClick, setNeedsClick] = useState(false);
 
   useEffect(() => {
     if (!SITE_KEY) return;
@@ -56,10 +59,14 @@ export function useTurnstile() {
         callback: (t: string) => {
           tokenRef.current = t;
           setStatus("ready");
+          setNeedsClick(false);
         },
+        "before-interactive-callback": () => setNeedsClick(true),
+        "after-interactive-callback": () => setNeedsClick(false),
         "error-callback": () => {
           tokenRef.current = "";
           setStatus("error");
+          setNeedsClick(false);
         },
         "expired-callback": () => {
           tokenRef.current = "";
@@ -97,7 +104,7 @@ export function useTurnstile() {
     return t;
   }, []);
 
-  return { slotRef, take, status };
+  return { slotRef, take, status, needsClick };
 }
 
 /** What the review panel needs from the page's Turnstile widget. */

@@ -38,8 +38,8 @@ export default function L1ReviewPage() {
             <p>
               The rung logic, scores, gate and refold results, who decided each pick and the
               alternative it beat are all on the member&rsquo;s card. Agent sessions make these calls
-              under delegation; <strong>Looks good / No</strong> and{" "}
-              <strong>Suggest an alternative tag</strong> are how a reviewer overturns one. Membrane
+              under delegation; <strong>Site looks right / Concern</strong> and{" "}
+              <strong>Suggest another site</strong> are how a reviewer overturns one. Membrane
               class is rule-based, for browsing only. The topology strip is the member&rsquo;s own
               DeepTMHMM prediction, coloured as on the gene pages, with the tag insert flagged in
               orange.

@@ -66,13 +66,12 @@
 .verdictRow { display: flex; gap: var(--space-2) var(--space-3); align-items: center; flex-wrap: wrap; }
 .segmented { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; border: 0; margin: 0; padding: 0; min-width: 0; }
 .seg, .segOn {
-  position: relative; font-size: 0.8rem; padding: 0.15rem 0.7rem; border-radius: var(--radius-pill);
+  font: inherit; font-size: 0.75rem; line-height: 1.3; padding: 0.1rem 0.6rem; border-radius: var(--radius-pill);
   border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; user-select: none;
 }
+.seg:focus-visible, .segOn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .seg:hover { border-color: var(--accent); }
 .segOn { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
-.seg input, .segOn input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
-.seg:has(input:focus-visible), .segOn:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .reason { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.88rem; padding: 0.4rem 0.5rem; border: 1px solid var(--line); border-radius: var(--radius-sm); resize: vertical; }
 .submitRow { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
@@ -276,3 +275,28 @@
    takes no visible space unless Cloudflare asks the reviewer to click. */
 .identityRow { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-3); }
 .identityRow > .identity { flex: 1 1 20rem; }
+
+/* N-terminus and UniProt facts above the topology strip. */
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.15rem var(--space-2); margin: 0 0 var(--space-2); font-size: 0.82rem; }
+.facts dt { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 0.12rem; }
+.facts dd { margin: 0; }
+.spTag { display: inline-block; font-size: 0.72rem; padding: 0 0.45rem; border-radius: var(--radius-pill); border: 1px solid var(--line); margin-right: 0.2rem; }
+.diffList { margin: 0.2rem 0 0; padding-left: 1rem; font-size: 0.78rem; }
+/* SP bracket on the topology strip: hatched when the Igk leader replaces those residues. */
+.spBand { position: absolute; top: calc(1.15rem - 6px); height: 4px; background: var(--ink); opacity: 0.55; border-radius: 1px; pointer-events: auto; }
+.spReplaced { background: repeating-linear-gradient(135deg, var(--ink) 0 2px, transparent 2px 4px); opacity: 0.8; }
+.spSwatch { display: inline-block; width: 1rem; height: 4px; vertical-align: middle; background: var(--ink); opacity: 0.55; }
+/* Turnstile folds to nothing unless Cloudflare wants a click. */
+.turnstile { min-width: 0; }
+.turnstileFolded { height: 0; overflow: hidden; }
+.search { margin: 0 0 var(--space-2); width: 100%; box-sizing: border-box; }
+/* Insert flags are buttons now: clicking one focuses that arm on the structure. */
+button.insert { padding: 0; cursor: pointer; font: inherit; }
+button.insert:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.insertOn { box-shadow: 0 0 0 2px var(--ink); }
+.insertOn .insertHead { outline: 2px solid var(--ink); }
+/* The reviewer's suggested site: same shape, the suggestion pink. */
+.insertSuggested, .insertSuggested .insertHead { background: #FF1F8F; border-color: #8a0b4a; color: #fff; }
+.insertSuggested { pointer-events: none; }
+.siteShow { font: inherit; font-size: 0.75rem; margin-left: auto; padding: 0.05rem 0.55rem; border-radius: var(--radius-pill); border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.siteShowOn { background: var(--ink); color: var(--bg-soft, #fff); border-color: var(--ink); }
