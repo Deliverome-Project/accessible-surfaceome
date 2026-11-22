@@ -252,13 +252,13 @@ interface Draft {
   siteId?: string;
   /** One comment for every mode: the reason for a concern, or why the other site. */
   reason: string;
-  alt: { residue: string; placement: L1Placement; cassette: string };
+  alt: { residue: string; placement: "" | L1Placement; cassette: string };
 }
 
 const EMPTY_DRAFT: Draft = {
   mode: "",
   reason: "",
-  alt: { residue: "", placement: "internal", cassette: "" },
+  alt: { residue: "", placement: "", cassette: "" },
 };
 
 const MODES: { value: Exclude<ReviewMode, "">; label: string; key: string }[] = [
@@ -360,7 +360,7 @@ export function ReviewPanel({
     if (!name) return "Add your name at the top of the page first.";
     if (draft.mode === "no" && !draft.reason.trim()) return "Say what is wrong in the comment.";
     if (draft.mode === "alt") {
-      const needsResidue = draft.alt.placement === "internal" || draft.alt.placement === "after_sp";
+      const needsResidue = draft.alt.placement === "" || draft.alt.placement === "internal" || draft.alt.placement === "after_sp";
       if (needsResidue && draft.alt.residue === "") return "Give the residue the tag goes after, or click one on the structure.";
     }
     return null;
@@ -396,15 +396,22 @@ export function ReviewPanel({
     try {
       if (draft.mode === "alt") {
         const residue = draft.alt.residue === "" ? null : Number(draft.alt.residue);
+        const placement: L1Placement =
+          draft.alt.placement ||
+          (residue === 0
+            ? "n_term"
+            : residue != null && member.ordered_length_aa != null && residue >= member.ordered_length_aa
+              ? "c_term"
+              : "internal");
         const cassette = draft.alt.cassette || null;
         const r = await submitL1Review(API_BASE, t, {
-          ...base, kind: "alt_tag", placement: draft.alt.placement, insert_after_residue: residue,
+          ...base, kind: "alt_tag", placement, insert_after_residue: residue,
           cassette_variant: cassette, reason,
         });
         if (!r.ok) return setMsg({ ok: false, text: `Not saved: ${reviewErrorMessage(r.error)}` });
         const row: L1AltTagRow = {
           suggestion_id: r.id, created_at: r.created_at, ...base, design_id: member.design_id,
-          insert_after_residue: residue, placement: draft.alt.placement, cassette_variant: cassette, reason,
+          insert_after_residue: residue, placement, cassette_variant: cassette, reason,
         };
         patch({ mode: "", reason: "", alt: EMPTY_DRAFT.alt });
         setMsg({ ok: true, text: "Saved — thank you. Your suggested site is listed below." });
@@ -550,26 +557,35 @@ export function ReviewPanel({
             />
             <span id={`${fieldId}-residue-help`} className={styles.help}>
               or click a residue on the structure or topology bar
-              {member.ordered_length_aa ? ` · 1–${member.ordered_length_aa}` : ""}
+              {member.ordered_length_aa ? ` · 0–${member.ordered_length_aa}` : ""}
             </span>
           </label>
-          <label>
-            placement
-            <select value={draft.alt.placement} onChange={(e) => setAlt({ placement: e.target.value as L1Placement })}>
-              {(Object.keys(PLACEMENT_LABEL) as L1Placement[]).map((p) => (
-                <option key={p} value={p}>{PLACEMENT_LABEL[p]}</option>
-              ))}
-            </select>
-          </label>
-          {cassettes.length > 1 ? (
-            <label>
-              cassette
-              <select value={draft.alt.cassette} onChange={(e) => setAlt({ cassette: e.target.value })}>
-                <option value="">same as the current pick</option>
-                {cassettes.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </label>
-          ) : null}
+          <details className={styles.altOptions}>
+            <summary>
+              optional: placement{cassettes.length > 1 ? " & cassette" : ""}
+              {draft.alt.placement ? ` (${PLACEMENT_LABEL[draft.alt.placement]})` : ""}
+            </summary>
+            <div className={styles.altOptionsBody}>
+              <label>
+                placement
+                <select value={draft.alt.placement} onChange={(e) => setAlt({ placement: e.target.value as "" | L1Placement })}>
+                  <option value="">auto (from residue)</option>
+                  {(Object.keys(PLACEMENT_LABEL) as L1Placement[]).map((p) => (
+                    <option key={p} value={p}>{PLACEMENT_LABEL[p]}</option>
+                  ))}
+                </select>
+              </label>
+              {cassettes.length > 1 ? (
+                <label>
+                  cassette
+                  <select value={draft.alt.cassette} onChange={(e) => setAlt({ cassette: e.target.value })}>
+                    <option value="">same as the current pick</option>
+                    {cassettes.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </label>
+              ) : null}
+            </div>
+          </details>
         </div>
       ) : null}
       <textarea
@@ -699,18 +715,49 @@ function memberChipText(m: Pick<L1Member, "candidate_set" | "species">, topo: Li
   return protein ? `${l1MemberRoleLabel(m)} · ${protein}` : l1MemberRoleLabel(m);
 }
 
+/** Partition a member's chosen structures into the default tabs (current-pick folds
+ *  first, then native) and earlier/unlisted sweep refolds (site_id null or not among
+ *  the member's current sites). If a member has no fold linked to a current site, the
+ *  unlisted folds stay visible (passing before failing) so the tab strip is never empty. */
+export function partitionModels(
+  structures: readonly L1Structure[],
+  sites: readonly Pick<L1Site, "site_id" | "is_primary">[],
+): { primary: L1Structure[]; earlier: L1Structure[] } {
+  const chosen = structures.filter((s) => s.is_chosen);
+  const primaryIds = new Set(sites.filter((s) => s.is_primary !== false).map((s) => s.site_id));
+  const listedIds = new Set(sites.map((s) => s.site_id));
+  const tagged = chosen.filter((s) => s.kind === "tagged");
+  const native = chosen.filter((s) => s.kind !== "tagged");
+  const verdictRank = (s: L1Structure) => (s.refold_verdict === "pass" ? 0 : s.refold_verdict === "fail" ? 2 : 1);
+  const linked = tagged
+    .filter((s) => s.site_id != null && listedIds.has(s.site_id))
+    .sort((a, b) => {
+      const pa = a.site_id != null && primaryIds.has(a.site_id) ? 0 : 1;
+      const pb = b.site_id != null && primaryIds.has(b.site_id) ? 0 : 1;
+      return pa - pb || verdictRank(a) - verdictRank(b);
+    });
+  const unlisted = tagged
+    .filter((s) => s.site_id == null || !listedIds.has(s.site_id))
+    .sort((a, b) => verdictRank(a) - verdictRank(b));
+  if (linked.length > 0) {
+    return { primary: [...linked, ...native], earlier: unlisted };
+  }
+  return { primary: [...unlisted, ...native], earlier: [] };
+}
+
 /** Label for a structure view tab. When a member carries multiple tagged refolds,
  *  name the arm/insertion residue so tabs are distinguishable before clicking. */
 export function structureTabLabel(
-  m: Pick<L1Structure, "kind" | "site_id" | "mean_plddt" | "refold_verdict">,
+  m: Pick<L1Structure, "kind" | "site_id" | "mean_plddt" | "refold_verdict" | "note">,
   sites: readonly Pick<L1Site, "site_id" | "insert_after_residue">[],
   multiFold: boolean,
 ): string {
   let base = m.kind === "tagged" ? "Fold" : "Native";
-  if (m.kind === "tagged" && multiFold && m.site_id) {
-    const site = sites.find((s) => s.site_id === m.site_id);
-    const arm = armLabel(m.site_id);
-    const res = site?.insert_after_residue;
+  if (m.kind === "tagged" && multiFold) {
+    const site = m.site_id ? sites.find((s) => s.site_id === m.site_id) : undefined;
+    const arm = m.site_id ? armLabel(m.site_id) : null;
+    const noteRes = m.note ? /insert after (\d+)/i.exec(m.note)?.[1] : null;
+    const res = site?.insert_after_residue ?? (noteRes != null ? Number(noteRes) : null);
     const tag =
       arm && res != null ? `${arm} · ${res}`
         : arm ? arm
@@ -749,13 +796,17 @@ function MemberDetail({
   onSaved: (saved: Partial<L1Reviews>) => void;
 }) {
   const sites = sortSites(member.sites);
-  // The fold (tagged refold) first and open by default: it is the construct being
-  // reviewed, tag and all. The native model is the comparison.
+  // The current-pick fold(s) first and open by default, then native. Failed / unlisted
+  // sweep refolds stay tucked behind "+ N earlier refolds" so a member never opens on a
+  // discarded candidate fold.
+  const [showEarlierFolds, setShowEarlierFolds] = useState(false);
+  const { primary: primaryModels, earlier: earlierModels } = useMemo(
+    () => partitionModels(member.structures, member.sites),
+    [member.structures, member.sites],
+  );
   const models = useMemo(
-    () => member.structures
-      .filter((s) => s.is_chosen)
-      .sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "tagged" ? -1 : 1)),
-    [member.structures],
+    () => (showEarlierFolds ? [...primaryModels, ...earlierModels] : primaryModels),
+    [primaryModels, earlierModels, showEarlierFolds],
   );
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [modelId, setModelId] = useState<string>("");
@@ -783,7 +834,8 @@ function MemberDetail({
   const curatedGene: CuratedContactsData | null = curated && curated !== "loading" ? curated : null;
   const curatedAligned = curatedContactsAlign(member.sequence_sha256, curatedGene?.reference_sequence_sha256);
   useEffect(() => {
-    setModelId(models[0]?.structure_id ?? "");
+    setShowEarlierFolds(false);
+    setModelId(primaryModels[0]?.structure_id ?? "");
     setPicked(null);
     setFocusSite(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -989,31 +1041,68 @@ function MemberDetail({
       />
       </div>
       <section className={styles.structurePane} aria-label="Structure">
-        <div className={styles.modelRow} role="tablist" aria-label="Structure view (keys 1–9; up / down when focused)" onKeyDown={onTabKey}>
-          <h3 className={styles.h3inline}>Structure</h3>
-          {(() => {
-            const multiFold = models.filter((x) => x.kind === "tagged").length > 1;
-            return models.map((m, i) => {
-              const on = m.structure_id === model?.structure_id;
-              return (
-                <button
-                  key={m.structure_id}
-                  ref={(el) => { tabRefs.current[i] = el; }}
-                  type="button"
-                  role="tab"
-                  aria-selected={on}
-                  tabIndex={on ? 0 : -1}
-                  className={on ? styles.tabOn : styles.tab}
-                  onClick={() => setModelId(m.structure_id)}
-                  title={`${m.kind === "tagged" ? "The ordered tagged protein, folded whole" : "The member's protein without the tag"} · ${m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"} · key ${i + 1}`}
-                >
-                  {i < 9 ? <kbd className={styles.tabKey}>{i + 1}</kbd> : null}
-                  {structureTabLabel(m, sites, multiFold)}
-                </button>
-              );
-            });
-          })()}
-          {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
+        <div className={styles.structureHeader}>
+          <div className={styles.modelRow} role="tablist" aria-label="Structure view (keys 1–9; up / down when focused)" onKeyDown={onTabKey}>
+            <h3 className={styles.h3inline}>Structure</h3>
+            {(() => {
+              const multiFold = models.filter((x) => x.kind === "tagged").length > 1;
+              return models.map((m, i) => {
+                const on = m.structure_id === model?.structure_id;
+                return (
+                  <button
+                    key={m.structure_id}
+                    ref={(el) => { tabRefs.current[i] = el; }}
+                    type="button"
+                    role="tab"
+                    aria-selected={on}
+                    tabIndex={on ? 0 : -1}
+                    className={on ? styles.tabOn : styles.tab}
+                    onClick={() => setModelId(m.structure_id)}
+                    title={`${m.kind === "tagged" ? "The ordered tagged protein, folded whole" : "The member's protein without the tag"} · ${m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"} · key ${i + 1}`}
+                  >
+                    {i < 9 ? <kbd className={styles.tabKey}>{i + 1}</kbd> : null}
+                    {structureTabLabel(m, sites, multiFold)}
+                  </button>
+                );
+              });
+            })()}
+            {earlierModels.length > 0 ? (
+              <button
+                type="button"
+                className={styles.earlierToggle}
+                aria-expanded={showEarlierFolds}
+                onClick={() => setShowEarlierFolds((v) => !v)}
+                title="Earlier candidate refolds not linked to this member's current pick"
+              >
+                {showEarlierFolds ? "hide earlier" : `+${earlierModels.length} earlier`}
+              </button>
+            ) : null}
+            {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
+          </div>
+          <div className={styles.structureControls} aria-label="Structure overlays">
+            <label className={showAlts ? styles.ctrlOn : styles.ctrl}>
+              <input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} />
+              Alternatives
+            </label>
+            {segments ? (
+              <>
+                <label className={showContacts ? styles.ctrlOn : styles.ctrl}>
+                  <input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} />
+                  Contacts
+                </label>
+                {showContacts ? (
+                  <label className={showHidden ? styles.ctrlOn : styles.ctrl} title="Include ion sites and crystallization additives">
+                    <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
+                    Ion / add.
+                  </label>
+                ) : null}
+              </>
+            ) : (() => {
+              const nativeIdx = models.findIndex((m) => m.kind === "native");
+              const keyHint = nativeIdx >= 0 && nativeIdx < 9 ? ` (key ${nativeIdx + 1})` : "";
+              return <span className={styles.muted}>contacts: native{keyHint}</span>;
+            })()}
+          </div>
         </div>
         {url ? (
           <L1Structure3D
@@ -1041,25 +1130,27 @@ function MemberDetail({
         ) : (
           <p className={styles.muted}>No model for this member.</p>
         )}
-        {/* Picks, contacts, the focused arm and your suggestion are mapped through the
-            model's residue segments so they appear on both Fold and Native views. */}
+        {/* Compact color key directly under the canvas so everything stays above the fold. */}
         <div className={styles.legend}>
-          <span><i style={{ background: COLORS.pick }} /> current pick (click a flag or &ldquo;show on structure&rdquo; to focus an arm)</span>
-          <label><input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} /> <i style={{ background: COLORS.ranker }} /> ranker alternatives <i style={{ background: COLORS.agent }} /> agent proposals</label>
-          {segments ? (
+          <span><i style={{ background: COLORS.pick }} /> pick</span>
+          {showAlts ? (
             <>
-              <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.curated }} /> curated (structures / databases) <i style={{ background: COLORS.litHigh }} /> literature <i style={{ background: COLORS.litLower }} /> literature (modeling/homology) <i style={{ background: COLORS.uniprot }} /> UniProt binding</label>
-              <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
+              <span><i style={{ background: COLORS.ranker }} /> ranker alt</span>
+              <span><i style={{ background: COLORS.agent }} /> agent alt</span>
             </>
-          ) : (() => {
-            const nativeIdx = models.findIndex((m) => m.kind === "native");
-            const keyHint = nativeIdx >= 0 && nativeIdx < 9 ? ` (key ${nativeIdx + 1})` : "";
-            return <span className={styles.muted}>contact sites: native model{keyHint}</span>;
-          })()}
-          <span><i style={{ background: COLORS.suggestion }} /> your suggested residue (click the model, or type it under &ldquo;Suggest another site&rdquo;)</span>
+          ) : null}
+          {segments && showContacts ? (
+            <>
+              <span><i style={{ background: COLORS.curated }} /> curated</span>
+              <span><i style={{ background: COLORS.litHigh }} /> lit</span>
+              <span><i style={{ background: COLORS.litLower }} /> lit (model)</span>
+              <span><i style={{ background: COLORS.uniprot }} /> UniProt</span>
+            </>
+          ) : null}
+          <span><i style={{ background: COLORS.suggestion }} /> your pick</span>
         </div>
         {model?.note || model?.proteoform_match ? (
-          <p className={styles.muted}>
+          <p className={styles.modelNote}>
             Model: {model.proteoform_match}{model.residue_offset ? `, member residue i = model residue i + ${model.residue_offset}` : ""}
             {model.note ? ` · ${model.note}` : ""}
           </p>
@@ -1443,56 +1534,9 @@ export function L1Review() {
 
   return (
     <div className={styles.app}>
-      {/* One slim line when folded. No token: the name is trusted as typed and Cloudflare
-          Turnstile (beside it, invisible unless it needs a click) keeps bots out. */}
-      <div className={styles.identityRow}>
-        <details
-          className={styles.identity}
-          open={identityOpen}
-          onToggle={(e) => setIdentityOpen((e.currentTarget as HTMLDetailsElement).open)}
-        >
-          <summary>
-            {reviewer.trim() ? `Reviewing as ${reviewer.trim()}` : "Add your name to review"}
-            {reviews ? ` · ${reviewedN} of ${members.length} members reviewed` : ""}
-            {" · "}
-            <span className={styles.mono}>load {index.load.load_version}</span>
-          </summary>
-          <div className={styles.settings}>
-            <label>
-              your name
-              <input
-                ref={nameRef}
-                value={reviewer}
-                maxLength={80}
-                autoComplete="name"
-                onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }}
-                placeholder="your name"
-                title="Shown with each review; kept in this browser"
-              />
-            </label>
-            {serverReviews ? null : (
-              <span className={styles.muted}>Reviews you save here are listed under each member; other reviewers&apos; are collected for the design team.</span>
-            )}
-          </div>
-        </details>
-        {/* One Turnstile widget for the page, beside the name. It runs invisibly; the slot
-            opens only while Cloudflare wants a click and folds away once passed. */}
-        <div
-          ref={turnstile.slotRef}
-          className={turnstile.needsClick ? styles.turnstile : `${styles.turnstile} ${styles.turnstileFolded}`}
-          aria-label="anti-bot check"
-          aria-hidden={!turnstile.needsClick}
-        />
-        {turnstile.status === "error" ? (
-          <span className={styles.warn}>The anti-bot check could not load. Reload the page to retry.</span>
-        ) : turnstile.status === "off" ? (
-          <span className={styles.warn}>The anti-bot check is not configured on this build, so saving will fail.</span>
-        ) : null}
-      </div>
-
-      {/* Filters are set once per session and then left alone, so they fold into one line
-          that says what is applied. The search box lives on the gene list itself. */}
-      <div className={styles.filterBar}>
+      {/* Filters and reviewer identity share one slim hairline strip so the member list,
+          review card and 3D structure all start high above the fold. */}
+      <div className={styles.utilityBar}>
       <details className={styles.filters}>
         <summary>
           Filters
@@ -1562,6 +1606,48 @@ export function L1Review() {
         </div>
       </div>
       </details>
+        <div className={styles.identityRow}>
+          <details
+            className={styles.identity}
+            open={identityOpen}
+            onToggle={(e) => setIdentityOpen((e.currentTarget as HTMLDetailsElement).open)}
+          >
+            <summary>
+              {reviewer.trim() ? `Reviewing as ${reviewer.trim()}` : "Add your name to review"}
+              {reviews ? ` · ${reviewedN} of ${members.length} reviewed` : ""}
+              {" · "}
+              <span className={styles.mono}>load {index.load.load_version}</span>
+            </summary>
+            <div className={styles.settings}>
+              <label>
+                your name
+                <input
+                  ref={nameRef}
+                  value={reviewer}
+                  maxLength={80}
+                  autoComplete="name"
+                  onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }}
+                  placeholder="your name"
+                  title="Shown with each review; kept in this browser"
+                />
+              </label>
+              {serverReviews ? null : (
+                <span className={styles.muted}>Reviews you save here are listed under each member; other reviewers&apos; are collected for the design team.</span>
+              )}
+            </div>
+          </details>
+          <div
+            ref={turnstile.slotRef}
+            className={turnstile.needsClick ? styles.turnstile : `${styles.turnstile} ${styles.turnstileFolded}`}
+            aria-label="anti-bot check"
+            aria-hidden={!turnstile.needsClick}
+          />
+          {turnstile.status === "error" ? (
+            <span className={styles.warn}>The anti-bot check could not load. Reload the page to retry.</span>
+          ) : turnstile.status === "off" ? (
+            <span className={styles.warn}>The anti-bot check is not configured on this build, so saving will fail.</span>
+          ) : null}
+        </div>
       </div>
 
       <div className={styles.split}>
@@ -1599,9 +1685,6 @@ export function L1Review() {
             >
               <summary>
                 <span className={styles.keys}>
-                  <span><kbd>←</kbd><kbd>→</kbd> member</span>
-                  <span><kbd>=</kbd><kbd>-</kbd> verdict</span>
-                  <span><kbd>1</kbd><kbd>2</kbd> view</span>
                   <span><kbd>?</kbd> keys</span>
                 </span>
               </summary>

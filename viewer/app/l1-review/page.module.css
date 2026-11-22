@@ -1,9 +1,7 @@
-/* Tight by design: the reviewer's work is the list and the detail panel, and on a
-   1280x800 laptop every row of chrome here is a row they lose from both. */
-.page { padding-top: var(--space-3); padding-bottom: var(--space-6); }
-.head { margin-bottom: var(--space-2); }
-.title { margin: 0; font-size: 1.5rem; }
-.lede { color: var(--ink); margin: 0.15rem 0 0; font-size: 0.9rem; }
-.about { font-size: 0.85rem; color: var(--muted); margin-top: 0.1rem; }
-.about > summary { cursor: pointer; }
-.about p { margin: var(--space-2) 0 0; }
+/* Workbench width: wider than the 1280px prose column so the 3D structure gets real
+   breathing room on 1440px+ screens, and tight chrome so the structure + review card
+   both sit above the fold on a laptop. */
+.page { width: min(1560px, calc(100vw - 2rem)); margin-inline: auto; padding-top: var(--space-2); padding-bottom: var(--space-6); }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem var(--space-3); margin-bottom: var(--space-1); }
+.title { margin: 0; font-size: 1.25rem; }
+.lede { color: var(--muted); margin: 0; font-size: 0.82rem; }
