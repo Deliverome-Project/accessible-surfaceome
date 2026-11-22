@@ -39,22 +39,22 @@
 .filters[open] > summary { margin-bottom: var(--space-2); }
 .filterNow { font-weight: normal; color: var(--muted); margin-left: 0.5rem; }
 
-.split { display: grid; grid-template-columns: minmax(13.5rem, 16rem) 1fr; gap: var(--space-3); align-items: start; }
+.split { display: grid; grid-template-columns: minmax(11.5rem, 13.5rem) 1fr; gap: var(--space-3); align-items: start; }
 /* Sized to what is actually on screen, not to 78vh. The list starts ~16rem down the
    page, so a 78vh list ran a third of its height below the fold: arrow-stepping scrolled
    the selected row into the list's view and out of the window's. The sticky wrapper
    keeps that same height pinned once the page scrolls. */
 .listCol { position: sticky; top: var(--space-2); }
 .list {
-  list-style: none; margin: 0; padding: 0; max-height: calc(100vh - 22rem); min-height: 14rem;
+  list-style: none; margin: 0; padding: 0; max-height: calc(100vh - 16rem); min-height: 0;
   overflow-y: auto; background: var(--bg-soft); border: 1px solid var(--line);
   border-radius: var(--radius-md, 8px); box-shadow: 0 1px 2px rgba(31, 23, 24, 0.03);
 }
 .listEmpty { padding: 0.75rem; font-size: 0.85rem; color: var(--muted); }
 @media (max-width: 900px) { .split { grid-template-columns: 1fr; } .listCol { position: static; } .list { max-height: 40vh; } }
 .row, .rowOn {
-  font: inherit; width: 100%; text-align: left; display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
-  padding: 0.4rem 0.65rem; border: 0; border-bottom: 1px solid var(--line-soft); background: transparent; cursor: pointer; color: var(--ink);
+  font: inherit; font-size: 0.84rem; width: 100%; text-align: left; display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: center;
+  padding: 0.32rem 0.5rem; border: 0; border-bottom: 1px solid var(--line-soft); background: transparent; cursor: pointer; color: var(--ink);
   transition: background var(--dur-fast) var(--ease-out);
 }
 .row:hover { background: var(--bg-warm); }
@@ -390,7 +390,7 @@
 }
 
 /* --------------------------------------------------------------- above-the-fold layout */
-.listHead { display: flex; flex-wrap: wrap; gap: 0.3rem var(--space-3); align-items: baseline; padding: 0.3rem 0.1rem; }
+.listHead { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem var(--space-2); align-items: baseline; padding: 0.2rem 0.1rem 0.3rem; }
 .listCount { font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .identity > summary { cursor: pointer; font-size: 0.8rem; color: var(--muted); }
 .identity[open] .settings { margin-top: var(--space-2); }

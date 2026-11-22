@@ -1669,9 +1669,6 @@ export function L1Review() {
             >
               <summary>
                 <span className={styles.keys}>
-                  <span><kbd>←</kbd><kbd>→</kbd> member</span>
-                  <span><kbd>=</kbd><kbd>-</kbd> verdict</span>
-                  <span><kbd>1</kbd><kbd>2</kbd> view</span>
                   <span><kbd>?</kbd> keys</span>
                 </span>
               </summary>
