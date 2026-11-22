@@ -38,6 +38,8 @@ interface Props {
   /** Key text for the model residues that are not the member's own (an Igk leader
    *  construct's residues, a snorkel module). */
   nonNativeLabel?: string;
+  /** Model residue to bring to the centre of the view (a focused arm), animated. */
+  focusResi?: number | null;
   /** DeepTMHMM v1 per-residue topology of the member's ordered protein (matched by
    *  design id, length and sequence hash), or null when there is none. */
   topology?: string | null;
@@ -59,6 +61,7 @@ type Viewer = {
   removeAllLabels: () => void;
   setClickable: (sel: object, on: boolean, cb: (atom: { resi: number }) => void) => void;
   zoomTo: (sel?: object) => void;
+  center: (sel?: object, animationDuration?: number) => void;
   render: () => void;
   clear: () => void;
   resize: () => void;
@@ -116,7 +119,7 @@ function orient(text: string, topology: string | null | undefined, map: L1ModelM
  * Deliberately separate from the gene page's StructureViewer: this one draws one model,
  * the member's membrane and side shading, a few marked residues and a click-to-pick.
  */
-export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology, map, modelLength, compact, nonNativeLabel }: Props) {
+export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology, map, modelLength, compact, nonNativeLabel, focusResi }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
   const pickRef = useRef(onPick);
@@ -161,6 +164,18 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdbUrl, orientKey]);
+
+  // (3) A focused arm (clicked flag or tag-site card) is brought to the centre, so the
+  // sphere is found without hunting for it on a 1,600-residue model.
+  useEffect(() => {
+    const v = viewerRef.current;
+    if (!v || state !== "ready" || focusResi == null) return;
+    try {
+      v.center({ resi: focusResi, atom: "CA" }, 400);
+    } catch {
+      /* residue not in this model: leave the view as it is */
+    }
+  }, [focusResi, state, loaded]);
 
   // (2) Style: side shading (or plain span), cassette, marked residues. Zoom only on first
   // load, then add the membrane so the wider slab never pulls the camera out.

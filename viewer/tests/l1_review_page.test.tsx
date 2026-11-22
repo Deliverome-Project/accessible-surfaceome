@@ -445,3 +445,46 @@ test("UniProt differences read as sentences", async () => {
     ["member 412 differs from UniProt 412 (A → V)", "member starts later: UniProt 1–24 not ordered"],
   );
 });
+
+// ------------------------------------------- arms and residues on either model
+//
+// Since the page opens on the fold, site marks and residue clicks have to work through
+// the fold's own numbering, not only on the native model (regression, 2026-11-22: "i can
+// no longer click a1 / 2 3 and see it on the protein"; "same with alt site suggestion").
+
+test("residues map through the fold: around the cassette, and not where an Igκ leader replaced them", async () => {
+  const { l1ResidueSegments, memberToModel, modelToMember } = await import("../lib/l1-design");
+  // GLP2R-like: Igκ swap after 68, cassette 24–74 in a 559-residue model of a 553-aa member.
+  const glp = member({ ordered_length_aa: 553, sites: [site({ site_id: "nsp", insert_after_residue: 68, leader: "igk" })] });
+  const fold = { kind: "tagged" as const, site_id: "nsp", residue_offset: 0, cassette_first_model_residue: 24, cassette_last_model_residue: 74, model_length_aa: 559 };
+  const segs = l1ResidueSegments(glp, fold);
+  assert.deepEqual(segs, [{ unpLo: 69, unpHi: 553, offset: 6 }]);
+  assert.equal(memberToModel(68, segs), null, "the swapped N-terminus is not in the fold");
+  assert.equal(memberToModel(195, segs), 201);
+  assert.equal(modelToMember(201, segs), 195);
+  assert.equal(modelToMember(30, segs), null, "a cassette residue is not a member residue");
+  // An internal arm with no leader: native 1..389, cassette, native 390.. shifted.
+  const abca8 = member({ ordered_length_aa: 1621, sites: [site({ site_id: "a1", insert_after_residue: 389, leader: null })] });
+  const fold1 = { kind: "tagged" as const, site_id: "a1", residue_offset: 0, cassette_first_model_residue: 390, cassette_last_model_residue: 440, model_length_aa: 1672 };
+  const s1 = l1ResidueSegments(abca8, fold1);
+  assert.equal(memberToModel(389, s1), 389);
+  assert.equal(memberToModel(1012, s1), 1063);
+  assert.equal(modelToMember(1063, s1), 1012);
+  // Native: one shifted segment.
+  assert.deepEqual(l1ResidueSegments(abca8, { kind: "native", site_id: null, residue_offset: 3, cassette_first_model_residue: null, cassette_last_model_residue: null, model_length_aa: 1624 }), [{ unpLo: 1, unpHi: 1621, offset: 3 }]);
+});
+
+test("strip flags and tag-site cards are buttons that focus an arm", async () => {
+  const { L1TopologyStrip, insertFlags } = await import("../components/L1Review/L1TopologyStrip");
+  const flags = insertFlags(twoArms, 400);
+  const html = renderToStaticMarkup(
+    React.createElement(L1TopologyStrip, {
+      topology: "O".repeat(400), flags, gene: "G", variantLabel: "ref", nAlternatives: 0,
+      focusSiteId: "l1-p0006-a1", onFlagClick: () => {}, suggestedResidue: 250,
+    }),
+  );
+  assert.match(html, /<button[^>]*title="a1 — tag insert[^"]*"[^>]*aria-pressed="true"/);
+  assert.match(html, /title="your suggested site: after residue 250"/);
+  const card = renderToStaticMarkup(React.createElement(SiteCard, { site: twoArms[0], length: 400, focused: false, onShow: () => {} }));
+  assert.match(card, /<button[^>]*aria-pressed="false"[^>]*>show on structure<\/button>/);
+});

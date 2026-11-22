@@ -674,6 +674,44 @@ export function modelToMemberResidue(modelResidue: number, structure: Pick<L1Str
 }
 
 /**
+ * How a model's residues line up with the member's own numbering, for marks and clicks.
+ * Native: one shifted segment. Tagged refold: the native stretches around the cassette
+ * (and any leader), from taggedModelLayout, which needs no topology. Null when the
+ * numbers cannot describe one construct, so nothing is drawn at a wrong residue.
+ */
+export function l1ResidueSegments(
+  member: Pick<L1Member, "ordered_length_aa" | "sites">,
+  model: Pick<L1Structure, "kind" | "site_id" | "residue_offset" | "cassette_first_model_residue" | "cassette_last_model_residue" | "model_length_aa">,
+): TaggedModelLayout["segments"] | null {
+  const L = member.ordered_length_aa;
+  if (!L) return null;
+  if (model.kind === "native") return [{ unpLo: 1, unpHi: L, offset: model.residue_offset ?? 0 }];
+  const site = member.sites.find((s) => s.site_id === model.site_id);
+  const cf = model.cassette_first_model_residue;
+  const layout = taggedModelLayout({
+    memberLength: L,
+    insertAfter: site ? site.insert_after_residue : cf != null ? cf - 1 : null,
+    leader: site?.leader ?? null,
+    cassetteFirst: cf,
+    cassetteLast: model.cassette_last_model_residue,
+    modelLength: model.model_length_aa,
+  });
+  return layout ? layout.segments : null;
+}
+
+/** Member residue -> model residue, or null where the model does not carry it. */
+export function memberToModel(r: number, segments: TaggedModelLayout["segments"] | null): number | null {
+  const seg = segments?.find((sg) => r >= sg.unpLo && r <= sg.unpHi);
+  return seg ? r + seg.offset : null;
+}
+
+/** Model residue -> member residue, or null for cassette / leader / outside residues. */
+export function modelToMember(resi: number, segments: TaggedModelLayout["segments"] | null): number | null {
+  const seg = segments?.find((sg) => resi - sg.offset >= sg.unpLo && resi - sg.offset <= sg.unpHi);
+  return seg ? resi - seg.offset : null;
+}
+
+/**
  * Curated contact sites (structures and databases, the gene page's contact overview)
  * are numbered on a UniProt reference sequence. They can be drawn on a member only when
  * the member's ordered protein IS that sequence; otherwise they are listed, not drawn.

@@ -71,7 +71,16 @@ export function L1TopologyStrip({
   variantLabel,
   nAlternatives,
   sp,
+  focusSiteId,
+  onFlagClick,
+  suggestedResidue,
 }: {
+  /** The arm being looked at: its flag is drawn emphasised. */
+  focusSiteId?: string | null;
+  /** Clicking a flag focuses that arm on the structure. */
+  onFlagClick?: (siteId: string) => void;
+  /** The reviewer's suggested insert residue (typed or clicked), drawn as its own flag. */
+  suggestedResidue?: number | null;
   /** Native residues the N-terminus line is about: the native SP, or the stretch an Igk
    *  leader replaces. Drawn as a bracket over the bands, member numbering. */
   sp?: { from: number; to: number; kind: "native_sp" | "replaced"; label: string } | null;
@@ -120,19 +129,32 @@ export function L1TopologyStrip({
           // would hang outside the strip. Near the edges it is anchored to that edge
           // instead of centred, which keeps it inside and still reads as this flag's.
           const headShift = x < 6 ? "translateX(-12%)" : x > 94 ? "translateX(-88%)" : "translateX(-50%)";
+          const on = focusSiteId === f.siteId;
           return (
-            <span
+            <button
+              type="button"
               key={f.siteId}
-              className={styles.insert}
+              className={on ? `${styles.insert} ${styles.insertOn}` : styles.insert}
               style={{ left: `${x}%` }}
-              title={f.title}
+              title={`${f.title} — click to show it on the structure`}
+              aria-pressed={on}
+              onClick={() => onFlagClick?.(f.siteId)}
             >
               <span className={styles.insertHead} style={{ transform: headShift }}>
                 {f.label}
               </span>
-            </span>
+            </button>
           );
         })}
+        {suggestedResidue != null && suggestedResidue >= 0 && suggestedResidue <= n ? (
+          <span
+            className={`${styles.insert} ${styles.insertSuggested}`}
+            style={{ left: `${pct(suggestedResidue)}%` }}
+            title={`your suggested site: after residue ${suggestedResidue}`}
+          >
+            <span className={styles.insertHead}>you</span>
+          </span>
+        ) : null}
       </div>
       <div className={styles.stripLegend}>
         <TopologyLegend presentStates={topologyStatesPresent(topology)} showMembrane={false} />

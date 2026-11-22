@@ -21,7 +21,6 @@ import {
   l1SiteLabel,
   l1StructureUrl,
   latestVerdicts,
-  modelToMemberResidue,
   nextIndexByLetter,
   reviewScopeLabel,
   sortSites,
@@ -33,6 +32,9 @@ import {
   memberSp,
   uniprotDiffers,
   uniprotDiffLines,
+  l1ResidueSegments,
+  memberToModel,
+  modelToMember,
   visibleContacts,
   type L1Contact,
   type L1DesignFile,
@@ -161,7 +163,18 @@ function Rationale({ value }: { value: Record<string, unknown> }) {
   );
 }
 
-export function SiteCard({ site, length }: { site: L1Site; length: number | null }) {
+export function SiteCard({
+  site,
+  length,
+  focused,
+  onShow,
+}: {
+  site: L1Site;
+  length: number | null;
+  focused?: boolean;
+  /** Focus this site on the structure and the topology strip. */
+  onShow?: () => void;
+}) {
   const primary = site.is_primary !== false;
   return (
     <div className={`${styles.site} ${primary ? styles.sitePrimary : ""}`}>
@@ -171,6 +184,16 @@ export function SiteCard({ site, length }: { site: L1Site; length: number | null
         <span>{l1SiteLabel(site, length)}</span>
         {site.leader === "igk" ? <span className={styles.badge}>Igκ leader</span> : null}
         <StatusPill status={site.status} />
+        {onShow && site.insert_after_residue != null ? (
+          <button
+            type="button"
+            className={focused ? `${styles.siteShow} ${styles.siteShowOn}` : styles.siteShow}
+            aria-pressed={!!focused}
+            onClick={onShow}
+          >
+            {focused ? "shown on structure" : "show on structure"}
+          </button>
+        ) : null}
         <span className={styles.muted}>
           {SOURCE_LABEL[site.site_source ?? "rung_builder"]}
           {site.rank != null ? ` · rank ${site.rank}` : ""}
@@ -238,6 +261,7 @@ export function ReviewPanel({
   reviewer,
   onEditName,
   pickedResidue,
+  pickSeq = 0,
   drafts,
   setDrafts,
   onSaved,
@@ -250,6 +274,8 @@ export function ReviewPanel({
   /** Opens the reviewer bar at the top of the page and focuses the name field. */
   onEditName: () => void;
   pickedResidue: number | null;
+  /** Changes on every click on the model, so the same residue clicked twice still lands. */
+  pickSeq?: number;
   drafts: Record<string, Draft>;
   setDrafts: Dispatch<SetStateAction<Record<string, Draft>>>;
   onSaved: (saved: Partial<L1Reviews>) => void;
@@ -297,7 +323,7 @@ export function ReviewPanel({
       const cur = d[k] ?? EMPTY_DRAFT;
       return { ...d, [k]: { ...cur, mode: "alt", alt: { ...cur.alt, residue: String(pickedResidue) } } };
     });
-  }, [pickedResidue]);
+  }, [pickedResidue, pickSeq]);
 
   const sites = useMemo(() => sortSites(member.sites), [member.sites]);
   // "This site" by default: the verdict is on the tag site we plan to use.
@@ -651,7 +677,11 @@ function MemberDetail({
   const [showAlts, setShowAlts] = useState(true);
   const [showContacts, setShowContacts] = useState(true);
   const [showHidden, setShowHidden] = useState(false);
-  const [picked, setPicked] = useState<number | null>(null);
+  // A residue clicked on either model, as {r, n}: n changes on every click so clicking
+  // the same residue again (after typing another) still reaches the review card.
+  const [picked, setPicked] = useState<{ r: number; n: number } | null>(null);
+  // The arm being looked at (clicked on the strip or a tag-site card).
+  const [focusSite, setFocusSite] = useState<string | null>(null);
   const [curated, setCurated] = useState<CuratedContactsData | null | "loading">(null);
   const acc = member.uniprot_acc && /^[A-Z0-9]{6,10}$/.test(member.uniprot_acc) ? member.uniprot_acc : null;
   useEffect(() => {
@@ -669,12 +699,24 @@ function MemberDetail({
   useEffect(() => {
     setModelId(models[0]?.structure_id ?? "");
     setPicked(null);
+    setFocusSite(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [member.member_id]);
   const model: L1Structure | undefined = models.find((m) => m.structure_id === modelId) ?? models[0];
   const url = model ? l1StructureUrl(model) : null;
   const offset = model?.kind === "native" ? model.residue_offset ?? 0 : 0;
 
+  // Marks are placed through the model's own residue map, so picks, the focused arm and
+  // the reviewer's suggestion show on the fold as well as on the native model.
+  // Contacts stay on the native model, whose numbering is the member's own.
+  const segments = model ? l1ResidueSegments(member, model) : null;
+  const toModel = (r: number) => memberToModel(r, segments);
+  const draftKey = member.design_id ?? member.member_id;
+  const draft = drafts[draftKey];
+  const suggested =
+    draft?.mode === "alt" && draft.alt.residue !== "" && Number.isFinite(Number(draft.alt.residue))
+      ? Number(draft.alt.residue)
+      : null;
   const marks: L1Mark[] = [];
   if (model?.kind === "native") {
     if (showContacts && curatedAligned && curatedGene) {
@@ -687,19 +729,26 @@ function MemberDetail({
         marks.push({ resi: c.residue + offset, color: contactColor(c), radius: 1.5 });
       }
     }
-    // Alternatives first, current picks last: when both name the same residue, the
-    // current pick must be the sphere you see.
-    for (const s of [...sites].reverse()) {
-      if (s.insert_after_residue == null || s.insert_after_residue < 1) continue;
-      if (s.is_primary === false && !showAlts) continue;
-      marks.push({
-        resi: s.insert_after_residue + offset,
-        color: siteColor(s),
-        radius: s.is_primary === false ? 2.4 : 3.2,
-        label: s.is_primary === false ? undefined : `${s.residue_before ?? ""}${s.insert_after_residue}`,
-      });
-    }
-    if (picked != null) marks.push({ resi: picked + offset, color: COLORS.suggestion, radius: 3.0, label: `alt ${picked}` });
+  }
+  // Alternatives first, current picks last: when both name the same residue, the current
+  // pick must be the sphere you see. The focused arm goes on top, larger and labelled.
+  for (const s of [...sites].reverse()) {
+    if (s.insert_after_residue == null || s.insert_after_residue < 1) continue;
+    if (s.is_primary === false && !showAlts && s.site_id !== focusSite) continue;
+    const resi = toModel(s.insert_after_residue);
+    if (resi == null) continue;
+    const on = s.site_id === focusSite;
+    const arm = armLabel(s.site_id);
+    marks.push({
+      resi,
+      color: siteColor(s),
+      radius: on ? 4.2 : s.is_primary === false ? 2.4 : 3.2,
+      label: on || s.is_primary !== false ? `${arm ? `${arm} ` : ""}${s.residue_before ?? ""}${s.insert_after_residue}` : undefined,
+    });
+  }
+  if (suggested != null) {
+    const resi = toModel(suggested);
+    if (resi != null) marks.push({ resi, color: COLORS.suggestion, radius: 3.0, label: `you: after ${suggested}` });
   }
   const span: [number, number] | null =
     model?.kind === "native" && member.ordered_length_aa ? [offset + 1, offset + member.ordered_length_aa] : null;
@@ -742,12 +791,25 @@ function MemberDetail({
 
   const pick = useCallback(
     (resi: number) => {
-      if (!model) return;
-      const r = modelToMemberResidue(resi, model);
-      if (r != null && r >= 0) setPicked(r);
+      const r = modelToMember(resi, segments);
+      if (r != null && r >= 0) setPicked({ r, n: Date.now() });
     },
-    [model],
+    // segments is rebuilt each render from model + member; key on what it depends on.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model?.structure_id, member.member_id],
   );
+  // Focusing an arm the current view does not carry (an Igk swap's site is not in the
+  // fold) switches to the native model, where every member residue is drawn. Only at
+  // the moment of focusing: pressing 1 afterwards still shows the fold.
+  const showSite = (siteId: string) => {
+    if (focusSite === siteId) return setFocusSite(null);
+    setFocusSite(siteId);
+    const f = sites.find((x) => x.site_id === siteId);
+    if (f?.insert_after_residue != null && f.insert_after_residue >= 1 && toModel(f.insert_after_residue) == null) {
+      const native = models.find((m) => m.kind === "native");
+      if (native) setModelId(native.structure_id);
+    }
+  };
 
   const topology = topologyRow?.per_residue_topology ?? "";
   const flags = insertFlags(sites, member.ordered_length_aa);
@@ -803,6 +865,9 @@ function MemberDetail({
           gene={member.gene_symbol}
           variantLabel={memberChipText(member, topologyRow)}
           nAlternatives={sites.filter((s) => s.is_primary === false).length}
+          focusSiteId={focusSite}
+          onFlagClick={showSite}
+          suggestedResidue={suggested}
         />
       ) : null}
       {member.proteoform?.decision ? (
@@ -820,7 +885,8 @@ function MemberDetail({
         auth={auth}
         reviewer={reviewer}
         onEditName={onEditName}
-        pickedResidue={picked}
+        pickedResidue={picked?.r ?? null}
+        pickSeq={picked?.n ?? 0}
         drafts={drafts}
         setDrafts={setDrafts}
         onSaved={onSaved}
@@ -858,7 +924,11 @@ function MemberDetail({
             span={span}
             marks={marks}
             cassette={cassette}
-            onPick={model?.kind === "native" ? pick : undefined}
+            onPick={segments ? pick : undefined}
+            focusResi={(() => {
+              const f = sites.find((x) => x.site_id === focusSite);
+              return f?.insert_after_residue != null ? toModel(f.insert_after_residue) : null;
+            })()}
             topology={topology || null}
             map={modelMap}
             modelLength={model?.model_length_aa ?? null}
@@ -871,19 +941,21 @@ function MemberDetail({
         ) : (
           <p className={styles.muted}>No model for this member.</p>
         )}
-        {/* Picks, alternatives and contacts are drawn on the native model, whose numbering
-            is the member's own; the fold shows the built tag itself. */}
-        {model?.kind === "native" ? (
+        {/* Picks, the focused arm and your suggestion are drawn on both views; contacts
+            only on the native model, whose numbering is the member's own. */}
         <div className={styles.legend}>
-          <span><i style={{ background: COLORS.pick }} /> current pick</span>
+          <span><i style={{ background: COLORS.pick }} /> current pick (click a flag or &ldquo;show on structure&rdquo; to focus an arm)</span>
           <label><input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} /> <i style={{ background: COLORS.ranker }} /> ranker alternatives <i style={{ background: COLORS.agent }} /> agent proposals</label>
-          <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.litHigh }} /> literature contacts (agent-extracted; lighter = modeling/homology only) <i style={{ background: COLORS.uniprot }} /> UniProt binding <i style={{ background: COLORS.curated }} /> curated (structures / databases)</label>
-          <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
-          <span><i style={{ background: COLORS.suggestion }} /> your suggested residue (click the model)</span>
+          {model?.kind === "native" ? (
+            <>
+              <label><input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} /> <i style={{ background: COLORS.litHigh }} /> literature contacts (agent-extracted; lighter = modeling/homology only) <i style={{ background: COLORS.uniprot }} /> UniProt binding <i style={{ background: COLORS.curated }} /> curated (structures / databases)</label>
+              <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
+            </>
+          ) : (
+            <span className={styles.muted}>contact sites: native model (key 2)</span>
+          )}
+          <span><i style={{ background: COLORS.suggestion }} /> your suggested residue (click the model, or type it under &ldquo;Suggest another site&rdquo;)</span>
         </div>
-        ) : (
-          <p className={styles.legendNote}>Picks, alternatives and contact sites are marked on the native model (key 2).</p>
-        )}
         {model?.note || model?.proteoform_match ? (
           <p className={styles.muted}>
             Model: {model.proteoform_match}{model.residue_offset ? `, member residue i = model residue i + ${model.residue_offset}` : ""}
@@ -894,7 +966,9 @@ function MemberDetail({
       </div>
       <section>
         <h3 className={styles.h3}>Tag sites</h3>
-        {sites.length ? sites.map((s) => <SiteCard key={s.site_id} site={s} length={member.ordered_length_aa} />)
+        {sites.length ? sites.map((s) => (
+            <SiteCard key={s.site_id} site={s} length={member.ordered_length_aa} focused={focusSite === s.site_id} onShow={() => showSite(s.site_id)} />
+          ))
           : <p className={styles.muted}>No tag site is recorded for this member yet.</p>}
       </section>
       <section>

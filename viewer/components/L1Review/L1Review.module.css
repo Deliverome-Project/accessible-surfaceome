@@ -290,3 +290,13 @@
 .turnstile { min-width: 0; }
 .turnstileFolded { height: 0; overflow: hidden; }
 .search { margin: 0 0 var(--space-2); width: 100%; box-sizing: border-box; }
+/* Insert flags are buttons now: clicking one focuses that arm on the structure. */
+button.insert { padding: 0; cursor: pointer; font: inherit; }
+button.insert:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.insertOn { box-shadow: 0 0 0 2px var(--ink); }
+.insertOn .insertHead { outline: 2px solid var(--ink); }
+/* The reviewer's suggested site: same shape, the suggestion pink. */
+.insertSuggested, .insertSuggested .insertHead { background: #FF1F8F; border-color: #8a0b4a; color: #fff; }
+.insertSuggested { pointer-events: none; }
+.siteShow { font: inherit; font-size: 0.75rem; margin-left: auto; padding: 0.05rem 0.55rem; border-radius: var(--radius-pill); border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.siteShowOn { background: var(--ink); color: var(--bg-soft, #fff); border-color: var(--ink); }
