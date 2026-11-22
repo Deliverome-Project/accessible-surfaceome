@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type Dispatch, type KeyboardEvent as ReactKeyboardEvent, type SetStateAction } from "react";
 import {
   PLACEMENT_LABEL,
   SOURCE_LABEL,
@@ -14,9 +14,10 @@ import {
   fetchL1Reviews,
   filterIndex,
   groupByGene,
-  l1MemberTabLabel,
+  l1MemberRoleLabel,
   l1MemberTopology,
   l1ModelMap,
+  l1OrderedProteinLabel,
   l1SiteLabel,
   l1StructureUrl,
   latestVerdicts,
@@ -479,6 +480,12 @@ function CuratedContacts({ gene, aligned, acc }: { gene: CuratedContactsData | n
   );
 }
 
+/** "Reference CDS · UniProt canonical": which library CDS, and the protein it orders. */
+function memberChipText(m: Pick<L1Member, "candidate_set" | "species">, topo: LibraryTopologyRow | null): string {
+  const protein = l1OrderedProteinLabel(topo);
+  return protein ? `${l1MemberRoleLabel(m)} · ${protein}` : l1MemberRoleLabel(m);
+}
+
 function MemberDetail({
   member,
   topologyRow,
@@ -501,7 +508,12 @@ function MemberDetail({
   onSaved: () => void;
 }) {
   const sites = sortSites(member.sites);
-  const models = member.structures.filter((s) => s.is_chosen);
+  // The fold (tagged refold) first and open by default: it is the construct being
+  // reviewed, tag and all. The native model is the comparison.
+  const models = member.structures
+    .filter((s) => s.is_chosen)
+    .sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "tagged" ? -1 : 1));
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [modelId, setModelId] = useState<string>("");
   const [showAlts, setShowAlts] = useState(true);
   const [showContacts, setShowContacts] = useState(true);
@@ -522,7 +534,7 @@ function MemberDetail({
   const curatedGene: CuratedContactsData | null = curated && curated !== "loading" ? curated : null;
   const curatedAligned = curatedContactsAlign(member.sequence_sha256, curatedGene?.reference_sequence_sha256);
   useEffect(() => {
-    setModelId(models.find((m) => m.kind === "native")?.structure_id ?? models[0]?.structure_id ?? "");
+    setModelId(models[0]?.structure_id ?? "");
     setPicked(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [member.member_id]);
@@ -562,6 +574,37 @@ function MemberDetail({
     model?.kind === "tagged" && model.cassette_first_model_residue != null && model.cassette_last_model_residue != null
       ? [model.cassette_first_model_residue, model.cassette_last_model_residue]
       : null;
+  // Number keys switch the structure view (1 = fold, 2 = native, ...) from anywhere on the
+  // page, except while typing, so a reviewer never has to reach for the mouse.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const i = /^[1-9]$/.test(e.key) ? Number(e.key) - 1 : -1;
+      if (i < 0 || i >= models.length) return;
+      e.preventDefault();
+      setModelId(models[i].structure_id);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [models]);
+  // Inside the focused tab strip the arrows move between views (and do not step to the
+  // next member, which the page-level arrows otherwise do).
+  const onTabKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const cur = models.findIndex((m) => m.structure_id === model?.structure_id);
+    let next = -1;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (cur + 1) % models.length;
+    else if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (cur - 1 + models.length) % models.length;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = models.length - 1;
+    if (next < 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setModelId(models[next].structure_id);
+    tabRefs.current[next]?.focus();
+  };
+
   const pick = useCallback(
     (resi: number) => {
       if (!model) return;
@@ -577,12 +620,14 @@ function MemberDetail({
 
   return (
     <div className={styles.detailBody}>
+      <div className={styles.topGrid}>
+      <div className={styles.topLeft}>
       {topology ? (
         <L1TopologyStrip
           topology={topology}
           flags={flags}
           gene={member.gene_symbol}
-          variantLabel={l1MemberTabLabel(member, topologyRow)}
+          variantLabel={memberChipText(member, topologyRow)}
           nAlternatives={sites.filter((s) => s.is_primary === false).length}
         />
       ) : null}
@@ -605,21 +650,31 @@ function MemberDetail({
         setDrafts={setDrafts}
         onSaved={onSaved}
       />
-      <section>
-        <h3 className={styles.h3}>Structure</h3>
-        <div className={styles.modelRow}>
-          {models.map((m) => (
-            <button
-              key={m.structure_id}
-              type="button"
-              className={m.structure_id === model?.structure_id ? styles.tabOn : styles.tab}
-              onClick={() => setModelId(m.structure_id)}
-            >
-              {m.kind === "tagged" ? "Tagged refold" : "Native"} · {m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"}
-              {m.mean_plddt != null ? ` · pLDDT ${m.mean_plddt.toFixed(0)}` : ""}
-              {m.refold_verdict ? ` · ${m.refold_verdict}` : ""}
-            </button>
-          ))}
+      </div>
+      <section className={styles.structurePane} aria-label="Structure">
+        <div className={styles.modelRow} role="tablist" aria-label="Structure view (keys 1–9; arrows when focused)" onKeyDown={onTabKey}>
+          <h3 className={styles.h3inline}>Structure</h3>
+          {models.map((m, i) => {
+            const on = m.structure_id === model?.structure_id;
+            return (
+              <button
+                key={m.structure_id}
+                ref={(el) => { tabRefs.current[i] = el; }}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                tabIndex={on ? 0 : -1}
+                className={on ? styles.tabOn : styles.tab}
+                onClick={() => setModelId(m.structure_id)}
+                title={`${m.kind === "tagged" ? "The ordered tagged protein, folded whole" : "The member's protein without the tag"} · ${m.source === "alphafold_db" ? "AlphaFold DB" : "ColabFold"} · key ${i + 1}`}
+              >
+                {i < 9 ? <kbd className={styles.tabKey}>{i + 1}</kbd> : null}
+                {m.kind === "tagged" ? "Fold" : "Native"}
+                {m.mean_plddt != null ? ` · pLDDT ${m.mean_plddt.toFixed(0)}` : ""}
+                {m.refold_verdict ? ` · ${m.refold_verdict}` : ""}
+              </button>
+            );
+          })}
           {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
         </div>
         {url ? (
@@ -636,6 +691,9 @@ function MemberDetail({
         ) : (
           <p className={styles.muted}>No model for this member.</p>
         )}
+        {/* Picks, alternatives and contacts are drawn on the native model, whose numbering
+            is the member's own; the fold shows the built tag itself. */}
+        {model?.kind === "native" ? (
         <div className={styles.legend}>
           <span><i style={{ background: COLORS.pick }} /> current pick</span>
           <label><input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} /> <i style={{ background: COLORS.ranker }} /> ranker alternatives <i style={{ background: COLORS.agent }} /> agent proposals</label>
@@ -643,6 +701,9 @@ function MemberDetail({
           <label><input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} /> include ion sites and crystallization additives</label>
           <span><i style={{ background: COLORS.suggestion }} /> your suggested residue (click the model)</span>
         </div>
+        ) : (
+          <p className={styles.legendNote}>Picks, alternatives and contact sites are marked on the native model (key 2).</p>
+        )}
         {model?.note || model?.proteoform_match ? (
           <p className={styles.muted}>
             Model: {model.proteoform_match}{model.residue_offset ? `, member residue i = model residue i + ${model.residue_offset}` : ""}
@@ -650,6 +711,7 @@ function MemberDetail({
           </p>
         ) : null}
       </section>
+      </div>
       <section>
         <h3 className={styles.h3}>Tag sites</h3>
         {sites.length ? sites.map((s) => <SiteCard key={s.site_id} site={s} length={member.ordered_length_aa} />)
@@ -973,6 +1035,17 @@ export function L1Review() {
         </div>
       </details>
 
+      {/* Filters are set once per session and then left alone, so they fold into one line
+          that says what is applied; the search box stays out, since it is used all day. */}
+      <div className={styles.filterBar}>
+      <details className={styles.filters}>
+        <summary>
+          Filters
+          <span className={styles.filterNow}>
+            rung: {filters.rung || "all"} · class: {filters.cls || "all"} · pick:{" "}
+            {filters.status === "" ? "all" : filters.status === "none" ? "no pick yet" : STATUS_LABEL[filters.status as L1Site["status"]] ?? filters.status}
+          </span>
+        </summary>
       <div className={styles.facets}>
         <div>
           <span className={styles.facetLabel}>Rung</span>
@@ -999,8 +1072,10 @@ export function L1Review() {
               {s === "" ? "all" : s === "none" ? "no pick yet" : STATUS_LABEL[s as L1Site["status"]]}
             </button>
           ))}
-          <input ref={searchRef} className={styles.search} value={filters.q} onChange={(e) => update({ q: e.target.value })} placeholder="gene, l1-m…, l1-p…  ( / )" />
         </div>
+      </div>
+      </details>
+          <input ref={searchRef} className={styles.search} value={filters.q} onChange={(e) => update({ q: e.target.value })} placeholder="gene, l1-m…, l1-p…  ( / )" aria-label="Search members" />
       </div>
 
       <div className={styles.split}>
@@ -1020,6 +1095,7 @@ export function L1Review() {
                 <span className={styles.keys}>
                   <span><kbd>←</kbd><kbd>→</kbd> member</span>
                   <span><kbd>A</kbd>–<kbd>Z</kbd> gene</span>
+                  <span><kbd>1</kbd><kbd>2</kbd> view</span>
                   <span><kbd>?</kbd> keys</span>
                 </span>
               </summary>
@@ -1028,6 +1104,8 @@ export function L1Review() {
                 <dd>previous / next member in this filter (orthologs and isoforms included)</dd>
                 <dt><kbd>A</kbd>–<kbd>Z</kbd></dt>
                 <dd>jump to the next gene starting with that letter; press it again to walk them</dd>
+                <dt><kbd>1</kbd>–<kbd>9</kbd></dt>
+                <dd>structure view: 1 = fold (tagged refold, the default), 2 = native model</dd>
                 <dt><kbd>Home</kbd> <kbd>End</kbd></dt>
                 <dd>first / last member in this filter</dd>
                 <dt><kbd>/</kbd></dt>
@@ -1087,7 +1165,7 @@ export function L1Review() {
                             title={`${m.member_id} · ${m.candidate_set ?? ""} · ${m.species ?? ""}`}
                             onClick={() => update({ m: m.design_id ?? m.member_id })}
                           >
-                            {l1MemberTabLabel(m)}
+                            {l1MemberRoleLabel(m)}
                             {(verdicts.get(m.design_id ?? "") ?? []).map((r) => (
                               <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} />
                             ))}
@@ -1136,7 +1214,8 @@ export function L1Review() {
                             title={`${m.member_id}${m.ordered_length_aa ? ` · ${m.ordered_length_aa} aa` : ""} · its own numbering`}
                             onClick={() => update({ m: m.design_id ?? m.member_id })}
                           >
-                            {l1MemberTabLabel(m, topoFor(m))}
+                            {l1MemberRoleLabel(m)}
+                            {l1OrderedProteinLabel(topoFor(m)) ? <span className={styles.chipSub}>{l1OrderedProteinLabel(topoFor(m))}</span> : null}
                             {m.ordered_length_aa ? <span className={styles.mono}>{m.ordered_length_aa} aa</span> : null}
                           </button>
                         );

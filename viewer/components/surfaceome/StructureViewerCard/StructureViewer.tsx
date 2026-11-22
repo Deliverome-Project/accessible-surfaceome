@@ -3083,7 +3083,7 @@ export function StructureViewer({
                     : v.source === "schweke-homomer"
                       ? `Schweke 2024 AF2 homo-oligomer prediction for ${geneSymbol} — predicted dimer of UniProt ${data.uniprot_acc}.`
                       : isDesigned
-                        ? `The ordered L1 design ${(v as StructureVariantLibrary).candidate_id}, refolded whole with its tag cassette (charcoal).`
+                        ? `The ordered L1 design ${(v as StructureVariantLibrary).candidate_id}, refolded whole with its tag cassette (orange).`
                         : v.source === "experimental"
                         ? `Experimental structure ${(v as StructureVariantExperimental).pdb_id.toUpperCase()} (chain ${(v as StructureVariantExperimental).chain_id}) from the PDB.`
                         : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`

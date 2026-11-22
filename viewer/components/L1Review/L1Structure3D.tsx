@@ -214,6 +214,12 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, topology,
                 {map?.nonNative.length ? <li><i style={{ background: L1_NONNATIVE_COLOR }} /> non-native (leader remnant)</li> : null}
                 {outside ? <li><i style={{ background: OUTSIDE_COLOR }} /> not in the member</li> : null}
               </ul>
+              {map?.unlistedSiteInsertAfter != null ? (
+                <p className={styles.sideWarn}>
+                  This refold carries the tag after residue {map.unlistedSiteInsertAfter}, a site that is not among
+                  this member&rsquo;s current picks: it was folded for an earlier pick.
+                </p>
+              ) : null}
               <p className={styles.sideNote}>
                 Shading: DeepTMHMM v1 topology of this member&rsquo;s ordered protein, matched by sequence
                 {map?.cassette ? ", mapped around the cassette" : ""}.{" "}

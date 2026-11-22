@@ -636,7 +636,7 @@ export function l1TaggedStructureVariants(
       display_range: null,
       note:
         `The ordered tagged protein (${m.rung}, ${m.member_id}), folded whole: ` +
-        `the ${layout.cassette[1] - layout.cassette[0] + 1}-aa cassette is charcoal` +
+        `the ${layout.cassette[1] - layout.cassette[0] + 1}-aa cassette is orange` +
         (layout.nonNative.length ? ", other non-native residues olive" : "") +
         `${verdict}.` +
         (topo ? "" : " No topology for this exact sequence yet, so the native chain is uncoloured."),
@@ -815,6 +815,41 @@ export function l1MemberTabLabel(
 }
 
 /**
+ * Member chip wording on the review page. Every chip is a DESIGNED member, so the first
+ * word says which library CDS it is (reference / isoform / ortholog), never a word that
+ * could read as "the design vs something else". With the member's topology row in hand
+ * it adds the protein that CDS orders: "UniProt canonical" when the reference orders
+ * exactly UniProt's canonical sequence, "designed ORF" for an Ensembl-transcript
+ * product with no UniProt entry of its own. SMIM7 is the case that read wrongly:
+ * "Canonical 75 aa" and "Designed ORF 103 aa" looked like a canonical-vs-design toggle,
+ * when they are the reference member and the isoform member, both ordered.
+ */
+export function l1MemberRoleLabel(member: Pick<L1IndexMember, "candidate_set" | "species">): string {
+  const set = (member.candidate_set ?? "").toLowerCase();
+  const species = (member.species ?? "").toLowerCase();
+  const sp = species ? `${species[0].toUpperCase()}${species.slice(1)}` : "";
+  if (set === "library_reference") return species && species !== "human" ? `${sp} reference CDS` : "Reference CDS";
+  if (set === "isoform") return "Isoform CDS";
+  if (set === "ortholog") return sp ? `${sp} ortholog CDS` : "Ortholog CDS";
+  if (set === "expression_rescue") return "Rescue-arm CDS";
+  return set ? `${set.replace(/_/g, " ")} CDS` : "Member CDS";
+}
+
+/** What protein a member's CDS orders, from its topology row's cohort; null if unknown. */
+export function l1OrderedProteinLabel(topology: LibraryTopologyRow | null | undefined): string | null {
+  if (!topology) return null;
+  const cohort = (topology.cohort ?? "").toLowerCase();
+  if (cohort === "human_canonical") return "UniProt canonical";
+  if (cohort.startsWith("human_isoform")) {
+    const m = /-(\d+)$/.exec(topology.topology_acc ?? "");
+    return m ? `UniProt isoform ${m[1]}` : "UniProt isoform";
+  }
+  if (cohort === "library_designed_orf") return "designed ORF (no UniProt entry)";
+  if (cohort.startsWith("cyno") || cohort.startsWith("mouse")) return topology.topology_acc ? `UniProt ${topology.topology_acc}` : null;
+  return null;
+}
+
+/**
  * Index of the next member whose gene starts with `letter`, searching forward from
  * `from` and wrapping, so pressing the same letter again walks that letter's genes
  * instead of sticking on the first one. -1 when no gene in view starts with it.
@@ -850,6 +885,9 @@ export interface L1ModelMap {
   /** Topology state of the residue the cassette is inserted after (residue 1 for an
    *  N-terminal or Igk-led tag): the side of the membrane the tag is designed to sit on. */
   cassetteSide: string | null;
+  /** Set when the refold's site is not in the member's site list (a refold of an earlier
+   *  pick): the residue its cassette follows, read off the model itself. */
+  unlistedSiteInsertAfter?: number | null;
 }
 
 /**
@@ -870,7 +908,21 @@ export function l1ModelMap(
     return { segments: [{ unpLo: 1, unpHi: L, offset: model.residue_offset ?? 0 }], cassette: null, nonNative: [], cassetteSide: null };
   }
   const site = member.sites.find((s) => s.site_id === model.site_id);
-  if (!site) return null;
+  if (!site) {
+    // A refold whose site id is no longer among the member's sites (a refold of an
+    // earlier pick). Map it from the model alone, and only when the numbers leave no
+    // room for a leader or any other non-native residue: native 1..k, cassette, then
+    // native k+1..L to the end of the model.
+    const cf = model.cassette_first_model_residue, cl = model.cassette_last_model_residue, ml = model.model_length_aa;
+    if (cf == null || cl == null || ml == null || cf - 1 + (ml - cl) !== L || cf < 1) return null;
+    const after = cf - 1;
+    const layout = taggedModelLayout({ memberLength: L, insertAfter: after, leader: null, cassetteFirst: cf, cassetteLast: cl, modelLength: ml });
+    if (!layout || layout.nonNative.length) return null;
+    return {
+      segments: layout.segments, cassette: layout.cassette, nonNative: [],
+      cassetteSide: topology.charAt(Math.max(after, 1) - 1) || null, unlistedSiteInsertAfter: after,
+    };
+  }
   const layout = taggedModelLayout({
     memberLength: L,
     insertAfter: site.insert_after_residue,

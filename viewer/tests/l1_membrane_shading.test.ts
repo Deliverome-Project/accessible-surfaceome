@@ -85,3 +85,14 @@ test("short cytoplasmic tail: default orientation gives no membrane, the retry a
   const res = orientPdbForTopology(helixPdb(), topo, { minSideResidues: 1 });
   assert.ok(res.membrane, "membrane placed");
 });
+
+test("a refold of an earlier pick maps from its own cassette position and says so", () => {
+  const m = { ordered_length_aa: 20, sites: [site({ site_id: "current", insert_after_residue: 2 })] };
+  const map = l1ModelMap(m, model({ kind: "tagged", site_id: "older", cassette_first_model_residue: 4,
+    cassette_last_model_residue: 54, model_length_aa: 71 }), TOPO)!;
+  assert.equal(map.unlistedSiteInsertAfter, 3);
+  assert.equal(map.cassetteSide, "O");
+  // numbers that do not add up to the member (room for a leader) are refused, not guessed
+  assert.equal(l1ModelMap(m, model({ kind: "tagged", site_id: "older", cassette_first_model_residue: 6,
+    cassette_last_model_residue: 56, model_length_aa: 73 }), TOPO), null);
+});
