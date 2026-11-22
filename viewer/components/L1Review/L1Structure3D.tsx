@@ -53,6 +53,8 @@ interface Props {
   compact?: boolean;
   /** Called when the user clicks the ↺ reset-view button (e.g. to clear a focused arm). */
   onReset?: () => void;
+  /** Increment to trigger a camera reset from a keyboard shortcut (key 0). */
+  resetSeq?: number;
 }
 
 type Viewer = {
@@ -131,7 +133,7 @@ function orient(text: string, topology: string | null | undefined, map: L1ModelM
  * Deliberately separate from the gene page's StructureViewer: this one draws one model,
  * the member's membrane and side shading, a few marked residues and a click-to-pick.
  */
-export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMemberResi, topology, map, modelLength, compact, nonNativeLabel, focusResi, onReset }: Props) {
+export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMemberResi, topology, map, modelLength, compact, nonNativeLabel, focusResi, onReset, resetSeq = 0 }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
   const initialViewRef = useRef<number[] | null>(null);
@@ -274,6 +276,12 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     v.render();
     onReset?.();
   };
+
+  useEffect(() => {
+    if (!resetSeq || state !== "ready") return;
+    handleReset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetSeq]);
 
   const outside =
     !!map?.nonNative.length || !!(span && (span[0] > 1 || (modelLength != null && modelLength > span[1])));

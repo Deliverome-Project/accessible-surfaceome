@@ -13,14 +13,26 @@
 .facets > div { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
 .facetLabel { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); width: 3.5rem; }
 .chip, .chipOn {
-  font: inherit; font-size: 0.8rem; padding: 0.12rem 0.55rem; border-radius: var(--radius-pill);
-  border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer;
+  font: inherit; font-size: 0.8rem; padding: 0.16rem 0.6rem; border-radius: var(--radius-pill);
+  border: 1px solid var(--line); background: var(--bg-soft); color: var(--ink); cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
 }
+.chip:hover { border-color: var(--ink-soft); }
 .chipOn { background: var(--accent); border-color: var(--accent); color: #fff; }
 .chipOn .n { color: rgba(255,255,255,0.8); }
-.search { font: inherit; font-size: 0.85rem; padding: 0.2rem 0.5rem; border: 1px solid var(--line); border-radius: var(--radius-pill); margin-left: auto; min-width: 12rem; }
+.search {
+  font: inherit; font-size: 0.85rem; padding: 0.35rem 0.7rem; border: 1px solid var(--line);
+  border-radius: var(--radius-pill); background: var(--bg-soft); color: var(--ink);
+  margin-left: auto; min-width: 12rem;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 /* One line of filters until opened: what is applied, then the always-visible search. */
-.filterBar { display: flex; gap: var(--space-3); align-items: flex-start; flex-wrap: wrap; }
+.filterBar {
+  display: flex; gap: var(--space-3); align-items: flex-start; flex-wrap: wrap;
+  background: var(--bg-warm); border: 1px solid var(--line-soft); border-radius: var(--radius-sm);
+  padding: 0.35rem 0.75rem;
+}
 .filters { flex: 1; min-width: 16rem; font-size: 0.85rem; }
 .filters > summary { cursor: pointer; color: var(--ink); font-weight: var(--fw-medium); padding: 0.15rem 0; }
 .filters[open] > summary { margin-bottom: var(--space-2); }
@@ -32,14 +44,20 @@
    the selected row into the list's view and out of the window's. The sticky wrapper
    keeps that same height pinned once the page scrolls. */
 .listCol { position: sticky; top: var(--space-2); }
-.list { list-style: none; margin: 0; padding: 0; max-height: calc(100vh - 22rem); min-height: 14rem; overflow-y: auto; border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
+.list {
+  list-style: none; margin: 0; padding: 0; max-height: calc(100vh - 22rem); min-height: 14rem;
+  overflow-y: auto; background: var(--bg-soft); border: 1px solid var(--line);
+  border-radius: var(--radius-md, 8px); box-shadow: 0 1px 2px rgba(31, 23, 24, 0.03);
+}
+.listEmpty { padding: 0.75rem; font-size: 0.85rem; color: var(--muted); }
 @media (max-width: 900px) { .split { grid-template-columns: 1fr; } .listCol { position: static; } .list { max-height: 40vh; } }
 .row, .rowOn {
   font: inherit; width: 100%; text-align: left; display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
-  padding: 0.35rem 0.6rem; border: 0; border-bottom: 1px solid var(--line-soft); background: transparent; cursor: pointer; color: var(--ink);
+  padding: 0.4rem 0.65rem; border: 0; border-bottom: 1px solid var(--line-soft); background: transparent; cursor: pointer; color: var(--ink);
+  transition: background var(--dur-fast) var(--ease-out);
 }
 .row:hover { background: var(--bg-warm); }
-.rowOn { background: var(--maroon-blush, #f6e7ea); }
+.rowOn { background: var(--maroon-blush, #f6e7ea); box-shadow: inset 3px 0 0 var(--accent); }
 .rowStatus { margin-left: auto; display: inline-flex; gap: 0.2rem; align-items: center; }
 .goodDot, .noDot { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 50%; }
 .goodDot { background: var(--teal-dark); }
@@ -50,7 +68,15 @@
 .detailHead p { margin: 0.1rem 0 0; font-size: 0.85rem; }
 .chipSub { color: var(--muted); font-size: 0.78rem; margin-left: 0.3rem; }
 .memberTabOn .chipSub { color: rgba(255, 255, 255, 0.85); }
-.detailHead > button { font-size: 1.3rem; padding: 0.2rem 0.7rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: transparent; cursor: pointer; }
+.detailHead > button {
+  font-size: 1.15rem; width: 2.2rem; height: 2.2rem; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--bg-soft); color: var(--ink); cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.detailHead > button:hover { border-color: var(--ink-soft); background: var(--bg-warm); }
+.detailHead > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .h2 { margin: 0; font-size: 1.35rem; }
 .h3 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-deep); margin: var(--space-4) 0 var(--space-2); }
 .h4 { font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0.2rem; }
@@ -58,22 +84,41 @@
 
 /* The review card: one compact block. Chips, focus ring and the primary button come from
    the page's own tokens (the RUNG / CLASS / PICK chips above, FeedbackModal's submit). */
-.review { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-3); margin-top: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); }
+.review {
+  border: 1px solid var(--line); border-radius: var(--radius-md, 8px);
+  background: var(--bg-soft); box-shadow: 0 1px 3px rgba(31, 23, 24, 0.04);
+  padding: var(--space-3); margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2);
+}
 .review .h3 { margin: 0; }
 .reviewIntro { margin: 0; font-size: 0.85rem; color: var(--muted); }
 .nameButton { font: inherit; color: var(--ink); font-weight: var(--fw-medium); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 2px; }
 .nameButton:hover { text-decoration-color: currentColor; }
 .verdictRow { display: flex; gap: var(--space-2) var(--space-3); align-items: center; flex-wrap: wrap; }
-.segmented { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; border: 0; margin: 0; padding: 0; min-width: 0; }
+.segmented { display: inline-flex; flex-wrap: wrap; gap: 0.4rem; border: 0; margin: 0; padding: 0; min-width: 0; }
 .seg, .segOn {
-  font: inherit; font-size: 0.75rem; line-height: 1.3; padding: 0.1rem 0.6rem; border-radius: var(--radius-pill);
-  border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; user-select: none;
+  font: inherit; font-size: 0.8rem; line-height: 1.3; padding: 0.28rem 0.7rem; border-radius: var(--radius-pill);
+  border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; user-select: none;
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
 }
 .seg:focus-visible, .segOn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.seg:hover { border-color: var(--accent); }
-.segOn { background: var(--accent); border-color: var(--accent); color: var(--accent-on); }
+.seg:hover { border-color: var(--ink-soft); background: var(--bg-warm); }
+.segOn { background: var(--accent); border-color: var(--accent); color: var(--accent-on); font-weight: var(--fw-medium); }
+.segGood { background: var(--teal-dark); border-color: var(--teal-dark); color: #fff; }
+.segNo { background: var(--maroon-dark); border-color: var(--maroon-dark); color: #fff; }
+.segKey {
+  font-family: var(--font-mono); font-size: 0.68rem; line-height: 1.2;
+  padding: 0 0.25rem; border-radius: 3px; border: 1px solid var(--line); color: var(--muted);
+}
+.segOn .segKey { border-color: rgba(255, 255, 255, 0.38); color: rgba(255, 255, 255, 0.9); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.reason { width: 100%; box-sizing: border-box; font: inherit; font-size: 0.88rem; padding: 0.4rem 0.5rem; border: 1px solid var(--line); border-radius: var(--radius-sm); resize: vertical; }
+.reason {
+  width: 100%; box-sizing: border-box; font: inherit; font-size: 0.88rem;
+  padding: 0.45rem 0.6rem; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--bg); resize: vertical;
+  transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.reason:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 .submitRow { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 .primary {
   font: inherit; font-size: 0.88rem; font-weight: var(--fw-medium); padding: 0.4rem 1.1rem; border-radius: var(--radius-pill);
@@ -96,6 +141,7 @@
 .scope select { font: inherit; font-size: 0.8rem; color: var(--fg-1); padding: 0.1rem 0.3rem; background: transparent; border: 1px solid var(--line-soft, var(--line)); border-radius: var(--radius-sm); max-width: 100%; }
 .scope select:disabled { opacity: 0.5; }
 
+.history { border-top: 1px solid var(--line-soft); padding-top: var(--space-2); }
 .history ul { margin: 0; padding-left: 1rem; font-size: 0.85rem; }
 /* One reviewer's point per block, wrapping rather than running off the panel: reasons
    here are sentences, and the exchange is read as much as it is written. */
@@ -116,14 +162,24 @@
 .topLeft > :first-child { margin-top: 0; }
 .structurePane { min-width: 0; }
 @media (max-width: 1200px) { .topGrid { grid-template-columns: 1fr; } }
-.tab, .tabOn { font: inherit; font-size: 0.8rem; padding: 0.2rem 0.6rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: transparent; cursor: pointer; }
-.tabOn { border-color: var(--accent); color: var(--accent); font-weight: var(--fw-medium); }
+.tab, .tabOn {
+  font: inherit; font-size: 0.8rem; padding: 0.25rem 0.65rem;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--bg-soft); color: var(--ink); cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.tab:hover { border-color: var(--ink-soft); background: var(--bg-warm); }
+.tabOn { border-color: var(--accent); background: var(--maroon-soft); color: var(--accent-deep); font-weight: var(--fw-medium); }
 .viewerWrap { position: relative; }
 .viewerStage { position: relative; }
 /* Sized to the window so the whole model sits above the fold beside the strip and the
    review card: the pane starts ~300px down at 1440x900, and the tabs + key under it take
    ~110px more. */
-.viewer { position: relative; width: 100%; height: clamp(300px, calc(100vh - 500px), 620px); border: 1px solid var(--line-soft); border-radius: var(--radius-sm); }
+.viewer {
+  position: relative; width: 100%; height: clamp(300px, calc(100vh - 500px), 620px);
+  border: 1px solid var(--line); border-radius: var(--radius-md, 8px); overflow: hidden;
+  background: var(--bg-soft); box-shadow: 0 1px 3px rgba(31, 23, 24, 0.04);
+}
 .viewerNote {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   margin: 0; padding: 0.35rem 0.75rem; border-radius: var(--radius-pill);
@@ -164,12 +220,21 @@
 .legend i { display: inline-block; width: 0.7rem; height: 0.7rem; border-radius: 50%; vertical-align: -0.05rem; margin: 0 0.15rem; }
 .swatch { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%; margin-right: 0.3rem; vertical-align: -0.03rem; }
 
-.site { border: 1px solid var(--line-soft); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
+.site {
+  border: 1px solid var(--line); border-radius: var(--radius-md, 8px);
+  background: var(--bg-soft); box-shadow: 0 1px 2px rgba(31, 23, 24, 0.03);
+  padding: var(--space-3); margin-bottom: var(--space-2);
+}
 .sitePrimary { border-left: 4px solid #B3243B; }
 .siteHead { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
-.why { display: grid; grid-template-columns: max-content 1fr; gap: 0.15rem var(--space-3); margin: var(--space-2) 0 0; font-size: 0.86rem; }
+.why { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem var(--space-3); margin: var(--space-2) 0 0; font-size: 0.86rem; }
 .why dt { color: var(--muted); }
 .why dd { margin: 0; overflow-wrap: anywhere; }
+.detailChips { display: flex; flex-wrap: wrap; gap: 0.25rem; list-style: none; margin: 0; padding: 0; }
+.detailChips li {
+  font-size: 0.78rem; padding: 0.08rem 0.45rem; border-radius: var(--radius-sm);
+  background: var(--bg-warm); border: 1px solid var(--line-soft); color: var(--ink-soft);
+}
 .more summary { cursor: pointer; color: var(--muted); font-size: 0.8rem; margin-top: var(--space-2); }
 .kv { display: grid; grid-template-columns: 1fr; gap: 0.1rem; margin: 0.3rem 0; font-size: 0.82rem; }
 .kv > div { display: grid; grid-template-columns: 14rem 1fr; gap: var(--space-2); }
@@ -310,7 +375,12 @@
 .identityRow > .identity { flex: 1 1 20rem; }
 
 /* N-terminus and UniProt facts above the topology strip. */
-.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.15rem var(--space-2); margin: 0 0 var(--space-2); font-size: 0.82rem; }
+.facts {
+  display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem var(--space-3);
+  margin: 0 0 var(--space-2); padding: 0.5rem 0.75rem;
+  background: var(--bg-warm); border: 1px solid var(--line-soft); border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
 .facts dt { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 0.12rem; }
 .facts dd { margin: 0; }
 .spTag { display: inline-block; font-size: 0.72rem; padding: 0 0.45rem; border-radius: var(--radius-pill); border: 1px solid var(--line); margin-right: 0.2rem; }
@@ -331,5 +401,12 @@ button.insert:focus-visible { outline: 2px solid var(--accent); outline-offset: 
 /* The reviewer's suggested site: same shape, the suggestion pink. */
 .insertSuggested, .insertSuggested .insertHead { background: #FF1F8F; border-color: #8a0b4a; color: #fff; }
 .insertSuggested { pointer-events: none; }
-.siteShow { font: inherit; font-size: 0.75rem; margin-left: auto; padding: 0.05rem 0.55rem; border-radius: var(--radius-pill); border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+.siteShow {
+  font: inherit; font-size: 0.75rem; margin-left: auto; padding: 0.14rem 0.6rem;
+  border-radius: var(--radius-pill); border: 1px solid var(--line);
+  background: var(--bg); color: var(--ink); cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.siteShow:hover { border-color: var(--ink-soft); background: var(--bg-warm); }
 .siteShowOn { background: var(--ink); color: var(--bg-soft, #fff); border-color: var(--ink); }
+.siteShowOn:hover { background: var(--ink-soft); border-color: var(--ink-soft); }

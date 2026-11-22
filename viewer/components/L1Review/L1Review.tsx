@@ -206,7 +206,21 @@ export function SiteCard({
         {site.reason ? (<><dt>reason</dt><dd>{site.reason}</dd></>) : null}
         {site.rejected_alternative ? (<><dt>rejected alternative</dt><dd>{site.rejected_alternative}</dd></>) : null}
         {site.decision ? (<><dt>decision</dt><dd>{site.decision}</dd></>) : null}
-        {site.status_detail ? (<><dt>detail</dt><dd>{site.status_detail}</dd></>) : null}
+        {site.status_detail ? (() => {
+          const parts = site.status_detail.split(/\s*;\s*/).filter(Boolean);
+          return (
+            <>
+              <dt>detail</dt>
+              <dd>
+                {parts.length > 1 ? (
+                  <ul className={styles.detailChips}>
+                    {parts.map((part, idx) => <li key={idx}>{part}</li>)}
+                  </ul>
+                ) : site.status_detail}
+              </dd>
+            </>
+          );
+        })() : null}
       </dl>
       <details className={styles.more}>
         <summary>rationale, scores and source</summary>
@@ -247,10 +261,10 @@ const EMPTY_DRAFT: Draft = {
   alt: { residue: "", placement: "internal", cassette: "" },
 };
 
-const MODES: { value: Exclude<ReviewMode, "">; label: string }[] = [
-  { value: "good", label: "Site looks right" },
-  { value: "no", label: "Concern" },
-  { value: "alt", label: "Suggest another site" },
+const MODES: { value: Exclude<ReviewMode, "">; label: string; key: string }[] = [
+  { value: "good", label: "Site looks right", key: "=" },
+  { value: "no", label: "Concern", key: "-" },
+  { value: "alt", label: "Suggest another site", key: "." },
 ];
 
 export function ReviewPanel({
@@ -293,6 +307,8 @@ export function ReviewPanel({
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
+  const commentRef = useRef<HTMLTextAreaElement | null>(null);
+  const residueRef = useRef<HTMLInputElement | null>(null);
   const draft = drafts[key] ?? EMPTY_DRAFT;
   const patch = useCallback(
     (p: Partial<Draft>) => setDrafts((d) => ({ ...d, [key]: { ...(d[key] ?? EMPTY_DRAFT), ...p } })),
@@ -411,6 +427,48 @@ export function ReviewPanel({
     }
   }
 
+  const submitRef = useRef(submit);
+  submitRef.current = submit;
+  const draftModeRef = useRef(draft.mode);
+  draftModeRef.current = draft.mode;
+
+  // Fast verdict shortcuts without colliding with A–Z gene jumping:
+  // `=` / `+` = Site looks right, `-` = Concern (focuses comment), `.` = Suggest another site,
+  // and ⌘/Ctrl + Enter submits from anywhere once a verdict is selected.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        if (draftModeRef.current) {
+          e.preventDefault();
+          submitRef.current();
+        }
+        return;
+      }
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "=" || e.key === "+") {
+        e.preventDefault();
+        patch({ mode: draftModeRef.current === "good" ? "" : "good" });
+        setMsg(null);
+      } else if (e.key === "-") {
+        e.preventDefault();
+        const next = draftModeRef.current === "no" ? "" : "no";
+        patch({ mode: next });
+        setMsg(null);
+        if (next === "no") window.setTimeout(() => commentRef.current?.focus(), 0);
+      } else if (e.key === ".") {
+        e.preventDefault();
+        const next = draftModeRef.current === "alt" ? "" : "alt";
+        patch({ mode: next });
+        setMsg(null);
+        if (next === "alt") window.setTimeout(() => residueRef.current?.focus(), 0);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [patch]);
+
   const placeholder =
     draft.mode === "good" ? "Anything to add? (optional)"
       : draft.mode === "alt" ? "Why this site instead? (optional)"
@@ -443,17 +501,22 @@ export function ReviewPanel({
           reviewer pressing → to change member and changing the verdict instead. */}
       <div className={styles.verdictRow}>
         <div className={styles.segmented} role="group" aria-label="Your verdict">
-          {MODES.map((m) => (
-            <button
-              key={m.value}
-              type="button"
-              aria-pressed={draft.mode === m.value}
-              className={draft.mode === m.value ? styles.segOn : styles.seg}
-              onClick={() => { patch({ mode: draft.mode === m.value ? "" : m.value }); setMsg(null); }}
-            >
-              {m.label}
-            </button>
-          ))}
+          {MODES.map((m) => {
+            const on = draft.mode === m.value;
+            const tone = m.value === "good" ? styles.segGood : m.value === "no" ? styles.segNo : "";
+            return (
+              <button
+                key={m.value}
+                type="button"
+                aria-pressed={on}
+                className={on ? `${styles.segOn} ${tone}` : styles.seg}
+                title={`${m.label} (shortcut: ${m.key})`}
+                onClick={() => { patch({ mode: on ? "" : m.value }); setMsg(null); }}
+              >
+                {m.label} <kbd className={styles.segKey}>{m.key}</kbd>
+              </button>
+            );
+          })}
         </div>
         {draft.mode === "good" || draft.mode === "no" ? (
           // A verdict on one arm rather than on the member: the r2 agent round rejects
@@ -476,6 +539,7 @@ export function ReviewPanel({
           <label>
             after residue (ordered-protein numbering)
             <input
+              ref={residueRef}
               type="number"
               min={0}
               max={member.ordered_length_aa ?? undefined}
@@ -509,18 +573,13 @@ export function ReviewPanel({
         </div>
       ) : null}
       <textarea
+        ref={commentRef}
         id={`${fieldId}-comment`}
         className={styles.reason}
         aria-label="Comment"
         placeholder={placeholder}
         value={draft.reason}
         onChange={(e) => patch({ reason: e.target.value })}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-            e.preventDefault();
-            submit();
-          }
-        }}
         onFocus={() => setCommentOpen(true)}
         onBlur={() => setCommentOpen(false)}
         // One line until it is used: open while focused or holding text.
@@ -531,7 +590,7 @@ export function ReviewPanel({
           {saving ? "Saving…" : "Submit"}
         </button>
         <span className={styles.help}>
-          {draft.mode ? "⌘/Ctrl + Enter from the comment" : "Choose a verdict to submit"}
+          {draft.mode ? "⌘/Ctrl + Enter to submit" : "Choose a verdict (= / - / .) to submit"}
         </span>
         {msg ? (
           <span className={msg.ok ? styles.saved : styles.error} role={msg.ok ? "status" : "alert"}>
@@ -708,6 +767,7 @@ function MemberDetail({
   const [picked, setPicked] = useState<{ r: number; n: number } | null>(null);
   // The arm being looked at (clicked on the strip or a tag-site card).
   const [focusSite, setFocusSite] = useState<string | null>(null);
+  const [resetSeq, setResetSeq] = useState(0);
   const [curated, setCurated] = useState<CuratedContactsData | null | "loading">(null);
   const acc = member.uniprot_acc && /^[A-Z0-9]{6,10}$/.test(member.uniprot_acc) ? member.uniprot_acc : null;
   useEffect(() => {
@@ -789,6 +849,11 @@ function MemberDetail({
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "0") {
+        e.preventDefault();
+        setResetSeq((n) => n + 1);
+        return;
+      }
       const i = /^[1-9]$/.test(e.key) ? Number(e.key) - 1 : -1;
       if (i < 0 || i >= models.length) return;
       e.preventDefault();
@@ -959,6 +1024,7 @@ function MemberDetail({
               return f?.insert_after_residue != null ? toModel(f.insert_after_residue) : null;
             })()}
             onReset={() => setFocusSite(null)}
+            resetSeq={resetSeq}
             topology={topology || null}
             map={modelMap}
             modelLength={model?.model_length_aa ?? null}
@@ -1530,7 +1596,7 @@ export function L1Review() {
               <summary>
                 <span className={styles.keys}>
                   <span><kbd>←</kbd><kbd>→</kbd> member</span>
-                  <span><kbd>A</kbd>–<kbd>Z</kbd> gene</span>
+                  <span><kbd>=</kbd><kbd>-</kbd> verdict</span>
                   <span><kbd>1</kbd><kbd>2</kbd> view</span>
                   <span><kbd>?</kbd> keys</span>
                 </span>
@@ -1538,10 +1604,14 @@ export function L1Review() {
               <dl className={styles.keyTable}>
                 <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt>
                 <dd>previous / next member in this filter (orthologs and isoforms included)</dd>
+                <dt><kbd>=</kbd> <kbd>-</kbd> <kbd>.</kbd></dt>
+                <dd>verdict: = site looks right, - concern (focuses comment), . suggest another site</dd>
+                <dt><kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>↵</kbd></dt>
+                <dd>submit the chosen verdict from anywhere on the page</dd>
                 <dt><kbd>A</kbd>–<kbd>Z</kbd></dt>
                 <dd>jump to the next gene starting with that letter; press it again to walk them</dd>
-                <dt><kbd>1</kbd>–<kbd>9</kbd></dt>
-                <dd>switch structure view (tagged fold(s) first, then native model)</dd>
+                <dt><kbd>1</kbd>–<kbd>9</kbd> / <kbd>0</kbd></dt>
+                <dd>switch structure view (tagged fold(s) first, then native) / 0 resets camera</dd>
                 <dt><kbd>Home</kbd> <kbd>End</kbd></dt>
                 <dd>first / last member in this filter</dd>
                 <dt><kbd>/</kbd></dt>
@@ -1614,7 +1684,7 @@ export function L1Review() {
                 </li>
               );
             })}
-            {!visible.length ? <li className={styles.muted}>No member matches these filters.</li> : null}
+            {!visible.length ? <li className={styles.listEmpty}>No member matches these filters.</li> : null}
           </ol>
         </div>
 

@@ -510,3 +510,14 @@ test("multiple fold tabs name their arm and residue so identical pLDDT/verdict t
   assert.equal(structureTabLabel(foldNoArm, [site({})], true), "Fold (after 94) · pLDDT 72 · fail");
   assert.equal(structureTabLabel(native, twoArms, true), "Native · pLDDT 84");
 });
+
+test("verdict buttons advertise = / - / . shortcuts and SiteCard chips semicolon-delimited detail", () => {
+  const goodHtml = withDraft({ mode: "good" });
+  assert.match(goodHtml, /Site looks right[^<]*<kbd[^>]*>=<\/kbd>/);
+  assert.match(goodHtml, /Concern[^<]*<kbd[^>]*>-<\/kbd>/);
+  assert.match(goodHtml, /Suggest another site[^<]*<kbd[^>]*>\.<\/kbd>/);
+  assert.match(goodHtml, /class="segOn segGood"/);
+  assert.match(withDraft({ mode: "no" }), /class="segOn segNo"/);
+  const card = renderToStaticMarkup(React.createElement(SiteCard, { site: site({}), length: 152 }));
+  assert.match(card, /<ul class="detailChips"><li>internal_loop<\/li><li>refold verdict pending<\/li><\/ul>/);
+});
