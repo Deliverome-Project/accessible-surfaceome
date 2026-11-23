@@ -102,6 +102,13 @@ export interface StudyArm {
   screen_basis?: "abundance" | "count" | null;
   abundance_share?: number | null;
   abundance_cutoff?: number | null;
+  /** Within-table AUROC of the same length-corrected amounts for Canonical or Likely
+   *  membership: whether the amounts rank surface proteins first. */
+  abundance_auroc?: number | null;
+  auroc_rescue_cutoff?: number | null;
+  /** Counted through the AUROC rescue: under the amount cutoff, but its amounts rank
+   *  Canonical or Likely proteins first (abundance_auroc >= auroc_rescue_cutoff). */
+  auroc_rescued?: boolean;
   repository: string | null;
   repository_ids: string[];
   /** Where the raw instrument files are, from the S3E8 raw-data audit
@@ -278,6 +285,12 @@ export const OVERLAP_SCREEN = 0.2;
  *  so it passes as many membrane preparations as the 20% list screen). Must match
  *  every arm's `abundance_cutoff`, which a test checks. */
 export const ABUNDANCE_SCREEN = 0.25;
+
+/** AUROC rescue: a dataset with amounts that falls under ABUNDANCE_SCREEN still counts
+ *  when its amounts rank Canonical or Likely proteins first at or above this AUROC.
+ *  Calibrated like the amount screen, so share-or-AUROC passes no more membrane
+ *  preparations than the list screen. Must match every arm's `auroc_rescue_cutoff`. */
+export const AUROC_RESCUE = 0.58;
 
 /** The number a dataset was screened on, and the bar it had to reach. */
 export function screenScore(arm: StudyArm): {
