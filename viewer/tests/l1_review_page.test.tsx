@@ -429,15 +429,18 @@ test("GLP2R reads as the Igκ swap, with the SP end once the export carries it",
 
 test("filters: SP type, UniProt difference and reviewed-by-me; search matches class and rung words", () => {
   const rows = [
-    { ...m("l1-m0001", "GLP2R", "N after SP", "multipass (other)", ["built"]), pick_leader: "igk", matches_uniprot_canonical: 0 },
-    { ...m("l1-m0002", "AXL", "N after SP", "single-pass type I", ["built"]), pick_leader: null, matches_uniprot_canonical: 1 },
-    { ...m("l1-m0003", "ADRB2", "C-terminal", "GPCR", ["built"]), pick_leader: null, matches_uniprot_canonical: 1 },
+    { ...m("l1-m0001", "GLP2R", "N after SP", "multipass (other)", ["built"]), pick_leader: "igk", matches_uniprot_canonical: 0, has_snorkel: false },
+    { ...m("l1-m0002", "AXL", "N after SP", "single-pass type I", ["built"]), pick_leader: null, matches_uniprot_canonical: 1, has_snorkel: false },
+    { ...m("l1-m0003", "ADRB2", "C-terminal", "GPCR", ["built"]), pick_leader: null, matches_uniprot_canonical: 1, has_snorkel: true },
   ];
   const genes = (f: Parameters<typeof filterIndex>[1]) => filterIndex(rows, f).map((x) => x.gene_symbol);
   assert.deepEqual(genes({ sp: "igk_swap" }), ["GLP2R"]);
   assert.deepEqual(genes({ sp: "native" }), ["AXL"]);
   assert.deepEqual(genes({ diff: "yes" }), ["GLP2R"]);
   assert.deepEqual(genes({ diff: "no" }), ["ADRB2", "AXL"]);
+  assert.deepEqual(genes({ snorkel: "yes" }), ["ADRB2"]);
+  assert.deepEqual(genes({ snorkel: "no" }), ["AXL", "GLP2R"]);
+  assert.deepEqual(genes({ query: "snorkel" }), ["ADRB2"]);
   const mine = new Set(["l1-p0002"]);
   assert.deepEqual(genes({ reviewed: "mine", reviewedByMe: mine }), ["AXL"]);
   assert.deepEqual(genes({ reviewed: "notmine", reviewedByMe: mine }), ["ADRB2", "GLP2R"]);

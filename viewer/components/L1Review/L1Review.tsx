@@ -30,6 +30,7 @@ import {
   submitL1Review,
   SP_LABEL,
   indexSpStatus,
+  memberHasSnorkel,
   memberSp,
   uniprotDiffers,
   uniprotDiffLines,
@@ -92,14 +93,14 @@ const store = {
   },
 };
 
-interface UrlFilters { m: string; rung: string; cls: string; status: string; q: string; sp: string; diff: string; rev: string }
+interface UrlFilters { m: string; rung: string; cls: string; status: string; q: string; sp: string; diff: string; snorkel: string; rev: string }
 
 function readUrl(): UrlFilters {
-  if (typeof window === "undefined") return { m: "", rung: "", cls: "", status: "", q: "", sp: "", diff: "", rev: "" };
+  if (typeof window === "undefined") return { m: "", rung: "", cls: "", status: "", q: "", sp: "", diff: "", snorkel: "", rev: "" };
   const p = new URLSearchParams(window.location.search);
   return {
     m: p.get("m") ?? "", rung: p.get("rung") ?? "", cls: p.get("class") ?? "", status: p.get("status") ?? "",
-    q: p.get("q") ?? "", sp: p.get("sp") ?? "", diff: p.get("diff") ?? "", rev: p.get("reviewed") ?? "",
+    q: p.get("q") ?? "", sp: p.get("sp") ?? "", diff: p.get("diff") ?? "", snorkel: p.get("snorkel") ?? "", rev: p.get("reviewed") ?? "",
   };
 }
 
@@ -111,6 +112,7 @@ function writeUrl(s: UrlFilters) {
   if (s.status) p.set("status", s.status);
   if (s.sp) p.set("sp", s.sp);
   if (s.diff) p.set("diff", s.diff);
+  if (s.snorkel) p.set("snorkel", s.snorkel);
   if (s.rev) p.set("reviewed", s.rev);
   if (s.q) p.set("q", s.q);
   const qs = p.toString();
@@ -1280,7 +1282,7 @@ export function L1Review() {
   }, [mineIds, reviews, reviewer]);
   const facetBase = {
     rung: filters.rung, membraneClass: filters.cls, status: filters.status, query: filters.q,
-    sp: filters.sp, diff: filters.diff, reviewed: filters.rev, reviewedByMe,
+    sp: filters.sp, diff: filters.diff, snorkel: filters.snorkel, reviewed: filters.rev, reviewedByMe,
   };
   const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe]); // eslint-disable-line react-hooks/exhaustive-deps
   const current: L1IndexMember | undefined =
@@ -1514,6 +1516,9 @@ export function L1Review() {
   const forDiff = without("diff");
   const diffKnown = members.some((m) => uniprotDiffers(m) !== null);
   const diffCount = (k: string) => (k === "" ? forDiff.length : forDiff.filter((m) => uniprotDiffers(m) === (k === "yes")).length);
+  const forSnorkel = without("snorkel");
+  const snorkelKnown = members.some((m) => memberHasSnorkel(m) !== null);
+  const snorkelCount = (k: string) => (k === "" ? forSnorkel.length : forSnorkel.filter((m) => memberHasSnorkel(m) === (k === "yes")).length);
   const forRev = without("reviewed");
   const revCount = (k: string) => (k === "" ? forRev.length : forRev.filter((m) => reviewedByMe.has(m.design_id ?? m.member_id) === (k === "mine")).length);
   const filterSummary = [
@@ -1522,6 +1527,7 @@ export function L1Review() {
     filters.status && `pick: ${filters.status === "none" ? "no pick yet" : STATUS_LABEL[filters.status as L1Site["status"]] ?? filters.status}`,
     filters.sp && `SP: ${SP_LABEL[filters.sp as keyof typeof SP_LABEL] ?? filters.sp}`,
     filters.diff && (filters.diff === "yes" ? "differs from UniProt" : "same as UniProt"),
+    filters.snorkel && (filters.snorkel === "yes" ? "snorkel tag" : "no snorkel"),
     filters.rev && (filters.rev === "mine" ? "reviewed by me" : "not reviewed by me"),
   ].filter(Boolean).join(" · ") || "none";
   const reviewedN = new Set((reviews?.reviews ?? []).map((r) => r.design_id)).size;
@@ -1594,6 +1600,16 @@ export function L1Review() {
             {[["", "all"], ["yes", "differs from canonical"], ["no", "same as canonical"]].map(([k, label]) => (
               <button key={k || "all"} type="button" className={filters.diff === k ? styles.chipOn : styles.chip} onClick={() => update({ diff: k })}>
                 {label} <span className={styles.n}>{diffCount(k)}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+        {snorkelKnown ? (
+          <div>
+            <span className={styles.facetLabel} title="Whether the primary pick uses a C-terminal snorkel TM-module tag">Snorkel</span>
+            {[["", "all"], ["yes", "snorkel tag"], ["no", "no snorkel"]].map(([k, label]) => (
+              <button key={k || "all"} type="button" className={filters.snorkel === k ? styles.chipOn : styles.chip} onClick={() => update({ snorkel: k })}>
+                {label} <span className={styles.n}>{snorkelCount(k)}</span>
               </button>
             ))}
           </div>

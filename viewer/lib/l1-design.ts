@@ -163,6 +163,8 @@ export interface L1IndexMember {
   pick_leader?: string | null;
   sp_status?: L1SpStatus | null;
   matches_uniprot_canonical?: boolean | number | null;
+  /** True when any primary pick uses a snorkel tag construct; undefined when the API predates it. */
+  has_snorkel?: boolean | number | null;
 }
 
 export interface L1Index {
@@ -269,6 +271,13 @@ export function visibleContacts(contacts: readonly L1Contact[], showHidden: bool
   return contacts.filter((c) => showHidden || c.confidence_tier !== "hidden");
 }
 
+/** true / false from the index; null when the API predates `has_snorkel`. */
+export function memberHasSnorkel(m: { has_snorkel?: boolean | number | null }): boolean | null {
+  const v = m.has_snorkel;
+  if (v === null || v === undefined) return null;
+  return v === true || v === 1;
+}
+
 /** Members in the browser's order, filtered by rung / class / free text. */
 export function filterIndex(
   members: readonly L1IndexMember[],
@@ -278,6 +287,8 @@ export function filterIndex(
     sp?: string;
     /** "yes" = differs from the UniProt canonical, "no" = identical */
     diff?: string;
+    /** "yes" = uses a snorkel tag, "no" = does not */
+    snorkel?: string;
     /** "mine" | "notmine", against `reviewedByMe` (design ids) */
     reviewed?: string;
     reviewedByMe?: ReadonlySet<string>;
@@ -291,6 +302,7 @@ export function filterIndex(
     .filter((m) => !f.status || (f.status === "none" ? m.pick_status.length === 0 : m.pick_status.includes(f.status as L1SiteStatus)))
     .filter((m) => !f.sp || indexSpStatus(m) === f.sp)
     .filter((m) => !f.diff || (f.diff === "yes" ? uniprotDiffers(m) === true : uniprotDiffers(m) === false))
+    .filter((m) => !f.snorkel || (f.snorkel === "yes" ? memberHasSnorkel(m) === true : memberHasSnorkel(m) === false))
     .filter((m) => !f.reviewed || (f.reviewed === "mine") === mine.has(m.design_id ?? m.member_id))
     .filter(
       (m) =>
@@ -299,10 +311,11 @@ export function filterIndex(
         m.member_id.toUpperCase() === q ||
         (m.design_id ?? "").toUpperCase() === q ||
         // Words that name a class, a rung or an SP type match those too, so "gpcr",
-        // "c-terminal" or "igk" find members without opening the filters.
+        // "c-terminal", "snorkel" or "igk" find members without opening the filters.
         (q.length >= 3 &&
           (m.membrane_class.toUpperCase().includes(q) ||
             m.rung.toUpperCase().includes(q) ||
+            (memberHasSnorkel(m) === true && "SNORKEL".includes(q)) ||
             SP_SEARCH[indexSpStatus(m) ?? ""]?.some((w) => w.includes(q)) === true)),
     )
     .sort((a, b) => a.gene_symbol.localeCompare(b.gene_symbol) || a.member_id.localeCompare(b.member_id));
