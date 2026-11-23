@@ -4656,15 +4656,21 @@ async function handleL1DesignIndex(env) {
          FROM l1_member_public WHERE load_version = ? ORDER BY member_id`
     ).bind(lv).all().then((r) => r?.results ?? []),
     env.DB.prepare(
-      `SELECT member_id, status, COUNT(*) AS n FROM l1_tag_site_design_public
-        WHERE load_version = ? AND is_primary = 1 GROUP BY member_id, status`
+      `SELECT member_id, site_id, insert_after_residue, leader, cassette, status
+         FROM l1_tag_site_design_public
+        WHERE load_version = ? AND is_primary = 1`
     ).bind(lv).all().then((r) => r?.results ?? []),
   ]);
   const statusBy = new Map();
+  const sigPartsBy = new Map();
   for (const p of picks) {
     const list = statusBy.get(p.member_id) ?? [];
-    list.push(p.status);
+    if (!list.includes(p.status)) list.push(p.status);
     statusBy.set(p.member_id, list);
+    const sigs = sigPartsBy.get(p.member_id) ?? [];
+    const ins = p.insert_after_residue == null ? "" : String(p.insert_after_residue);
+    sigs.push(`${p.site_id ?? ""}:${ins}:${p.leader ?? ""}:${p.cassette ?? ""}`);
+    sigPartsBy.set(p.member_id, sigs);
   }
   return l1Fresh(
     {
@@ -4681,6 +4687,7 @@ async function handleL1DesignIndex(env) {
         ordered_length_aa: m.ordered_length_aa == null ? null : Number(m.ordered_length_aa),
         sequence_sha256: m.sequence_sha256 ?? null,
         pick_status: (statusBy.get(m.member_id) ?? []).sort(),
+        primary_site_signature: (sigPartsBy.get(m.member_id) ?? []).sort().join("|"),
       })),
     },
   );
@@ -4883,18 +4890,30 @@ async function handleL1ReviewSubmit(request, env) {
   if (!gene || !SYMBOL_OK.test(gene)) return badRequest("invalid_gene");
   if (!loadVersion || !L1_LOAD_OK.test(loadVersion)) return badRequest("invalid_load_version");
   const sha = l1Str(body.sequence_sha256, 64);
+  const siteSig = l1Str(body.site_signature, 512);
   const reason = l1Str(body.reason, 4000);
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   if (body.kind === "verdict") {
     if (body.verdict !== "good" && body.verdict !== "no") return badRequest("invalid_verdict");
     if (body.verdict === "no" && !reason) return badRequest("reason_required");
-    await env.FEEDBACK_DB.prepare(
-      `INSERT INTO l1_review (review_id, created_at, reviewer, member_id, design_id, sequence_sha256,
-                              gene_symbol, site_id, verdict, reason, load_version)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(id, now, reviewer, memberId, designId, sha, gene, l1Str(body.site_id, 80), body.verdict,
-      reason, loadVersion).run();
+    const siteIdVal = l1Str(body.site_id, 80);
+    try {
+      await env.FEEDBACK_DB.prepare(
+        `INSERT INTO l1_review (review_id, created_at, reviewer, member_id, design_id, sequence_sha256,
+                                gene_symbol, site_id, verdict, reason, load_version, site_signature)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(id, now, reviewer, memberId, designId, sha, gene, siteIdVal, body.verdict,
+        reason, loadVersion, siteSig).run();
+    } catch (err) {
+      if (!String(err).includes("site_signature")) throw err;
+      await env.FEEDBACK_DB.prepare(
+        `INSERT INTO l1_review (review_id, created_at, reviewer, member_id, design_id, sequence_sha256,
+                                gene_symbol, site_id, verdict, reason, load_version)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(id, now, reviewer, memberId, designId, sha, gene, siteIdVal, body.verdict,
+        reason, loadVersion).run();
+    }
     return json({ ok: true, review_id: id, created_at: now }, { status: 201, ttl: 0 });
   }
   if (body.kind === "alt_tag") {
@@ -4908,13 +4927,25 @@ async function handleL1ReviewSubmit(request, env) {
     if (residue == null && (placement === "internal" || placement === "after_sp")) {
       return badRequest("residue_required");
     }
-    await env.FEEDBACK_DB.prepare(
-      `INSERT INTO l1_alt_tag (suggestion_id, created_at, reviewer, member_id, design_id, sequence_sha256,
-                               gene_symbol, insert_after_residue, placement, cassette_variant, reason,
-                               load_version)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(id, now, reviewer, memberId, designId, sha, gene, residue, placement,
-      l1Str(body.cassette_variant, 120), reason, loadVersion).run();
+    const cassetteVal = l1Str(body.cassette_variant, 120);
+    try {
+      await env.FEEDBACK_DB.prepare(
+        `INSERT INTO l1_alt_tag (suggestion_id, created_at, reviewer, member_id, design_id, sequence_sha256,
+                                 gene_symbol, insert_after_residue, placement, cassette_variant, reason,
+                                 load_version, site_signature)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(id, now, reviewer, memberId, designId, sha, gene, residue, placement,
+        cassetteVal, reason, loadVersion, siteSig).run();
+    } catch (err) {
+      if (!String(err).includes("site_signature")) throw err;
+      await env.FEEDBACK_DB.prepare(
+        `INSERT INTO l1_alt_tag (suggestion_id, created_at, reviewer, member_id, design_id, sequence_sha256,
+                                 gene_symbol, insert_after_residue, placement, cassette_variant, reason,
+                                 load_version)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).bind(id, now, reviewer, memberId, designId, sha, gene, residue, placement,
+        cassetteVal, reason, loadVersion).run();
+    }
     return json({ ok: true, suggestion_id: id, created_at: now }, { status: 201, ttl: 0 });
   }
   return badRequest("invalid_kind");
@@ -4937,6 +4968,7 @@ async function handleL1ReviewList(request, env) {
 const L1_EXPORT_COLS = [
   "kind", "id", "created_at", "reviewer", "member_id", "design_id", "sequence_sha256", "gene_symbol",
   "site_id", "verdict", "insert_after_residue", "placement", "cassette_variant", "reason", "load_version",
+  "site_signature",
 ];
 
 async function handleL1ReviewExport(request, env) {

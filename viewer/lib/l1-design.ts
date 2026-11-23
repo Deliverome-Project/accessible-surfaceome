@@ -165,6 +165,8 @@ export interface L1IndexMember {
   matches_uniprot_canonical?: boolean | number | null;
   /** True when any primary pick uses a snorkel tag construct; undefined when the API predates it. */
   has_snorkel?: boolean | number | null;
+  /** Canonical sorted signature of primary tag sites (site_id:insert_after:leader:cassette joined by '|'). */
+  primary_site_signature?: string | null;
 }
 
 export interface L1Index {
@@ -289,13 +291,15 @@ export function filterIndex(
     diff?: string;
     /** "yes" = uses a snorkel tag, "no" = does not */
     snorkel?: string;
-    /** "mine" | "notmine", against `reviewedByMe` (design ids) */
+    /** "mine" | "notmine" | "stale", against `reviewedByMe` / `staleDesignIds` (design ids) */
     reviewed?: string;
     reviewedByMe?: ReadonlySet<string>;
+    staleDesignIds?: ReadonlySet<string>;
   },
 ): L1IndexMember[] {
   const q = (f.query ?? "").trim().toUpperCase();
   const mine = f.reviewedByMe ?? new Set<string>();
+  const stale = f.staleDesignIds ?? new Set<string>();
   return members
     .filter((m) => !f.rung || m.rung === f.rung)
     .filter((m) => !f.membraneClass || m.membrane_class === f.membraneClass)
@@ -303,7 +307,12 @@ export function filterIndex(
     .filter((m) => !f.sp || indexSpStatus(m) === f.sp)
     .filter((m) => !f.diff || (f.diff === "yes" ? uniprotDiffers(m) === true : uniprotDiffers(m) === false))
     .filter((m) => !f.snorkel || (f.snorkel === "yes" ? memberHasSnorkel(m) === true : memberHasSnorkel(m) === false))
-    .filter((m) => !f.reviewed || (f.reviewed === "mine") === mine.has(m.design_id ?? m.member_id))
+    .filter((m) => {
+      if (!f.reviewed) return true;
+      const id = m.design_id ?? m.member_id;
+      if (f.reviewed === "stale") return stale.has(id);
+      return (f.reviewed === "mine") === mine.has(id);
+    })
     .filter(
       (m) =>
         !q ||
@@ -590,11 +599,13 @@ export interface L1ReviewRow {
   reviewer: string;
   member_id: string;
   design_id: string;
+  sequence_sha256?: string | null;
   gene_symbol: string;
   site_id: string | null;
   verdict: "good" | "no";
   reason: string | null;
   load_version: string;
+  site_signature?: string | null;
 }
 
 export interface L1AltTagRow {
@@ -603,12 +614,14 @@ export interface L1AltTagRow {
   reviewer: string;
   member_id: string;
   design_id: string;
+  sequence_sha256?: string | null;
   gene_symbol: string;
   insert_after_residue: number | null;
   placement: L1Placement;
   cassette_variant: string | null;
   reason: string | null;
   load_version: string;
+  site_signature?: string | null;
 }
 
 export interface L1Reviews {
@@ -721,6 +734,72 @@ export function reviewScopeLabel(
   const site = sites.find((s) => s.site_id === siteId);
   if (!site) return arm ?? siteId;
   return `${arm ? `${arm} — ` : ""}${l1SiteLabel(site, orderedLength)}${site.is_primary === false ? " (alternative)" : ""}`;
+}
+
+/** Canonical fingerprint of one tag site (matches the Worker's primary_site_signature format). */
+export function l1SiteSignature(
+  site: Pick<L1Site, "site_id" | "insert_after_residue" | "leader" | "cassette">,
+): string {
+  const ins = site.insert_after_residue == null ? "" : String(site.insert_after_residue);
+  return `${site.site_id}:${ins}:${site.leader ?? ""}:${site.cassette ?? ""}`;
+}
+
+/** Canonical fingerprint of all primary tag sites on a member. */
+export function l1PrimarySiteSignature(
+  sites: readonly Pick<L1Site, "site_id" | "is_primary" | "insert_after_residue" | "leader" | "cassette">[],
+): string {
+  return sites
+    .filter((s) => s.is_primary !== false)
+    .map(l1SiteSignature)
+    .sort()
+    .join("|");
+}
+
+/**
+ * Why a recorded review is out of date for the current member, or null when it still applies.
+ * Flags both protein-sequence changes (`sequence_sha256`) and tag-location changes
+ * (`site_signature`, removed `site_id`, or older `load_version` for pre-signature rows).
+ */
+export function reviewStaleReason(
+  review: Pick<L1ReviewRow, "sequence_sha256" | "site_id" | "site_signature" | "load_version">,
+  member: {
+    sequence_sha256?: string | null;
+    primary_site_signature?: string | null;
+    sites?: readonly Pick<L1Site, "site_id" | "is_primary" | "insert_after_residue" | "leader" | "cassette">[];
+  },
+  currentLoadVersion?: string | null,
+): string | null {
+  if (review.sequence_sha256 && member.sequence_sha256 && review.sequence_sha256 !== member.sequence_sha256) {
+    return "protein sequence changed";
+  }
+  if (review.site_signature) {
+    if (member.sites) {
+      if (review.site_id) {
+        const cur = member.sites.find((s) => s.site_id === review.site_id);
+        if (!cur) return "reviewed tag site was removed";
+        if (l1SiteSignature(cur) !== review.site_signature) return "tag location changed";
+      } else if (l1PrimarySiteSignature(member.sites) !== review.site_signature) {
+        return "tag location changed";
+      }
+      return null;
+    }
+    if (member.primary_site_signature != null) {
+      if (review.site_id) {
+        const parts = member.primary_site_signature ? member.primary_site_signature.split("|") : [];
+        if (!parts.includes(review.site_signature)) return "tag location changed";
+      } else if (member.primary_site_signature !== review.site_signature) {
+        return "tag location changed";
+      }
+      return null;
+    }
+  }
+  if (review.site_id && member.sites && !member.sites.some((s) => s.site_id === review.site_id)) {
+    return "reviewed tag site was removed";
+  }
+  if (currentLoadVersion && review.load_version && review.load_version !== currentLoadVersion) {
+    return "older design load (tag site may have changed)";
+  }
+  return null;
 }
 
 /** Map a residue picked on a model to the member's own numbering (native models only). */
