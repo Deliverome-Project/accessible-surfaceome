@@ -185,13 +185,13 @@ test("a verdict asks which arm it is about, defaulting to the current pick", () 
   assert.match(html, /What should change, and why\?/);
 });
 
-test("'Suggest another site' alone shows the residue and placement fields", () => {
+test("'Suggest another site' alone shows the residue field without a placement dropdown", () => {
   assert.doesNotMatch(panel(), /after residue \(ordered-protein numbering\)/);
   const html = withDraft({ mode: "alt" });
   assert.match(html, /after residue \(ordered-protein numbering\)/);
-  assert.match(html, /<input type="number"/);
+  assert.match(html, /<input[^>]*type="number"/);
   assert.match(html, /or click a residue on the structure/);
-  assert.match(html, /placement/);
+  assert.doesNotMatch(html, /placement/);
   // No free-text cassette; a select appears only when the member's sites carry real options.
   assert.doesNotMatch(html, /cassette variant/);
   assert.doesNotMatch(html, /about<select/);

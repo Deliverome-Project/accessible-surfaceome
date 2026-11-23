@@ -136,9 +136,6 @@
 .altGrid { display: flex; flex-direction: column; gap: 0.4rem; }
 .altGrid label { display: flex; flex-direction: column; font-size: 0.75rem; color: var(--muted); gap: 0.15rem; }
 .altGrid input, .altGrid select, .altGrid textarea { font: inherit; font-size: 0.88rem; padding: 0.28rem 0.45rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg); color: var(--ink); }
-.altOptions { font-size: 0.75rem; color: var(--muted); }
-.altOptions > summary { cursor: pointer; }
-.altOptionsBody { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: var(--space-2); margin-top: 0.35rem; }
 /* Which arm the verdict is about, on its own line above the buttons: it changes what the
    buttons mean, so it has to be read before them, not found afterwards. */
 .scope { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--muted); }
