@@ -50,7 +50,7 @@ import {
   type L1Structure,
 } from "../../lib/l1-design";
 import type { LibraryTopologyRow } from "../../lib/structure-viewer-types";
-import { L1TopologyStrip, insertFlags } from "./L1TopologyStrip";
+import { L1TopologyStrip, armColor, insertFlags } from "./L1TopologyStrip";
 import { L1Structure3D, type L1Mark } from "./L1Structure3D";
 import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
 import { InfoTip } from "../InfoTip/InfoTip";
@@ -126,7 +126,7 @@ function StatusPill({ status }: { status: L1Site["status"] }) {
 }
 
 function siteColor(s: L1Site): string {
-  if (s.is_primary !== false) return COLORS.pick;
+  if (s.is_primary !== false) return armColor(s.site_id);
   return s.site_source === "agent_proposer" ? COLORS.agent : COLORS.ranker;
 }
 
@@ -187,7 +187,10 @@ export function SiteCard({
   const hasSource = !isRedacted(site.source.path) && !isRedacted(site.source.commit);
   const redactedProvenance = !hasDecidedBy && !site.rationale;
   return (
-    <div className={`${styles.site} ${primary ? styles.sitePrimary : ""}`}>
+    <div
+      className={`${styles.site} ${primary ? styles.sitePrimary : ""}`}
+      style={primary ? { borderLeftColor: siteColor(site) } : undefined}
+    >
       <div className={styles.siteHead}>
         <span className={styles.swatch} style={{ background: siteColor(site) }} />
         <strong>{primary ? "Current pick" : "Alternative"}</strong>
@@ -1097,7 +1100,15 @@ function MemberDetail({
         )}
         {/* Compact color key directly under the canvas so everything stays above the fold. */}
         <div className={styles.legend}>
-          <span><i style={{ background: COLORS.pick }} /> pick</span>
+          {flags.length > 1 ? (
+            flags.map((f) => (
+              <span key={f.siteId}>
+                <i style={{ background: f.color ?? COLORS.pick }} /> {f.label}
+              </span>
+            ))
+          ) : (
+            <span><i style={{ background: COLORS.pick }} /> pick</span>
+          )}
           {showAlts ? (
             <>
               <span><i style={{ background: COLORS.ranker }} /> ranker alt</span>

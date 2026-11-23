@@ -339,12 +339,16 @@ test("a member's tab is named for the proteoform it encodes, falling back to can
 });
 
 test("every current pick gets a flag, ordered along the sequence and labelled by arm", async () => {
-  const { insertFlags, armLabel } = await import("../components/L1Review/L1TopologyStrip");
+  const { insertFlags, armLabel, armColor } = await import("../components/L1Review/L1TopologyStrip");
   const arm = (id: string, r: number, primary = true): L1Site =>
     site({ site_id: id, insert_after_residue: r, is_primary: primary, residue_before: "H", residue_after: "D" });
   const flags = insertFlags([arm("l1-p1088-a2", 151), arm("l1-p1088-a1", 55), arm("l1-p1088-a3", 80)], 200);
   assert.deepEqual(flags.map((f) => f.label), ["a1", "a3", "a2"]);
   assert.deepEqual(flags.map((f) => f.insertAfterResidue), [55, 80, 151]);
+  // Multi-arm picks get distinct per-arm colours (a1 != a2 != a3).
+  assert.equal(new Set(flags.map((f) => f.color)).size, 3);
+  assert.notEqual(armColor("l1-p1088-a1"), armColor("l1-p1088-a2"));
+  assert.notEqual(armColor("l1-p1088-a2"), armColor("l1-p1088-a3"));
   // Alternatives are not flagged: the strip's job is "where does THIS member's tag go".
   assert.equal(insertFlags([arm("l1-p1088-a1", 55), arm("alt", 70, false)], 200).length, 1);
   // A site id without an arm suffix is labelled by its residue, not by the raw id —
