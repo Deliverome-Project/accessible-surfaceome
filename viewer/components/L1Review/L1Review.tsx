@@ -564,16 +564,28 @@ export function ReviewPanel({
         <div className={styles.altGrid}>
           <label>
             after residue (ordered-protein numbering)
-            <input
-              ref={residueRef}
-              type="number"
-              min={0}
-              max={member.ordered_length_aa ?? undefined}
-              step={1}
-              value={draft.alt.residue}
-              onChange={(e) => setAlt({ residue: e.target.value.replace(/[^0-9]/g, "") })}
-              aria-describedby={`${fieldId}-residue-help`}
-            />
+            <span className={styles.altInputRow}>
+              <input
+                ref={residueRef}
+                type="number"
+                min={0}
+                max={member.ordered_length_aa ?? undefined}
+                step={1}
+                value={draft.alt.residue}
+                onChange={(e) => setAlt({ residue: e.target.value.replace(/[^0-9]/g, "") })}
+                aria-describedby={`${fieldId}-residue-help`}
+              />
+              {draft.alt.residue !== "" ? (
+                <button
+                  type="button"
+                  className={styles.clearBtn}
+                  onClick={() => setAlt({ residue: "" })}
+                  aria-label="Clear suggested residue"
+                >
+                  Clear
+                </button>
+              ) : null}
+            </span>
             <span id={`${fieldId}-residue-help`} className={styles.help}>
               or click a residue on the structure or topology bar
               {member.ordered_length_aa ? ` · 0–${member.ordered_length_aa}` : ""}
@@ -820,6 +832,14 @@ function MemberDetail({
     draft?.mode === "alt" && draft.alt.residue !== "" && Number.isFinite(Number(draft.alt.residue))
       ? Number(draft.alt.residue)
       : null;
+  const clearSuggested = useCallback(() => {
+    setPicked(null);
+    setDrafts((d) => {
+      const cur = d[draftKey];
+      if (!cur) return d;
+      return { ...d, [draftKey]: { ...cur, alt: { ...cur.alt, residue: "" } } };
+    });
+  }, [draftKey, setDrafts]);
   const marks: L1Mark[] = [];
   if (segments) {
     if (showContacts && curatedAligned && curatedGene) {
@@ -980,6 +1000,7 @@ function MemberDetail({
           onFlagClick={showSite}
           onPickResidue={(r) => setPicked({ r, n: Date.now() })}
           suggestedResidue={suggested}
+          onClearSuggested={suggested != null ? clearSuggested : undefined}
         />
       ) : null}
       {member.proteoform?.decision ? (
@@ -1123,7 +1144,12 @@ function MemberDetail({
               <span><i style={{ background: COLORS.uniprot }} /> UniProt</span>
             </>
           ) : null}
-          <span><i style={{ background: COLORS.suggestion }} /> your pick</span>
+          <span>
+            <i style={{ background: COLORS.suggestion }} /> your pick
+            {suggested != null ? (
+              <>{" "}<button type="button" className={styles.clearInline} onClick={clearSuggested} aria-label="Clear suggested site">clear ×</button></>
+            ) : null}
+          </span>
         </div>
         {model?.note || model?.proteoform_match ? (
           <p className={styles.modelNote}>

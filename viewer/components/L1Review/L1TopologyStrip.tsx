@@ -93,6 +93,7 @@ export function L1TopologyStrip({
   onFlagClick,
   onPickResidue,
   suggestedResidue,
+  onClearSuggested,
 }: {
   /** The arm being looked at: its flag is drawn emphasised. */
   focusSiteId?: string | null;
@@ -102,6 +103,8 @@ export function L1TopologyStrip({
   onPickResidue?: (residue: number) => void;
   /** The reviewer's suggested insert residue (typed or clicked), drawn as its own flag. */
   suggestedResidue?: number | null;
+  /** Clicking the pink "you" flag clears the suggested residue. */
+  onClearSuggested?: () => void;
   /** Native residues the N-terminus line is about: the native SP, or the stretch an Igk
    *  leader replaces. Drawn as a bracket over the bands, member numbering. */
   sp?: { from: number; to: number; kind: "native_sp" | "replaced"; label: string } | null;
@@ -170,13 +173,26 @@ export function L1TopologyStrip({
           );
         })}
         {suggestedResidue != null && suggestedResidue >= 0 && suggestedResidue <= n ? (
-          <span
-            className={`${styles.insert} ${styles.insertSuggested}`}
-            style={{ left: `${pct(suggestedResidue)}%` }}
-            title={`your suggested site: after residue ${suggestedResidue}`}
-          >
-            <span className={styles.insertHead}>you</span>
-          </span>
+          onClearSuggested ? (
+            <button
+              type="button"
+              className={`${styles.insert} ${styles.insertSuggested}`}
+              style={{ left: `${pct(suggestedResidue)}%` }}
+              title={`your suggested site: after residue ${suggestedResidue} — click to clear`}
+              aria-label={`Clear suggested site after residue ${suggestedResidue}`}
+              onClick={onClearSuggested}
+            >
+              <span className={styles.insertHead}>you ×</span>
+            </button>
+          ) : (
+            <span
+              className={`${styles.insert} ${styles.insertSuggested}`}
+              style={{ left: `${pct(suggestedResidue)}%` }}
+              title={`your suggested site: after residue ${suggestedResidue}`}
+            >
+              <span className={styles.insertHead}>you</span>
+            </span>
+          )
         ) : null}
       </div>
       <div className={styles.stripLegend}>

@@ -138,6 +138,18 @@
 .altGrid { display: flex; flex-direction: column; gap: 0.4rem; }
 .altGrid label { display: flex; flex-direction: column; font-size: 0.75rem; color: var(--muted); gap: 0.15rem; }
 .altGrid input, .altGrid select, .altGrid textarea { font: inherit; font-size: 0.88rem; padding: 0.28rem 0.45rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg); color: var(--ink); }
+.altInputRow { display: flex; gap: 0.35rem; align-items: center; }
+.altInputRow input { flex: 1 1 auto; min-width: 0; }
+.clearBtn {
+  font: inherit; font-size: 0.76rem; padding: 0.28rem 0.6rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--line); background: var(--bg-soft); color: var(--muted); cursor: pointer;
+}
+.clearBtn:hover { color: var(--ink); border-color: var(--ink-soft); }
+.clearInline {
+  font: inherit; font-size: 0.72rem; padding: 0 0.35rem; border-radius: var(--radius-pill);
+  border: 1px solid var(--line); background: var(--bg-soft); color: var(--muted); cursor: pointer;
+}
+.clearInline:hover { color: var(--ink); border-color: var(--ink-soft); }
 /* Which arm the verdict is about, on its own line above the buttons: it changes what the
    buttons mean, so it has to be read before them, not found afterwards. */
 .scope { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--muted); }
@@ -424,7 +436,7 @@ button.insert:focus-visible { outline: 2px solid var(--accent); outline-offset: 
 .insertOn .insertHead { outline: 2px solid var(--ink); }
 /* The reviewer's suggested site: same shape, the suggestion pink. */
 .insertSuggested, .insertSuggested .insertHead { background: #FF1F8F; border-color: #8a0b4a; color: #fff; }
-.insertSuggested { pointer-events: none; }
+span.insertSuggested { pointer-events: none; }
 .siteShow {
   font: inherit; font-size: 0.75rem; margin-left: auto; padding: 0.14rem 0.6rem;
   border-radius: var(--radius-pill); border: 1px solid var(--line);
