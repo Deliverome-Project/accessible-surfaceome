@@ -104,10 +104,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-23-abundance-v7"
+SNAPSHOT = "2026-11-23-abundance-v8"
 # Non-baseline states of the sweep's inputs (senescent, infected, knockout, treated cells),
 # one shown-not-counted arm each; built by the analysis repo's perturbed_arms.py from SNAPSHOT.
-PERTURBED_SNAPSHOT = "2026-11-18-perturbed-v4"
+PERTURBED_SNAPSHOT = "2026-11-23-perturbed-v5"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
@@ -298,6 +298,7 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "karhemo-mda435-2012",
         "lethlarsen-mda-pm-2009",
         "li-hela-biotin-2019",
+        "anitei-hela-ier3ip1-2024",
         "li-hepg2-pecsl-insulin-2023",
         "liu-hela-pda-2018",
         "ozlu-hela-mitosis-2015",
