@@ -8,6 +8,7 @@ import {
   STATUS_LABEL,
   armLabel,
   countBy,
+  currentMemberModels,
   fetchL1Design,
   fetchL1Index,
   fetchL1MemberTopologies,
@@ -713,36 +714,6 @@ function memberChipText(m: Pick<L1Member, "candidate_set" | "species">, topo: Li
   return protein ? `${l1MemberRoleLabel(m)} · ${protein}` : l1MemberRoleLabel(m);
 }
 
-/** Partition a member's chosen structures into the default tabs (current-pick folds
- *  first, then native) and earlier/unlisted sweep refolds (site_id null or not among
- *  the member's current sites). If a member has no fold linked to a current site, the
- *  unlisted folds stay visible (passing before failing) so the tab strip is never empty. */
-export function partitionModels(
-  structures: readonly L1Structure[],
-  sites: readonly Pick<L1Site, "site_id" | "is_primary">[],
-): { primary: L1Structure[]; earlier: L1Structure[] } {
-  const chosen = structures.filter((s) => s.is_chosen);
-  const primaryIds = new Set(sites.filter((s) => s.is_primary !== false).map((s) => s.site_id));
-  const listedIds = new Set(sites.map((s) => s.site_id));
-  const tagged = chosen.filter((s) => s.kind === "tagged");
-  const native = chosen.filter((s) => s.kind !== "tagged");
-  const verdictRank = (s: L1Structure) => (s.refold_verdict === "pass" ? 0 : s.refold_verdict === "fail" ? 2 : 1);
-  const linked = tagged
-    .filter((s) => s.site_id != null && listedIds.has(s.site_id))
-    .sort((a, b) => {
-      const pa = a.site_id != null && primaryIds.has(a.site_id) ? 0 : 1;
-      const pb = b.site_id != null && primaryIds.has(b.site_id) ? 0 : 1;
-      return pa - pb || verdictRank(a) - verdictRank(b);
-    });
-  const unlisted = tagged
-    .filter((s) => s.site_id == null || !listedIds.has(s.site_id))
-    .sort((a, b) => verdictRank(a) - verdictRank(b));
-  if (linked.length > 0) {
-    return { primary: [...linked, ...native], earlier: unlisted };
-  }
-  return { primary: [...unlisted, ...native], earlier: [] };
-}
-
 /** Label for a structure view tab. When a member carries multiple tagged refolds,
  *  name the arm/insertion residue so tabs are distinguishable before clicking. */
 export function structureTabLabel(
@@ -794,17 +765,11 @@ function MemberDetail({
   onSaved: (saved: Partial<L1Reviews>) => void;
 }) {
   const sites = sortSites(member.sites);
-  // The current-pick fold(s) first and open by default, then native. Failed / unlisted
-  // sweep refolds stay tucked behind "+ N earlier refolds" so a member never opens on a
-  // discarded candidate fold.
-  const [showEarlierFolds, setShowEarlierFolds] = useState(false);
-  const { primary: primaryModels, earlier: earlierModels } = useMemo(
-    () => partitionModels(member.structures, member.sites),
-    [member.structures, member.sites],
-  );
+  // Current-pick fold(s) first and open by default, then native; earlier/unlisted sweep
+  // refolds are excluded altogether.
   const models = useMemo(
-    () => (showEarlierFolds ? [...primaryModels, ...earlierModels] : primaryModels),
-    [primaryModels, earlierModels, showEarlierFolds],
+    () => currentMemberModels(member.structures, member.sites),
+    [member.structures, member.sites],
   );
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [modelId, setModelId] = useState<string>("");
@@ -832,8 +797,7 @@ function MemberDetail({
   const curatedGene: CuratedContactsData | null = curated && curated !== "loading" ? curated : null;
   const curatedAligned = curatedContactsAlign(member.sequence_sha256, curatedGene?.reference_sequence_sha256);
   useEffect(() => {
-    setShowEarlierFolds(false);
-    setModelId(primaryModels[0]?.structure_id ?? "");
+    setModelId(models[0]?.structure_id ?? "");
     setPicked(null);
     setFocusSite(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1065,17 +1029,6 @@ function MemberDetail({
                 );
               });
             })()}
-            {earlierModels.length > 0 ? (
-              <button
-                type="button"
-                className={styles.earlierToggle}
-                aria-expanded={showEarlierFolds}
-                onClick={() => setShowEarlierFolds((v) => !v)}
-                title="Earlier candidate refolds not linked to this member's current pick"
-              >
-                {showEarlierFolds ? "hide earlier" : `+${earlierModels.length} earlier`}
-              </button>
-            ) : null}
             {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
           </div>
           <div className={styles.structureControls} aria-label="Structure overlays">

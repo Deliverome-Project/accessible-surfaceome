@@ -228,6 +228,29 @@ export function armLabel(siteId: string): string | null {
   return m ? m[1] : null;
 }
 
+/** Chosen 3D models for one member: tagged refolds linked to the member's current
+ *  sites (primary picks first, passing before failing), followed by native models.
+ *  Earlier/unlisted sweep refolds (site_id null or not among the member's current
+ *  sites) are excluded so reviewers never see discarded candidate folds. */
+export function currentMemberModels(
+  structures: readonly L1Structure[],
+  sites: readonly Pick<L1Site, "site_id" | "is_primary">[],
+): L1Structure[] {
+  const chosen = structures.filter((s) => s.is_chosen);
+  const primaryIds = new Set(sites.filter((s) => s.is_primary !== false).map((s) => s.site_id));
+  const listedIds = new Set(sites.map((s) => s.site_id));
+  const verdictRank = (s: L1Structure) => (s.refold_verdict === "pass" ? 0 : s.refold_verdict === "fail" ? 2 : 1);
+  const linked = chosen
+    .filter((s) => s.kind === "tagged" && s.site_id != null && listedIds.has(s.site_id))
+    .sort((a, b) => {
+      const pa = a.site_id != null && primaryIds.has(a.site_id) ? 0 : 1;
+      const pb = b.site_id != null && primaryIds.has(b.site_id) ? 0 : 1;
+      return pa - pb || verdictRank(a) - verdictRank(b);
+    });
+  const native = chosen.filter((s) => s.kind !== "tagged");
+  return [...linked, ...native];
+}
+
 /** The member's current picks first, then alternatives by source and rank. */
 export function sortSites(sites: readonly L1Site[]): L1Site[] {
   const srcOrder: Record<string, number> = { rung_builder: 0, ranker: 1, agent_proposer: 2 };

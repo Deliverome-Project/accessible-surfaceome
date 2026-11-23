@@ -8,8 +8,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ReviewPanel, SiteCard, partitionModels, structureTabLabel } from "../components/L1Review/L1Review";
+import { ReviewPanel, SiteCard, structureTabLabel } from "../components/L1Review/L1Review";
 import {
+  currentMemberModels,
   filterIndex,
   latestVerdicts,
   modelToMemberResidue,
@@ -513,14 +514,14 @@ test("multiple fold tabs name their arm and residue so identical pLDDT/verdict t
   assert.equal(structureTabLabel(native, twoArms, true), "Native · pLDDT 84");
 });
 
-test("partitionModels puts current-pick folds first and tucks unlisted failed sweep refolds away (GLP1R case)", () => {
+test("currentMemberModels keeps only current-pick folds and native, excluding earlier sweep refolds (GLP1R / ADAM15)", () => {
   const mk = (id: string, kind: "tagged" | "native", site_id: string | null, refold_verdict: string | null) => ({
     structure_id: id, kind, site_id, source: "colabfold", release: null, r2_key: null, model_url: null,
     proteoform_match: null, residue_offset: 0, is_chosen: true, mean_plddt: 69,
     cassette_first_model_residue: 25, cassette_last_model_residue: 75, refold_verdict, note: null,
   });
   const glp1rSites = [site({ site_id: "l1-p0723-nsp-24", is_primary: true, insert_after_residue: 24 })];
-  const { primary, earlier } = partitionModels(
+  const got = currentMemberModels(
     [
       mk("native", "native", null, null),
       mk("fail-29", "tagged", null, "fail"),
@@ -529,8 +530,7 @@ test("partitionModels puts current-pick folds first and tucks unlisted failed sw
     ],
     glp1rSites,
   );
-  assert.deepEqual(primary.map((x) => x.structure_id), ["pass-24", "native"]);
-  assert.deepEqual(earlier.map((x) => x.structure_id), ["fail-29", "fail-25"]);
+  assert.deepEqual(got.map((x) => x.structure_id), ["pass-24", "native"]);
 });
 
 test("verdict buttons advertise = / - / . shortcuts and SiteCard chips semicolon-delimited detail", () => {

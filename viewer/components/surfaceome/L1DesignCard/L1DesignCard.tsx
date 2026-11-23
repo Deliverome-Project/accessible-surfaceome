@@ -12,6 +12,7 @@ import type { CoReceptorRequirements } from "../../../lib/surfaceome-types";
 import {
   STATUS_HELP,
   STATUS_LABEL,
+  currentMemberModels,
   sortSites,
   fetchL1DesignResult,
   l1AbsenceReason,
@@ -177,9 +178,8 @@ export function ObligatePartnerAbsence({
  */
 function L1ModelViewer({ members, topologies }: { members: L1Member[]; topologies: readonly LibraryTopologyRow[] }) {
   const choices = members.flatMap((m) =>
-    m.structures
-      .filter((s) => s.is_chosen && l1StructureUrl(s))
-      .sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "tagged" ? -1 : 1))
+    currentMemberModels(m.structures, m.sites)
+      .filter((s) => l1StructureUrl(s))
       .map((s) => ({ m, s })),
   );
   const [key, setKey] = useState<string>(choices[0]?.s.structure_id ?? "");
