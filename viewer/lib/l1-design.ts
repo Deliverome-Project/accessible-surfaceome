@@ -361,6 +361,9 @@ export interface L1SpDescription {
   status: L1SpStatus | null;
   /** One line for the member header. */
   text: string;
+  /** Why this member uses Igκ vs native SP vs no leader (per-member reason/evidence when
+   *  present, else the rung rule). */
+  why: string | null;
   /** Native residues this describes, member numbering, for the topology strip. */
   band: { from: number; to: number; kind: "native_sp" | "replaced" } | null;
   /** Where the statement comes from. */
@@ -382,6 +385,7 @@ export function memberSp(member: Pick<L1Member, "rung" | "sites" | "sp_status" |
     member.sp_status ?? indexSpStatus({ rung: member.rung, pick_leader: pick ? pick.leader ?? null : undefined }) ??
     (topology ? (topoSp ? "native" : "none") : null);
   const evidence = member.sp_evidence ? ` (${member.sp_evidence})` : "";
+  const explicitWhy = pick?.reason?.trim() || member.sp_evidence?.trim() || null;
   const source = member.sp_status ? `design export${evidence}` : pick && (leader || member.rung.startsWith("N after SP")) ? "the primary pick" : topology ? "DeepTMHMM v1 topology" : "not known";
   if (status === "igk_swap") {
     const removed = ins != null && ins > 0 ? ins : spEnd;
@@ -392,24 +396,40 @@ export function memberSp(member: Pick<L1Member, "rung" | "sites" | "sp_status" |
       text: spEnd
         ? `Igκ leader replaces ${sp}${extra}`
         : `Igκ leader replaces the native N-terminus${removed ? ` (native residues 1–${removed})` : ""}`,
+      why: explicitWhy ?? "Native SP swapped for Igκ leader so the N-terminal tag cleaves cleanly and stays exposed.",
       band: removed ? { from: 1, to: removed, kind: "replaced" } : null,
       source,
     };
   }
   if (status === "igk_res1") {
-    return { status, text: "Igκ leader added before residue 1 (no native signal peptide)", band: null, source };
+    return {
+      status,
+      text: "Igκ leader added before residue 1 (no native signal peptide)",
+      why: explicitWhy ?? "Extracellular N-terminus without a native SP; Igκ leader directs surface translocation of the tag.",
+      band: null,
+      source,
+    };
   }
   if (status === "native") {
     const end = spEnd ?? (topoSp || null);
     return {
       status,
       text: `native signal peptide${end ? ` (cleaved 1–${end})` : ""}, kept${ins != null && member.rung.startsWith("N after SP") ? `; tag after residue ${ins}` : ""}`,
+      why: explicitWhy ?? "Native SP retained; tag inserted after the cleavage site without needing an Igκ swap.",
       band: end ? { from: 1, to: end, kind: "native_sp" } : null,
       source: spEnd ? source : end ? "DeepTMHMM v1 topology" : source,
     };
   }
-  if (status === "none") return { status, text: "no signal peptide and no leader", band: null, source };
-  return { status: null, text: "signal peptide: not stated for this member", band: null, source };
+  if (status === "none") {
+    return {
+      status,
+      text: "no signal peptide and no leader",
+      why: explicitWhy ?? "No native SP and no Igκ leader needed (tagged internally/C-terminally or cytoplasmic N-terminus).",
+      band: null,
+      source,
+    };
+  }
+  return { status: null, text: "signal peptide: not stated for this member", why: null, band: null, source };
 }
 
 export function countBy<T>(rows: readonly T[], key: (r: T) => string): [string, number][] {

@@ -52,6 +52,7 @@ import type { LibraryTopologyRow } from "../../lib/structure-viewer-types";
 import { L1TopologyStrip, insertFlags } from "./L1TopologyStrip";
 import { L1Structure3D, type L1Mark } from "./L1Structure3D";
 import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
+import { InfoTip } from "../InfoTip/InfoTip";
 import { useTurnstile, type ReviewAuth } from "./useTurnstile";
 import styles from "./L1Review.module.css";
 
@@ -163,6 +164,10 @@ function Rationale({ value }: { value: Record<string, unknown> }) {
   );
 }
 
+function isRedacted(v: string | null | undefined): boolean {
+  return !v || /^withheld\b/i.test(v.trim());
+}
+
 export function SiteCard({
   site,
   length,
@@ -176,6 +181,10 @@ export function SiteCard({
   onShow?: () => void;
 }) {
   const primary = site.is_primary !== false;
+  const hasDecidedBy = !isRedacted(site.decided_by);
+  const hasImplementedBy = !isRedacted(site.implemented_by);
+  const hasSource = !isRedacted(site.source.path) && !isRedacted(site.source.commit);
+  const redactedProvenance = !hasDecidedBy && !site.rationale;
   return (
     <div className={`${styles.site} ${primary ? styles.sitePrimary : ""}`}>
       <div className={styles.siteHead}>
@@ -201,8 +210,7 @@ export function SiteCard({
         </span>
       </div>
       <dl className={styles.why}>
-        <dt>decided by</dt>
-        <dd>{site.decided_by}</dd>
+        {hasDecidedBy ? (<><dt>decided by</dt><dd>{site.decided_by}</dd></>) : null}
         {site.reason ? (<><dt>reason</dt><dd>{site.reason}</dd></>) : null}
         {site.rejected_alternative ? (<><dt>rejected alternative</dt><dd>{site.rejected_alternative}</dd></>) : null}
         {site.decision ? (<><dt>decision</dt><dd>{site.decision}</dd></>) : null}
@@ -223,18 +231,27 @@ export function SiteCard({
         })() : null}
       </dl>
       <details className={styles.more}>
-        <summary>rationale, scores and source</summary>
-        {site.rationale ? <Rationale value={site.rationale} /> : <p className={styles.muted}>No scores recorded for this pick.</p>}
+        <summary>{site.rationale || hasSource ? "rationale, scores and source" : "construct & site details"}</summary>
+        {site.rationale ? (
+          <Rationale value={site.rationale} />
+        ) : redactedProvenance ? (
+          <p className={styles.muted}>Internal design scores and provenance are withheld on this public API load.</p>
+        ) : (
+          <p className={styles.muted}>No scores recorded for this pick.</p>
+        )}
         <dl className={styles.why}>
-          <dt>implemented by</dt>
-          <dd>{site.implemented_by}</dd>
+          {hasImplementedBy ? (<><dt>implemented by</dt><dd>{site.implemented_by}</dd></>) : null}
           <dt>cassette</dt>
           <dd>{site.cassette ?? "—"}{site.cassette_aa != null ? ` (${site.cassette_aa} aa inserted)` : ""}</dd>
-          <dt>source</dt>
-          <dd className={styles.mono}>
-            {site.source.pr != null ? `design PR ${site.source.pr} (${site.source.pr_state ?? "?"}) · ` : ""}
-            {site.source.commit.slice(0, 8)} · {site.source.path}
-          </dd>
+          {hasSource ? (
+            <>
+              <dt>source</dt>
+              <dd className={styles.mono}>
+                {site.source.pr != null ? `design PR ${site.source.pr} (${site.source.pr_state ?? "?"}) · ` : ""}
+                {site.source.commit.slice(0, 8)} · {site.source.path}
+              </dd>
+            </>
+          ) : null}
           <dt>site id</dt>
           <dd className={styles.mono}>{site.site_id}</dd>
         </dl>
@@ -977,6 +994,7 @@ function MemberDetail({
         <dd title={`from ${sp.source}`}>
           {sp.status ? <span className={styles.spTag}>{SP_LABEL[sp.status]}</span> : null} {sp.text}
           <span className={styles.muted}> · from {sp.source}</span>
+          {sp.why ? <span className={styles.spWhy}>{sp.why}</span> : null}
         </dd>
         <dt>UniProt</dt>
         <dd>
@@ -1080,21 +1098,36 @@ function MemberDetail({
             {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
           </div>
           <div className={styles.structureControls} aria-label="Structure overlays">
-            <label className={showAlts ? styles.ctrlOn : styles.ctrl}>
-              <input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} />
-              Alternatives
-            </label>
+            <span className={styles.ctrlGroup}>
+              <label className={showAlts ? styles.ctrlOn : styles.ctrl}>
+                <input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} />
+                Alternatives
+              </label>
+              <InfoTip align="end" label="About alternative sites">
+                Candidate tag sites proposed by the ranker (gold) and agent proposer (burnt orange) that were not chosen as the primary pick.
+              </InfoTip>
+            </span>
             {segments ? (
               <>
-                <label className={showContacts ? styles.ctrlOn : styles.ctrl}>
-                  <input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} />
-                  Contacts
-                </label>
-                {showContacts ? (
-                  <label className={showHidden ? styles.ctrlOn : styles.ctrl} title="Include ion sites and crystallization additives">
-                    <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
-                    Ion / add.
+                <span className={styles.ctrlGroup}>
+                  <label className={showContacts ? styles.ctrlOn : styles.ctrl}>
+                    <input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} />
+                    Contacts
                   </label>
+                  <InfoTip align="end" label="About contact sites">
+                    Extracellular ligand/partner contact residues from curated PDB/PDBe structures (violet), UniProt binding sites (indigo), and agent-extracted literature (teal/cyan).
+                  </InfoTip>
+                </span>
+                {showContacts ? (
+                  <span className={styles.ctrlGroup}>
+                    <label className={showHidden ? styles.ctrlOn : styles.ctrl}>
+                      <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
+                      Ions &amp; additives
+                    </label>
+                    <InfoTip align="end" label="About ions and crystallization additives">
+                      Include metal/ion coordination sites (e.g. Ca²⁺, Zn²⁺) and crystallization buffer additives (e.g. PEG, glycerol, lipids). Hidden by default so real ligand/protein interfaces stay clear.
+                    </InfoTip>
+                  </span>
                 ) : null}
               </>
             ) : (() => {

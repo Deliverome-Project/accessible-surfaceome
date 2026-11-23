@@ -543,3 +543,29 @@ test("verdict buttons advertise = / - / . shortcuts and SiteCard chips semicolon
   const card = renderToStaticMarkup(React.createElement(SiteCard, { site: site({}), length: 152 }));
   assert.match(card, /<ul class="detailChips"><li>internal_loop<\/li><li>refold verdict pending<\/li><\/ul>/);
 });
+
+test("redacted public provenance is hidden cleanly on SiteCard and memberSp explains Igκ vs native SP", async () => {
+  const { memberSp } = await import("../lib/l1-design");
+  const redactedCard = renderToStaticMarkup(
+    React.createElement(SiteCard, {
+      site: site({
+        decided_by: "withheld: internal design record",
+        implemented_by: "withheld: internal design record",
+        rationale: null,
+        reason: null,
+        source: { pr: null, pr_state: null, commit: "withheld", path: "withheld: internal design record" },
+      }),
+      length: 820,
+    }),
+  );
+  assert.doesNotMatch(redactedCard, /withheld: internal design record/);
+  assert.match(redactedCard, /construct &amp; site details/);
+  assert.match(redactedCard, /Internal design scores and provenance are withheld/);
+
+  const swap = memberSp(member({ rung: "N after SP", sites: [site({ leader: "igk", insert_after_residue: 68, reason: null })] }));
+  assert.match(swap.why ?? "", /Igκ leader/);
+  const native = memberSp(member({ rung: "N after SP", sites: [site({ leader: null, insert_after_residue: 24, reason: null })] }));
+  assert.match(native.why ?? "", /Native SP retained/);
+  const explicit = memberSp(member({ rung: "N after SP", sp_evidence: "native cleavage buried ALFA", sites: [site({ leader: "igk", reason: null })] }));
+  assert.equal(explicit.why, "native cleavage buried ALFA");
+});

@@ -159,7 +159,8 @@
   gap: 0.35rem var(--space-3); margin-bottom: 0.4rem;
 }
 .modelRow { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
-.structureControls { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; font-size: 0.76rem; }
+.structureControls { display: inline-flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; font-size: 0.76rem; }
+.ctrlGroup { display: inline-flex; align-items: center; gap: 0.15rem; }
 .ctrl, .ctrlOn {
   display: inline-flex; align-items: center; gap: 0.3rem;
   padding: 0.16rem 0.5rem; border-radius: var(--radius-pill);
@@ -413,6 +414,7 @@
 .facts dt { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 0.12rem; }
 .facts dd { margin: 0; }
 .spTag { display: inline-block; font-size: 0.72rem; padding: 0 0.45rem; border-radius: var(--radius-pill); border: 1px solid var(--line); margin-right: 0.2rem; }
+.spWhy { display: block; margin-top: 0.15rem; font-size: 0.76rem; color: var(--muted); }
 .diffList { margin: 0.2rem 0 0; padding-left: 1rem; font-size: 0.78rem; }
 /* SP bracket on the topology strip: hatched when the Igk leader replaces those residues. */
 .spBand { position: absolute; top: calc(1.15rem - 6px); height: 4px; background: var(--ink); opacity: 0.55; border-radius: 1px; pointer-events: auto; }
