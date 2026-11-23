@@ -19,11 +19,14 @@ import {
   l1MemberTopology,
   l1ModelMap,
   l1OrderedProteinLabel,
+  l1PrimarySiteSignature,
   l1SiteLabel,
+  l1SiteSignature,
   l1StructureUrl,
   latestVerdicts,
   nextIndexByLetter,
   reviewScopeLabel,
+  reviewStaleReason,
   sortSites,
   standingReviewIds,
   reviewErrorMessage,
@@ -377,6 +380,15 @@ export function ReviewPanel({
   const mine = (reviews?.reviews ?? []).filter((r) => r.design_id === member.design_id);
   const alts = (reviews?.alt_tags ?? []).filter((r) => r.design_id === member.design_id);
   const standing = useMemo(() => standingReviewIds(reviews?.reviews ?? []), [reviews]);
+  const staleStandingReasons = useMemo(() => {
+    const reasons = new Set<string>();
+    for (const r of mine) {
+      if (!standing.has(r.review_id)) continue;
+      const why = reviewStaleReason(r, member, loadVersion);
+      if (why) reasons.add(why);
+    }
+    return [...reasons];
+  }, [mine, standing, member, loadVersion]);
   const fieldId = `l1-review-${key}`;
 
   function problem(): string | null {
@@ -409,6 +421,7 @@ export function ReviewPanel({
       });
       return;
     }
+    const primarySig = l1PrimarySiteSignature(sites);
     const base = {
       reviewer: name, member_id: member.member_id, design_id: member.design_id, gene_symbol: member.gene_symbol,
       sequence_sha256: member.sequence_sha256 ?? null, load_version: loadVersion,
@@ -427,12 +440,12 @@ export function ReviewPanel({
         const cassette = draft.alt.cassette || null;
         const r = await submitL1Review(API_BASE, t, {
           ...base, kind: "alt_tag", placement, insert_after_residue: residue,
-          cassette_variant: cassette, reason,
+          cassette_variant: cassette, reason, site_signature: primarySig,
         });
         if (!r.ok) return setMsg({ ok: false, text: `Not saved: ${reviewErrorMessage(r.error)}` });
         const row: L1AltTagRow = {
           suggestion_id: r.id, created_at: r.created_at, ...base, design_id: member.design_id,
-          insert_after_residue: residue, placement, cassette_variant: cassette, reason,
+          insert_after_residue: residue, placement, cassette_variant: cassette, reason, site_signature: primarySig,
         };
         patch({ mode: "", reason: "", alt: EMPTY_DRAFT.alt });
         setMsg({ ok: true, text: "Saved — thank you. Your suggested site is listed below." });
@@ -441,10 +454,15 @@ export function ReviewPanel({
       }
       const v = draft.mode;
       const site = siteId || null; // "" is the member as a whole, stored as NULL
-      const r = await submitL1Review(API_BASE, t, { ...base, kind: "verdict", verdict: v, reason, site_id: site });
+      const targetSite = site ? sites.find((s) => s.site_id === site) : undefined;
+      const siteSig = targetSite ? l1SiteSignature(targetSite) : primarySig;
+      const r = await submitL1Review(API_BASE, t, {
+        ...base, kind: "verdict", verdict: v, reason, site_id: site, site_signature: siteSig,
+      });
       if (!r.ok) return setMsg({ ok: false, text: `Not saved: ${reviewErrorMessage(r.error)}` });
       const row: L1ReviewRow = {
-        review_id: r.id, created_at: r.created_at, ...base, design_id: member.design_id, site_id: site, verdict: v, reason,
+        review_id: r.id, created_at: r.created_at, ...base, design_id: member.design_id,
+        site_id: site, verdict: v, reason, site_signature: siteSig,
       };
       patch({ mode: "", reason: "" });
       const about = reviewScopeLabel(site, sites, member.ordered_length_aa);
@@ -525,6 +543,11 @@ export function ReviewPanel({
           </>
         )}
       </p>
+      {staleStandingReasons.length > 0 ? (
+        <p className={styles.staleBanner} role="status">
+          <strong>Previous review is out of date</strong> ({staleStandingReasons.join("; ")}) — please re-review the current construct.
+        </p>
+      ) : null}
       {/* Toggle buttons, not radios: a focused radio takes the arrow keys, which left a
           reviewer pressing → to change member and changing the verdict instead. */}
       <div className={styles.verdictRow}>
@@ -634,15 +657,22 @@ export function ReviewPanel({
         <div className={styles.history}>
           <h4 className={styles.h4}>Recorded for this member, every reviewer, oldest first</h4>
           <ul>
-            {mine.map((r) => (
-              <li key={r.review_id} className={standing.has(r.review_id) ? undefined : styles.superseded}>
-                <span className={r.verdict === "good" ? styles.goodText : styles.noText}>{r.verdict === "good" ? "looks right" : "concern"}</span>{" "}
-                · {reviewScopeLabel(r.site_id, sites, member.ordered_length_aa)} · {r.reviewer} ·{" "}
-                {r.created_at.slice(0, 16).replace("T", " ")}
-                {standing.has(r.review_id) ? "" : " · superseded by a later row"}
-                {r.reason ? ` · ${r.reason}` : ""}
-              </li>
-            ))}
+            {mine.map((r) => {
+              const isStanding = standing.has(r.review_id);
+              const staleWhy = reviewStaleReason(r, member, loadVersion);
+              const cls = !isStanding ? styles.superseded : staleWhy ? styles.staleRow : undefined;
+              return (
+                <li key={r.review_id} className={cls}>
+                  <span className={r.verdict === "good" ? styles.goodText : styles.noText}>{r.verdict === "good" ? "looks right" : "concern"}</span>{" "}
+                  {staleWhy ? <span className={styles.staleBadge} title={staleWhy}>out of date: {staleWhy}</span> : null}
+                  {staleWhy ? " " : ""}
+                  · {reviewScopeLabel(r.site_id, sites, member.ordered_length_aa)} · {r.reviewer} ·{" "}
+                  {r.created_at.slice(0, 16).replace("T", " ")}
+                  {isStanding ? "" : " · superseded by a later row"}
+                  {r.reason ? ` · ${r.reason}` : ""}
+                </li>
+              );
+            })}
             {alts.map((a) => (
               <li key={a.suggestion_id}>
                 <span className={styles.swatch} style={{ background: COLORS.suggestion }} /> another site:{" "}
@@ -1274,21 +1304,51 @@ export function L1Review() {
   }, [serverReviews, savedHere]);
 
   const members = index && index !== "loading" ? index.members : [];
+  const currentLoadVersion = index && index !== "loading" ? index.load?.load_version ?? null : null;
+  const memberByDesign = useMemo(() => {
+    const map = new Map<string, L1IndexMember>();
+    for (const m of members) map.set(m.design_id ?? m.member_id, m);
+    return map;
+  }, [members]);
+  const verdicts = useMemo(() => latestVerdicts(reviews?.reviews ?? []), [reviews]);
+  const staleDesignIds = useMemo(() => {
+    const out = new Set<string>();
+    for (const [did, rows] of verdicts.entries()) {
+      const m = memberByDesign.get(did);
+      if (!m) continue;
+      if (rows.some((r) => reviewStaleReason(r, m, currentLoadVersion) != null)) out.add(did);
+    }
+    return out;
+  }, [verdicts, memberByDesign, currentLoadVersion]);
   const reviewedByMe = useMemo(() => {
     const name = reviewer.trim().toLowerCase();
-    const fromRows = (reviews?.reviews ?? []).filter((r) => r.reviewer.trim().toLowerCase() === name).map((r) => r.design_id);
-    const fromAlts = (reviews?.alt_tags ?? []).filter((r) => r.reviewer.trim().toLowerCase() === name).map((r) => r.design_id);
-    return new Set([...mineIds, ...(name ? [...fromRows, ...fromAlts] : [])]);
-  }, [mineIds, reviews, reviewer]);
+    const freshMine = new Set<string>();
+    if (name) {
+      for (const [did, rows] of verdicts.entries()) {
+        const m = memberByDesign.get(did);
+        for (const r of rows) {
+          if (r.reviewer.trim().toLowerCase() !== name) continue;
+          if (!m || reviewStaleReason(r, m, currentLoadVersion) == null) freshMine.add(did);
+        }
+      }
+      for (const a of reviews?.alt_tags ?? []) {
+        if (a.reviewer.trim().toLowerCase() === name) freshMine.add(a.design_id);
+      }
+    }
+    for (const id of mineIds) {
+      if (!staleDesignIds.has(id)) freshMine.add(id);
+    }
+    return freshMine;
+  }, [mineIds, reviews, reviewer, verdicts, memberByDesign, currentLoadVersion, staleDesignIds]);
   const facetBase = {
     rung: filters.rung, membraneClass: filters.cls, status: filters.status, query: filters.q,
-    sp: filters.sp, diff: filters.diff, snorkel: filters.snorkel, reviewed: filters.rev, reviewedByMe,
+    sp: filters.sp, diff: filters.diff, snorkel: filters.snorkel, reviewed: filters.rev,
+    reviewedByMe, staleDesignIds,
   };
-  const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe]); // eslint-disable-line react-hooks/exhaustive-deps
+  const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe, staleDesignIds]); // eslint-disable-line react-hooks/exhaustive-deps
   const current: L1IndexMember | undefined =
     members.find((m) => m.design_id === filters.m || m.member_id === filters.m) ?? undefined;
   const pos = current ? visible.findIndex((m) => m.member_id === current.member_id) : -1;
-  const verdicts = useMemo(() => latestVerdicts(reviews?.reviews ?? []), [reviews]);
 
   const update = useCallback((patch: Partial<typeof filters>) => {
     setFilters((f) => ({ ...f, ...patch }));
@@ -1520,7 +1580,12 @@ export function L1Review() {
   const snorkelKnown = members.some((m) => memberHasSnorkel(m) !== null);
   const snorkelCount = (k: string) => (k === "" ? forSnorkel.length : forSnorkel.filter((m) => memberHasSnorkel(m) === (k === "yes")).length);
   const forRev = without("reviewed");
-  const revCount = (k: string) => (k === "" ? forRev.length : forRev.filter((m) => reviewedByMe.has(m.design_id ?? m.member_id) === (k === "mine")).length);
+  const revCount = (k: string) =>
+    k === ""
+      ? forRev.length
+      : k === "stale"
+        ? forRev.filter((m) => staleDesignIds.has(m.design_id ?? m.member_id)).length
+        : forRev.filter((m) => reviewedByMe.has(m.design_id ?? m.member_id) === (k === "mine")).length;
   const filterSummary = [
     filters.rung && `rung: ${filters.rung}`,
     filters.cls && `class: ${filters.cls}`,
@@ -1528,7 +1593,7 @@ export function L1Review() {
     filters.sp && `SP: ${SP_LABEL[filters.sp as keyof typeof SP_LABEL] ?? filters.sp}`,
     filters.diff && (filters.diff === "yes" ? "differs from UniProt" : "same as UniProt"),
     filters.snorkel && (filters.snorkel === "yes" ? "snorkel tag" : "no snorkel"),
-    filters.rev && (filters.rev === "mine" ? "reviewed by me" : "not reviewed by me"),
+    filters.rev && (filters.rev === "mine" ? "reviewed by me" : filters.rev === "stale" ? "out of date" : "not reviewed by me"),
   ].filter(Boolean).join(" · ") || "none";
   const reviewedN = new Set((reviews?.reviews ?? []).map((r) => r.design_id)).size;
 
@@ -1615,8 +1680,8 @@ export function L1Review() {
           </div>
         ) : null}
         <div>
-          <span className={styles.facetLabel} title="Members you saved a review or suggestion on, in this browser">Reviewed</span>
-          {[["", "all"], ["notmine", "not reviewed by me"], ["mine", "reviewed by me"]].map(([k, label]) => (
+          <span className={styles.facetLabel} title="Review status; out of date means the protein sequence or tag site changed after review">Reviewed</span>
+          {[["", "all"], ["notmine", "not reviewed by me"], ["mine", "reviewed by me"], ["stale", "out of date"]].map(([k, label]) => (
             <button key={k || "all"} type="button" className={filters.rev === k ? styles.chipOn : styles.chip} onClick={() => update({ rev: k })}>
               {label} <span className={styles.n}>{revCount(k)}</span>
             </button>
@@ -1633,6 +1698,7 @@ export function L1Review() {
             <summary>
               {reviewer.trim() ? `Reviewing as ${reviewer.trim()}` : "Add your name to review"}
               {reviews ? ` · ${reviewedN} of ${members.length} reviewed` : ""}
+              {staleDesignIds.size > 0 ? ` · ${staleDesignIds.size} out of date` : ""}
               {" · "}
               <span className={styles.mono}>load {index.load.load_version}</span>
             </summary>
@@ -1758,9 +1824,18 @@ export function L1Review() {
                       {/* One dot per reviewer per scope, so a member whose a2 was
                           rejected and whose a1 passed shows both. The index carries no
                           sites, so the arm is read off the site id. */}
-                      {(verdicts.get(primary.design_id ?? "") ?? []).map((r) => (
-                        <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} title={`${r.reviewer}: ${r.verdict} · ${r.site_id ? armLabel(r.site_id) ?? r.site_id : "the member"}${r.reason ? ` — ${r.reason}` : ""}`} />
-                      ))}
+                      {(verdicts.get(primary.design_id ?? "") ?? []).map((r) => {
+                        const staleWhy = reviewStaleReason(r, primary, currentLoadVersion);
+                        const dotCls = staleWhy ? styles.staleDot : r.verdict === "good" ? styles.goodDot : styles.noDot;
+                        const prefix = staleWhy ? `OUT OF DATE (${staleWhy}) · ` : "";
+                        return (
+                          <span
+                            key={r.review_id}
+                            className={dotCls}
+                            title={`${prefix}${r.reviewer}: ${r.verdict} · ${r.site_id ? armLabel(r.site_id) ?? r.site_id : "the member"}${r.reason ? ` — ${r.reason}` : ""}`}
+                          />
+                        );
+                      })}
                     </span>
                   </button>
                   {g.members.length > 1 ? (
@@ -1778,9 +1853,11 @@ export function L1Review() {
                           >
                             {l1MemberRoleLabel(m)}
                             {on && m.member_id !== primary.member_id ? <span className={styles.mono}>· {m.member_id}</span> : null}
-                            {(verdicts.get(m.design_id ?? "") ?? []).map((r) => (
-                              <span key={r.review_id} className={r.verdict === "good" ? styles.goodDot : styles.noDot} />
-                            ))}
+                            {(verdicts.get(m.design_id ?? "") ?? []).map((r) => {
+                              const staleWhy = reviewStaleReason(r, m, currentLoadVersion);
+                              const dotCls = staleWhy ? styles.staleDot : r.verdict === "good" ? styles.goodDot : styles.noDot;
+                              return <span key={r.review_id} className={dotCls} title={staleWhy ? `OUT OF DATE (${staleWhy})` : undefined} />;
+                            })}
                           </button>
                         );
                       })}

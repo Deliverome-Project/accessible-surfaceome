@@ -60,9 +60,10 @@
 .row:hover { background: var(--bg-warm); }
 .rowOn { background: var(--maroon-blush, #f6e7ea); box-shadow: inset 3px 0 0 var(--accent); }
 .rowStatus { margin-left: auto; display: inline-flex; gap: 0.2rem; align-items: center; }
-.goodDot, .noDot { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 50%; }
+.goodDot, .noDot, .staleDot { display: inline-block; width: 0.55rem; height: 0.55rem; border-radius: 50%; }
 .goodDot { background: var(--teal-dark); }
 .noDot { background: var(--maroon-dark); }
+.staleDot { background: #fffbeb; border: 2px solid #d97706; box-sizing: border-box; }
 
 .detail { min-width: 0; }
 .detailHead { display: grid; grid-template-columns: auto 1fr auto; gap: var(--space-3); align-items: center; margin-bottom: var(--space-2); }
@@ -164,6 +165,15 @@
 /* An earlier verdict on the same arm by the same reviewer: kept by the append-only log,
    no longer their position. Legible, but visibly not the current record. */
 .superseded { opacity: 0.55; }
+.staleBanner {
+  margin: 0.4rem 0 0.55rem; padding: 0.45rem 0.65rem; border-radius: var(--radius-sm, 6px);
+  border: 1px solid #f59e0b; background: #fffbeb; color: #92400e; font-size: 0.82rem; line-height: 1.4;
+}
+.staleRow { opacity: 0.8; }
+.staleBadge {
+  display: inline-block; padding: 0.02rem 0.4rem; border-radius: var(--radius-pill);
+  border: 1px solid #f59e0b; background: #fffbeb; color: #92400e; font-size: 0.72rem; font-weight: var(--fw-medium);
+}
 
 .structureHeader {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;

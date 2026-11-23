@@ -586,3 +586,83 @@ test("redacted public provenance is hidden cleanly on SiteCard and memberSp expl
   const explicit = memberSp(member({ rung: "N after SP", sp_evidence: "native cleavage buried ALFA", sites: [site({ leader: "igk", reason: null })] }));
   assert.equal(explicit.why, "native cleavage buried ALFA");
 });
+
+test("reviewStaleReason flags protein sequence changes, tag location changes, removed sites, and older loads", async () => {
+  const { l1PrimarySiteSignature, l1SiteSignature, reviewStaleReason } = await import("../lib/l1-design");
+  const s1 = site({ site_id: "l1-p0100-a1", insert_after_residue: 142, leader: null, cassette: "p003", is_primary: true });
+  const s1Moved = site({ site_id: "l1-p0100-a1", insert_after_residue: 210, leader: null, cassette: "p003", is_primary: true });
+  const s1Leader = site({ site_id: "l1-p0100-a1", insert_after_residue: 142, leader: "igk", cassette: "p003", is_primary: true });
+
+  const sig1 = l1SiteSignature(s1);
+  assert.notEqual(sig1, l1SiteSignature(s1Moved));
+  assert.notEqual(sig1, l1SiteSignature(s1Leader));
+
+  const mem = member({ design_id: "l1-p0100", sequence_sha256: "aaaa", sites: [s1] });
+  const freshReview: L1ReviewRow = {
+    review_id: "r1", created_at: "2026-11-22T10:00:00Z", reviewer: "Becca",
+    member_id: "l1-p0100", design_id: "l1-p0100", sequence_sha256: "aaaa",
+    gene_symbol: "CD4", site_id: "l1-p0100-a1", verdict: "good", reason: null,
+    load_version: "l1d-1111111111111111", site_signature: sig1,
+  };
+
+  // Current review stays fresh even across a load bump if sequence + site_signature match.
+  assert.equal(reviewStaleReason(freshReview, mem, "l1d-2222222222222222"), null);
+  // Protein sequence change marks review out of date.
+  assert.equal(reviewStaleReason(freshReview, { ...mem, sequence_sha256: "bbbb" }, "l1d-1111111111111111"), "protein sequence changed");
+  // Tag location change marks review out of date (detail view AND index primary_site_signature).
+  assert.equal(reviewStaleReason(freshReview, { ...mem, sites: [s1Moved] }, "l1d-1111111111111111"), "tag location changed");
+  assert.equal(
+    reviewStaleReason(freshReview, { sequence_sha256: "aaaa", primary_site_signature: l1PrimarySiteSignature([s1Moved]) }, "l1d-1111111111111111"),
+    "tag location changed",
+  );
+  assert.equal(
+    reviewStaleReason(freshReview, { sequence_sha256: "aaaa", primary_site_signature: l1PrimarySiteSignature([s1]) }, "l1d-1111111111111111"),
+    null,
+  );
+  // Removed site_id marks review out of date.
+  assert.equal(reviewStaleReason(freshReview, { ...mem, sites: [] }, "l1d-1111111111111111"), "reviewed tag site was removed");
+  // Legacy row without site_signature flags an older load version.
+  const legacyReview: L1ReviewRow = { ...freshReview, site_signature: null };
+  assert.equal(reviewStaleReason(legacyReview, mem, "l1d-2222222222222222"), "older design load (tag site may have changed)");
+  assert.equal(reviewStaleReason(legacyReview, mem, "l1d-1111111111111111"), null);
+
+  // filterIndex supports reviewed: "stale".
+  const idx = [
+    m("l1-p0100", "CD4", "internal", "single-pass", ["built"]),
+    m("l1-p0200", "CD8A", "C-terminal", "single-pass", ["built"]),
+  ];
+  assert.deepEqual(
+    filterIndex(idx, { reviewed: "stale", staleDesignIds: new Set(["l1-p0100"]) }).map((x) => x.design_id),
+    ["l1-p0100"],
+  );
+});
+
+test("ReviewPanel renders an out-of-date warning banner and badge when a standing review is stale", async () => {
+  const { l1SiteSignature } = await import("../lib/l1-design");
+  const oldSite = site({ site_id: "l1-p0100-a1", insert_after_residue: 142, leader: null, cassette: "p003" });
+  const movedSite = site({ site_id: "l1-p0100-a1", insert_after_residue: 210, leader: null, cassette: "p003" });
+  const mem = member({ design_id: "l1-p0100", sequence_sha256: "aaaa", sites: [movedSite] });
+  const staleRow: L1ReviewRow = {
+    review_id: "r1", created_at: "2026-11-22T10:00:00Z", reviewer: "Becca",
+    member_id: "l1-p0100", design_id: "l1-p0100", sequence_sha256: "aaaa",
+    gene_symbol: "CD4", site_id: "l1-p0100-a1", verdict: "good", reason: "looks clean",
+    load_version: "l1d-1111111111111111", site_signature: l1SiteSignature(oldSite),
+  };
+  const html = renderToStaticMarkup(
+    React.createElement(ReviewPanel, {
+      member: mem,
+      sites: [movedSite],
+      loadVersion: "l1d-1111111111111111",
+      reviewer: "Becca",
+      onEditName: () => {},
+      auth: { status: "ready", take: () => "tok" },
+      reviews: { reviews: [staleRow], alt_tags: [] },
+      onSaved: () => {},
+      drafts: {},
+      setDrafts: () => {},
+    }),
+  );
+  assert.match(html, /Previous review is out of date/);
+  assert.match(html, /tag location changed/);
+  assert.match(html, /out of date: tag location changed/);
+});
