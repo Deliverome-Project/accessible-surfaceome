@@ -79,6 +79,8 @@
 .detailHead > button:hover { border-color: var(--ink-soft); background: var(--bg-warm); }
 .detailHead > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .h2 { margin: 0; font-size: 1.35rem; }
+.geneLink { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out); }
+.geneLink:hover, .geneLink:focus-visible { color: var(--accent); border-bottom-color: var(--accent); }
 .h3 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-deep); margin: var(--space-4) 0 var(--space-2); }
 .h4 { font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0.2rem; }
 .detailBody { display: flex; flex-direction: column; }

@@ -1747,7 +1747,16 @@ export function L1Review() {
                 <button type="button" onClick={() => go(-1)} aria-label="Previous member">←</button>
                 <div>
                   <h2 className={styles.h2}>
-                    {current.gene_symbol} <span className={styles.mono}>{current.member_id}</span>
+                    <a
+                      className={styles.geneLink}
+                      href={`/${encodeURIComponent(current.gene_symbol)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={`Open ${current.gene_symbol} in the main Surfaceome viewer`}
+                    >
+                      {current.gene_symbol}
+                    </a>{" "}
+                    <span className={styles.mono}>{current.member_id}</span>
                     {current.design_id && current.design_id !== current.member_id ? (
                       <> <span className={`${styles.mono} ${styles.muted}`}>{current.design_id}</span></>
                     ) : null}
