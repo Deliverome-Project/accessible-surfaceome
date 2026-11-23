@@ -683,15 +683,15 @@ export interface StructureVariantLibraryInput {
   refold_verdict?: string | null;
 }
 
-/** The tag cassette (linkers + SpyTag003 + ALFA) on a tagged refold. Cobalt blue
- *  (#1D4ED8, ~6.7:1 on white), matching `--l1-insert` on the review page's topology
- *  strip so the tag reads as one thing in 2D and 3D. Unused by the topology palette
- *  (gray EC, yellow TM, green IC, red SP), colorblind-safe, and holds contrast under
- *  WebGL lighting against the white 3D canvas. */
-export const L1_CASSETTE_COLOR = "#1D4ED8";
+/** The tag cassette (linkers + SpyTag003 + ALFA) on a tagged refold. Electric cobalt
+ *  blue (#0052FF), matching `--l1-insert` on the review page's topology strip so the
+ *  tag reads as one thing in 2D and 3D. Unused by the topology palette, colorblind-safe,
+ *  and pops against the lighter silver-gray extracellular shading. */
+export const L1_CASSETTE_COLOR = "#0052FF";
 /** Other non-native residues in a tagged refold (Igk leader remnant, snorkel TM
- *  module). Olive, also unused by every other palette. */
-export const L1_NONNATIVE_COLOR = "#8A8F3C";
+ *  module). Vivid orange (#EA580C) — high contrast against both the silver-gray EC
+ *  and the electric-blue cassette (replaces the earlier low-contrast olive #8A8F3C). */
+export const L1_NONNATIVE_COLOR = "#EA580C";
 
 /** Highlight color for a reader-selected residue (the 3D viewer's
  *  "Highlight residue" box and the topology strip's marker). Hot pink,
