@@ -8,6 +8,7 @@ import {
   STATUS_LABEL,
   armLabel,
   countBy,
+  currentMemberModels,
   fetchL1Design,
   fetchL1Index,
   fetchL1MemberTopologies,
@@ -29,6 +30,7 @@ import {
   submitL1Review,
   SP_LABEL,
   indexSpStatus,
+  memberHasSnorkel,
   memberSp,
   uniprotDiffers,
   uniprotDiffLines,
@@ -49,9 +51,10 @@ import {
   type L1Structure,
 } from "../../lib/l1-design";
 import type { LibraryTopologyRow } from "../../lib/structure-viewer-types";
-import { L1TopologyStrip, insertFlags } from "./L1TopologyStrip";
+import { L1TopologyStrip, armColor, insertFlags } from "./L1TopologyStrip";
 import { L1Structure3D, type L1Mark } from "./L1Structure3D";
 import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
+import { InfoTip } from "../InfoTip/InfoTip";
 import { useTurnstile, type ReviewAuth } from "./useTurnstile";
 import styles from "./L1Review.module.css";
 
@@ -90,14 +93,14 @@ const store = {
   },
 };
 
-interface UrlFilters { m: string; rung: string; cls: string; status: string; q: string; sp: string; diff: string; rev: string }
+interface UrlFilters { m: string; rung: string; cls: string; status: string; q: string; sp: string; diff: string; snorkel: string; rev: string }
 
 function readUrl(): UrlFilters {
-  if (typeof window === "undefined") return { m: "", rung: "", cls: "", status: "", q: "", sp: "", diff: "", rev: "" };
+  if (typeof window === "undefined") return { m: "", rung: "", cls: "", status: "", q: "", sp: "", diff: "", snorkel: "", rev: "" };
   const p = new URLSearchParams(window.location.search);
   return {
     m: p.get("m") ?? "", rung: p.get("rung") ?? "", cls: p.get("class") ?? "", status: p.get("status") ?? "",
-    q: p.get("q") ?? "", sp: p.get("sp") ?? "", diff: p.get("diff") ?? "", rev: p.get("reviewed") ?? "",
+    q: p.get("q") ?? "", sp: p.get("sp") ?? "", diff: p.get("diff") ?? "", snorkel: p.get("snorkel") ?? "", rev: p.get("reviewed") ?? "",
   };
 }
 
@@ -109,6 +112,7 @@ function writeUrl(s: UrlFilters) {
   if (s.status) p.set("status", s.status);
   if (s.sp) p.set("sp", s.sp);
   if (s.diff) p.set("diff", s.diff);
+  if (s.snorkel) p.set("snorkel", s.snorkel);
   if (s.rev) p.set("reviewed", s.rev);
   if (s.q) p.set("q", s.q);
   const qs = p.toString();
@@ -124,7 +128,7 @@ function StatusPill({ status }: { status: L1Site["status"] }) {
 }
 
 function siteColor(s: L1Site): string {
-  if (s.is_primary !== false) return COLORS.pick;
+  if (s.is_primary !== false) return armColor(s.site_id);
   return s.site_source === "agent_proposer" ? COLORS.agent : COLORS.ranker;
 }
 
@@ -163,6 +167,10 @@ function Rationale({ value }: { value: Record<string, unknown> }) {
   );
 }
 
+function isRedacted(v: string | null | undefined): boolean {
+  return !v || /^withheld\b/i.test(v.trim());
+}
+
 export function SiteCard({
   site,
   length,
@@ -176,8 +184,15 @@ export function SiteCard({
   onShow?: () => void;
 }) {
   const primary = site.is_primary !== false;
+  const hasDecidedBy = !isRedacted(site.decided_by);
+  const hasImplementedBy = !isRedacted(site.implemented_by);
+  const hasSource = !isRedacted(site.source.path) && !isRedacted(site.source.commit);
+  const redactedProvenance = !hasDecidedBy && !site.rationale;
   return (
-    <div className={`${styles.site} ${primary ? styles.sitePrimary : ""}`}>
+    <div
+      className={`${styles.site} ${primary ? styles.sitePrimary : ""}`}
+      style={primary ? { borderLeftColor: siteColor(site) } : undefined}
+    >
       <div className={styles.siteHead}>
         <span className={styles.swatch} style={{ background: siteColor(site) }} />
         <strong>{primary ? "Current pick" : "Alternative"}</strong>
@@ -201,8 +216,7 @@ export function SiteCard({
         </span>
       </div>
       <dl className={styles.why}>
-        <dt>decided by</dt>
-        <dd>{site.decided_by}</dd>
+        {hasDecidedBy ? (<><dt>decided by</dt><dd>{site.decided_by}</dd></>) : null}
         {site.reason ? (<><dt>reason</dt><dd>{site.reason}</dd></>) : null}
         {site.rejected_alternative ? (<><dt>rejected alternative</dt><dd>{site.rejected_alternative}</dd></>) : null}
         {site.decision ? (<><dt>decision</dt><dd>{site.decision}</dd></>) : null}
@@ -223,18 +237,27 @@ export function SiteCard({
         })() : null}
       </dl>
       <details className={styles.more}>
-        <summary>rationale, scores and source</summary>
-        {site.rationale ? <Rationale value={site.rationale} /> : <p className={styles.muted}>No scores recorded for this pick.</p>}
+        <summary>{site.rationale || hasSource ? "rationale, scores and source" : "construct & site details"}</summary>
+        {site.rationale ? (
+          <Rationale value={site.rationale} />
+        ) : redactedProvenance ? (
+          <p className={styles.muted}>Internal design scores and provenance are withheld on this public API load.</p>
+        ) : (
+          <p className={styles.muted}>No scores recorded for this pick.</p>
+        )}
         <dl className={styles.why}>
-          <dt>implemented by</dt>
-          <dd>{site.implemented_by}</dd>
+          {hasImplementedBy ? (<><dt>implemented by</dt><dd>{site.implemented_by}</dd></>) : null}
           <dt>cassette</dt>
           <dd>{site.cassette ?? "—"}{site.cassette_aa != null ? ` (${site.cassette_aa} aa inserted)` : ""}</dd>
-          <dt>source</dt>
-          <dd className={styles.mono}>
-            {site.source.pr != null ? `design PR ${site.source.pr} (${site.source.pr_state ?? "?"}) · ` : ""}
-            {site.source.commit.slice(0, 8)} · {site.source.path}
-          </dd>
+          {hasSource ? (
+            <>
+              <dt>source</dt>
+              <dd className={styles.mono}>
+                {site.source.pr != null ? `design PR ${site.source.pr} (${site.source.pr_state ?? "?"}) · ` : ""}
+                {site.source.commit.slice(0, 8)} · {site.source.path}
+              </dd>
+            </>
+          ) : null}
           <dt>site id</dt>
           <dd className={styles.mono}>{site.site_id}</dd>
         </dl>
@@ -252,13 +275,13 @@ interface Draft {
   siteId?: string;
   /** One comment for every mode: the reason for a concern, or why the other site. */
   reason: string;
-  alt: { residue: string; placement: "" | L1Placement; cassette: string };
+  alt: { residue: string; cassette: string };
 }
 
 const EMPTY_DRAFT: Draft = {
   mode: "",
   reason: "",
-  alt: { residue: "", placement: "", cassette: "" },
+  alt: { residue: "", cassette: "" },
 };
 
 const MODES: { value: Exclude<ReviewMode, "">; label: string; key: string }[] = [
@@ -360,8 +383,7 @@ export function ReviewPanel({
     if (!name) return "Add your name at the top of the page first.";
     if (draft.mode === "no" && !draft.reason.trim()) return "Say what is wrong in the comment.";
     if (draft.mode === "alt") {
-      const needsResidue = draft.alt.placement === "" || draft.alt.placement === "internal" || draft.alt.placement === "after_sp";
-      if (needsResidue && draft.alt.residue === "") return "Give the residue the tag goes after, or click one on the structure.";
+      if (draft.alt.residue === "") return "Give the residue the tag goes after, or click one on the structure.";
     }
     return null;
   }
@@ -397,12 +419,11 @@ export function ReviewPanel({
       if (draft.mode === "alt") {
         const residue = draft.alt.residue === "" ? null : Number(draft.alt.residue);
         const placement: L1Placement =
-          draft.alt.placement ||
-          (residue === 0
+          residue === 0
             ? "n_term"
             : residue != null && member.ordered_length_aa != null && residue >= member.ordered_length_aa
               ? "c_term"
-              : "internal");
+              : "internal";
         const cassette = draft.alt.cassette || null;
         const r = await submitL1Review(API_BASE, t, {
           ...base, kind: "alt_tag", placement, insert_after_residue: residue,
@@ -529,7 +550,7 @@ export function ReviewPanel({
           // A verdict on one arm rather than on the member: the r2 agent round rejects
           // arms, not members, so "a2 is in the pore, a1 and a3 are fine" needs somewhere to go.
           <label className={styles.scope}>
-            about
+            tag site
             <select value={siteId} onChange={(e) => patch({ siteId: e.target.value })}>
               {sites.map((s) => (
                 <option key={s.site_id} value={s.site_id}>
@@ -545,47 +566,42 @@ export function ReviewPanel({
         <div className={styles.altGrid}>
           <label>
             after residue (ordered-protein numbering)
-            <input
-              ref={residueRef}
-              type="number"
-              min={0}
-              max={member.ordered_length_aa ?? undefined}
-              step={1}
-              value={draft.alt.residue}
-              onChange={(e) => setAlt({ residue: e.target.value.replace(/[^0-9]/g, "") })}
-              aria-describedby={`${fieldId}-residue-help`}
-            />
+            <span className={styles.altInputRow}>
+              <input
+                ref={residueRef}
+                type="number"
+                min={0}
+                max={member.ordered_length_aa ?? undefined}
+                step={1}
+                value={draft.alt.residue}
+                onChange={(e) => setAlt({ residue: e.target.value.replace(/[^0-9]/g, "") })}
+                aria-describedby={`${fieldId}-residue-help`}
+              />
+              {draft.alt.residue !== "" ? (
+                <button
+                  type="button"
+                  className={styles.clearBtn}
+                  onClick={() => setAlt({ residue: "" })}
+                  aria-label="Clear suggested residue"
+                >
+                  Clear
+                </button>
+              ) : null}
+            </span>
             <span id={`${fieldId}-residue-help`} className={styles.help}>
               or click a residue on the structure or topology bar
               {member.ordered_length_aa ? ` · 0–${member.ordered_length_aa}` : ""}
             </span>
           </label>
-          <details className={styles.altOptions}>
-            <summary>
-              optional: placement{cassettes.length > 1 ? " & cassette" : ""}
-              {draft.alt.placement ? ` (${PLACEMENT_LABEL[draft.alt.placement]})` : ""}
-            </summary>
-            <div className={styles.altOptionsBody}>
-              <label>
-                placement
-                <select value={draft.alt.placement} onChange={(e) => setAlt({ placement: e.target.value as "" | L1Placement })}>
-                  <option value="">auto (from residue)</option>
-                  {(Object.keys(PLACEMENT_LABEL) as L1Placement[]).map((p) => (
-                    <option key={p} value={p}>{PLACEMENT_LABEL[p]}</option>
-                  ))}
-                </select>
-              </label>
-              {cassettes.length > 1 ? (
-                <label>
-                  cassette
-                  <select value={draft.alt.cassette} onChange={(e) => setAlt({ cassette: e.target.value })}>
-                    <option value="">same as the current pick</option>
-                    {cassettes.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </label>
-              ) : null}
-            </div>
-          </details>
+          {cassettes.length > 1 ? (
+            <label>
+              cassette
+              <select value={draft.alt.cassette} onChange={(e) => setAlt({ cassette: e.target.value })}>
+                <option value="">same as the current pick</option>
+                {cassettes.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </label>
+          ) : null}
         </div>
       ) : null}
       <textarea
@@ -715,36 +731,6 @@ function memberChipText(m: Pick<L1Member, "candidate_set" | "species">, topo: Li
   return protein ? `${l1MemberRoleLabel(m)} · ${protein}` : l1MemberRoleLabel(m);
 }
 
-/** Partition a member's chosen structures into the default tabs (current-pick folds
- *  first, then native) and earlier/unlisted sweep refolds (site_id null or not among
- *  the member's current sites). If a member has no fold linked to a current site, the
- *  unlisted folds stay visible (passing before failing) so the tab strip is never empty. */
-export function partitionModels(
-  structures: readonly L1Structure[],
-  sites: readonly Pick<L1Site, "site_id" | "is_primary">[],
-): { primary: L1Structure[]; earlier: L1Structure[] } {
-  const chosen = structures.filter((s) => s.is_chosen);
-  const primaryIds = new Set(sites.filter((s) => s.is_primary !== false).map((s) => s.site_id));
-  const listedIds = new Set(sites.map((s) => s.site_id));
-  const tagged = chosen.filter((s) => s.kind === "tagged");
-  const native = chosen.filter((s) => s.kind !== "tagged");
-  const verdictRank = (s: L1Structure) => (s.refold_verdict === "pass" ? 0 : s.refold_verdict === "fail" ? 2 : 1);
-  const linked = tagged
-    .filter((s) => s.site_id != null && listedIds.has(s.site_id))
-    .sort((a, b) => {
-      const pa = a.site_id != null && primaryIds.has(a.site_id) ? 0 : 1;
-      const pb = b.site_id != null && primaryIds.has(b.site_id) ? 0 : 1;
-      return pa - pb || verdictRank(a) - verdictRank(b);
-    });
-  const unlisted = tagged
-    .filter((s) => s.site_id == null || !listedIds.has(s.site_id))
-    .sort((a, b) => verdictRank(a) - verdictRank(b));
-  if (linked.length > 0) {
-    return { primary: [...linked, ...native], earlier: unlisted };
-  }
-  return { primary: [...unlisted, ...native], earlier: [] };
-}
-
 /** Label for a structure view tab. When a member carries multiple tagged refolds,
  *  name the arm/insertion residue so tabs are distinguishable before clicking. */
 export function structureTabLabel(
@@ -796,17 +782,11 @@ function MemberDetail({
   onSaved: (saved: Partial<L1Reviews>) => void;
 }) {
   const sites = sortSites(member.sites);
-  // The current-pick fold(s) first and open by default, then native. Failed / unlisted
-  // sweep refolds stay tucked behind "+ N earlier refolds" so a member never opens on a
-  // discarded candidate fold.
-  const [showEarlierFolds, setShowEarlierFolds] = useState(false);
-  const { primary: primaryModels, earlier: earlierModels } = useMemo(
-    () => partitionModels(member.structures, member.sites),
-    [member.structures, member.sites],
-  );
+  // Current-pick fold(s) first and open by default, then native; earlier/unlisted sweep
+  // refolds are excluded altogether.
   const models = useMemo(
-    () => (showEarlierFolds ? [...primaryModels, ...earlierModels] : primaryModels),
-    [primaryModels, earlierModels, showEarlierFolds],
+    () => currentMemberModels(member.structures, member.sites),
+    [member.structures, member.sites],
   );
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [modelId, setModelId] = useState<string>("");
@@ -834,8 +814,7 @@ function MemberDetail({
   const curatedGene: CuratedContactsData | null = curated && curated !== "loading" ? curated : null;
   const curatedAligned = curatedContactsAlign(member.sequence_sha256, curatedGene?.reference_sequence_sha256);
   useEffect(() => {
-    setShowEarlierFolds(false);
-    setModelId(primaryModels[0]?.structure_id ?? "");
+    setModelId(models[0]?.structure_id ?? "");
     setPicked(null);
     setFocusSite(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -855,6 +834,14 @@ function MemberDetail({
     draft?.mode === "alt" && draft.alt.residue !== "" && Number.isFinite(Number(draft.alt.residue))
       ? Number(draft.alt.residue)
       : null;
+  const clearSuggested = useCallback(() => {
+    setPicked(null);
+    setDrafts((d) => {
+      const cur = d[draftKey];
+      if (!cur) return d;
+      return { ...d, [draftKey]: { ...cur, alt: { ...cur.alt, residue: "" } } };
+    });
+  }, [draftKey, setDrafts]);
   const marks: L1Mark[] = [];
   if (segments) {
     if (showContacts && curatedAligned && curatedGene) {
@@ -977,6 +964,7 @@ function MemberDetail({
         <dd title={`from ${sp.source}`}>
           {sp.status ? <span className={styles.spTag}>{SP_LABEL[sp.status]}</span> : null} {sp.text}
           <span className={styles.muted}> · from {sp.source}</span>
+          {sp.why ? <span className={styles.spWhy}>{sp.why}</span> : null}
         </dd>
         <dt>UniProt</dt>
         <dd>
@@ -987,9 +975,7 @@ function MemberDetail({
           ) : "no accession"}
           {member.uniprot_canonical_length ? ` · canonical ${member.uniprot_canonical_length} aa` : ""}
           {member.ordered_length_aa ? ` · ordered ${member.ordered_length_aa} aa` : ""}
-          {differs === null ? (
-            <span className={styles.muted}> · comparison with the canonical not in this load</span>
-          ) : differs ? (
+          {differs === null ? null : differs ? (
             <>
               {" · "}<strong>differs from the canonical</strong>
               {diffLines.length ? (
@@ -1016,6 +1002,7 @@ function MemberDetail({
           onFlagClick={showSite}
           onPickResidue={(r) => setPicked({ r, n: Date.now() })}
           suggestedResidue={suggested}
+          onClearSuggested={suggested != null ? clearSuggested : undefined}
         />
       ) : null}
       {member.proteoform?.decision ? (
@@ -1066,35 +1053,39 @@ function MemberDetail({
                 );
               });
             })()}
-            {earlierModels.length > 0 ? (
-              <button
-                type="button"
-                className={styles.earlierToggle}
-                aria-expanded={showEarlierFolds}
-                onClick={() => setShowEarlierFolds((v) => !v)}
-                title="Earlier candidate refolds not linked to this member's current pick"
-              >
-                {showEarlierFolds ? "hide earlier" : `+${earlierModels.length} earlier`}
-              </button>
-            ) : null}
             {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
           </div>
           <div className={styles.structureControls} aria-label="Structure overlays">
-            <label className={showAlts ? styles.ctrlOn : styles.ctrl}>
-              <input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} />
-              Alternatives
-            </label>
+            <span className={styles.ctrlGroup}>
+              <label className={showAlts ? styles.ctrlOn : styles.ctrl}>
+                <input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} />
+                Alternatives
+              </label>
+              <InfoTip align="end" label="About alternative sites">
+                Candidate tag sites proposed by the ranker (gold) and agent proposer (burnt orange) that were not chosen as the primary pick.
+              </InfoTip>
+            </span>
             {segments ? (
               <>
-                <label className={showContacts ? styles.ctrlOn : styles.ctrl}>
-                  <input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} />
-                  Contacts
-                </label>
-                {showContacts ? (
-                  <label className={showHidden ? styles.ctrlOn : styles.ctrl} title="Include ion sites and crystallization additives">
-                    <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
-                    Ion / add.
+                <span className={styles.ctrlGroup}>
+                  <label className={showContacts ? styles.ctrlOn : styles.ctrl}>
+                    <input type="checkbox" checked={showContacts} onChange={(e) => setShowContacts(e.target.checked)} />
+                    Contacts
                   </label>
+                  <InfoTip align="end" label="About contact sites">
+                    Extracellular ligand/partner contact residues from curated PDB/PDBe structures (violet), UniProt binding sites (indigo), and agent-extracted literature (teal/cyan).
+                  </InfoTip>
+                </span>
+                {showContacts ? (
+                  <span className={styles.ctrlGroup}>
+                    <label className={showHidden ? styles.ctrlOn : styles.ctrl}>
+                      <input type="checkbox" checked={showHidden} onChange={(e) => setShowHidden(e.target.checked)} />
+                      Ions &amp; additives
+                    </label>
+                    <InfoTip align="end" label="About ions and crystallization additives">
+                      Include metal/ion coordination sites (e.g. Ca²⁺, Zn²⁺) and crystallization buffer additives (e.g. PEG, glycerol, lipids). Hidden by default so real ligand/protein interfaces stay clear.
+                    </InfoTip>
+                  </span>
                 ) : null}
               </>
             ) : (() => {
@@ -1132,7 +1123,15 @@ function MemberDetail({
         )}
         {/* Compact color key directly under the canvas so everything stays above the fold. */}
         <div className={styles.legend}>
-          <span><i style={{ background: COLORS.pick }} /> pick</span>
+          {flags.length > 1 ? (
+            flags.map((f) => (
+              <span key={f.siteId}>
+                <i style={{ background: f.color ?? COLORS.pick }} /> {f.label}
+              </span>
+            ))
+          ) : (
+            <span><i style={{ background: COLORS.pick }} /> pick</span>
+          )}
           {showAlts ? (
             <>
               <span><i style={{ background: COLORS.ranker }} /> ranker alt</span>
@@ -1147,7 +1146,12 @@ function MemberDetail({
               <span><i style={{ background: COLORS.uniprot }} /> UniProt</span>
             </>
           ) : null}
-          <span><i style={{ background: COLORS.suggestion }} /> your pick</span>
+          <span>
+            <i style={{ background: COLORS.suggestion }} /> your pick
+            {suggested != null ? (
+              <>{" "}<button type="button" className={styles.clearInline} onClick={clearSuggested} aria-label="Clear suggested site">clear ×</button></>
+            ) : null}
+          </span>
         </div>
         {model?.note || model?.proteoform_match ? (
           <p className={styles.modelNote}>
@@ -1278,7 +1282,7 @@ export function L1Review() {
   }, [mineIds, reviews, reviewer]);
   const facetBase = {
     rung: filters.rung, membraneClass: filters.cls, status: filters.status, query: filters.q,
-    sp: filters.sp, diff: filters.diff, reviewed: filters.rev, reviewedByMe,
+    sp: filters.sp, diff: filters.diff, snorkel: filters.snorkel, reviewed: filters.rev, reviewedByMe,
   };
   const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe]); // eslint-disable-line react-hooks/exhaustive-deps
   const current: L1IndexMember | undefined =
@@ -1512,6 +1516,9 @@ export function L1Review() {
   const forDiff = without("diff");
   const diffKnown = members.some((m) => uniprotDiffers(m) !== null);
   const diffCount = (k: string) => (k === "" ? forDiff.length : forDiff.filter((m) => uniprotDiffers(m) === (k === "yes")).length);
+  const forSnorkel = without("snorkel");
+  const snorkelKnown = members.some((m) => memberHasSnorkel(m) !== null);
+  const snorkelCount = (k: string) => (k === "" ? forSnorkel.length : forSnorkel.filter((m) => memberHasSnorkel(m) === (k === "yes")).length);
   const forRev = without("reviewed");
   const revCount = (k: string) => (k === "" ? forRev.length : forRev.filter((m) => reviewedByMe.has(m.design_id ?? m.member_id) === (k === "mine")).length);
   const filterSummary = [
@@ -1520,6 +1527,7 @@ export function L1Review() {
     filters.status && `pick: ${filters.status === "none" ? "no pick yet" : STATUS_LABEL[filters.status as L1Site["status"]] ?? filters.status}`,
     filters.sp && `SP: ${SP_LABEL[filters.sp as keyof typeof SP_LABEL] ?? filters.sp}`,
     filters.diff && (filters.diff === "yes" ? "differs from UniProt" : "same as UniProt"),
+    filters.snorkel && (filters.snorkel === "yes" ? "snorkel tag" : "no snorkel"),
     filters.rev && (filters.rev === "mine" ? "reviewed by me" : "not reviewed by me"),
   ].filter(Boolean).join(" · ") || "none";
   const reviewedN = new Set((reviews?.reviews ?? []).map((r) => r.design_id)).size;
@@ -1592,6 +1600,16 @@ export function L1Review() {
             {[["", "all"], ["yes", "differs from canonical"], ["no", "same as canonical"]].map(([k, label]) => (
               <button key={k || "all"} type="button" className={filters.diff === k ? styles.chipOn : styles.chip} onClick={() => update({ diff: k })}>
                 {label} <span className={styles.n}>{diffCount(k)}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+        {snorkelKnown ? (
+          <div>
+            <span className={styles.facetLabel} title="Whether the primary pick uses a C-terminal snorkel TM-module tag">Snorkel</span>
+            {[["", "all"], ["yes", "snorkel tag"], ["no", "no snorkel"]].map(([k, label]) => (
+              <button key={k || "all"} type="button" className={filters.snorkel === k ? styles.chipOn : styles.chip} onClick={() => update({ snorkel: k })}>
+                {label} <span className={styles.n}>{snorkelCount(k)}</span>
               </button>
             ))}
           </div>
@@ -1782,7 +1800,16 @@ export function L1Review() {
                 <button type="button" onClick={() => go(-1)} aria-label="Previous member">←</button>
                 <div>
                   <h2 className={styles.h2}>
-                    {current.gene_symbol} <span className={styles.mono}>{current.member_id}</span>
+                    <a
+                      className={styles.geneLink}
+                      href={`/${encodeURIComponent(current.gene_symbol)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={`Open ${current.gene_symbol} in the main Surfaceome viewer`}
+                    >
+                      {current.gene_symbol}
+                    </a>{" "}
+                    <span className={styles.mono}>{current.member_id}</span>
                     {current.design_id && current.design_id !== current.member_id ? (
                       <> <span className={`${styles.mono} ${styles.muted}`}>{current.design_id}</span></>
                     ) : null}

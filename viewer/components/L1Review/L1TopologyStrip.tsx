@@ -30,6 +30,22 @@ export interface InsertFlag {
   /** Longer form for the legend line under the strip. */
   legend: string;
   title: string;
+  /** Distinct per-arm colour when a member carries multiple arms (a1, a2, a3). */
+  color?: string;
+}
+
+/** Distinct high-contrast colours for multi-arm picks (a1, a2, a3, …) so each arm
+ *  matches across the 2D topology strip, 3D spheres, and Tag site cards. */
+export const ARM_COLORS: Record<string, string> = {
+  a1: "#B3243B", // crimson
+  a2: "#15803D", // deep emerald
+  a3: "#B45309", // deep amber
+  a4: "#9D174D", // plum
+};
+
+export function armColor(siteId: string | null | undefined): string {
+  const arm = siteId ? armLabel(siteId) : null;
+  return (arm && ARM_COLORS[arm]) || "#B3243B";
 }
 
 /**
@@ -47,8 +63,9 @@ export { armLabel };
 
 /** The member's current picks as flags, left to right along the sequence. */
 export function insertFlags(sites: readonly L1Site[], orderedLength: number | null): InsertFlag[] {
-  return sites
-    .filter((s) => s.is_primary !== false && s.insert_after_residue != null && s.insert_after_residue >= 0)
+  const primary = sites.filter((s) => s.is_primary !== false && s.insert_after_residue != null && s.insert_after_residue >= 0);
+  const multiArm = primary.length > 1;
+  return primary
     .map((s) => {
       const r = s.insert_after_residue as number;
       const arm = armLabel(s.site_id);
@@ -59,6 +76,7 @@ export function insertFlags(sites: readonly L1Site[], orderedLength: number | nu
         label: arm ?? (r === 0 ? "N" : String(r)),
         legend: arm ? `${arm} ${where}` : where,
         title: `${arm ? `${arm} — ` : ""}tag insert ${where} (${s.status})`,
+        color: multiArm ? armColor(s.site_id) : undefined,
       };
     })
     .sort((a, b) => a.insertAfterResidue - b.insertAfterResidue);
@@ -75,6 +93,7 @@ export function L1TopologyStrip({
   onFlagClick,
   onPickResidue,
   suggestedResidue,
+  onClearSuggested,
 }: {
   /** The arm being looked at: its flag is drawn emphasised. */
   focusSiteId?: string | null;
@@ -84,6 +103,8 @@ export function L1TopologyStrip({
   onPickResidue?: (residue: number) => void;
   /** The reviewer's suggested insert residue (typed or clicked), drawn as its own flag. */
   suggestedResidue?: number | null;
+  /** Clicking the pink "you" flag clears the suggested residue. */
+  onClearSuggested?: () => void;
   /** Native residues the N-terminus line is about: the native SP, or the stretch an Igk
    *  leader replaces. Drawn as a bracket over the bands, member numbering. */
   sp?: { from: number; to: number; kind: "native_sp" | "replaced"; label: string } | null;
@@ -134,41 +155,66 @@ export function L1TopologyStrip({
           // instead of centred, which keeps it inside and still reads as this flag's.
           const headShift = x < 6 ? "translateX(-12%)" : x > 94 ? "translateX(-88%)" : "translateX(-50%)";
           const on = focusSiteId === f.siteId;
+          const colorStyle = f.color ? { background: f.color, borderColor: f.color } : undefined;
           return (
             <button
               type="button"
               key={f.siteId}
               className={on ? `${styles.insert} ${styles.insertOn}` : styles.insert}
-              style={{ left: `${x}%` }}
+              style={{ left: `${x}%`, ...colorStyle }}
               title={`${f.title} — click to show it on the structure`}
               aria-pressed={on}
               onClick={() => onFlagClick?.(f.siteId)}
             >
-              <span className={styles.insertHead} style={{ transform: headShift }}>
+              <span className={styles.insertHead} style={{ transform: headShift, ...colorStyle }}>
                 {f.label}
               </span>
             </button>
           );
         })}
         {suggestedResidue != null && suggestedResidue >= 0 && suggestedResidue <= n ? (
-          <span
-            className={`${styles.insert} ${styles.insertSuggested}`}
-            style={{ left: `${pct(suggestedResidue)}%` }}
-            title={`your suggested site: after residue ${suggestedResidue}`}
-          >
-            <span className={styles.insertHead}>you</span>
-          </span>
+          onClearSuggested ? (
+            <button
+              type="button"
+              className={`${styles.insert} ${styles.insertSuggested}`}
+              style={{ left: `${pct(suggestedResidue)}%` }}
+              title={`your suggested site: after residue ${suggestedResidue} — click to clear`}
+              aria-label={`Clear suggested site after residue ${suggestedResidue}`}
+              onClick={onClearSuggested}
+            >
+              <span className={styles.insertHead}>you ×</span>
+            </button>
+          ) : (
+            <span
+              className={`${styles.insert} ${styles.insertSuggested}`}
+              style={{ left: `${pct(suggestedResidue)}%` }}
+              title={`your suggested site: after residue ${suggestedResidue}`}
+            >
+              <span className={styles.insertHead}>you</span>
+            </span>
+          )
         ) : null}
       </div>
       <div className={styles.stripLegend}>
         <TopologyLegend presentStates={topologyStatesPresent(topology)} showMembrane={false} />
         <ul className={styles.legend} aria-label="Tag insert legend">
-          <li>
-            <span className={styles.insertSwatch} aria-hidden="true" /> tag insert
-            {flags.length
-              ? ` — ${flags.map((f) => f.legend).join("; ")}`
-              : " — none picked for this member"}
-          </li>
+          {flags.length > 1 ? (
+            flags.map((f) => (
+              <li key={f.siteId}>
+                <span
+                  className={styles.insertSwatch}
+                  style={f.color ? { background: f.color, borderColor: f.color } : undefined}
+                  aria-hidden="true"
+                />{" "}
+                {f.legend}
+              </li>
+            ))
+          ) : (
+            <li>
+              <span className={styles.insertSwatch} aria-hidden="true" /> tag insert
+              {flags.length ? ` — ${flags[0].legend}` : " — none picked for this member"}
+            </li>
+          )}
           {sp && sp.to >= sp.from ? (
             <li>
               <span className={sp.kind === "replaced" ? `${styles.spSwatch} ${styles.spReplaced}` : styles.spSwatch} aria-hidden="true" />{" "}

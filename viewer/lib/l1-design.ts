@@ -163,6 +163,8 @@ export interface L1IndexMember {
   pick_leader?: string | null;
   sp_status?: L1SpStatus | null;
   matches_uniprot_canonical?: boolean | number | null;
+  /** True when any primary pick uses a snorkel tag construct; undefined when the API predates it. */
+  has_snorkel?: boolean | number | null;
 }
 
 export interface L1Index {
@@ -228,6 +230,29 @@ export function armLabel(siteId: string): string | null {
   return m ? m[1] : null;
 }
 
+/** Chosen 3D models for one member: tagged refolds linked to the member's current
+ *  sites (primary picks first, passing before failing), followed by native models.
+ *  Earlier/unlisted sweep refolds (site_id null or not among the member's current
+ *  sites) are excluded so reviewers never see discarded candidate folds. */
+export function currentMemberModels(
+  structures: readonly L1Structure[],
+  sites: readonly Pick<L1Site, "site_id" | "is_primary">[],
+): L1Structure[] {
+  const chosen = structures.filter((s) => s.is_chosen);
+  const primaryIds = new Set(sites.filter((s) => s.is_primary !== false).map((s) => s.site_id));
+  const listedIds = new Set(sites.map((s) => s.site_id));
+  const verdictRank = (s: L1Structure) => (s.refold_verdict === "pass" ? 0 : s.refold_verdict === "fail" ? 2 : 1);
+  const linked = chosen
+    .filter((s) => s.kind === "tagged" && s.site_id != null && listedIds.has(s.site_id))
+    .sort((a, b) => {
+      const pa = a.site_id != null && primaryIds.has(a.site_id) ? 0 : 1;
+      const pb = b.site_id != null && primaryIds.has(b.site_id) ? 0 : 1;
+      return pa - pb || verdictRank(a) - verdictRank(b);
+    });
+  const native = chosen.filter((s) => s.kind !== "tagged");
+  return [...linked, ...native];
+}
+
 /** The member's current picks first, then alternatives by source and rank. */
 export function sortSites(sites: readonly L1Site[]): L1Site[] {
   const srcOrder: Record<string, number> = { rung_builder: 0, ranker: 1, agent_proposer: 2 };
@@ -246,6 +271,13 @@ export function visibleContacts(contacts: readonly L1Contact[], showHidden: bool
   return contacts.filter((c) => showHidden || c.confidence_tier !== "hidden");
 }
 
+/** true / false from the index; null when the API predates `has_snorkel`. */
+export function memberHasSnorkel(m: { has_snorkel?: boolean | number | null }): boolean | null {
+  const v = m.has_snorkel;
+  if (v === null || v === undefined) return null;
+  return v === true || v === 1;
+}
+
 /** Members in the browser's order, filtered by rung / class / free text. */
 export function filterIndex(
   members: readonly L1IndexMember[],
@@ -255,6 +287,8 @@ export function filterIndex(
     sp?: string;
     /** "yes" = differs from the UniProt canonical, "no" = identical */
     diff?: string;
+    /** "yes" = uses a snorkel tag, "no" = does not */
+    snorkel?: string;
     /** "mine" | "notmine", against `reviewedByMe` (design ids) */
     reviewed?: string;
     reviewedByMe?: ReadonlySet<string>;
@@ -268,6 +302,7 @@ export function filterIndex(
     .filter((m) => !f.status || (f.status === "none" ? m.pick_status.length === 0 : m.pick_status.includes(f.status as L1SiteStatus)))
     .filter((m) => !f.sp || indexSpStatus(m) === f.sp)
     .filter((m) => !f.diff || (f.diff === "yes" ? uniprotDiffers(m) === true : uniprotDiffers(m) === false))
+    .filter((m) => !f.snorkel || (f.snorkel === "yes" ? memberHasSnorkel(m) === true : memberHasSnorkel(m) === false))
     .filter((m) => !f.reviewed || (f.reviewed === "mine") === mine.has(m.design_id ?? m.member_id))
     .filter(
       (m) =>
@@ -276,10 +311,11 @@ export function filterIndex(
         m.member_id.toUpperCase() === q ||
         (m.design_id ?? "").toUpperCase() === q ||
         // Words that name a class, a rung or an SP type match those too, so "gpcr",
-        // "c-terminal" or "igk" find members without opening the filters.
+        // "c-terminal", "snorkel" or "igk" find members without opening the filters.
         (q.length >= 3 &&
           (m.membrane_class.toUpperCase().includes(q) ||
             m.rung.toUpperCase().includes(q) ||
+            (memberHasSnorkel(m) === true && "SNORKEL".includes(q)) ||
             SP_SEARCH[indexSpStatus(m) ?? ""]?.some((w) => w.includes(q)) === true)),
     )
     .sort((a, b) => a.gene_symbol.localeCompare(b.gene_symbol) || a.member_id.localeCompare(b.member_id));
@@ -361,6 +397,9 @@ export interface L1SpDescription {
   status: L1SpStatus | null;
   /** One line for the member header. */
   text: string;
+  /** Why this member uses Igκ vs native SP vs no leader (per-member reason/evidence when
+   *  present, else the rung rule). */
+  why: string | null;
   /** Native residues this describes, member numbering, for the topology strip. */
   band: { from: number; to: number; kind: "native_sp" | "replaced" } | null;
   /** Where the statement comes from. */
@@ -382,6 +421,7 @@ export function memberSp(member: Pick<L1Member, "rung" | "sites" | "sp_status" |
     member.sp_status ?? indexSpStatus({ rung: member.rung, pick_leader: pick ? pick.leader ?? null : undefined }) ??
     (topology ? (topoSp ? "native" : "none") : null);
   const evidence = member.sp_evidence ? ` (${member.sp_evidence})` : "";
+  const explicitWhy = pick?.reason?.trim() || member.sp_evidence?.trim() || null;
   const source = member.sp_status ? `design export${evidence}` : pick && (leader || member.rung.startsWith("N after SP")) ? "the primary pick" : topology ? "DeepTMHMM v1 topology" : "not known";
   if (status === "igk_swap") {
     const removed = ins != null && ins > 0 ? ins : spEnd;
@@ -392,24 +432,40 @@ export function memberSp(member: Pick<L1Member, "rung" | "sites" | "sp_status" |
       text: spEnd
         ? `Igκ leader replaces ${sp}${extra}`
         : `Igκ leader replaces the native N-terminus${removed ? ` (native residues 1–${removed})` : ""}`,
+      why: explicitWhy ?? "Native SP swapped for Igκ leader so the N-terminal tag cleaves cleanly and stays exposed.",
       band: removed ? { from: 1, to: removed, kind: "replaced" } : null,
       source,
     };
   }
   if (status === "igk_res1") {
-    return { status, text: "Igκ leader added before residue 1 (no native signal peptide)", band: null, source };
+    return {
+      status,
+      text: "Igκ leader added before residue 1 (no native signal peptide)",
+      why: explicitWhy ?? "Extracellular N-terminus without a native SP; Igκ leader directs surface translocation of the tag.",
+      band: null,
+      source,
+    };
   }
   if (status === "native") {
     const end = spEnd ?? (topoSp || null);
     return {
       status,
       text: `native signal peptide${end ? ` (cleaved 1–${end})` : ""}, kept${ins != null && member.rung.startsWith("N after SP") ? `; tag after residue ${ins}` : ""}`,
+      why: explicitWhy ?? "Native SP retained; tag inserted after the cleavage site without needing an Igκ swap.",
       band: end ? { from: 1, to: end, kind: "native_sp" } : null,
       source: spEnd ? source : end ? "DeepTMHMM v1 topology" : source,
     };
   }
-  if (status === "none") return { status, text: "no signal peptide and no leader", band: null, source };
-  return { status: null, text: "signal peptide: not stated for this member", band: null, source };
+  if (status === "none") {
+    return {
+      status,
+      text: "no signal peptide and no leader",
+      why: explicitWhy ?? "No native SP and no Igκ leader needed (tagged internally/C-terminally or cytoplasmic N-terminus).",
+      band: null,
+      source,
+    };
+  }
+  return { status: null, text: "signal peptide: not stated for this member", why: null, band: null, source };
 }
 
 export function countBy<T>(rows: readonly T[], key: (r: T) => string): [string, number][] {
@@ -935,6 +991,24 @@ export function currentL1Memberships<T extends { candidate_id: string; library: 
  * Returns `[]` for any failure: the strip is an aid, so a missing topology must degrade
  * to "no strip", never to a strip drawn from something else.
  */
+async function sha256Hex(text: string): Promise<string | null> {
+  try {
+    const subtle = globalThis.crypto?.subtle;
+    if (!subtle) return null;
+    const buf = await subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("");
+  } catch {
+    return null;
+  }
+}
+
+interface RawGeneTopology {
+  per_residue_topology?: string | null;
+  sequence?: string | null;
+  uniprot_acc?: string | null;
+  isoform_id?: string | null;
+}
+
 export async function fetchL1MemberTopologies(
   symbol: string,
   apiBase: string,
@@ -944,10 +1018,38 @@ export async function fetchL1MemberTopologies(
     const res = await fetch(`${apiBase}/v1/genes/${encodeURIComponent(symbol)}`, { signal });
     if (!res.ok) return [];
     const body = (await res.json()) as {
-      deterministic_features?: { library_designed_topology?: LibraryTopologyRow[] | null } | null;
+      deterministic_features?: {
+        library_designed_topology?: LibraryTopologyRow[] | null;
+        canonical_topology?: RawGeneTopology | null;
+        isoform_topologies?: RawGeneTopology[] | null;
+      } | null;
     };
-    const rows = body?.deterministic_features?.library_designed_topology;
-    return Array.isArray(rows) ? rows : [];
+    const df = body?.deterministic_features;
+    const rows: LibraryTopologyRow[] = Array.isArray(df?.library_designed_topology)
+      ? [...df.library_designed_topology]
+      : [];
+    // Fallback for genes whose record omits `library_designed_topology` (e.g. C5orf15):
+    // include canonical / isoform topologies keyed strictly by SHA-256 of their sequence,
+    // so l1MemberTopology only accepts them on an exact byte-for-byte sequence match.
+    const extras: { raw: RawGeneTopology; cohort: string }[] = [];
+    if (df?.canonical_topology) extras.push({ raw: df.canonical_topology, cohort: "human_canonical" });
+    if (Array.isArray(df?.isoform_topologies)) {
+      for (const iso of df.isoform_topologies) extras.push({ raw: iso, cohort: "human_isoform" });
+    }
+    for (const { raw, cohort } of extras) {
+      if (!raw.per_residue_topology || !raw.sequence) continue;
+      if (raw.per_residue_topology.length !== raw.sequence.length) continue;
+      const hash = await sha256Hex(raw.sequence);
+      if (!hash) continue;
+      rows.push({
+        per_residue_topology: raw.per_residue_topology,
+        ordered_length_aa: String(raw.per_residue_topology.length),
+        sequence_sha256: hash,
+        cohort,
+        topology_acc: raw.isoform_id ?? raw.uniprot_acc ?? undefined,
+      });
+    }
+    return rows;
   } catch {
     return [];
   }
@@ -956,18 +1058,23 @@ export async function fetchL1MemberTopologies(
 /**
  * The topology row that describes THIS member's ordered protein, or null.
  *
- * Paired by `candidate_id` == `design_id` and then checked for length agreement, for the
- * same reason {@link structureViewerDataFromLibraryMember} does: a strip drawn from
- * another proteoform's topology is a perfectly plausible-looking lie, and the insert flag
- * on top of it would point at the wrong band. A gene's record also carries rows for
- * members of other tranches (L2), which the design-id match excludes on its own.
+ * Paired by `candidate_id` == `design_id` (or, when the gene record lacks a
+ * `library_designed_topology` row for this member, by exact `sequence_sha256` match
+ * against a canonical/isoform topology row) and checked for length agreement.
  */
 export function l1MemberTopology(
   rows: readonly LibraryTopologyRow[] | null | undefined,
   member: Pick<L1Member, "design_id" | "ordered_length_aa"> & { sequence_sha256?: string | null },
 ): LibraryTopologyRow | null {
-  if (!rows?.length || !member.design_id) return null;
-  const row = rows.find((r) => r.candidate_id && r.candidate_id === member.design_id);
+  if (!rows?.length) return null;
+  const byId = member.design_id
+    ? rows.find((r) => r.candidate_id && r.candidate_id === member.design_id)
+    : undefined;
+  const row =
+    byId ??
+    (member.sequence_sha256
+      ? rows.find((r) => !r.candidate_id && r.sequence_sha256 === member.sequence_sha256)
+      : undefined);
   const topo = row?.per_residue_topology ?? "";
   if (!row || !topo) return null;
   // Sequence is the match of record: when both sides carry a hash they must agree, so a

@@ -93,7 +93,7 @@ const OUTSIDE_COLOR = "#ECEEF1";
  *  stay apart; TM yellow, cytoplasmic green and signal-peptide red are the site palette.
  *  Only these L1 views use it; the gene page's Structure card and the 2D strips keep
  *  TOPOLOGY_COLORS. */
-const L1_SIDE_COLORS: Record<string, string> = { ...TOPOLOGY_COLORS, O: "#7B8290" };
+const L1_SIDE_COLORS: Record<string, string> = { ...TOPOLOGY_COLORS, O: "#A5ACB8" };
 const L1_SIDE_LABELS: Record<string, string> = {
   M: "TM helix",
   O: "Extracellular",
@@ -211,15 +211,19 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
         const color = L1_SIDE_COLORS[r.state];
         if (color) v.setStyle({ resi: `${r.lo}-${r.hi}` }, { cartoon: { color } });
       }
-      for (const [lo, hi] of map.nonNative) v.setStyle({ resi: `${lo}-${hi}` }, { cartoon: { color: L1_NONNATIVE_COLOR } });
+      for (const [lo, hi] of map.nonNative) {
+        v.setStyle({ resi: `${lo}-${hi}` }, { cartoon: { color: L1_NONNATIVE_COLOR, thickness: 0.8 } });
+      }
     } else {
       v.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 1 } });
       if (span) v.setStyle({ resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
     }
     if (cassette) {
+      // WebGL caps GL_LINE width at 1px on macOS, so use a thicker cartoon + thin backbone
+      // sticks to give the inserted tag cassette real 3D visual weight.
       v.setStyle(
         { resi: `${cassette[0]}-${cassette[1]}` },
-        { cartoon: { color: L1_CASSETTE_COLOR, thickness: 0.65 }, line: { color: L1_CASSETTE_COLOR, linewidth: 1.4 } },
+        { cartoon: { color: L1_CASSETTE_COLOR, thickness: 1.0 }, stick: { color: L1_CASSETTE_COLOR, radius: 0.14 } },
       );
     }
     for (const m of marks) {

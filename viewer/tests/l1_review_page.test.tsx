@@ -8,8 +8,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ReviewPanel, SiteCard, partitionModels, structureTabLabel } from "../components/L1Review/L1Review";
+import { ReviewPanel, SiteCard, structureTabLabel } from "../components/L1Review/L1Review";
 import {
+  currentMemberModels,
   filterIndex,
   latestVerdicts,
   modelToMemberResidue,
@@ -185,16 +186,16 @@ test("a verdict asks which arm it is about, defaulting to the current pick", () 
   assert.match(html, /What should change, and why\?/);
 });
 
-test("'Suggest another site' alone shows the residue and placement fields", () => {
+test("'Suggest another site' alone shows the residue field without a placement dropdown", () => {
   assert.doesNotMatch(panel(), /after residue \(ordered-protein numbering\)/);
   const html = withDraft({ mode: "alt" });
   assert.match(html, /after residue \(ordered-protein numbering\)/);
-  assert.match(html, /<input type="number"/);
+  assert.match(html, /<input[^>]*type="number"/);
   assert.match(html, /or click a residue on the structure/);
-  assert.match(html, /placement/);
+  assert.doesNotMatch(html, /placement/);
   // No free-text cassette; a select appears only when the member's sites carry real options.
   assert.doesNotMatch(html, /cassette variant/);
-  assert.doesNotMatch(html, /about<select/);
+  assert.doesNotMatch(html, /tag site<select/);
 });
 
 test("without a name the card says so, but nothing typed is locked away", () => {
@@ -303,6 +304,16 @@ test("a topology is used only when it describes THIS member's ordered protein", 
     l1MemberTopology([{ candidate_id: "l1-p2131", per_residue_topology: "" }], human),
     null,
   );
+  // Fallback when library_designed_topology is absent (e.g. C5orf15): matches only on exact sequence_sha256.
+  const canonicalFallback = [{ per_residue_topology: "S".repeat(45) + "O".repeat(153) + "M".repeat(17) + "I".repeat(50), ordered_length_aa: "265", sequence_sha256: "deadbeef" }];
+  assert.equal(
+    l1MemberTopology(canonicalFallback, { design_id: "l1-p0210", ordered_length_aa: 265, sequence_sha256: "deadbeef" })?.per_residue_topology?.length,
+    265,
+  );
+  assert.equal(
+    l1MemberTopology(canonicalFallback, { design_id: "l1-p0210", ordered_length_aa: 265, sequence_sha256: "other" }),
+    null,
+  );
 });
 
 test("the legend names only the topology states the member actually has", async () => {
@@ -328,12 +339,16 @@ test("a member's tab is named for the proteoform it encodes, falling back to can
 });
 
 test("every current pick gets a flag, ordered along the sequence and labelled by arm", async () => {
-  const { insertFlags, armLabel } = await import("../components/L1Review/L1TopologyStrip");
+  const { insertFlags, armLabel, armColor } = await import("../components/L1Review/L1TopologyStrip");
   const arm = (id: string, r: number, primary = true): L1Site =>
     site({ site_id: id, insert_after_residue: r, is_primary: primary, residue_before: "H", residue_after: "D" });
   const flags = insertFlags([arm("l1-p1088-a2", 151), arm("l1-p1088-a1", 55), arm("l1-p1088-a3", 80)], 200);
   assert.deepEqual(flags.map((f) => f.label), ["a1", "a3", "a2"]);
   assert.deepEqual(flags.map((f) => f.insertAfterResidue), [55, 80, 151]);
+  // Multi-arm picks get distinct per-arm colours (a1 != a2 != a3).
+  assert.equal(new Set(flags.map((f) => f.color)).size, 3);
+  assert.notEqual(armColor("l1-p1088-a1"), armColor("l1-p1088-a2"));
+  assert.notEqual(armColor("l1-p1088-a2"), armColor("l1-p1088-a3"));
   // Alternatives are not flagged: the strip's job is "where does THIS member's tag go".
   assert.equal(insertFlags([arm("l1-p1088-a1", 55), arm("alt", 70, false)], 200).length, 1);
   // A site id without an arm suffix is labelled by its residue, not by the raw id —
@@ -414,15 +429,18 @@ test("GLP2R reads as the Igκ swap, with the SP end once the export carries it",
 
 test("filters: SP type, UniProt difference and reviewed-by-me; search matches class and rung words", () => {
   const rows = [
-    { ...m("l1-m0001", "GLP2R", "N after SP", "multipass (other)", ["built"]), pick_leader: "igk", matches_uniprot_canonical: 0 },
-    { ...m("l1-m0002", "AXL", "N after SP", "single-pass type I", ["built"]), pick_leader: null, matches_uniprot_canonical: 1 },
-    { ...m("l1-m0003", "ADRB2", "C-terminal", "GPCR", ["built"]), pick_leader: null, matches_uniprot_canonical: 1 },
+    { ...m("l1-m0001", "GLP2R", "N after SP", "multipass (other)", ["built"]), pick_leader: "igk", matches_uniprot_canonical: 0, has_snorkel: false },
+    { ...m("l1-m0002", "AXL", "N after SP", "single-pass type I", ["built"]), pick_leader: null, matches_uniprot_canonical: 1, has_snorkel: false },
+    { ...m("l1-m0003", "ADRB2", "C-terminal", "GPCR", ["built"]), pick_leader: null, matches_uniprot_canonical: 1, has_snorkel: true },
   ];
   const genes = (f: Parameters<typeof filterIndex>[1]) => filterIndex(rows, f).map((x) => x.gene_symbol);
   assert.deepEqual(genes({ sp: "igk_swap" }), ["GLP2R"]);
   assert.deepEqual(genes({ sp: "native" }), ["AXL"]);
   assert.deepEqual(genes({ diff: "yes" }), ["GLP2R"]);
   assert.deepEqual(genes({ diff: "no" }), ["ADRB2", "AXL"]);
+  assert.deepEqual(genes({ snorkel: "yes" }), ["ADRB2"]);
+  assert.deepEqual(genes({ snorkel: "no" }), ["AXL", "GLP2R"]);
+  assert.deepEqual(genes({ query: "snorkel" }), ["ADRB2"]);
   const mine = new Set(["l1-p0002"]);
   assert.deepEqual(genes({ reviewed: "mine", reviewedByMe: mine }), ["AXL"]);
   assert.deepEqual(genes({ reviewed: "notmine", reviewedByMe: mine }), ["ADRB2", "GLP2R"]);
@@ -513,14 +531,14 @@ test("multiple fold tabs name their arm and residue so identical pLDDT/verdict t
   assert.equal(structureTabLabel(native, twoArms, true), "Native · pLDDT 84");
 });
 
-test("partitionModels puts current-pick folds first and tucks unlisted failed sweep refolds away (GLP1R case)", () => {
+test("currentMemberModels keeps only current-pick folds and native, excluding earlier sweep refolds (GLP1R / ADAM15)", () => {
   const mk = (id: string, kind: "tagged" | "native", site_id: string | null, refold_verdict: string | null) => ({
     structure_id: id, kind, site_id, source: "colabfold", release: null, r2_key: null, model_url: null,
     proteoform_match: null, residue_offset: 0, is_chosen: true, mean_plddt: 69,
     cassette_first_model_residue: 25, cassette_last_model_residue: 75, refold_verdict, note: null,
   });
   const glp1rSites = [site({ site_id: "l1-p0723-nsp-24", is_primary: true, insert_after_residue: 24 })];
-  const { primary, earlier } = partitionModels(
+  const got = currentMemberModels(
     [
       mk("native", "native", null, null),
       mk("fail-29", "tagged", null, "fail"),
@@ -529,8 +547,7 @@ test("partitionModels puts current-pick folds first and tucks unlisted failed sw
     ],
     glp1rSites,
   );
-  assert.deepEqual(primary.map((x) => x.structure_id), ["pass-24", "native"]);
-  assert.deepEqual(earlier.map((x) => x.structure_id), ["fail-29", "fail-25"]);
+  assert.deepEqual(got.map((x) => x.structure_id), ["pass-24", "native"]);
 });
 
 test("verdict buttons advertise = / - / . shortcuts and SiteCard chips semicolon-delimited detail", () => {
@@ -542,4 +559,30 @@ test("verdict buttons advertise = / - / . shortcuts and SiteCard chips semicolon
   assert.match(withDraft({ mode: "no" }), /class="segOn segNo"/);
   const card = renderToStaticMarkup(React.createElement(SiteCard, { site: site({}), length: 152 }));
   assert.match(card, /<ul class="detailChips"><li>internal_loop<\/li><li>refold verdict pending<\/li><\/ul>/);
+});
+
+test("redacted public provenance is hidden cleanly on SiteCard and memberSp explains Igκ vs native SP", async () => {
+  const { memberSp } = await import("../lib/l1-design");
+  const redactedCard = renderToStaticMarkup(
+    React.createElement(SiteCard, {
+      site: site({
+        decided_by: "withheld: internal design record",
+        implemented_by: "withheld: internal design record",
+        rationale: null,
+        reason: null,
+        source: { pr: null, pr_state: null, commit: "withheld", path: "withheld: internal design record" },
+      }),
+      length: 820,
+    }),
+  );
+  assert.doesNotMatch(redactedCard, /withheld: internal design record/);
+  assert.match(redactedCard, /construct &amp; site details/);
+  assert.match(redactedCard, /Internal design scores and provenance are withheld/);
+
+  const swap = memberSp(member({ rung: "N after SP", sites: [site({ leader: "igk", insert_after_residue: 68, reason: null })] }));
+  assert.match(swap.why ?? "", /Igκ leader/);
+  const native = memberSp(member({ rung: "N after SP", sites: [site({ leader: null, insert_after_residue: 24, reason: null })] }));
+  assert.match(native.why ?? "", /Native SP retained/);
+  const explicit = memberSp(member({ rung: "N after SP", sp_evidence: "native cleavage buried ALFA", sites: [site({ leader: "igk", reason: null })] }));
+  assert.equal(explicit.why, "native cleavage buried ALFA");
 });

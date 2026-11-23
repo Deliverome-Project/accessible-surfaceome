@@ -79,6 +79,8 @@
 .detailHead > button:hover { border-color: var(--ink-soft); background: var(--bg-warm); }
 .detailHead > button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .h2 { margin: 0; font-size: 1.35rem; }
+.geneLink { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out); }
+.geneLink:hover, .geneLink:focus-visible { color: var(--accent); border-bottom-color: var(--accent); }
 .h3 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-deep); margin: var(--space-4) 0 var(--space-2); }
 .h4 { font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0.2rem; }
 .detailBody { display: flex; flex-direction: column; }
@@ -136,9 +138,18 @@
 .altGrid { display: flex; flex-direction: column; gap: 0.4rem; }
 .altGrid label { display: flex; flex-direction: column; font-size: 0.75rem; color: var(--muted); gap: 0.15rem; }
 .altGrid input, .altGrid select, .altGrid textarea { font: inherit; font-size: 0.88rem; padding: 0.28rem 0.45rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg); color: var(--ink); }
-.altOptions { font-size: 0.75rem; color: var(--muted); }
-.altOptions > summary { cursor: pointer; }
-.altOptionsBody { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: var(--space-2); margin-top: 0.35rem; }
+.altInputRow { display: flex; gap: 0.35rem; align-items: center; }
+.altInputRow input { flex: 1 1 auto; min-width: 0; }
+.clearBtn {
+  font: inherit; font-size: 0.76rem; padding: 0.28rem 0.6rem; border-radius: var(--radius-sm);
+  border: 1px solid var(--line); background: var(--bg-soft); color: var(--muted); cursor: pointer;
+}
+.clearBtn:hover { color: var(--ink); border-color: var(--ink-soft); }
+.clearInline {
+  font: inherit; font-size: 0.72rem; padding: 0 0.35rem; border-radius: var(--radius-pill);
+  border: 1px solid var(--line); background: var(--bg-soft); color: var(--muted); cursor: pointer;
+}
+.clearInline:hover { color: var(--ink); border-color: var(--ink-soft); }
 /* Which arm the verdict is about, on its own line above the buttons: it changes what the
    buttons mean, so it has to be read before them, not found afterwards. */
 .scope { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--muted); }
@@ -159,7 +170,8 @@
   gap: 0.35rem var(--space-3); margin-bottom: 0.4rem;
 }
 .modelRow { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
-.structureControls { display: inline-flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; font-size: 0.76rem; }
+.structureControls { display: inline-flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; font-size: 0.76rem; }
+.ctrlGroup { display: inline-flex; align-items: center; gap: 0.15rem; }
 .ctrl, .ctrlOn {
   display: inline-flex; align-items: center; gap: 0.3rem;
   padding: 0.16rem 0.5rem; border-radius: var(--radius-pill);
@@ -189,18 +201,12 @@
 }
 .tab:hover { border-color: var(--ink-soft); background: var(--bg-warm); }
 .tabOn { border-color: var(--accent); background: var(--maroon-soft); color: var(--accent-deep); font-weight: var(--fw-medium); }
-.earlierToggle {
-  font: inherit; font-size: 0.74rem; padding: 0.16rem 0.45rem;
-  border: 1px dashed var(--line); border-radius: var(--radius-sm);
-  background: transparent; color: var(--muted); cursor: pointer;
-}
-.earlierToggle:hover { color: var(--ink); border-color: var(--ink-soft); }
 .viewerWrap { position: relative; }
 .viewerStage { position: relative; }
-/* Tall enough that the 3D protein is the hero of the page while keeping the tabs,
-   overlay toggles and compact color key all above the fold. */
+/* Tall enough that the 3D protein is the hero while reserving ~60px underneath so the
+   topology + pick/contact legends always sit above the fold (even with isoform tabs). */
 .viewer {
-  position: relative; width: 100%; height: clamp(380px, calc(100vh - 295px), 680px);
+  position: relative; width: 100%; height: clamp(340px, calc(100vh - 355px), 620px);
   border: 1px solid var(--line); border-radius: var(--radius-md, 8px); overflow: hidden;
   background: var(--bg-soft); box-shadow: 0 1px 3px rgba(31, 23, 24, 0.04);
 }
@@ -235,8 +241,8 @@
 /* Membrane + side-shading key under the 3D model. The topology swatches are the gene
    page's TopologyLegend; these rules only lay out what this view adds (cassette,
    leader remnant, residues outside the member) and the data note. */
-.sideLegend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem var(--space-3); margin-top: 0.35rem; }
-.sideExtra { display: flex; flex-wrap: wrap; gap: 0.15rem var(--space-3); list-style: none; margin: 0; padding: 0; font-size: 0.74rem; color: var(--muted); }
+.sideLegend { display: flex; flex-wrap: wrap; align-items: center; gap: 0.1rem var(--space-3); margin-top: 0.25rem; line-height: 1.3; }
+.sideExtra { display: flex; flex-wrap: wrap; gap: 0.1rem var(--space-3); list-style: none; margin: 0; padding: 0; font-size: 0.74rem; color: var(--muted); }
 .sideExtra i { display: inline-block; width: 0.68rem; height: 0.68rem; border-radius: 2px; vertical-align: -0.08rem; margin-right: 0.25rem; border: 1px solid var(--line-soft); }
 .sideInfo { display: inline; font-size: 0.72rem; color: var(--muted); }
 .sideInfo > summary { cursor: pointer; display: inline; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 2px; list-style: none; }
@@ -244,7 +250,7 @@
 .sideInfo[open] { display: block; margin-top: 0.2rem; }
 .sideWarn { flex-basis: 100%; margin: 0.2rem 0 0; font-size: 0.78rem; color: var(--maroon-dark); }
 .sideNote { flex-basis: 100%; margin: 0.2rem 0 0; font-size: 0.74rem; color: var(--muted); }
-.legend { display: flex; flex-wrap: wrap; gap: 0.2rem var(--space-3); font-size: 0.74rem; color: var(--muted); margin: 0.25rem 0 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.15rem var(--space-3); font-size: 0.74rem; color: var(--muted); margin: 0.15rem 0 0; line-height: 1.3; }
 .legend i { display: inline-block; width: 0.62rem; height: 0.62rem; border-radius: 50%; vertical-align: -0.04rem; margin: 0 0.15rem; }
 .modelNote { font-size: 0.74rem; color: var(--muted); margin: 0.2rem 0 0; }
 .swatch { display: inline-block; width: 0.65rem; height: 0.65rem; border-radius: 50%; margin-right: 0.3rem; vertical-align: -0.03rem; }
@@ -302,8 +308,8 @@
    bands, has a labelled head, and --l1-insert-edge (the brand amber-dark) outlines it
    at >= 2:1 luminance against every band, which dichromats keep in full. */
 .strip {
-  --l1-insert: #1D4ED8;
-  --l1-insert-edge: #1E3A8A;
+  --l1-insert: #0052FF;
+  --l1-insert-edge: #0033B3;
   border: 1px solid var(--line);
   border-left: 4px solid var(--l1-insert);
   border-radius: var(--radius-md, 8px);
@@ -413,6 +419,7 @@
 .facts dt { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 0.12rem; }
 .facts dd { margin: 0; }
 .spTag { display: inline-block; font-size: 0.72rem; padding: 0 0.45rem; border-radius: var(--radius-pill); border: 1px solid var(--line); margin-right: 0.2rem; }
+.spWhy { display: block; margin-top: 0.15rem; font-size: 0.76rem; color: var(--muted); }
 .diffList { margin: 0.2rem 0 0; padding-left: 1rem; font-size: 0.78rem; }
 /* SP bracket on the topology strip: hatched when the Igk leader replaces those residues. */
 .spBand { position: absolute; top: calc(1.15rem - 6px); height: 4px; background: var(--ink); opacity: 0.55; border-radius: 1px; pointer-events: auto; }
@@ -429,7 +436,7 @@ button.insert:focus-visible { outline: 2px solid var(--accent); outline-offset: 
 .insertOn .insertHead { outline: 2px solid var(--ink); }
 /* The reviewer's suggested site: same shape, the suggestion pink. */
 .insertSuggested, .insertSuggested .insertHead { background: #FF1F8F; border-color: #8a0b4a; color: #fff; }
-.insertSuggested { pointer-events: none; }
+span.insertSuggested { pointer-events: none; }
 .siteShow {
   font: inherit; font-size: 0.75rem; margin-left: auto; padding: 0.14rem 0.6rem;
   border-radius: var(--radius-pill); border: 1px solid var(--line);
