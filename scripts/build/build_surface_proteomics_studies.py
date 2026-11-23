@@ -107,7 +107,7 @@ HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 SNAPSHOT = "2026-11-23-abundance-v8"
 # Non-baseline states of the sweep's inputs (senescent, infected, knockout, treated cells),
 # one shown-not-counted arm each; built by the analysis repo's perturbed_arms.py from SNAPSHOT.
-PERTURBED_SNAPSHOT = "2026-11-23-perturbed-v5"
+PERTURBED_SNAPSHOT = "2026-11-23-perturbed-v6"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"

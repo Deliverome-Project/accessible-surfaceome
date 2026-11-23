@@ -95,8 +95,11 @@ export function MethodsBody({ arm, m }: { arm: StudyArm; m: ArmMethods }) {
                 {pct(arm.abundance_share)} of its length-corrected protein amount is Canonical or
                 Likely; screen {pct(arm.abundance_cutoff ?? 0.25)}. This dataset reports
                 per-protein amounts, so it is judged on them rather than on its protein list.
+                {arm.status === "perturbed"
+                  ? " As another condition of its study, it is scored the same way as the baseline but never counted."
+                  : ""}
                 {arm.auroc_rescued && arm.abundance_auroc != null
-                  ? ` It counts through the AUROC rescue: its amounts rank Canonical or Likely proteins above its other proteins (AUROC ${arm.abundance_auroc.toFixed(2)}, rescue ${(arm.auroc_rescue_cutoff ?? 0.58).toFixed(2)}), so a long tail of faint background does not hold it back.`
+                  ? ` It ${arm.status === "perturbed" ? "would count" : "counts"} through the AUROC rescue: its amounts rank Canonical or Likely proteins above its other proteins (AUROC ${arm.abundance_auroc.toFixed(2)}, rescue ${(arm.auroc_rescue_cutoff ?? 0.58).toFixed(2)}), so a long tail of faint background does not hold it back.`
                   : ""}
               </dd>
             </>

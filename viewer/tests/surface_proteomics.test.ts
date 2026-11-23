@@ -157,8 +157,13 @@ test("other conditions are not counted unless the reader opts in, and then only 
 });
 
 test("datasets with published amounts are screened on their amount, at the viewer's bar", () => {
-  const byAmount = index.arms.filter((a) => a.screen_basis === "abundance");
-  assert.ok(byAmount.length > 0, "the snapshot carries abundance-screened arms");
+  const scored = index.arms.filter((a) => a.screen_basis === "abundance");
+  assert.ok(scored.length > 0, "the snapshot carries abundance-screened arms");
+  // Other-condition arms carry the same amount scores but are never counted.
+  const other = scored.filter((a) => a.status === "perturbed");
+  assert.ok(other.length > 0, "other-condition arms are scored by amount too");
+  for (const a of other) assert.ok(!isCounted(a), `${a.id}: an other condition is never counted`);
+  const byAmount = scored.filter((a) => a.status !== "perturbed");
   for (const a of byAmount) {
     assert.equal(a.abundance_cutoff, ABUNDANCE_SCREEN, `${a.id}: cutoff matches ABUNDANCE_SCREEN`);
     assert.ok(a.abundance_share != null, `${a.id}: has a share`);
