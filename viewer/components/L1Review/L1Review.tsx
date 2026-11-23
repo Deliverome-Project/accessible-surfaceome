@@ -545,7 +545,7 @@ export function ReviewPanel({
           // A verdict on one arm rather than on the member: the r2 agent round rejects
           // arms, not members, so "a2 is in the pore, a1 and a3 are fine" needs somewhere to go.
           <label className={styles.scope}>
-            about
+            tag site
             <select value={siteId} onChange={(e) => patch({ siteId: e.target.value })}>
               {sites.map((s) => (
                 <option key={s.site_id} value={s.site_id}>

@@ -195,7 +195,7 @@ test("'Suggest another site' alone shows the residue field without a placement d
   assert.doesNotMatch(html, /placement/);
   // No free-text cassette; a select appears only when the member's sites carry real options.
   assert.doesNotMatch(html, /cassette variant/);
-  assert.doesNotMatch(html, /about<select/);
+  assert.doesNotMatch(html, /tag site<select/);
 });
 
 test("without a name the card says so, but nothing typed is locked away", () => {
