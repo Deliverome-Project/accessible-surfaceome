@@ -10,6 +10,7 @@ import {
   ordinalPct,
   shareBelow,
   ABUNDANCE_SCREEN,
+  AUROC_RESCUE,
   countableOtherConditions,
   countingRule,
   isCounted,
@@ -161,8 +162,11 @@ test("datasets with published amounts are screened on their amount, at the viewe
   for (const a of byAmount) {
     assert.equal(a.abundance_cutoff, ABUNDANCE_SCREEN, `${a.id}: cutoff matches ABUNDANCE_SCREEN`);
     assert.ok(a.abundance_share != null, `${a.id}: has a share`);
-    const passes = a.abundance_share! + 1e-9 >= ABUNDANCE_SCREEN;
-    assert.equal(isCounted(a), passes, `${a.id}: counted exactly when its amount share passes`);
+    assert.equal(a.auroc_rescue_cutoff, AUROC_RESCUE, `${a.id}: rescue cutoff matches AUROC_RESCUE`);
+    const byShare = a.abundance_share! + 1e-9 >= ABUNDANCE_SCREEN;
+    const byRank = a.abundance_auroc != null && a.abundance_auroc + 1e-9 >= AUROC_RESCUE;
+    assert.equal(isCounted(a), byShare || byRank, `${a.id}: counted exactly when its share or its AUROC passes`);
+    assert.equal(Boolean(a.auroc_rescued), !byShare && byRank, `${a.id}: rescued exactly when only its AUROC passes`);
   }
 });
 

@@ -12,6 +12,7 @@ import {
   OVERLAP_ALLOWANCE_PTS,
   OVERLAP_SCREEN,
   ABUNDANCE_SCREEN,
+  AUROC_RESCUE,
   STATUS_HELP,
   STATUS_ORDER,
   TIER_HELP,
@@ -145,8 +146,11 @@ export default function SurfaceProteomicsPage() {
               established surface proteins, meaning Canonical or Likely in our Surfaceome. Each
               protein&apos;s amount is divided by its length first, so the share counts molecules
               and a long protein is not favored. A deep list picks up many faint intracellular
-              proteins, so judging by amount keeps it from being penalized for depth. The bar
-              passes as many membrane preparations as the list screen does. When the table reports
+              proteins, so judging by amount keeps it from being penalized for depth. A deep
+              dataset under that share still counts when its amounts rank established surface
+              proteins above everything else it detected (AUROC at least{" "}
+              {AUROC_RESCUE.toFixed(2)}). Together the two bars pass as many membrane
+              preparations as the list screen does. When the table reports
               no usable amounts, at least {Math.round(OVERLAP_SCREEN * 100)}% of the
               dataset&apos;s proteins must be established surface proteins, and a list within{" "}
               {OVERLAP_ALLOWANCE_PTS} points below that counts only as Provisional. (A random set
@@ -236,7 +240,8 @@ export default function SurfaceProteomicsPage() {
                     intact-cell experiment scores high; one swamped by intracellular
                     contamination scores low. For datasets that report amounts (marked
                     &ldquo;amount&rdquo;) it is the share of the length-corrected amount, and
-                    they need at least {Math.round(ABUNDANCE_SCREEN * 100)}%; for the rest it
+                    they need at least {Math.round(ABUNDANCE_SCREEN * 100)}%, or amounts that rank
+                    surface proteins first (AUROC at least {AUROC_RESCUE.toFixed(2)}); for the rest it
                     is the share of proteins, and they need at least{" "}
                     {Math.round(OVERLAP_SCREEN * 100)}%, or count as Provisional within{" "}
                     {OVERLAP_ALLOWANCE_PTS} points below it (light bar). The tick on each bar

@@ -802,7 +802,11 @@ function OverlapBar({ arm }: { arm: StudyArm }) {
     <HoverTip
       tip={
         byAmount
-          ? `${pct(value)} of this dataset's length-corrected protein amount is Canonical or Likely in our Surfaceome (${pct(arm.reference_overlap)} of its proteins). Datasets whose table reports amounts need at least ${pct(cutoff)} of their amount (the tick).`
+          ? `${pct(value)} of this dataset's length-corrected protein amount is Canonical or Likely in our Surfaceome (${pct(arm.reference_overlap)} of its proteins). Datasets whose table reports amounts need at least ${pct(cutoff)} of their amount (the tick)${
+              arm.auroc_rescued && arm.abundance_auroc != null
+                ? `, or amounts that rank Canonical or Likely proteins first. This one counts that way: AUROC ${arm.abundance_auroc.toFixed(2)}, at or above ${(arm.auroc_rescue_cutoff ?? 0.58).toFixed(2)}`
+                : ""
+            }.`
           : `${pct(value)} of this dataset's proteins are Canonical or Likely in our Surfaceome${
               intact
                 ? `; datasets without published amounts need at least ${pct(OVERLAP_SCREEN)} of their proteins (the tick), or are Provisional within ${OVERLAP_ALLOWANCE_PTS} points below it`

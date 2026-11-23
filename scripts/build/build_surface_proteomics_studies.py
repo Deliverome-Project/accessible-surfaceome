@@ -104,7 +104,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-18-abundance-v5"
+SNAPSHOT = "2026-11-22-abundance-v6"
 # Non-baseline states of the sweep's inputs (senescent, infected, knockout, treated cells),
 # one shown-not-counted arm each; built by the analysis repo's perturbed_arms.py from SNAPSHOT.
 PERTURBED_SNAPSHOT = "2026-11-18-perturbed-v4"
@@ -1399,7 +1399,8 @@ def write_downloads(
     cols = [
         "id", "name", "citation", "first_author", "year", "journal", "pmid", "doi", "repository",
         "repository_ids", "method_class", "family", "family_label", "cell_group",
-        "sample", "reference_overlap", "screen_basis", "abundance_share", "n_proteins",
+        "sample", "reference_overlap", "screen_basis", "abundance_share", "abundance_auroc",
+        "auroc_rescued", "n_proteins",
         "admitted", "status",
     ]  # fmt: skip
     with (out / "surface_proteomics_datasets.tsv").open("w", newline="") as fh:
@@ -1831,6 +1832,16 @@ def build_arms(
                     else None
                 ),
                 "abundance_cutoff": d.get("abundance_cutoff"),
+                # The AUROC rescue (2026-11-22-abundance-v6): an arm under the amount cutoff
+                # still counts when its length-corrected amounts rank Canonical or Likely
+                # proteins first (within-table AUROC at or above auroc_rescue_cutoff).
+                "abundance_auroc": (
+                    round(d["abundance_auroc"], 4)
+                    if d.get("abundance_auroc") is not None
+                    else None
+                ),
+                "auroc_rescue_cutoff": d.get("auroc_rescue_cutoff"),
+                "auroc_rescued": bool(d.get("auroc_rescued")),
                 "repository": (d.get("accession") or {}).get("repository"),
                 "repository_ids": (d.get("accession") or {}).get("ids") or [],
             }
@@ -1844,7 +1855,7 @@ _URL = re.compile(r"https?://[^\s)\"']+")
 # are exported as fields of their own, so the rationale starts after them.
 _REASON_PREFIX = re.compile(
     r"^[a-z_ ]+:\s*(?:threshold [\d.]+%;\s*borderline allowance [\d.]+%\.?\s*"
-    r"|abundance screen [\d.]+%;.*?of proteins\)\.\s*)?"
+    r"|abundance screen [\d.]+%;.*?of proteins\)(?:; counted by the AUROC rescue.*?\(AUROC [\d.]+ >= [\d.]+\))?\.\s*)?"
 )
 
 
