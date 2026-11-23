@@ -4681,15 +4681,25 @@ async function handleL1DesignIndex(env) {
       `SELECT member_id, status, COUNT(*) AS n FROM l1_tag_site_design_public
         WHERE load_version = ? AND is_primary = 1 GROUP BY member_id, status`
     ).bind(lv).all().then((r) => r?.results ?? []),
-    // The leader of the member's current pick(s), so the review page can filter by SP
-    // type (native SP / Igk replaces it / Igk at residue 1) without one call per gene.
+    // The leader and snorkel presence of the member's current pick(s), so the review page
+    // can filter by SP type and snorkel tag without one call per gene.
     env.DB.prepare(
-      `SELECT member_id, MAX(leader) AS leader FROM l1_tag_site_design_public
-        WHERE load_version = ? AND is_primary = 1 GROUP BY member_id`
+      `SELECT member_id, leader, decision, cassette, site_id
+         FROM l1_tag_site_design_public
+        WHERE load_version = ? AND is_primary = 1`
     ).bind(lv).all().then((r) => r?.results ?? []),
     l1Annotations(env, lv),
   ]);
-  const leaderBy = new Map(leaders.map((r) => [r.member_id, r.leader ?? null]));
+  const leaderBy = new Map();
+  const snorkelBy = new Map();
+  for (const r of leaders) {
+    if (r.leader) leaderBy.set(r.member_id, r.leader);
+    const isSnorkel =
+      (r.decision ?? "").toLowerCase() === "snorkel" ||
+      (r.cassette ?? "").toLowerCase().includes("snorkel") ||
+      (r.site_id ?? "").toLowerCase().includes("snorkel");
+    if (isSnorkel) snorkelBy.set(r.member_id, true);
+  }
   const statusBy = new Map();
   for (const p of picks) {
     const list = statusBy.get(p.member_id) ?? [];
@@ -4712,6 +4722,7 @@ async function handleL1DesignIndex(env) {
         sequence_sha256: m.sequence_sha256 ?? null,
         pick_status: (statusBy.get(m.member_id) ?? []).sort(),
         pick_leader: leaderBy.get(m.member_id) ?? null,
+        has_snorkel: snorkelBy.get(m.member_id) ?? false,
         sp_status: annotations.get(m.member_id)?.sp_status ?? null,
         matches_uniprot_canonical: l1Bool(annotations.get(m.member_id)?.matches_uniprot_canonical),
       })),
