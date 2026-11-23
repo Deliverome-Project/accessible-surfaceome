@@ -978,6 +978,24 @@ export function currentL1Memberships<T extends { candidate_id: string; library: 
  * Returns `[]` for any failure: the strip is an aid, so a missing topology must degrade
  * to "no strip", never to a strip drawn from something else.
  */
+async function sha256Hex(text: string): Promise<string | null> {
+  try {
+    const subtle = globalThis.crypto?.subtle;
+    if (!subtle) return null;
+    const buf = await subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf), (b) => b.toString(16).padStart(2, "0")).join("");
+  } catch {
+    return null;
+  }
+}
+
+interface RawGeneTopology {
+  per_residue_topology?: string | null;
+  sequence?: string | null;
+  uniprot_acc?: string | null;
+  isoform_id?: string | null;
+}
+
 export async function fetchL1MemberTopologies(
   symbol: string,
   apiBase: string,
@@ -987,10 +1005,38 @@ export async function fetchL1MemberTopologies(
     const res = await fetch(`${apiBase}/v1/genes/${encodeURIComponent(symbol)}`, { signal });
     if (!res.ok) return [];
     const body = (await res.json()) as {
-      deterministic_features?: { library_designed_topology?: LibraryTopologyRow[] | null } | null;
+      deterministic_features?: {
+        library_designed_topology?: LibraryTopologyRow[] | null;
+        canonical_topology?: RawGeneTopology | null;
+        isoform_topologies?: RawGeneTopology[] | null;
+      } | null;
     };
-    const rows = body?.deterministic_features?.library_designed_topology;
-    return Array.isArray(rows) ? rows : [];
+    const df = body?.deterministic_features;
+    const rows: LibraryTopologyRow[] = Array.isArray(df?.library_designed_topology)
+      ? [...df.library_designed_topology]
+      : [];
+    // Fallback for genes whose record omits `library_designed_topology` (e.g. C5orf15):
+    // include canonical / isoform topologies keyed strictly by SHA-256 of their sequence,
+    // so l1MemberTopology only accepts them on an exact byte-for-byte sequence match.
+    const extras: { raw: RawGeneTopology; cohort: string }[] = [];
+    if (df?.canonical_topology) extras.push({ raw: df.canonical_topology, cohort: "human_canonical" });
+    if (Array.isArray(df?.isoform_topologies)) {
+      for (const iso of df.isoform_topologies) extras.push({ raw: iso, cohort: "human_isoform" });
+    }
+    for (const { raw, cohort } of extras) {
+      if (!raw.per_residue_topology || !raw.sequence) continue;
+      if (raw.per_residue_topology.length !== raw.sequence.length) continue;
+      const hash = await sha256Hex(raw.sequence);
+      if (!hash) continue;
+      rows.push({
+        per_residue_topology: raw.per_residue_topology,
+        ordered_length_aa: String(raw.per_residue_topology.length),
+        sequence_sha256: hash,
+        cohort,
+        topology_acc: raw.isoform_id ?? raw.uniprot_acc ?? undefined,
+      });
+    }
+    return rows;
   } catch {
     return [];
   }
@@ -999,18 +1045,23 @@ export async function fetchL1MemberTopologies(
 /**
  * The topology row that describes THIS member's ordered protein, or null.
  *
- * Paired by `candidate_id` == `design_id` and then checked for length agreement, for the
- * same reason {@link structureViewerDataFromLibraryMember} does: a strip drawn from
- * another proteoform's topology is a perfectly plausible-looking lie, and the insert flag
- * on top of it would point at the wrong band. A gene's record also carries rows for
- * members of other tranches (L2), which the design-id match excludes on its own.
+ * Paired by `candidate_id` == `design_id` (or, when the gene record lacks a
+ * `library_designed_topology` row for this member, by exact `sequence_sha256` match
+ * against a canonical/isoform topology row) and checked for length agreement.
  */
 export function l1MemberTopology(
   rows: readonly LibraryTopologyRow[] | null | undefined,
   member: Pick<L1Member, "design_id" | "ordered_length_aa"> & { sequence_sha256?: string | null },
 ): LibraryTopologyRow | null {
-  if (!rows?.length || !member.design_id) return null;
-  const row = rows.find((r) => r.candidate_id && r.candidate_id === member.design_id);
+  if (!rows?.length) return null;
+  const byId = member.design_id
+    ? rows.find((r) => r.candidate_id && r.candidate_id === member.design_id)
+    : undefined;
+  const row =
+    byId ??
+    (member.sequence_sha256
+      ? rows.find((r) => !r.candidate_id && r.sequence_sha256 === member.sequence_sha256)
+      : undefined);
   const topo = row?.per_residue_topology ?? "";
   if (!row || !topo) return null;
   // Sequence is the match of record: when both sides carry a hash they must agree, so a

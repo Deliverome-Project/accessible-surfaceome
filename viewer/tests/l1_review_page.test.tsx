@@ -304,6 +304,16 @@ test("a topology is used only when it describes THIS member's ordered protein", 
     l1MemberTopology([{ candidate_id: "l1-p2131", per_residue_topology: "" }], human),
     null,
   );
+  // Fallback when library_designed_topology is absent (e.g. C5orf15): matches only on exact sequence_sha256.
+  const canonicalFallback = [{ per_residue_topology: "S".repeat(45) + "O".repeat(153) + "M".repeat(17) + "I".repeat(50), ordered_length_aa: "265", sequence_sha256: "deadbeef" }];
+  assert.equal(
+    l1MemberTopology(canonicalFallback, { design_id: "l1-p0210", ordered_length_aa: 265, sequence_sha256: "deadbeef" })?.per_residue_topology?.length,
+    265,
+  );
+  assert.equal(
+    l1MemberTopology(canonicalFallback, { design_id: "l1-p0210", ordered_length_aa: 265, sequence_sha256: "other" }),
+    null,
+  );
 });
 
 test("the legend names only the topology states the member actually has", async () => {

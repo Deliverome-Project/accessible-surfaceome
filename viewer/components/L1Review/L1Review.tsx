@@ -950,9 +950,7 @@ function MemberDetail({
           ) : "no accession"}
           {member.uniprot_canonical_length ? ` · canonical ${member.uniprot_canonical_length} aa` : ""}
           {member.ordered_length_aa ? ` · ordered ${member.ordered_length_aa} aa` : ""}
-          {differs === null ? (
-            <span className={styles.muted}> · comparison with the canonical not in this load</span>
-          ) : differs ? (
+          {differs === null ? null : differs ? (
             <>
               {" · "}<strong>differs from the canonical</strong>
               {diffLines.length ? (
