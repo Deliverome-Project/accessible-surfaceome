@@ -4684,19 +4684,22 @@ async function handleL1DesignIndex(env) {
     // The leader and snorkel presence of the member's current pick(s), so the review page
     // can filter by SP type and snorkel tag without one call per gene.
     env.DB.prepare(
-      `SELECT member_id,
-              MAX(leader) AS leader,
-              MAX(CASE WHEN LOWER(COALESCE(decision, '')) = 'snorkel'
-                        OR LOWER(COALESCE(cassette, '')) LIKE '%snorkel%'
-                        OR LOWER(COALESCE(site_id, '')) LIKE '%snorkel%'
-                       THEN 1 ELSE 0 END) AS has_snorkel
+      `SELECT member_id, leader, decision, cassette, site_id
          FROM l1_tag_site_design_public
-        WHERE load_version = ? AND is_primary = 1 GROUP BY member_id`
+        WHERE load_version = ? AND is_primary = 1`
     ).bind(lv).all().then((r) => r?.results ?? []),
     l1Annotations(env, lv),
   ]);
-  const leaderBy = new Map(leaders.map((r) => [r.member_id, r.leader ?? null]));
-  const snorkelBy = new Map(leaders.map((r) => [r.member_id, Boolean(Number(r.has_snorkel))]));
+  const leaderBy = new Map();
+  const snorkelBy = new Map();
+  for (const r of leaders) {
+    if (r.leader) leaderBy.set(r.member_id, r.leader);
+    const isSnorkel =
+      (r.decision ?? "").toLowerCase() === "snorkel" ||
+      (r.cassette ?? "").toLowerCase().includes("snorkel") ||
+      (r.site_id ?? "").toLowerCase().includes("snorkel");
+    if (isSnorkel) snorkelBy.set(r.member_id, true);
+  }
   const statusBy = new Map();
   for (const p of picks) {
     const list = statusBy.get(p.member_id) ?? [];
