@@ -120,10 +120,11 @@ CONTACT_COLS = [
 #: l1_member_annotation_v1.sql), from the optional `member_annotations` source.
 ANNOT_COLS = [
     "member_id", "design_id", "gene_symbol", "sp_status", "native_sp_last_residue",
-    "sp_evidence", "uniprot_canonical_acc", "uniprot_canonical_length",
-    "matches_uniprot_canonical", "uniprot_diff_json",
+    "sp_evidence", "sp_concern", "sp_metrics_json", "uniprot_canonical_acc",
+    "uniprot_canonical_length", "matches_uniprot_canonical", "uniprot_diff_json",
 ]  # fmt: skip
 SP_STATUSES = {"native", "igk_swap", "igk_res1", "none"}
+SP_CONCERNS = {"clean", "concerning"}
 #: Tables written only when they have rows, so a load without that source keeps the
 #: content hash (and load_version) it had before the table existed.
 OPTIONAL_TABLES = {"annotations"}
@@ -1264,6 +1265,19 @@ def _annotations(rows: list[dict], R: "Resolver") -> list[dict]:
             raise SystemExit(
                 f"member_annotations {r.get('design_id')}: unknown sp_status {sp!r}"
             )
+        concern = (r.get("sp_concern") or "").strip() or None
+        if concern is not None and concern not in SP_CONCERNS:
+            raise SystemExit(
+                f"member_annotations {r.get('design_id')}: unknown sp_concern {concern!r}"
+            )
+        metrics = (r.get("sp_metrics_json") or "").strip() or None
+        if metrics is not None:
+            parsed_m = json.loads(metrics)
+            if not isinstance(parsed_m, dict):
+                raise SystemExit(
+                    f"member_annotations {r.get('design_id')}: sp_metrics_json is not a JSON object"
+                )
+            metrics = json.dumps(parsed_m, sort_keys=True, separators=(",", ":"))
         diff = (r.get("uniprot_diff_json") or "").strip() or None
         if diff is not None:
             parsed = json.loads(diff)
@@ -1281,6 +1295,7 @@ def _annotations(rows: list[dict], R: "Resolver") -> list[dict]:
             "member_id": m["member_id"], "design_id": m["design_id"], "gene_symbol": m["gene_symbol"],
             "sp_status": sp, "native_sp_last_residue": _int(r.get("native_sp_last_residue") or ""),
             "sp_evidence": (r.get("sp_evidence") or "").strip() or None,
+            "sp_concern": concern, "sp_metrics_json": metrics,
             "uniprot_canonical_acc": (r.get("uniprot_canonical_acc") or "").strip() or None,
             "uniprot_canonical_length": _int(r.get("uniprot_canonical_length") or ""),
             "matches_uniprot_canonical": int(match) if match else None,
