@@ -8,6 +8,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  white-space: nowrap;
+  flex-shrink: 0;
   margin: var(--space-2) 0 0;
   padding: 0.18rem 0.6rem;
   font-family: var(--font-sans);
