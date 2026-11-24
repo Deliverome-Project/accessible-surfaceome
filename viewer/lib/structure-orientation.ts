@@ -275,6 +275,7 @@ function computeOrientationTransform(
   parsed: ParsedPdb,
   residueOffset = 0,
   resiToTopo?: (pdbResi: number) => number | null,
+  minSideResidues = 6,
 ): OrientationTransform | null {
   if (!topology || parsed.atoms.length === 0 || parsed.caByResidue.size === 0) {
     return null;
@@ -284,7 +285,7 @@ function computeOrientationTransform(
   );
   // Need a minimum count per class so centroids are statistically
   // meaningful; matches the deliverome-internal threshold.
-  if (states.M.length < 6 || states.O.length < 6 || states.I.length < 6) {
+  if (states.M.length < 6 || states.O.length < minSideResidues || states.I.length < minSideResidues) {
     return null;
   }
   const membraneCenter = centroid(states.M);
@@ -466,6 +467,10 @@ export interface OrientPdbOptions {
    *  Return `null` for resSeq values that don't map onto the topology
    *  (unmapped fusion partners, ligands, gaps). */
   resiToTopo?: (pdbResi: number) => number | null;
+  /** Fewest extracellular (O) and intracellular (I) CAs each side needs before the
+   *  O→I axis is trusted. Default 6; L1 views lower to 1 on a retry so single-pass
+   *  members with short cytoplasmic tails still get a membrane slab. */
+  minSideResidues?: number;
 }
 
 /**
@@ -495,7 +500,7 @@ export function orientPdbForTopology(
   const resiToTopo = options?.resiToTopo;
   const parsed = parsePdbForOrientation(pdbText, chainFilter);
   const transform = computeOrientationTransform(
-    topology, parsed, residueOffset, resiToTopo,
+    topology, parsed, residueOffset, resiToTopo, options?.minSideResidues,
   );
   return applyOrientationTransform(
     pdbText, topology, transform, chainFilter, residueOffset, resiToTopo,

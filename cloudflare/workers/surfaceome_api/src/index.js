@@ -4692,10 +4692,10 @@ async function handleL1DesignIndex(env) {
       `SELECT member_id, status, COUNT(*) AS n FROM l1_tag_site_design_public
         WHERE load_version = ? AND is_primary = 1 GROUP BY member_id, status`
     ).bind(lv).all().then((r) => r?.results ?? []),
-    // The leader and snorkel presence of the member's current pick(s), so the review page
-    // can filter by SP type and snorkel tag without one call per gene.
+    // The leader, snorkel presence, and primary site signature of the member's current pick(s),
+    // so the review page can filter by SP type / snorkel and detect stale reviews without one call per gene.
     env.DB.prepare(
-      `SELECT member_id, leader, decision, cassette, site_id
+      `SELECT member_id, leader, decision, cassette, site_id, insert_after_residue
          FROM l1_tag_site_design_public
         WHERE load_version = ? AND is_primary = 1`
     ).bind(lv).all().then((r) => r?.results ?? []),
@@ -4703,6 +4703,7 @@ async function handleL1DesignIndex(env) {
   ]);
   const leaderBy = new Map();
   const snorkelBy = new Map();
+  const sigPartsBy = new Map();
   for (const r of leaders) {
     if (r.leader) leaderBy.set(r.member_id, r.leader);
     const isSnorkel =
@@ -4710,6 +4711,10 @@ async function handleL1DesignIndex(env) {
       (r.cassette ?? "").toLowerCase().includes("snorkel") ||
       (r.site_id ?? "").toLowerCase().includes("snorkel");
     if (isSnorkel) snorkelBy.set(r.member_id, true);
+    const sigs = sigPartsBy.get(r.member_id) ?? [];
+    const ins = r.insert_after_residue == null ? "" : String(r.insert_after_residue);
+    sigs.push(`${r.site_id ?? ""}:${ins}:${r.leader ?? ""}:${r.cassette ?? ""}`);
+    sigPartsBy.set(r.member_id, sigs);
   }
   const statusBy = new Map();
   for (const p of picks) {
@@ -4732,6 +4737,7 @@ async function handleL1DesignIndex(env) {
         ordered_length_aa: m.ordered_length_aa == null ? null : Number(m.ordered_length_aa),
         sequence_sha256: m.sequence_sha256 ?? null,
         pick_status: (statusBy.get(m.member_id) ?? []).sort(),
+        primary_site_signature: (sigPartsBy.get(m.member_id) ?? []).sort().join("|"),
         pick_leader: leaderBy.get(m.member_id) ?? null,
         has_snorkel: snorkelBy.get(m.member_id) ?? false,
         sp_status: annotations.get(m.member_id)?.sp_status ?? null,
@@ -4970,16 +4976,28 @@ async function l1ReviewWriteAuth(request, env, body) {
   return { authMethod: "turnstile" };
 }
 
-// INSERT with auth_method as the LAST column. If the Worker is deployed before
-// migration l1_review_v2 adds that column, store the row without it rather than
-// lose the review.
+// INSERT resilient to pending additive migrations (site_signature and/or auth_method
+// as trailing columns): if a column is missing on FEEDBACK_DB, drop it and retry so
+// reviews are never lost across deploy order.
 async function l1Insert(env, sql, vals) {
-  try {
-    return await env.FEEDBACK_DB.prepare(sql).bind(...vals).run();
-  } catch (err) {
-    if (!/auth_method/.test(String(err?.message ?? err))) throw err;
-    const legacy = sql.replace(/,\s*auth_method\)/, ")").replace(/,\s*\?\)\s*$/, ")");
-    return env.FEEDBACK_DB.prepare(legacy).bind(...vals.slice(0, -1)).run();
+  let curSql = sql;
+  let curVals = [...vals];
+  while (true) {
+    try {
+      return await env.FEEDBACK_DB.prepare(curSql).bind(...curVals).run();
+    } catch (err) {
+      const msg = String(err?.message ?? err);
+      const m = curSql.match(/\(([^)]+)\)\s*VALUES/i);
+      if (!m) throw err;
+      const cols = m[1].split(",").map((s) => s.trim());
+      const drop = ["site_signature", "auth_method"].find((col) => msg.includes(col) && cols.includes(col));
+      if (!drop) throw err;
+      const idx = cols.indexOf(drop);
+      cols.splice(idx, 1);
+      curVals.splice(idx, 1);
+      const tbl = curSql.match(/INSERT INTO\s+(\w+)/i)?.[1];
+      curSql = `INSERT INTO ${tbl} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`;
+    }
   }
 }
 
@@ -5011,6 +5029,7 @@ async function handleL1ReviewSubmit(request, env) {
   if (!gene || !SYMBOL_OK.test(gene)) return badRequest("invalid_gene");
   if (!loadVersion || !L1_LOAD_OK.test(loadVersion)) return badRequest("invalid_load_version");
   const sha = l1Str(body.sequence_sha256, 64);
+  const siteSig = l1Str(body.site_signature, 512);
   const reason = l1Str(body.reason, 4000);
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -5019,12 +5038,14 @@ async function handleL1ReviewSubmit(request, env) {
     if (body.verdict === "no" && !reason) return badRequest("reason_required");
     const auth = await l1ReviewWriteAuth(request, env, body);
     if (auth.denied) return auth.denied;
-    await l1Insert(env,
+    await l1Insert(
+      env,
       `INSERT INTO l1_review (review_id, created_at, reviewer, member_id, design_id, sequence_sha256,
-                              gene_symbol, site_id, verdict, reason, load_version, auth_method)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                              gene_symbol, site_id, verdict, reason, load_version, site_signature, auth_method)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id, now, reviewer, memberId, designId, sha, gene, l1Str(body.site_id, 80), body.verdict,
-        reason, loadVersion, auth.authMethod]);
+        reason, loadVersion, siteSig, auth.authMethod],
+    );
     return json({ ok: true, review_id: id, created_at: now, auth_method: auth.authMethod }, { status: 201, ttl: 0 });
   }
   if (body.kind === "alt_tag") {
@@ -5040,13 +5061,15 @@ async function handleL1ReviewSubmit(request, env) {
     }
     const auth = await l1ReviewWriteAuth(request, env, body);
     if (auth.denied) return auth.denied;
-    await l1Insert(env,
+    await l1Insert(
+      env,
       `INSERT INTO l1_alt_tag (suggestion_id, created_at, reviewer, member_id, design_id, sequence_sha256,
                                gene_symbol, insert_after_residue, placement, cassette_variant, reason,
-                               load_version, auth_method)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                               load_version, site_signature, auth_method)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [id, now, reviewer, memberId, designId, sha, gene, residue, placement,
-        l1Str(body.cassette_variant, 120), reason, loadVersion, auth.authMethod]);
+        l1Str(body.cassette_variant, 120), reason, loadVersion, siteSig, auth.authMethod],
+    );
     return json({ ok: true, suggestion_id: id, created_at: now, auth_method: auth.authMethod }, { status: 201, ttl: 0 });
   }
   return badRequest("invalid_kind");
@@ -5069,7 +5092,7 @@ async function handleL1ReviewList(request, env) {
 const L1_EXPORT_COLS = [
   "kind", "id", "created_at", "reviewer", "member_id", "design_id", "sequence_sha256", "gene_symbol",
   "site_id", "verdict", "insert_after_residue", "placement", "cassette_variant", "reason", "load_version",
-  "auth_method",
+  "site_signature", "auth_method",
 ];
 
 async function handleL1ReviewExport(request, env) {
@@ -5284,7 +5307,7 @@ const USAGE_SALT_TTL_S = 48 * 3600;
 const USAGE_SALT_MEMO_MS = 5 * 60 * 1000;
 const usageSaltMemo = { day: "", salt: "", at: 0 };
 const USAGE_SECTIONS = new Set([
-  "benchmark", "compare", "api", "prompts", "reproducibility", "privacy",
+  "benchmark", "compare", "api", "prompts", "reproducibility", "privacy", "l1-review",
 ]);
 const USAGE_ORIGIN_RE = /^(https:\/\/([a-z0-9-]+\.)*deliverome\.org|http:\/\/localhost(:\d+)?)$/;
 
