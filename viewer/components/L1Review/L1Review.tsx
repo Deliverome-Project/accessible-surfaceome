@@ -31,6 +31,7 @@ import {
   standingReviewIds,
   reviewErrorMessage,
   submitL1Review,
+  SP_CONCERN_LABEL,
   SP_LABEL,
   indexSpStatus,
   memberHasSnorkel,
@@ -51,6 +52,7 @@ import {
   type L1ReviewRow,
   type L1Reviews,
   type L1Site,
+  type L1SpMetrics,
   type L1Structure,
 } from "../../lib/l1-design";
 import type { LibraryTopologyRow } from "../../lib/structure-viewer-types";
@@ -97,14 +99,14 @@ const store = {
   },
 };
 
-interface UrlFilters { m: string; rung: string; cls: string; status: string; q: string; sp: string; diff: string; snorkel: string; rev: string }
+interface UrlFilters { m: string; rung: string; cls: string; status: string; q: string; sp: string; spConcern: string; diff: string; snorkel: string; rev: string }
 
 function readUrl(): UrlFilters {
-  if (typeof window === "undefined") return { m: "", rung: "", cls: "", status: "", q: "", sp: "", diff: "", snorkel: "", rev: "" };
+  if (typeof window === "undefined") return { m: "", rung: "", cls: "", status: "", q: "", sp: "", spConcern: "", diff: "", snorkel: "", rev: "" };
   const p = new URLSearchParams(window.location.search);
   return {
     m: p.get("m") ?? "", rung: p.get("rung") ?? "", cls: p.get("class") ?? "", status: p.get("status") ?? "",
-    q: p.get("q") ?? "", sp: p.get("sp") ?? "", diff: p.get("diff") ?? "", snorkel: p.get("snorkel") ?? "", rev: p.get("reviewed") ?? "",
+    q: p.get("q") ?? "", sp: p.get("sp") ?? "", spConcern: p.get("sp_concern") ?? "", diff: p.get("diff") ?? "", snorkel: p.get("snorkel") ?? "", rev: p.get("reviewed") ?? "",
   };
 }
 
@@ -115,6 +117,7 @@ function writeUrl(s: UrlFilters) {
   if (s.cls) p.set("class", s.cls);
   if (s.status) p.set("status", s.status);
   if (s.sp) p.set("sp", s.sp);
+  if (s.spConcern) p.set("sp_concern", s.spConcern);
   if (s.diff) p.set("diff", s.diff);
   if (s.snorkel) p.set("snorkel", s.snorkel);
   if (s.rev) p.set("reviewed", s.rev);
@@ -762,16 +765,77 @@ function memberChipText(m: Pick<L1Member, "candidate_set" | "species">, topo: Li
   return protein ? `${l1MemberRoleLabel(m)} · ${protein}` : l1MemberRoleLabel(m);
 }
 
+/** Structured SignalP 6 vs DeepTMHMM v1 pre-/post-tag SP metrics for N-after-SP constructs. */
+export function SpMetricsBox({ metrics }: { metrics: L1SpMetrics }) {
+  const pct = (v: number | null | undefined) => (v == null ? "—" : v.toFixed(2));
+  const isConcerning = metrics.concern === "concerning";
+  const postLabel = metrics.post_leader === "igk" ? "Post-tag (Igκ)" : "Post-tag (native SP)";
+  const preCut =
+    metrics.signalp_pre_cut != null
+      ? `@${metrics.signalp_pre_cut}`
+      : metrics.signalp_pre_pred && metrics.signalp_pre_pred !== "SP"
+        ? `none (${metrics.signalp_pre_pred})`
+        : "—";
+  const spread = metrics.cut_spread_aa;
+  const delta = metrics.cleavage_prob_delta;
+  const reasons = (metrics.concern_reasons ?? []).filter(Boolean);
+  return (
+    <div className={styles.spMetrics}>
+      <div className={styles.spMetricsHead}>
+        <span className={isConcerning ? styles.spConcernWarn : styles.spConcernClean}>
+          {isConcerning ? "SP concerning" : "SP clean"}
+        </span>
+        <span className={styles.spMetricsCut}>
+          DeepTMHMM v1 {metrics.deeptmhmm_v1_cut != null ? `@${metrics.deeptmhmm_v1_cut}` : "—"} · SignalP 6 pre {preCut}
+          {spread != null && spread > 0 ? ` (Δ ${spread} aa)` : spread === 0 ? " (exact match)" : ""}
+        </span>
+      </div>
+      <div className={styles.spMetricsRows}>
+        <span>
+          <strong>Pre-tag SignalP 6:</strong> SP p={pct(metrics.signalp_pre_sp_prob)} · cut p={pct(metrics.signalp_pre_cs_prob)}
+        </span>
+        <span>
+          <strong>{postLabel}:</strong> cut {metrics.signalp_post_cut != null ? `@${metrics.signalp_post_cut}` : "—"} · SP p={pct(metrics.signalp_post_sp_prob)} · cut p={pct(metrics.signalp_post_cs_prob)}
+          {delta != null ? ` (${delta >= 0 ? "+" : ""}${delta.toFixed(2)})` : ""}
+        </span>
+      </div>
+      {isConcerning && reasons.length ? (
+        <div className={styles.spConcernReasons}>
+          <strong>Flagged:</strong> {reasons.join(" · ")}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** Clarifies when an automated refold screen flagged a built construct that was reviewed and kept. */
+export function RefoldFlagBanner({
+  model,
+  site,
+}: {
+  model: Pick<L1Structure, "kind" | "refold_verdict" | "note"> | undefined;
+  site: Pick<L1Site, "status"> | undefined;
+}) {
+  if (!model || model.kind !== "tagged" || model.refold_verdict !== "fail" || site?.status !== "built") return null;
+  return (
+    <p className={styles.refoldFlagBanner} role="note">
+      <strong>Automated refold screen flagged (kept as built):</strong>{" "}
+      {model.note ? `${model.note}. ` : ""}
+      This construct was reviewed and retained in L1 (flagged for experimental follow-up — e.g., low-confidence AF2 tag compaction while the native fold and/or ALFA control remain exposed).
+    </p>
+  );
+}
+
 /** Label for a structure view tab. When a member carries multiple tagged refolds,
  *  name the arm/insertion residue so tabs are distinguishable before clicking. */
 export function structureTabLabel(
   m: Pick<L1Structure, "kind" | "site_id" | "mean_plddt" | "refold_verdict" | "note">,
-  sites: readonly Pick<L1Site, "site_id" | "insert_after_residue">[],
+  sites: readonly (Pick<L1Site, "site_id" | "insert_after_residue"> & { status?: L1Site["status"] })[],
   multiFold: boolean,
 ): string {
+  const site = m.site_id ? sites.find((s) => s.site_id === m.site_id) : undefined;
   let base = m.kind === "tagged" ? "Fold" : "Native";
   if (m.kind === "tagged" && multiFold) {
-    const site = m.site_id ? sites.find((s) => s.site_id === m.site_id) : undefined;
     const arm = m.site_id ? armLabel(m.site_id) : null;
     const noteRes = m.note ? /insert after (\d+)/i.exec(m.note)?.[1] : null;
     const res = site?.insert_after_residue ?? (noteRes != null ? Number(noteRes) : null);
@@ -782,10 +846,14 @@ export function structureTabLabel(
             : null;
     if (tag) base = `Fold (${tag})`;
   }
+  const verdict =
+    m.refold_verdict === "fail" && site?.status === "built"
+      ? "refold flag (kept)"
+      : m.refold_verdict ?? null;
   return [
     base,
     m.mean_plddt != null ? `pLDDT ${m.mean_plddt.toFixed(0)}` : null,
-    m.refold_verdict ?? null,
+    verdict,
   ].filter(Boolean).join(" · ");
 }
 
@@ -877,16 +945,25 @@ function MemberDetail({
   if (segments) {
     if (showContacts && curatedAligned && curatedGene) {
       for (const c of curatedGene.sites) {
+        const partner = c.partner_label ?? c.partner;
+        const hover = `curated contact${partner ? `: ${partner}` : ""}${c.source ? ` (${c.source})` : ""}`;
         for (const p of c.positions ?? []) {
           const resi = toModel(p);
-          if (resi != null) marks.push({ resi, color: COLORS.curated, radius: 2.8, stick: true });
+          if (resi != null) marks.push({ resi, color: COLORS.curated, radius: 2.8, stick: true, hover });
         }
       }
     }
     if (showContacts) {
       for (const c of visibleContacts(member.contacts ?? [], showHidden)) {
         const resi = toModel(c.residue);
-        if (resi != null) marks.push({ resi, color: contactColor(c), radius: 2.8, stick: true });
+        const kind =
+          c.source === "uniprot_binding"
+            ? "UniProt binding site"
+            : c.confidence_tier === "lower"
+              ? "lit contact (model)"
+              : "lit contact";
+        const hover = `${kind}${c.ligands ? `: ${c.ligands}` : ""}`;
+        if (resi != null) marks.push({ resi, color: contactColor(c), radius: 2.8, stick: true, hover });
       }
     }
   }
@@ -904,6 +981,7 @@ function MemberDetail({
       color: siteColor(s),
       radius: on ? 4.2 : s.is_primary === false ? 2.4 : 3.2,
       label: on || s.is_primary !== false ? `${arm ? `${arm} ` : ""}${s.residue_before ?? ""}${s.insert_after_residue}` : undefined,
+      hover: `${s.is_primary !== false ? "tag pick" : "alt site"} (after ${s.insert_after_residue})`,
     });
   }
   if (suggested != null) {
@@ -996,6 +1074,7 @@ function MemberDetail({
           {sp.status ? <span className={styles.spTag}>{SP_LABEL[sp.status]}</span> : null} {sp.text}
           <span className={styles.muted}> · from {sp.source}</span>
           {sp.why ? <span className={styles.spWhy}>{sp.why}</span> : null}
+          {member.sp_metrics ? <SpMetricsBox metrics={member.sp_metrics} /> : null}
         </dd>
         <dt>UniProt</dt>
         <dd>
@@ -1171,10 +1250,18 @@ function MemberDetail({
           ) : null}
           {segments && showContacts ? (
             <>
-              <span><i style={{ background: COLORS.curated }} /> curated</span>
-              <span><i style={{ background: COLORS.litHigh }} /> lit</span>
-              <span><i style={{ background: COLORS.litLower }} /> lit (model)</span>
-              <span><i style={{ background: COLORS.uniprot }} /> UniProt</span>
+              <span title="Curated ligand/partner contact residues from PDB/PDBe structures (shown as purple sticks + spheres)">
+                <i style={{ background: COLORS.curated }} /> curated contact
+              </span>
+              <span title="Literature-extracted ligand/partner contact residues (high confidence)">
+                <i style={{ background: COLORS.litHigh }} /> lit contact
+              </span>
+              <span title="Literature-extracted contact residues (lower/model confidence)">
+                <i style={{ background: COLORS.litLower }} /> lit contact (model)
+              </span>
+              <span title="UniProt curated binding-site residues">
+                <i style={{ background: COLORS.uniprot }} /> UniProt binding
+              </span>
             </>
           ) : null}
           <span>
@@ -1184,6 +1271,10 @@ function MemberDetail({
             ) : null}
           </span>
         </div>
+        <RefoldFlagBanner
+          model={model}
+          site={model?.site_id ? sites.find((s) => s.site_id === model.site_id) : undefined}
+        />
         {model?.note || model?.proteoform_match ? (
           <p className={styles.modelNote}>
             Model: {model.proteoform_match}{model.residue_offset ? `, member residue i = model residue i + ${model.residue_offset}` : ""}
@@ -1345,7 +1436,7 @@ export function L1Review() {
   }, [mineIds, reviews, reviewer, verdicts, memberByDesign, currentLoadVersion, staleDesignIds]);
   const facetBase = {
     rung: filters.rung, membraneClass: filters.cls, status: filters.status, query: filters.q,
-    sp: filters.sp, diff: filters.diff, snorkel: filters.snorkel, reviewed: filters.rev,
+    sp: filters.sp, spConcern: filters.spConcern, diff: filters.diff, snorkel: filters.snorkel, reviewed: filters.rev,
     reviewedByMe, staleDesignIds, synonyms,
   };
   const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe, staleDesignIds, synonyms]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -1576,6 +1667,9 @@ export function L1Review() {
   const spKnown = members.some((m) => indexSpStatus(m) !== null);
   const spHasNone = members.some((m) => m.sp_status != null);
   const spCount = (k: string) => (k === "" ? forSp.length : forSp.filter((m) => indexSpStatus(m) === k).length);
+  const forSpConcern = without("spConcern");
+  const spConcernKnown = members.some((m) => m.sp_concern != null);
+  const spConcernCount = (k: string) => (k === "" ? forSpConcern.length : forSpConcern.filter((m) => m.sp_concern === k).length);
   const forDiff = without("diff");
   const diffKnown = members.some((m) => uniprotDiffers(m) !== null);
   const diffCount = (k: string) => (k === "" ? forDiff.length : forDiff.filter((m) => uniprotDiffers(m) === (k === "yes")).length);
@@ -1594,6 +1688,7 @@ export function L1Review() {
     filters.cls && `class: ${filters.cls}`,
     filters.status && `pick: ${filters.status === "none" ? "no pick yet" : STATUS_LABEL[filters.status as L1Site["status"]] ?? filters.status}`,
     filters.sp && `SP: ${SP_LABEL[filters.sp as keyof typeof SP_LABEL] ?? filters.sp}`,
+    filters.spConcern && `SP check: ${SP_CONCERN_LABEL[filters.spConcern as keyof typeof SP_CONCERN_LABEL] ?? filters.spConcern}`,
     filters.diff && (filters.diff === "yes" ? "differs from UniProt" : "same as UniProt"),
     filters.snorkel && (filters.snorkel === "yes" ? "snorkel tag" : "no snorkel"),
     filters.rev && (filters.rev === "mine" ? "reviewed by me" : filters.rev === "stale" ? "out of date" : "not reviewed by me"),
@@ -1658,6 +1753,16 @@ export function L1Review() {
               : ["", "native", "igk_swap", "igk_res1"]).map((k) => (
               <button key={k || "all"} type="button" className={filters.sp === k ? styles.chipOn : styles.chip} onClick={() => update({ sp: k })}>
                 {k === "" ? "all" : SP_LABEL[k as keyof typeof SP_LABEL]} <span className={styles.n}>{spCount(k)}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+        {spConcernKnown ? (
+          <div>
+            <span className={styles.facetLabel} title="N-after-SP pre- vs post-tag SignalP 6 and DeepTMHMM v1 cleavage checks (predictor spread >3 aa, cleavage shift/softening, weak cleavage, or second-source swap)">SP check</span>
+            {[["", "all"], ["concerning", "concerning"], ["clean", "clean"]].map(([k, label]) => (
+              <button key={k || "all"} type="button" className={filters.spConcern === k ? styles.chipOn : styles.chip} onClick={() => update({ spConcern: k })}>
+                {label} <span className={styles.n}>{spConcernCount(k)}</span>
               </button>
             ))}
           </div>

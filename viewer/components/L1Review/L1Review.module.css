@@ -456,3 +456,25 @@ span.insertSuggested { pointer-events: none; }
 .siteShow:hover { border-color: var(--ink-soft); background: var(--bg-warm); }
 .siteShowOn { background: var(--ink); color: var(--bg-soft, #fff); border-color: var(--ink); }
 .siteShowOn:hover { background: var(--ink-soft); border-color: var(--ink-soft); }
+
+/* Pre-/post-tag SignalP 6 vs DeepTMHMM v1 comparison under N-terminus facts. */
+.spMetrics {
+  margin-top: 0.3rem; padding: 0.35rem 0.5rem; border-radius: var(--radius-sm, 6px);
+  border: 1px solid var(--line-soft); background: var(--bg-soft); font-size: 0.75rem; line-height: 1.4;
+}
+.spMetricsHead { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; }
+.spMetricsCut { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink); }
+.spMetricsRows { display: flex; flex-direction: column; gap: 0.1rem; margin-top: 0.2rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.spConcernClean, .spConcernWarn {
+  display: inline-block; padding: 0.02rem 0.42rem; border-radius: var(--radius-pill);
+  font-size: 0.7rem; font-weight: var(--fw-medium);
+}
+.spConcernClean { background: var(--teal-soft); color: var(--teal-dark); }
+.spConcernWarn { background: #fffbeb; color: #92400e; border: 1px solid #f59e0b; }
+.spConcernReasons { margin-top: 0.2rem; color: #92400e; font-size: 0.74rem; }
+
+/* Clarifies why a built construct carries an automated refold screen flag. */
+.refoldFlagBanner {
+  margin: 0.35rem 0 0; padding: 0.4rem 0.6rem; border-radius: var(--radius-sm, 6px);
+  border: 1px solid #f59e0b; background: #fffbeb; color: #92400e; font-size: 0.76rem; line-height: 1.4;
+}
