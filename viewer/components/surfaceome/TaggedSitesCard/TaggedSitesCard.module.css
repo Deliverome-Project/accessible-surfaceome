@@ -73,6 +73,10 @@
   vertical-align: top;
 }
 
+.table td button {
+  margin-top: 0;
+}
+
 .residue {
   font-family: var(--font-mono, ui-monospace, monospace);
   font-weight: 600;

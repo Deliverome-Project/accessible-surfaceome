@@ -320,7 +320,7 @@ function SiteEvidenceDrawer({ site }: { site: TaggedSite }) {
       eyebrow={`Tag site · ${residueDisplay(site)}`}
       title="Supporting evidence"
       ariaLabel={`Supporting evidence for ${residueDisplay(site)}`}
-      triggerLabel="Quote ↗"
+      triggerLabel="Quote"
     >
       {quotes.map((q, i) => (
         <blockquote key={i} className={styles.quote}>
