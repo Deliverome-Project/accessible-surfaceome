@@ -13,18 +13,11 @@ import { useRouter } from "next/navigation";
 // Type-only import → erased at compile, so the client bundle never pulls
 // in lib/surfaceome.ts (which imports node:fs).
 import type { GeneEntry } from "../../../lib/surfaceome";
+import { geneSynonymRank } from "../../../lib/gene-jump-entries";
 import styles from "./GeneJump.module.css";
 
 function geneJumpRank(g: GeneEntry, q: string): number {
-  const sym = g.symbol.toUpperCase();
-  const aliases = (g.synonyms ?? []).map((s) => s.toUpperCase());
-  if (sym === q) return 0;
-  if (aliases.some((a) => a === q)) return 1;
-  if (sym.startsWith(q)) return 2;
-  if (aliases.some((a) => a.startsWith(q))) return 3;
-  if (sym.includes(q)) return 4;
-  if (aliases.some((a) => a.includes(q))) return 5;
-  return 6;
+  return geneSynonymRank(g.symbol, g.synonyms, q);
 }
 
 interface GeneJumpProps {

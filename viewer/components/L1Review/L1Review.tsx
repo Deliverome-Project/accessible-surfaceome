@@ -57,6 +57,7 @@ import type { LibraryTopologyRow } from "../../lib/structure-viewer-types";
 import { L1TopologyStrip, armColor, insertFlags } from "./L1TopologyStrip";
 import { L1Structure3D, type L1Mark } from "./L1Structure3D";
 import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
+import { fetchGeneSynonyms, matchingSynonym, type SynonymOverlay } from "../../lib/gene-jump-entries";
 import { InfoTip } from "../InfoTip/InfoTip";
 import { useTurnstile, type ReviewAuth } from "./useTurnstile";
 import styles from "./L1Review.module.css";
@@ -1245,6 +1246,7 @@ export function L1Review() {
   // while the next design is fetched, which unmounts the panel the text was typed into.
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [topologies, setTopologies] = useState<LibraryTopologyRow[]>([]);
+  const [synonyms, setSynonyms] = useState<SynonymOverlay | null>(null);
   // What the last letter key did, shown for a moment so a key that found nothing is not
   // silent (pressing Z with no Z gene in the filter otherwise looks like a dead page).
   const [letterMsg, setLetterMsg] = useState("");
@@ -1256,6 +1258,7 @@ export function L1Review() {
   useEffect(() => {
     setReviewer(store.get("l1-review-reviewer"));
     fetchL1Index(API_BASE).then((d) => setIndex(d));
+    fetchGeneSynonyms().then((s) => setSynonyms(s));
   }, []);
 
   const loadReviews = useCallback(async () => {
@@ -1343,9 +1346,9 @@ export function L1Review() {
   const facetBase = {
     rung: filters.rung, membraneClass: filters.cls, status: filters.status, query: filters.q,
     sp: filters.sp, diff: filters.diff, snorkel: filters.snorkel, reviewed: filters.rev,
-    reviewedByMe, staleDesignIds,
+    reviewedByMe, staleDesignIds, synonyms,
   };
-  const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe, staleDesignIds]); // eslint-disable-line react-hooks/exhaustive-deps
+  const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe, staleDesignIds, synonyms]); // eslint-disable-line react-hooks/exhaustive-deps
   const current: L1IndexMember | undefined =
     members.find((m) => m.design_id === filters.m || m.member_id === filters.m) ?? undefined;
   const pos = current ? visible.findIndex((m) => m.member_id === current.member_id) : -1;
@@ -1753,8 +1756,8 @@ export function L1Review() {
                 e.currentTarget.blur();
               }
             }}
-            placeholder="gene, class, rung, igk, l1-p…  ( / )"
-            aria-label="Search members by gene, class, rung or SP type"
+            placeholder="gene, alias (CD20…), class, rung…  ( / )"
+            aria-label="Search members by gene, protein alias, class, rung or SP type"
           />
           <div className={styles.listHead}>
             <span className={styles.listCount}>
@@ -1802,6 +1805,11 @@ export function L1Review() {
             {groups.map((g) => {
               const primary = g.members.find((m) => m.candidate_set === "library_reference") ?? g.members[0];
               const onGene = current?.gene_symbol === g.gene_symbol;
+              const qUpper = filters.q.trim().toUpperCase();
+              const aliasHit =
+                qUpper && !g.gene_symbol.toUpperCase().includes(qUpper)
+                  ? matchingSynonym(synonyms?.[g.gene_symbol], qUpper)
+                  : null;
               return (
                 <li key={g.gene_symbol} className={styles.geneGroup}>
                   <button
@@ -1811,6 +1819,7 @@ export function L1Review() {
                     onClick={() => update({ m: primary.design_id ?? primary.member_id })}
                   >
                     <strong>{g.gene_symbol}</strong>
+                    {aliasHit ? <span className={styles.muted}>({aliasHit})</span> : null}
                     <span className={styles.mono}>{primary.member_id}</span>
                     {g.members.length > 1 ? (
                       <span className={styles.badge} title={`${g.members.length} members of this gene in view`}>
