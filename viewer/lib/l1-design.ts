@@ -16,6 +16,7 @@ import {
   type StructureVariantLibraryInput,
 } from "./structure-viewer-types";
 import type { CoReceptorRequirements } from "./surfaceome-types";
+import { geneSynonymRank, type SynonymOverlay } from "./gene-jump-entries";
 
 export type L1SiteStatus = "built" | "decided_not_built" | "no_tag" | "pending" | "alternative";
 export type L1SiteSource = "rung_builder" | "ranker" | "agent_proposer";
@@ -300,11 +301,17 @@ export function filterIndex(
     reviewed?: string;
     reviewedByMe?: ReadonlySet<string>;
     staleDesignIds?: ReadonlySet<string>;
+    /** Build-baked symbol -> aliases map (`/data/gene-synonyms.json`) so alt names
+     *  like "CD20" -> MS4A1 or "Nav1.7" -> SCN9A match just like the main viewer. */
+    synonyms?: SynonymOverlay | null;
   },
 ): L1IndexMember[] {
   const q = (f.query ?? "").trim().toUpperCase();
   const mine = f.reviewedByMe ?? new Set<string>();
   const stale = f.staleDesignIds ?? new Set<string>();
+  const syn = f.synonyms ?? null;
+  const rankOf = (m: L1IndexMember) =>
+    q ? geneSynonymRank(m.gene_symbol, syn?.[m.gene_symbol], q) : 0;
   return members
     .filter((m) => !f.rung || m.rung === f.rung)
     .filter((m) => !f.membraneClass || m.membrane_class === f.membraneClass)
@@ -322,7 +329,7 @@ export function filterIndex(
     .filter(
       (m) =>
         !q ||
-        m.gene_symbol.toUpperCase().includes(q) ||
+        rankOf(m) < 6 ||
         m.member_id.toUpperCase() === q ||
         (m.design_id ?? "").toUpperCase() === q ||
         // Words that name a class, a rung or an SP type match those too, so "gpcr",
@@ -333,7 +340,13 @@ export function filterIndex(
             (memberHasSnorkel(m) === true && "SNORKEL".includes(q)) ||
             SP_SEARCH[indexSpStatus(m) ?? ""]?.some((w) => w.includes(q)) === true)),
     )
-    .sort((a, b) => a.gene_symbol.localeCompare(b.gene_symbol) || a.member_id.localeCompare(b.member_id));
+    .sort((a, b) => {
+      if (q) {
+        const d = rankOf(a) - rankOf(b);
+        if (d !== 0) return d;
+      }
+      return a.gene_symbol.localeCompare(b.gene_symbol) || a.member_id.localeCompare(b.member_id);
+    });
 }
 
 // ------------------------------------------------------------ signal peptide / UniProt

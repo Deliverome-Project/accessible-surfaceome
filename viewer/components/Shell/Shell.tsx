@@ -102,8 +102,8 @@ export function Shell({ children }: ShellProps) {
             </Link>
           </div>
           <nav id="primary-nav" className={styles.nav} aria-label="Surfaceome sections">
-            <NavLink href="/l1-review" matchPrefix>
-              L1 library
+            <NavLink href="/v1-review" matchPrefix>
+              v1 library
             </NavLink>
             <NavLink href="/compare" matchPrefix>
               Compare

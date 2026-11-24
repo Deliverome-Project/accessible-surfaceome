@@ -59,6 +59,7 @@ import type { LibraryTopologyRow } from "../../lib/structure-viewer-types";
 import { L1TopologyStrip, armColor, insertFlags } from "./L1TopologyStrip";
 import { L1Structure3D, type L1Mark } from "./L1Structure3D";
 import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
+import { fetchGeneSynonyms, matchingSynonym, type SynonymOverlay } from "../../lib/gene-jump-entries";
 import { InfoTip } from "../InfoTip/InfoTip";
 import { useTurnstile, type ReviewAuth } from "./useTurnstile";
 import styles from "./L1Review.module.css";
@@ -820,7 +821,7 @@ export function RefoldFlagBanner({
     <p className={styles.refoldFlagBanner} role="note">
       <strong>Automated refold screen flagged (kept as built):</strong>{" "}
       {model.note ? `${model.note}. ` : ""}
-      This construct was reviewed and retained in L1 (flagged for experimental follow-up — e.g., low-confidence AF2 tag compaction while the native fold and/or ALFA control remain exposed).
+      This construct was reviewed and retained in library v1 (flagged for experimental follow-up — e.g., low-confidence AF2 tag compaction while the native fold and/or ALFA control remain exposed).
     </p>
   );
 }
@@ -891,6 +892,7 @@ function MemberDetail({
   const [showAlts, setShowAlts] = useState(true);
   const [showContacts, setShowContacts] = useState(true);
   const [showHidden, setShowHidden] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
   // A residue clicked on either model, as {r, n}: n changes on every click so clicking
   // the same residue again (after typing another) still reaches the review card.
   const [picked, setPicked] = useState<{ r: number; n: number } | null>(null);
@@ -920,12 +922,26 @@ function MemberDetail({
   const model: L1Structure | undefined = models.find((m) => m.structure_id === modelId) ?? models[0];
   const url = model ? l1StructureUrl(model) : null;
   const offset = model?.kind === "native" ? model.residue_offset ?? 0 : 0;
+  const nativeModel = models.find((m) => m.kind === "native");
+  const nativeUrl = nativeModel ? l1StructureUrl(nativeModel) : null;
 
   // Marks are placed through the model's own residue map, so picks, the focused arm and
   // the reviewer's suggestion show on the fold as well as on the native model.
   // Contacts stay on the native model, whose numbering is the member's own.
   const segments = model ? l1ResidueSegments(member, model) : null;
   const toModel = (r: number) => memberToModel(r, segments);
+  const canOverlay = !!(model?.kind === "tagged" && nativeModel && nativeUrl && segments?.length);
+  const overlayPairs = useMemo<[number, number][] | null>(() => {
+    if (!showOverlay || !canOverlay || !segments || !nativeModel) return null;
+    const natOff = nativeModel.residue_offset ?? 0;
+    const pairs: [number, number][] = [];
+    for (const seg of segments) {
+      for (let r = seg.unpLo; r <= seg.unpHi; r += 1) {
+        pairs.push([r + natOff, r + seg.offset]);
+      }
+    }
+    return pairs.length >= 3 ? pairs : null;
+  }, [showOverlay, canOverlay, segments, nativeModel]);
   const draftKey = member.design_id ?? member.member_id;
   const draft = drafts[draftKey];
   const suggested =
@@ -1165,6 +1181,17 @@ function MemberDetail({
             {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
           </div>
           <div className={styles.structureControls} aria-label="Structure overlays">
+            {canOverlay ? (
+              <span className={styles.ctrlGroup}>
+                <label className={showOverlay ? styles.ctrlOn : styles.ctrl}>
+                  <input type="checkbox" checked={showOverlay} onChange={(e) => setShowOverlay(e.target.checked)} />
+                  Native overlay
+                </label>
+                <InfoTip align="end" label="About native overlay">
+                  Superpose the native protein backbone (translucent slate ghost) onto the tagged refold by Kabsch Cα alignment over shared native residues.
+                </InfoTip>
+              </span>
+            ) : null}
             <span className={styles.ctrlGroup}>
               <label className={showAlts ? styles.ctrlOn : styles.ctrl}>
                 <input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} />
@@ -1226,6 +1253,8 @@ function MemberDetail({
                 ? "Igκ leader construct residues (not this protein's own)"
                 : "added residues (not this protein's own)"
             }
+            overlayPdbUrl={showOverlay && canOverlay ? nativeUrl : null}
+            overlayPairs={overlayPairs}
           />
         ) : (
           <p className={styles.muted}>No model for this member.</p>
@@ -1336,6 +1365,7 @@ export function L1Review() {
   // while the next design is fetched, which unmounts the panel the text was typed into.
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [topologies, setTopologies] = useState<LibraryTopologyRow[]>([]);
+  const [synonyms, setSynonyms] = useState<SynonymOverlay | null>(null);
   // What the last letter key did, shown for a moment so a key that found nothing is not
   // silent (pressing Z with no Z gene in the filter otherwise looks like a dead page).
   const [letterMsg, setLetterMsg] = useState("");
@@ -1347,6 +1377,7 @@ export function L1Review() {
   useEffect(() => {
     setReviewer(store.get("l1-review-reviewer"));
     fetchL1Index(API_BASE).then((d) => setIndex(d));
+    fetchGeneSynonyms().then((s) => setSynonyms(s));
   }, []);
 
   const loadReviews = useCallback(async () => {
@@ -1434,9 +1465,9 @@ export function L1Review() {
   const facetBase = {
     rung: filters.rung, membraneClass: filters.cls, status: filters.status, query: filters.q,
     sp: filters.sp, spConcern: filters.spConcern, diff: filters.diff, snorkel: filters.snorkel, reviewed: filters.rev,
-    reviewedByMe, staleDesignIds,
+    reviewedByMe, staleDesignIds, synonyms,
   };
-  const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe, staleDesignIds]); // eslint-disable-line react-hooks/exhaustive-deps
+  const visible = useMemo(() => filterIndex(members, facetBase), [members, filters, reviewedByMe, staleDesignIds, synonyms]); // eslint-disable-line react-hooks/exhaustive-deps
   const current: L1IndexMember | undefined =
     members.find((m) => m.design_id === filters.m || m.member_id === filters.m) ?? undefined;
   const pos = current ? visible.findIndex((m) => m.member_id === current.member_id) : -1;
@@ -1646,7 +1677,7 @@ export function L1Review() {
   }, [go, goTo, jumpToLetter, visible.length]);
 
   if (index === "loading") return <p className={styles.muted}>Loading the library…</p>;
-  if (!index || !index.load) return <p className={styles.muted}>No L1 design is published on this API yet.</p>;
+  if (!index || !index.load) return <p className={styles.muted}>No v1 library design is published on this API yet.</p>;
 
   // Match on design id: member ids are renumbered between loads, design ids are not.
   const member = detail?.members.find((m) =>
@@ -1858,8 +1889,8 @@ export function L1Review() {
                 e.currentTarget.blur();
               }
             }}
-            placeholder="gene, class, rung, igk, l1-p…  ( / )"
-            aria-label="Search members by gene, class, rung or SP type"
+            placeholder="gene, alias (CD20…), class, rung…  ( / )"
+            aria-label="Search members by gene, protein alias, class, rung or SP type"
           />
           <div className={styles.listHead}>
             <span className={styles.listCount}>
@@ -1907,6 +1938,11 @@ export function L1Review() {
             {groups.map((g) => {
               const primary = g.members.find((m) => m.candidate_set === "library_reference") ?? g.members[0];
               const onGene = current?.gene_symbol === g.gene_symbol;
+              const qUpper = filters.q.trim().toUpperCase();
+              const aliasHit =
+                qUpper && !g.gene_symbol.toUpperCase().includes(qUpper)
+                  ? matchingSynonym(synonyms?.[g.gene_symbol], qUpper)
+                  : null;
               return (
                 <li key={g.gene_symbol} className={styles.geneGroup}>
                   <button
@@ -1916,6 +1952,7 @@ export function L1Review() {
                     onClick={() => update({ m: primary.design_id ?? primary.member_id })}
                   >
                     <strong>{g.gene_symbol}</strong>
+                    {aliasHit ? <span className={styles.muted}>({aliasHit})</span> : null}
                     <span className={styles.mono}>{primary.member_id}</span>
                     {g.members.length > 1 ? (
                       <span className={styles.badge} title={`${g.members.length} members of this gene in view`}>
@@ -1979,7 +2016,11 @@ export function L1Review() {
           {current ? (
             <>
               <div className={styles.detailHead}>
-                <button type="button" onClick={() => go(-1)} aria-label="Previous member">←</button>
+                <button type="button" onClick={() => go(-1)} aria-label="Previous member" title="Previous member (←)">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M10 3.5L5.5 8L10 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
                 <div>
                   <h2 className={styles.h2}>
                     <a
@@ -2032,7 +2073,11 @@ export function L1Review() {
                     </div>
                   ) : null}
                 </div>
-                <button type="button" onClick={() => go(1)} aria-label="Next member">→</button>
+                <button type="button" onClick={() => go(1)} aria-label="Next member" title="Next member (→)">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M6 3.5L10.5 8L6 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
               </div>
               {member ? (
                 <MemberDetail

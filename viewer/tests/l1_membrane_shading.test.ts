@@ -14,7 +14,7 @@ import {
   l1ModelToMember,
   type L1Site,
 } from "../lib/l1-design";
-import { orientPdbForTopology } from "../lib/structure-orientation";
+import { orientPdbForTopology, superposePdbOntoTarget } from "../lib/structure-orientation";
 
 const site = (over: Partial<L1Site>): L1Site =>
   ({ site_id: "s1", insert_after_residue: 10, leader: null, is_primary: true, status: "built", ...over }) as L1Site;
@@ -95,4 +95,43 @@ test("a refold of an earlier pick maps from its own cassette position and says s
   // numbers that do not add up to the member (room for a leader) are refused, not guessed
   assert.equal(l1ModelMap(m, model({ kind: "tagged", site_id: "older", cassette_first_model_residue: 6,
     cassette_last_model_residue: 56, model_length_aa: 73 }), TOPO), null);
+});
+
+test("superposePdbOntoTarget recovers an exact 3D rotation + translation with near-zero RMSD", () => {
+  const mkPdb = (coords: [number, number, number][], startResi = 1) =>
+    coords
+      .map(
+        ([x, y, z], i) =>
+          `ATOM  ${String(i + 1).padStart(5)}  CA  ALA A${String(startResi + i).padStart(4)}    ${x.toFixed(3).padStart(8)}${y.toFixed(3).padStart(8)}${z.toFixed(3).padStart(8)}  1.00 90.00           C`,
+      )
+      .join("\n");
+  const targetCoords: [number, number, number][] = [
+    [0, 0, 0],
+    [3.8, 0.2, 0.5],
+    [7.1, 2.4, -1.2],
+    [6.5, 6.0, 0.9],
+    [2.9, 7.2, 3.4],
+    [-0.5, 5.1, 4.8],
+  ];
+  // Apply an arbitrary proper 3D rotation (90° around Z then 45° around X) + translation to create the mobile PDB
+  const s = Math.SQRT1_2;
+  const mobileCoords: [number, number, number][] = targetCoords.map(([x, y, z]) => {
+    const x1 = -y, y1 = x, z1 = z;
+    return [x1 + 14.2, s * y1 - s * z1 - 8.7, s * y1 + s * z1 + 22.5];
+  });
+  const targetPdb = mkPdb(targetCoords, 10);
+  const mobilePdb = mkPdb(mobileCoords, 1);
+  const pairs: [number, number][] = targetCoords.map((_, i) => [1 + i, 10 + i]);
+  const res = superposePdbOntoTarget(mobilePdb, targetPdb, pairs);
+  assert.ok(res, "superposition succeeds");
+  assert.equal(res.nAligned, 6);
+  assert.ok(res.rmsd < 1e-3, `expected near-zero RMSD, got ${res.rmsd}`);
+  // Verify aligned coordinates match target PDB coordinates
+  const lines = res.pdbText.split("\n");
+  for (let i = 0; i < targetCoords.length; i += 1) {
+    const x = parseFloat(lines[i].slice(30, 38));
+    const y = parseFloat(lines[i].slice(38, 46));
+    const z = parseFloat(lines[i].slice(46, 54));
+    assert.ok(Math.hypot(x - targetCoords[i][0], y - targetCoords[i][1], z - targetCoords[i][2]) < 1e-2);
+  }
 });
