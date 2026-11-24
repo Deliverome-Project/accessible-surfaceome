@@ -7,7 +7,12 @@ import {
   MEMBRANE_COLOR,
   TOPOLOGY_COLORS,
 } from "../../lib/structure-viewer-types";
-import { orientPdbForTopology, superposePdbOntoTarget, type MembraneSlab } from "../../lib/structure-orientation";
+import {
+  orientPdbForTopology,
+  pdbTerminiResidues,
+  superposePdbOntoTarget,
+  type MembraneSlab,
+} from "../../lib/structure-orientation";
 import {
   L1_MEMBRANE_HALF_THICKNESS,
   l1ModelStateRuns,
@@ -148,6 +153,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
   const orientedPdbRef = useRef<string | null>(null);
+  const terminiRef = useRef<{ n: number; c: number; chain: string } | null>(null);
   const overlayModelRef = useRef<unknown>(null);
   const initialViewRef = useRef<number[] | null>(null);
   const pickRef = useRef(onPick);
@@ -169,6 +175,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     setOverlayInfo(null);
     setHoverAtom(null);
     orientedPdbRef.current = null;
+    terminiRef.current = null;
     overlayModelRef.current = null;
     initialViewRef.current = null;
     (async () => {
@@ -182,6 +189,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
         if (!live || !ref.current) return;
         const { pdbText, membrane: slab } = orient(raw, topology, map);
         orientedPdbRef.current = pdbText;
+        terminiRef.current = pdbTerminiResidues(pdbText);
         ref.current.innerHTML = "";
         const v = $3Dmol.createViewer(ref.current, { backgroundColor: "white", antialias: true });
         v.addModel(pdbText, "pdb");
@@ -198,6 +206,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
       viewerRef.current?.clear();
       viewerRef.current = null;
       orientedPdbRef.current = null;
+      terminiRef.current = null;
       overlayModelRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -286,14 +295,38 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
         { cartoon: { color: L1_CASSETTE_COLOR, thickness: 1.0 }, stick: { color: L1_CASSETTE_COLOR, radius: 0.14 } },
       );
     }
+    const labeledResis = new Set<number>();
     for (const m of marks) {
       if (m.stick) v.addStyle({ model: 0, resi: m.resi }, { stick: { color: m.color, radius: 0.35 } });
       v.addStyle({ model: 0, resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
       if (m.label) {
+        labeledResis.add(m.resi);
         v.addLabel(m.label, {
           position: { model: 0, resi: m.resi, atom: "CA" }, fontSize: 11, fontColor: "#1F2933",
           backgroundColor: "#FFFFFF", backgroundOpacity: 0.75, inFront: true,
         } as object);
+      }
+    }
+    const termini = terminiRef.current;
+    if (termini) {
+      const addTerminusLabel = (text: "N" | "C", resi: number, dx: number, dy: number) => {
+        const position = termini.chain
+          ? { model: 0, chain: termini.chain, resi, atom: "CA" }
+          : { model: 0, resi, atom: "CA" };
+        v.addLabel(text, {
+          position,
+          fontSize: 11,
+          fontColor: "#FFFFFF",
+          backgroundColor: "#334155",
+          backgroundOpacity: 0.85,
+          borderThickness: 0,
+          inFront: true,
+          ...(labeledResis.has(resi) ? { screenOffset: { x: dx, y: dy } } : {}),
+        } as object);
+      };
+      addTerminusLabel("N", termini.n, -14, -16);
+      if (termini.c !== termini.n) {
+        addTerminusLabel("C", termini.c, 14, -16);
       }
     }
     // Clickability and hover bind to the styled atoms, so both are re-applied after every restyle.
