@@ -1,3 +1,4 @@
+import type { MouseEvent } from "react";
 import { MEMBRANE_COLOR, TOPOLOGY_COLORS } from "../../../lib/structure-viewer-types";
 import styles from "./TopologyBar.module.css";
 
@@ -26,6 +27,8 @@ interface Props {
    *  paralogs. When absent, the bar falls back to raw ``topology`` length
    *  scaling (``maxResidues``), so pre-backfill records still render. */
   canonicalFrame?: string | null;
+  /** Makes the bar clickable: reports the 1-indexed residue under the click. */
+  onResidueClick?: (residue: number) => void;
 }
 
 interface Run {
@@ -78,7 +81,7 @@ const STATE_LABELS: Record<string, string> = {
  *  segment so the covered residues still land at their canonical x-position. */
 const CANONICAL_FRAME_GAP = "-";
 
-export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame }: Props) {
+export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame, onResidueClick }: Props) {
   // Prefer the canonical-frame projection when the record carries it: every
   // row's canonical-frame string is the SAME length (the canonical sequence
   // length), so rendering each full-width on a shared axis lines homologous
@@ -96,12 +99,23 @@ export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame }
     !aligned && maxResidues && maxResidues > 0
       ? `${Math.min(100, (topology.length / maxResidues) * 100)}%`
       : "100%";
+  const nResidues = source.length;
+  const handleClick = onResidueClick
+    ? (e: MouseEvent<HTMLDivElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        if (rect.width <= 0) return;
+        const frac = (e.clientX - rect.left) / rect.width;
+        onResidueClick(Math.min(nResidues, Math.max(1, Math.round(frac * nResidues))));
+      }
+    : undefined;
   return (
     <div
       className={styles.bar}
       role="img"
       aria-label={ariaLabel ?? "Per-residue topology bar"}
-      style={{ width: widthPct }}
+      style={{ width: widthPct, cursor: onResidueClick ? "pointer" : undefined }}
+      data-clickable={onResidueClick ? "true" : undefined}
+      onClick={handleClick}
     >
       {segments.map((seg, i) => {
         // A gap run in the canonical frame → a blank, transparent spacer that

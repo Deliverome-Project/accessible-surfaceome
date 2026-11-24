@@ -25,7 +25,8 @@ CREATE TABLE IF NOT EXISTS l1_review (
     site_id          TEXT,                 -- NULL = the member as a whole
     verdict          TEXT NOT NULL CHECK (verdict IN ('good', 'no')),
     reason           TEXT,
-    load_version     TEXT NOT NULL         -- the design load the reviewer was looking at
+    load_version     TEXT NOT NULL,        -- the design load the reviewer was looking at
+    site_signature   TEXT                  -- canonical reviewed tag-site signature for stale detection
 );
 CREATE INDEX IF NOT EXISTS idx_l1_review_design ON l1_review (design_id, created_at);
 
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS l1_alt_tag (
                             ('rung_default', 'n_term', 'c_term', 'internal', 'after_sp', 'igk_tag')),
     cassette_variant      TEXT,
     reason                TEXT,
-    load_version          TEXT NOT NULL
+    load_version          TEXT NOT NULL,
+    site_signature        TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_l1_alt_tag_design ON l1_alt_tag (design_id, created_at);

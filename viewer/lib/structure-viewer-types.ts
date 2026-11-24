@@ -235,7 +235,7 @@ function topologyRanges(
   return ranges;
 }
 
-function deepTMHMMType(topology: string): DeepTMHMMType {
+export function deepTMHMMType(topology: string): DeepTMHMMType {
   const hasM = topology.includes("M");
   const hasS = topology.includes("S");
   if (hasM && hasS) return "SP+TM";
@@ -289,3 +289,62 @@ export function structureViewerDataFromRecord(
     latest_version: null,
   };
 }
+
+/** Per-member topology row served by the Worker for L1/L2 library members. */
+export interface LibraryTopologyRow {
+  candidate_id?: string | null;
+  library?: string | null;
+  candidate_set?: string | null;
+  per_residue_topology?: string | null;
+  tm_helix_count?: number;
+  signal_peptide_length?: number;
+  cohort?: string | null;
+  tool?: string | null;
+  topology_version?: string | null;
+  topology_acc?: string | null;
+  ordered_length_aa?: string | number | null;
+  species?: string | null;
+  sequence_sha256?: string | null;
+}
+
+/** Human-readable proteoform class label for a library member row. */
+export function libraryVariantLabel(row: LibraryTopologyRow): string {
+  const cohort = (row.cohort ?? "").toLowerCase();
+  if (cohort.startsWith("human_isoform")) {
+    const m = /-(\d+)$/.exec(row.topology_acc ?? "");
+    return m ? `Isoform ${m[1]}` : "Isoform";
+  }
+  if (cohort === "human_canonical") return "Canonical";
+  if (cohort.startsWith("cyno")) return "Cyno ortholog";
+  if (cohort.startsWith("mouse")) return "Mouse ortholog";
+  if (cohort === "library_designed_orf") return "Designed ORF";
+  return row.candidate_set === "expression_rescue" ? "Rescue arm" : "Library form";
+}
+
+/** Library structure variant input shape shared with L1 review helpers. */
+export interface StructureVariantLibraryInput {
+  source: "library";
+  id: string;
+  label: string;
+  sublabel?: string;
+  topology: string;
+  deeptmhmm_type: StructureViewerData["deeptmhmm_type"];
+  pdb_url: string;
+  candidate_id: string;
+  tranche: string | null;
+  candidate_set: string | null;
+  model_source: string | null;
+  proteoform_match: string | null;
+  residue_offset: number;
+  display_range: [number, number] | null;
+  note: string | null;
+  segments?: { unpLo: number; unpHi: number; offset: number }[] | null;
+  cassette_range?: [number, number] | null;
+  nonnative_ranges?: [number, number][] | null;
+  refold_verdict?: string | null;
+}
+
+/** The tag cassette (linkers + SpyTag003 + ALFA) on a tagged refold. */
+export const L1_CASSETTE_COLOR = "#0052FF";
+/** Other non-native residues in a tagged refold (Igk leader remnant, snorkel TM module). */
+export const L1_NONNATIVE_COLOR = "#EA580C";
