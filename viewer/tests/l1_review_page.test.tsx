@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { RefoldFlagBanner, ReviewPanel, SiteCard, SpMetricsBox, structureTabLabel } from "../components/L1Review/L1Review";
+import { L1TopologyStrip } from "../components/L1Review/L1TopologyStrip";
 import {
   currentMemberModels,
   filterIndex,
@@ -736,4 +737,17 @@ test("SpMetricsBox renders pre-/post-tag SignalP vs DeepTMHMM metrics and filter
   ];
   assert.deepEqual(filterIndex(idx, { spConcern: "concerning" }).map((x) => x.gene_symbol), ["TMEM81"]);
   assert.deepEqual(filterIndex(idx, { spConcern: "clean" }).map((x) => x.gene_symbol), ["CD52"]);
+});
+
+test("L1TopologyStrip labels the N- and C-terminal ends", () => {
+  const html = renderToStaticMarkup(
+    React.createElement(L1TopologyStrip, {
+      gene: "CD52",
+      variantLabel: "canonical",
+      topology: "SSSSSSSSOOMMMMMMIIII",
+      flags: [],
+    }),
+  );
+  assert.match(html, /N · 1/);
+  assert.match(html, /C · 20/);
 });

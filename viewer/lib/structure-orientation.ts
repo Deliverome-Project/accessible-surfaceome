@@ -639,3 +639,26 @@ export function superposePdbOntoTarget(
   }
   return { pdbText: mobile.lines.join("\n"), rmsd, nAligned: P.length };
 }
+
+/**
+ * Return the N- and C-terminal Cα residue numbers (first and last `ATOM` Cα
+ * records on the first chain) for labelling a PDB model's termini.
+ */
+export function pdbTerminiResidues(pdbText: string): { n: number; c: number; chain: string } | null {
+  let chain: string | null = null;
+  let first: number | null = null;
+  let last: number | null = null;
+  for (const line of String(pdbText || "").split(/\r?\n/)) {
+    if (!line.startsWith("ATOM")) continue;
+    if (line.length < 26) continue;
+    if (line.slice(12, 16).trim() !== "CA") continue;
+    const ch = line.slice(21, 22);
+    if (chain === null) chain = ch;
+    else if (ch !== chain) continue;
+    const resi = Number.parseInt(line.slice(22, 26).trim(), 10);
+    if (!Number.isInteger(resi)) continue;
+    if (first === null) first = resi;
+    last = resi;
+  }
+  return first !== null && last !== null ? { n: first, c: last, chain: (chain ?? "").trim() } : null;
+}

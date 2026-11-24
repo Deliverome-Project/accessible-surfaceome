@@ -337,6 +337,11 @@
 .stripTitle { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-deep); font-weight: var(--fw-medium); }
 /* Head room for the flag, which overhangs the bar on both sides. */
 .stripBody { position: relative; padding: 1.15rem 0 0.35rem; }
+.stripEnds {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted);
+  margin-top: -0.15rem; margin-bottom: 0.1rem; line-height: 1.2;
+}
 
 .insert {
   position: absolute;

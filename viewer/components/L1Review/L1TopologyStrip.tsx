@@ -195,6 +195,10 @@ export function L1TopologyStrip({
           )
         ) : null}
       </div>
+      <div className={styles.stripEnds}>
+        <span>N · 1</span>
+        <span>C · {n}</span>
+      </div>
       <div className={styles.stripLegend}>
         <TopologyLegend presentStates={topologyStatesPresent(topology)} showMembrane={false} />
         <ul className={styles.legend} aria-label="Tag insert legend">
