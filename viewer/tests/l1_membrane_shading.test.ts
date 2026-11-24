@@ -14,7 +14,7 @@ import {
   l1ModelToMember,
   type L1Site,
 } from "../lib/l1-design";
-import { orientPdbForTopology, superposePdbOntoTarget } from "../lib/structure-orientation";
+import { orientPdbForTopology, pdbTerminiResidues, superposePdbOntoTarget } from "../lib/structure-orientation";
 
 const site = (over: Partial<L1Site>): L1Site =>
   ({ site_id: "s1", insert_after_residue: 10, leader: null, is_primary: true, status: "built", ...over }) as L1Site;
@@ -134,4 +134,17 @@ test("superposePdbOntoTarget recovers an exact 3D rotation + translation with ne
     const z = parseFloat(lines[i].slice(46, 54));
     assert.ok(Math.hypot(x - targetCoords[i][0], y - targetCoords[i][1], z - targetCoords[i][2]) < 1e-2);
   }
+});
+
+test("pdbTerminiResidues extracts first and last CA residue numbers on the first chain", () => {
+  const pdb = [
+    "REMARK test",
+    "ATOM      1  N   ALA B  15       0.000   0.000   0.000  1.00 90.00           N",
+    "ATOM      2  CA  ALA B  15       1.000   0.000   0.000  1.00 90.00           C",
+    "ATOM      3  CA  GLY B 142       5.000   0.000   0.000  1.00 90.00           C",
+    "ATOM      4  CA  VAL C   1       9.000   0.000   0.000  1.00 90.00           C",
+    "HETATM    5  CA  CA  B 501      10.000   0.000   0.000  1.00 90.00          CA",
+  ].join("\n");
+  assert.deepEqual(pdbTerminiResidues(pdb), { n: 15, c: 142, chain: "B" });
+  assert.equal(pdbTerminiResidues("REMARK empty"), null);
 });
