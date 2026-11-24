@@ -449,6 +449,21 @@ test("filters: SP type, UniProt difference and reviewed-by-me; search matches cl
   assert.deepEqual(genes({ query: "igk" }), ["GLP2R"]);
   // Two letters still search gene symbols only, so "AX" does not drag in classes.
   assert.deepEqual(genes({ query: "ax" }), ["AXL"]);
+  // Alt protein names / synonyms match via the shared gene-synonyms overlay (e.g. CD20 -> MS4A1, Nav1.7 -> SCN9A).
+  const aliasRows = [
+    m("l1-m0010", "MS4A1", "internal", "multipass (other)", ["built"]),
+    m("l1-m0011", "SCN9A", "internal", "ion channel", ["built"]),
+    m("l1-m0012", "CD200", "N after SP", "single-pass type I", ["built"]),
+  ];
+  const syn = { MS4A1: ["CD20", "B1"], SCN9A: ["Nav1.7", "PN1"] };
+  assert.deepEqual(
+    filterIndex(aliasRows, { query: "cd20", synonyms: syn }).map((x) => x.gene_symbol),
+    ["MS4A1", "CD200"],
+  );
+  assert.deepEqual(
+    filterIndex(aliasRows, { query: "nav1.7", synonyms: syn }).map((x) => x.gene_symbol),
+    ["SCN9A"],
+  );
 });
 
 test("UniProt differences read as sentences", async () => {

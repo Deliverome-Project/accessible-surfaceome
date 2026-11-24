@@ -38,3 +38,48 @@ export function buildGeneJumpEntries(
   }
   return out;
 }
+
+/** Rank a gene + its aliases against an uppercased query (0 = best, 6 = no match).
+ *  Shared by `GeneJump` on the main viewer and the L1 review search box so alias
+ *  queries like "CD20" → MS4A1 or "Nav1.7" → SCN9A behave identically. */
+export function geneSynonymRank(
+  symbol: string,
+  synonyms: readonly string[] | undefined,
+  qUpper: string,
+): number {
+  const sym = symbol.toUpperCase();
+  const aliases = (synonyms ?? []).map((s) => s.toUpperCase());
+  if (sym === qUpper) return 0;
+  if (aliases.some((a) => a === qUpper)) return 1;
+  if (sym.startsWith(qUpper)) return 2;
+  if (aliases.some((a) => a.startsWith(qUpper))) return 3;
+  if (sym.includes(qUpper)) return 4;
+  if (aliases.some((a) => a.includes(qUpper))) return 5;
+  return 6;
+}
+
+/** Return the best-matching synonym for `qUpper` (exact > prefix > substring), or null. */
+export function matchingSynonym(
+  synonyms: readonly string[] | undefined,
+  qUpper: string,
+): string | null {
+  if (!synonyms?.length || !qUpper) return null;
+  return (
+    synonyms.find((s) => s.toUpperCase() === qUpper) ??
+    synonyms.find((s) => s.toUpperCase().startsWith(qUpper)) ??
+    synonyms.find((s) => s.toUpperCase().includes(qUpper)) ??
+    null
+  );
+}
+
+let cachedSynonyms: Promise<SynonymOverlay> | null = null;
+
+/** Fetch the build-baked `/data/gene-synonyms.json` overlay once per session. */
+export function fetchGeneSynonyms(): Promise<SynonymOverlay> {
+  if (!cachedSynonyms) {
+    cachedSynonyms = fetch("/data/gene-synonyms.json")
+      .then((res) => (res.ok ? (res.json() as Promise<SynonymOverlay>) : {}))
+      .catch(() => ({}));
+  }
+  return cachedSynonyms;
+}
