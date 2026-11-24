@@ -508,3 +508,134 @@ export function orientPdbForTopology(
     pdbText, topology, transform, chainFilter, residueOffset, resiToTopo,
   );
 }
+
+export interface SuperposeResult {
+  pdbText: string;
+  rmsd: number;
+  nAligned: number;
+}
+
+/**
+ * Largest-eigenvalue unit eigenvector of a 4×4 real symmetric matrix via
+ * cyclic Jacobi rotations (converges to < 1e-13 in < 10 sweeps).
+ */
+function largestEigenvector4(sym: number[][]): [number, number, number, number] {
+  const a = sym.map((r) => [...r]);
+  const v = [
+    [1, 0, 0, 0],
+    [0, 1, 0, 0],
+    [0, 0, 1, 0],
+    [0, 0, 0, 1],
+  ];
+  for (let sweep = 0; sweep < 25; sweep += 1) {
+    let maxOff = 0;
+    for (let p = 0; p < 4; p += 1) {
+      for (let q = p + 1; q < 4; q += 1) {
+        const apq = a[p][q];
+        if (Math.abs(apq) > maxOff) maxOff = Math.abs(apq);
+        if (Math.abs(apq) < 1e-13) continue;
+        const tau = (a[q][q] - a[p][p]) / (2 * apq);
+        const t = tau >= 0 ? 1 / (tau + Math.hypot(1, tau)) : -1 / (-tau + Math.hypot(1, tau));
+        const c = 1 / Math.hypot(1, t);
+        const s = t * c;
+        const app = a[p][p];
+        const aqq = a[q][q];
+        a[p][p] = app - t * apq;
+        a[q][q] = aqq + t * apq;
+        a[p][q] = 0;
+        a[q][p] = 0;
+        for (let r = 0; r < 4; r += 1) {
+          if (r !== p && r !== q) {
+            const arp = a[r][p];
+            const arq = a[r][q];
+            a[r][p] = c * arp - s * arq;
+            a[p][r] = a[r][p];
+            a[r][q] = s * arp + c * arq;
+            a[q][r] = a[r][q];
+          }
+          const vrp = v[r][p];
+          const vrq = v[r][q];
+          v[r][p] = c * vrp - s * vrq;
+          v[r][q] = s * vrp + c * vrq;
+        }
+      }
+    }
+    if (maxOff < 1e-13) break;
+  }
+  let best = 0;
+  for (let i = 1; i < 4; i += 1) {
+    if (a[i][i] > a[best][best]) best = i;
+  }
+  const q: [number, number, number, number] = [v[0][best], v[1][best], v[2][best], v[3][best]];
+  const n = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+  return [q[0] / n, q[1] / n, q[2] / n, q[3] / n];
+}
+
+/**
+ * Superpose `mobilePdb` onto `targetPdb` using Horn's quaternion Kabsch
+ * alignment over the matched `[mobileResi, targetResi]` Cα pairs.
+ * Guarantees a proper rotation (det R = +1, no reflections).
+ */
+export function superposePdbOntoTarget(
+  mobilePdb: string,
+  targetPdb: string,
+  pairs: readonly [number, number][],
+): SuperposeResult | null {
+  const mobile = parsePdbForOrientation(mobilePdb);
+  const target = parsePdbForOrientation(targetPdb);
+  const P: Vec3[] = [];
+  const Q: Vec3[] = [];
+  for (const [mRes, tRes] of pairs) {
+    const p = mobile.caByResidue.get(mRes);
+    const q = target.caByResidue.get(tRes);
+    if (p && q) {
+      P.push(p);
+      Q.push(q);
+    }
+  }
+  if (P.length < 3) return null;
+  const pMean = centroid(P)!;
+  const qMean = centroid(Q)!;
+  let sxx = 0, sxy = 0, sxz = 0;
+  let syx = 0, syy = 0, syz = 0;
+  let szx = 0, szy = 0, szz = 0;
+  for (let i = 0; i < P.length; i += 1) {
+    const px = P[i][0] - pMean[0];
+    const py = P[i][1] - pMean[1];
+    const pz = P[i][2] - pMean[2];
+    const qx = Q[i][0] - qMean[0];
+    const qy = Q[i][1] - qMean[1];
+    const qz = Q[i][2] - qMean[2];
+    sxx += px * qx; sxy += px * qy; sxz += px * qz;
+    syx += py * qx; syy += py * qy; syz += py * qz;
+    szx += pz * qx; szy += pz * qy; szz += pz * qz;
+  }
+  const N = [
+    [sxx + syy + szz, syz - szy, szx - sxz, sxy - syx],
+    [syz - szy, sxx - syy - szz, sxy + syx, szx + sxz],
+    [szx - sxz, sxy + syx, -sxx + syy - szz, syz + szy],
+    [sxy - syx, szx + sxz, syz + szy, -sxx - syy + szz],
+  ];
+  const [w, x, y, z] = largestEigenvector4(N);
+  const R: Mat3 = [
+    [1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+    [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+    [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)],
+  ];
+  let sqErr = 0;
+  for (let i = 0; i < P.length; i += 1) {
+    const rot = matrixVecMul(R, vectorSub(P[i], pMean));
+    const aligned = vectorAdd(rot, qMean);
+    const d = vectorSub(aligned, Q[i]);
+    sqErr += vectorDot(d, d);
+  }
+  const rmsd = Math.sqrt(sqErr / P.length);
+  for (const atom of mobile.atoms) {
+    const rot = matrixVecMul(R, vectorSub([atom.x, atom.y, atom.z], pMean));
+    const aligned = vectorAdd(rot, qMean);
+    const line = mobile.lines[atom.lineIndex];
+    mobile.lines[atom.lineIndex] =
+      `${line.slice(0, 30)}${formatPdbCoord(aligned[0])}${formatPdbCoord(aligned[1])}${formatPdbCoord(aligned[2])}${line.length > 54 ? line.slice(54) : ""}`;
+  }
+  return { pdbText: mobile.lines.join("\n"), rmsd, nAligned: P.length };
+}

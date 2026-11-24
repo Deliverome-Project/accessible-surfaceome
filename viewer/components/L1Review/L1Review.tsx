@@ -821,7 +821,7 @@ export function RefoldFlagBanner({
     <p className={styles.refoldFlagBanner} role="note">
       <strong>Automated refold screen flagged (kept as built):</strong>{" "}
       {model.note ? `${model.note}. ` : ""}
-      This construct was reviewed and retained in L1 (flagged for experimental follow-up — e.g., low-confidence AF2 tag compaction while the native fold and/or ALFA control remain exposed).
+      This construct was reviewed and retained in library v1 (flagged for experimental follow-up — e.g., low-confidence AF2 tag compaction while the native fold and/or ALFA control remain exposed).
     </p>
   );
 }
@@ -892,6 +892,7 @@ function MemberDetail({
   const [showAlts, setShowAlts] = useState(true);
   const [showContacts, setShowContacts] = useState(true);
   const [showHidden, setShowHidden] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
   // A residue clicked on either model, as {r, n}: n changes on every click so clicking
   // the same residue again (after typing another) still reaches the review card.
   const [picked, setPicked] = useState<{ r: number; n: number } | null>(null);
@@ -921,12 +922,26 @@ function MemberDetail({
   const model: L1Structure | undefined = models.find((m) => m.structure_id === modelId) ?? models[0];
   const url = model ? l1StructureUrl(model) : null;
   const offset = model?.kind === "native" ? model.residue_offset ?? 0 : 0;
+  const nativeModel = models.find((m) => m.kind === "native");
+  const nativeUrl = nativeModel ? l1StructureUrl(nativeModel) : null;
 
   // Marks are placed through the model's own residue map, so picks, the focused arm and
   // the reviewer's suggestion show on the fold as well as on the native model.
   // Contacts stay on the native model, whose numbering is the member's own.
   const segments = model ? l1ResidueSegments(member, model) : null;
   const toModel = (r: number) => memberToModel(r, segments);
+  const canOverlay = !!(model?.kind === "tagged" && nativeModel && nativeUrl && segments?.length);
+  const overlayPairs = useMemo<[number, number][] | null>(() => {
+    if (!showOverlay || !canOverlay || !segments || !nativeModel) return null;
+    const natOff = nativeModel.residue_offset ?? 0;
+    const pairs: [number, number][] = [];
+    for (const seg of segments) {
+      for (let r = seg.unpLo; r <= seg.unpHi; r += 1) {
+        pairs.push([r + natOff, r + seg.offset]);
+      }
+    }
+    return pairs.length >= 3 ? pairs : null;
+  }, [showOverlay, canOverlay, segments, nativeModel]);
   const draftKey = member.design_id ?? member.member_id;
   const draft = drafts[draftKey];
   const suggested =
@@ -1166,6 +1181,17 @@ function MemberDetail({
             {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
           </div>
           <div className={styles.structureControls} aria-label="Structure overlays">
+            {canOverlay ? (
+              <span className={styles.ctrlGroup}>
+                <label className={showOverlay ? styles.ctrlOn : styles.ctrl}>
+                  <input type="checkbox" checked={showOverlay} onChange={(e) => setShowOverlay(e.target.checked)} />
+                  Native overlay
+                </label>
+                <InfoTip align="end" label="About native overlay">
+                  Superpose the native protein backbone (translucent slate ghost) onto the tagged refold by Kabsch Cα alignment over shared native residues.
+                </InfoTip>
+              </span>
+            ) : null}
             <span className={styles.ctrlGroup}>
               <label className={showAlts ? styles.ctrlOn : styles.ctrl}>
                 <input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} />
@@ -1227,6 +1253,8 @@ function MemberDetail({
                 ? "Igκ leader construct residues (not this protein's own)"
                 : "added residues (not this protein's own)"
             }
+            overlayPdbUrl={showOverlay && canOverlay ? nativeUrl : null}
+            overlayPairs={overlayPairs}
           />
         ) : (
           <p className={styles.muted}>No model for this member.</p>
@@ -1649,7 +1677,7 @@ export function L1Review() {
   }, [go, goTo, jumpToLetter, visible.length]);
 
   if (index === "loading") return <p className={styles.muted}>Loading the library…</p>;
-  if (!index || !index.load) return <p className={styles.muted}>No L1 design is published on this API yet.</p>;
+  if (!index || !index.load) return <p className={styles.muted}>No v1 library design is published on this API yet.</p>;
 
   // Match on design id: member ids are renumbered between loads, design ids are not.
   const member = detail?.members.find((m) =>

@@ -547,8 +547,8 @@ export function GeneHeader({
             {inFgLibrary || oversized ? (
               <a
                 className={styles.tierFacetChip}
-                href={`/l1-review/?q=${encodeURIComponent(rec.gene.hgnc_symbol)}`}
-                title="Open this gene's L1 members on the L1 library review page"
+                href={`/v1-review/?q=${encodeURIComponent(rec.gene.hgnc_symbol)}`}
+                title="Open this gene's v1 library members on the v1 library review page"
               >
                 In library
               </a>

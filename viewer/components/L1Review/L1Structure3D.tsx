@@ -7,7 +7,7 @@ import {
   MEMBRANE_COLOR,
   TOPOLOGY_COLORS,
 } from "../../lib/structure-viewer-types";
-import { orientPdbForTopology, type MembraneSlab } from "../../lib/structure-orientation";
+import { orientPdbForTopology, superposePdbOntoTarget, type MembraneSlab } from "../../lib/structure-orientation";
 import {
   L1_MEMBRANE_HALF_THICKNESS,
   l1ModelStateRuns,
@@ -59,10 +59,15 @@ interface Props {
   onReset?: () => void;
   /** Increment to trigger a camera reset from a keyboard shortcut (key 0). */
   resetSeq?: number;
+  /** Optional native PDB URL to Kabsch-superpose as a translucent ghost overlay onto this model. */
+  overlayPdbUrl?: string | null;
+  /** Matched [overlayModelResi, mainModelResi] Cα pairs used to align the native overlay. */
+  overlayPairs?: [number, number][] | null;
 }
 
 type Viewer = {
-  addModel: (data: string, fmt: string) => void;
+  addModel: (data: string, fmt: string) => unknown;
+  removeModel?: (model: unknown) => void;
   setStyle: (sel: object, style: object) => void;
   addStyle: (sel: object, style: object) => void;
   addSphere: (spec: object) => void;
@@ -88,6 +93,8 @@ type Viewer = {
 /** The membrane drawn on the gene page has the same colour and opacity. */
 const MEMBRANE_OPACITY = 0.34;
 const OUTSIDE_COLOR = "#ECEEF1";
+const OVERLAY_COLOR = "#475569";
+const OVERLAY_OPACITY = 0.42;
 /** Side colours on L1 models. Extracellular is a neutral slate gray (Becca, 2026-11-22:
  *  "the ec is gray so the orange stand out more"): the orange cassette sits on the
  *  extracellular side, so the side it touches carries no hue of its own. Darker than the
@@ -137,15 +144,18 @@ function orient(text: string, topology: string | null | undefined, map: L1ModelM
  * Deliberately separate from the gene page's StructureViewer: this one draws one model,
  * the member's membrane and side shading, a few marked residues and a click-to-pick.
  */
-export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMemberResi, topology, map, modelLength, compact, nonNativeLabel, focusResi, onReset, resetSeq = 0 }: Props) {
+export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMemberResi, topology, map, modelLength, compact, nonNativeLabel, focusResi, onReset, resetSeq = 0, overlayPdbUrl, overlayPairs }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
+  const orientedPdbRef = useRef<string | null>(null);
+  const overlayModelRef = useRef<unknown>(null);
   const initialViewRef = useRef<number[] | null>(null);
   const pickRef = useRef(onPick);
   pickRef.current = onPick;
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [loaded, setLoaded] = useState(0);
   const [membrane, setMembrane] = useState<MembraneSlab | null>(null);
+  const [overlayInfo, setOverlayInfo] = useState<{ rmsd: number; nAligned: number } | null>(null);
   const [hoverAtom, setHoverAtom] = useState<{ resi: number; resn?: string } | null>(null);
   const shaded = !!(topology && map);
   // Orientation depends on the topology and map, so a change in either reloads the model.
@@ -156,7 +166,10 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     let live = true;
     setState("loading");
     setMembrane(null);
+    setOverlayInfo(null);
     setHoverAtom(null);
+    orientedPdbRef.current = null;
+    overlayModelRef.current = null;
     initialViewRef.current = null;
     (async () => {
       try {
@@ -168,6 +181,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
         const raw = await res.text();
         if (!live || !ref.current) return;
         const { pdbText, membrane: slab } = orient(raw, topology, map);
+        orientedPdbRef.current = pdbText;
         ref.current.innerHTML = "";
         const v = $3Dmol.createViewer(ref.current, { backgroundColor: "white", antialias: true });
         v.addModel(pdbText, "pdb");
@@ -183,9 +197,53 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
       live = false;
       viewerRef.current?.clear();
       viewerRef.current = null;
+      orientedPdbRef.current = null;
+      overlayModelRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdbUrl, orientKey]);
+
+  // (1b) Optional native-structure overlay: fetch, Kabsch-superpose onto the oriented
+  // main model, and mount as translucent model 1 without resetting the camera.
+  const overlayKey = overlayPdbUrl && overlayPairs?.length ? `${overlayPdbUrl}|${overlayPairs.length}|${loaded}` : "";
+  useEffect(() => {
+    const v = viewerRef.current;
+    if (!v || state !== "ready") return;
+    if (!overlayPdbUrl || !overlayPairs?.length || !orientedPdbRef.current) {
+      if (overlayModelRef.current) {
+        v.removeModel?.(overlayModelRef.current);
+        overlayModelRef.current = null;
+        v.render();
+      }
+      setOverlayInfo(null);
+      return;
+    }
+    const ctl = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(overlayPdbUrl, { signal: ctl.signal });
+        if (!res.ok) return;
+        const raw = await res.text();
+        if (ctl.signal.aborted || !orientedPdbRef.current || viewerRef.current !== v) return;
+        const aligned = superposePdbOntoTarget(raw, orientedPdbRef.current, overlayPairs);
+        if (!aligned || ctl.signal.aborted || viewerRef.current !== v) return;
+        if (overlayModelRef.current) {
+          v.removeModel?.(overlayModelRef.current);
+          overlayModelRef.current = null;
+        }
+        overlayModelRef.current = v.addModel(aligned.pdbText, "pdb");
+        v.setStyle({ model: 1 }, { cartoon: { color: OVERLAY_COLOR, opacity: OVERLAY_OPACITY, thickness: 0.25 } });
+        v.render();
+        setOverlayInfo({ rmsd: aligned.rmsd, nAligned: aligned.nAligned });
+      } catch {
+        /* aborted or fetch error: leave main model intact */
+      }
+    })();
+    return () => {
+      ctl.abort();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overlayKey, state]);
 
   // (3) A focused arm (clicked flag or tag-site card) is brought to the centre, so the
   // sphere is found without hunting for it on a 1,600-residue model.
@@ -208,40 +266,40 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     if (!v || state !== "ready") return;
     v.removeAllLabels();
     if (shaded && topology && map) {
-      v.setStyle({}, { cartoon: { color: OUTSIDE_COLOR, opacity: 1 } });
+      v.setStyle({ model: 0 }, { cartoon: { color: OUTSIDE_COLOR, opacity: 1 } });
       for (const r of l1ModelStateRuns(topology, map)) {
         const color = L1_SIDE_COLORS[r.state];
-        if (color) v.setStyle({ resi: `${r.lo}-${r.hi}` }, { cartoon: { color } });
+        if (color) v.setStyle({ model: 0, resi: `${r.lo}-${r.hi}` }, { cartoon: { color } });
       }
       for (const [lo, hi] of map.nonNative) {
-        v.setStyle({ resi: `${lo}-${hi}` }, { cartoon: { color: L1_NONNATIVE_COLOR, thickness: 0.8 } });
+        v.setStyle({ model: 0, resi: `${lo}-${hi}` }, { cartoon: { color: L1_NONNATIVE_COLOR, thickness: 0.8 } });
       }
     } else {
-      v.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 1 } });
-      if (span) v.setStyle({ resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
+      v.setStyle({ model: 0 }, { cartoon: { color: "#D6D9DE", opacity: 1 } });
+      if (span) v.setStyle({ model: 0, resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
     }
     if (cassette) {
       // WebGL caps GL_LINE width at 1px on macOS, so use a thicker cartoon + thin backbone
       // sticks to give the inserted tag cassette real 3D visual weight.
       v.setStyle(
-        { resi: `${cassette[0]}-${cassette[1]}` },
+        { model: 0, resi: `${cassette[0]}-${cassette[1]}` },
         { cartoon: { color: L1_CASSETTE_COLOR, thickness: 1.0 }, stick: { color: L1_CASSETTE_COLOR, radius: 0.14 } },
       );
     }
     for (const m of marks) {
-      if (m.stick) v.addStyle({ resi: m.resi }, { stick: { color: m.color, radius: 0.35 } });
-      v.addStyle({ resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
+      if (m.stick) v.addStyle({ model: 0, resi: m.resi }, { stick: { color: m.color, radius: 0.35 } });
+      v.addStyle({ model: 0, resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
       if (m.label) {
         v.addLabel(m.label, {
-          position: { resi: m.resi, atom: "CA" }, fontSize: 11, fontColor: "#1F2933",
+          position: { model: 0, resi: m.resi, atom: "CA" }, fontSize: 11, fontColor: "#1F2933",
           backgroundColor: "#FFFFFF", backgroundOpacity: 0.75, inFront: true,
         } as object);
       }
     }
     // Clickability and hover bind to the styled atoms, so both are re-applied after every restyle.
-    v.setClickable({}, true, (atom) => pickRef.current?.(atom.resi));
+    v.setClickable({ model: 0 }, true, (atom) => pickRef.current?.(atom.resi));
     v.setHoverable?.(
-      {},
+      { model: 0 },
       true,
       (atom) => setHoverAtom({ resi: atom.resi, resn: atom.resn }),
       () => setHoverAtom(null),
@@ -354,6 +412,11 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
                   </li>
                 ) : null}
                 {outside ? <li><i style={{ background: OUTSIDE_COLOR }} /> not in member</li> : null}
+                {overlayInfo ? (
+                  <li title={`Kabsch Cα alignment over ${overlayInfo.nAligned} shared native residues`}>
+                    <i style={{ background: "rgba(71, 85, 105, 0.45)" }} /> native overlay (RMSD {overlayInfo.rmsd.toFixed(1)} Å)
+                  </li>
+                ) : null}
                 <li>
                   <details className={styles.sideInfo}>
                     <summary>about shading</summary>
