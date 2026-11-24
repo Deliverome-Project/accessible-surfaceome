@@ -41,6 +41,9 @@ ROOT = Path(__file__).resolve().parents[1]
 MIGRATION = ROOT / "cloudflare/migrations/l1_design_v1.sql"
 REVIEW_MIGRATION = ROOT / "cloudflare/migrations/l1_review_v1.sql"
 ANNOT_MIGRATION = ROOT / "cloudflare/migrations/l1_member_annotation_v1.sql"
+ANNOT_MIGRATION_V2 = (
+    ROOT / "cloudflare/migrations/l1_member_annotation_v2_sp_metrics.sql"
+)
 REVIEW_MIGRATION_V2 = ROOT / "cloudflare/migrations/l1_review_v2.sql"
 SCHEMA = ROOT / "cloudflare/d1_public_schema.sql"
 WORKER = ROOT / "cloudflare/workers/surfaceome_api/src/index.js"
@@ -88,6 +91,7 @@ def _loader():
 def test_public_schema_mirrors_the_migration():
     assert MIGRATION.read_text() in SCHEMA.read_text()
     assert ANNOT_MIGRATION.read_text() in SCHEMA.read_text()
+    assert ANNOT_MIGRATION_V2.read_text() in SCHEMA.read_text()
 
 
 def test_review_tables_are_not_in_the_public_schema():
@@ -131,7 +135,15 @@ def test_every_column_the_worker_selects_exists(table):
         selected = {
             re.sub(r"^(?:MAX|MIN)\((\w+)\)$", r"\1", c, flags=re.I) for c in selected
         }
-        missing = selected - _columns(table, migration)
+        allowed = _columns(table, migration)
+        if table == "l1_member_annotation_public":
+            allowed |= set(
+                re.findall(
+                    r"ALTER TABLE l1_member_annotation_public ADD COLUMN (\w+)",
+                    ANNOT_MIGRATION_V2.read_text(),
+                )
+            )
+        missing = selected - allowed
         assert not missing, (
             f"{table}: Worker selects undefined columns {sorted(missing)}"
         )
@@ -158,7 +170,15 @@ def test_loader_columns_match_the_migration():
         migration = (
             ANNOT_MIGRATION if table == "l1_member_annotation_public" else MIGRATION
         )
-        assert set(cols) | {"load_version"} == _columns(table, migration), table
+        expected = _columns(table, migration)
+        if table == "l1_member_annotation_public":
+            expected |= set(
+                re.findall(
+                    r"ALTER TABLE l1_member_annotation_public ADD COLUMN (\w+)",
+                    ANNOT_MIGRATION_V2.read_text(),
+                )
+            )
+        assert set(cols) | {"load_version"} == expected, table
 
 
 # --------------------------------------------------------------------------- fixture
@@ -203,6 +223,8 @@ GIT_TABLES = {
             "sp_status": "igk_swap",
             "native_sp_last_residue": "22",
             "sp_evidence": "DeepTMHMM v2 + mouse ortholog",
+            "sp_concern": "concerning",
+            "sp_metrics_json": '{"concern":"concerning","concern_reasons":["SignalP 6 calls no native SP"],"deeptmhmm_v1_cut":22,"post_leader":"igk","signalp_post_cs_prob":0.97,"signalp_post_cut":20,"signalp_pre_pred":"OTHER"}',
             "uniprot_canonical_acc": "P00003",
             "uniprot_canonical_length": "900",
             "matches_uniprot_canonical": "0",
@@ -214,6 +236,8 @@ GIT_TABLES = {
             "sp_status": "none",
             "native_sp_last_residue": "",
             "sp_evidence": "",
+            "sp_concern": "",
+            "sp_metrics_json": "",
             "uniprot_canonical_acc": "P00001",
             "uniprot_canonical_length": "760",
             "matches_uniprot_canonical": "1",
@@ -225,6 +249,8 @@ GIT_TABLES = {
             "sp_status": "native",
             "native_sp_last_residue": "20",
             "sp_evidence": "",
+            "sp_concern": "clean",
+            "sp_metrics_json": "",
             "uniprot_canonical_acc": "",
             "uniprot_canonical_length": "",
             "matches_uniprot_canonical": "",
@@ -1155,6 +1181,7 @@ def test_sql_is_insert_only_idempotent_and_load_row_last(built):
     db = sqlite3.connect(":memory:")
     db.executescript(MIGRATION.read_text())
     db.executescript(ANNOT_MIGRATION.read_text())
+    db.executescript(ANNOT_MIGRATION_V2.read_text())
     first = _apply(built["sql"], db)
     assert first == {"l1_member_public": 8, "l1_tag_site_design_public": 11, "l1_structure_design_public": 5,
                      "l1_contact_site_public": 4, "l1_member_annotation_public": 2,
@@ -1166,6 +1193,7 @@ def test_redacted_sql_drops_the_internal_record(built):
     db = sqlite3.connect(":memory:")
     db.executescript(MIGRATION.read_text())
     db.executescript(ANNOT_MIGRATION.read_text())
+    db.executescript(ANNOT_MIGRATION_V2.read_text())
     _apply(built["redacted"], db)
     L = _loader()
     rows = db.execute(
@@ -1284,6 +1312,8 @@ assert.equal(body.load, null);
 [status, body] = await call("/v1/l1-design");
 const byId = Object.fromEntries(body.members.map((m) => [m.design_id, m]));
 assert.equal(byId["l1-p0003"].sp_status, "igk_swap");
+assert.equal(byId["l1-p0003"].sp_concern, "concerning");
+assert.equal(byId["l1-p0001"].sp_concern, null);
 assert.equal(byId["l1-p0003"].matches_uniprot_canonical, false);
 assert.equal(byId["l1-p0001"].matches_uniprot_canonical, true);
 assert.equal(byId["l1-p0002"].sp_status, null, "a stale annotation row (sha changed) is not served");
@@ -1292,6 +1322,9 @@ assert.ok(body.members.every((m) => "pick_leader" in m));
 const b = body.members[0];
 assert.equal(b.native_sp_last_residue, 22);
 assert.equal(b.sp_evidence, "DeepTMHMM v2 + mouse ortholog");
+assert.equal(b.sp_concern, "concerning");
+assert.equal(b.sp_metrics.deeptmhmm_v1_cut, 22);
+assert.equal(b.sp_metrics.signalp_post_cut, 20);
 assert.equal(b.uniprot_canonical_length, 900);
 assert.deepEqual(b.uniprot_diff.map((d) => d.kind), ["n_truncation"]);
 [status, body] = await call("/v1/l1-design/GENEA");
@@ -1366,6 +1399,7 @@ def test_worker_routes_against_sqlite(built):
     db = sqlite3.connect(pub)
     db.executescript(MIGRATION.read_text())
     db.executescript(ANNOT_MIGRATION.read_text())
+    db.executescript(ANNOT_MIGRATION_V2.read_text())
     db.executescript(built["sql"].read_text())
     db.commit()
     db.close()

@@ -4652,16 +4652,27 @@ function l1LoadJson(load, withInputs) {
 // yet) or the query fails, the routes serve these fields as null instead of failing,
 // so this read can never take the L1 page down. Returns Map(member_id -> row).
 async function l1Annotations(env, lv, symbol = null) {
+  const suffix = symbol ? " AND gene_symbol = ? COLLATE NOCASE" : "";
   try {
-    const sql = `SELECT member_id, sp_status, native_sp_last_residue, sp_evidence, uniprot_canonical_acc,
-                        uniprot_canonical_length, matches_uniprot_canonical, uniprot_diff_json
+    const sql = `SELECT member_id, sp_status, native_sp_last_residue, sp_evidence, sp_concern, sp_metrics_json,
+                        uniprot_canonical_acc, uniprot_canonical_length, matches_uniprot_canonical, uniprot_diff_json
                    FROM l1_member_annotation_public
-                  WHERE load_version = ?${symbol ? " AND gene_symbol = ? COLLATE NOCASE" : ""}`;
+                  WHERE load_version = ?${suffix}`;
     const stmt = env.DB.prepare(sql);
     const res = await (symbol ? stmt.bind(lv, symbol) : stmt.bind(lv)).all();
     return new Map((res?.results ?? []).map((a) => [a.member_id, a]));
   } catch {
-    return new Map();
+    try {
+      const sql = `SELECT member_id, sp_status, native_sp_last_residue, sp_evidence, uniprot_canonical_acc,
+                          uniprot_canonical_length, matches_uniprot_canonical, uniprot_diff_json
+                     FROM l1_member_annotation_public
+                    WHERE load_version = ?${suffix}`;
+      const stmt = env.DB.prepare(sql);
+      const res = await (symbol ? stmt.bind(lv, symbol) : stmt.bind(lv)).all();
+      return new Map((res?.results ?? []).map((a) => [a.member_id, a]));
+    } catch {
+      return new Map();
+    }
   }
 }
 
@@ -4724,6 +4735,7 @@ async function handleL1DesignIndex(env) {
         pick_leader: leaderBy.get(m.member_id) ?? null,
         has_snorkel: snorkelBy.get(m.member_id) ?? false,
         sp_status: annotations.get(m.member_id)?.sp_status ?? null,
+        sp_concern: annotations.get(m.member_id)?.sp_concern ?? null,
         matches_uniprot_canonical: l1Bool(annotations.get(m.member_id)?.matches_uniprot_canonical),
       })),
     },
@@ -4800,6 +4812,8 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
         sp_status: a?.sp_status ?? null,
         native_sp_last_residue: num(a?.native_sp_last_residue),
         sp_evidence: a?.sp_evidence ?? null,
+        sp_concern: a?.sp_concern ?? null,
+        sp_metrics: a ? parse(a.sp_metrics_json) : null,
         uniprot_canonical_acc: a?.uniprot_canonical_acc ?? null,
         uniprot_canonical_length: num(a?.uniprot_canonical_length),
         matches_uniprot_canonical: l1Bool(a?.matches_uniprot_canonical),

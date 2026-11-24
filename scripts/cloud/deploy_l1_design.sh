@@ -72,6 +72,7 @@ echo "load: $(head -1 "$LOAD")"
 echo "== 2-3. public D1: L1 tables + the load"
 run "$WRANGLER d1 execute surfaceome_public --remote --file '$ROOT/cloudflare/migrations/l1_design_v1.sql'"
 run "$WRANGLER d1 execute surfaceome_public --remote --file '$ROOT/cloudflare/migrations/l1_member_annotation_v1.sql'"
+run "$WRANGLER d1 execute surfaceome_public --remote --file '$ROOT/cloudflare/migrations/l1_member_annotation_v2_sp_metrics.sql'"
 run "$WRANGLER d1 execute surfaceome_public --remote --file '$LOAD'"
 
 echo "== 4. private D1: review tables"
