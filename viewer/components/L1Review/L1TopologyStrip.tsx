@@ -18,20 +18,30 @@ import {
   TopologyBar,
   TopologyLegend,
 } from "../surfaceome/IsoformsCard/TopologyBar";
-import { armLabel, l1SiteLabel, topologyStatesPresent, type L1Site } from "../../lib/l1-design";
+import { armLabel, l1SiteLabel, topologyStatesPresent, type L1Site, type L1Structure } from "../../lib/l1-design";
 import styles from "./L1Review.module.css";
 
 export interface InsertFlag {
   siteId: string;
   /** 1-indexed residue the cassette goes in after. 0 = before residue 1. */
   insertAfterResidue: number;
-  /** Short text ON the flag — two or three characters, because it rides a 6px mark. */
+  /** Short text ON the flag — arm id for multi-arm members, or residue number for single-arm. */
   label: string;
   /** Longer form for the legend line under the strip. */
   legend: string;
   title: string;
   /** Distinct per-arm colour when a member carries multiple arms (a1, a2, a3). */
   color?: string;
+}
+
+export interface AltInsertFlag {
+  siteId: string;
+  structureId?: string;
+  insertAfterResidue: number;
+  label: string;
+  legend: string;
+  title: string;
+  active?: boolean;
 }
 
 /** Distinct high-contrast colours for multi-arm picks (a1, a2, a3, …) so each arm
@@ -61,7 +71,11 @@ export function armColor(siteId: string | null | undefined): string {
  */
 export { armLabel };
 
-/** The member's current picks as flags, left to right along the sequence. */
+/** The member's current picks as flags, left to right along the sequence.
+ *  Multi-arm members label each flag by its arm (`a1`, `a2`, `a3`) to distinguish them;
+ *  single-arm members label the flag by its insertion residue (e.g. `162` or `N`) so an
+ *  append-only arm suffix like `a4` on a 1-arm construct is never cryptic on the strip
+ *  (the arm id stays in the legend and tooltip). */
 export function insertFlags(sites: readonly L1Site[], orderedLength: number | null): InsertFlag[] {
   const primary = sites.filter((s) => s.is_primary !== false && s.insert_after_residue != null && s.insert_after_residue >= 0);
   const multiArm = primary.length > 1;
@@ -73,7 +87,7 @@ export function insertFlags(sites: readonly L1Site[], orderedLength: number | nu
       return {
         siteId: s.site_id,
         insertAfterResidue: r,
-        label: arm ?? (r === 0 ? "N" : String(r)),
+        label: multiArm && arm ? arm : r === 0 ? "N" : String(r),
         legend: arm ? `${arm} ${where}` : where,
         title: `${arm ? `${arm} — ` : ""}tag insert ${where} (${s.status})`,
         color: multiArm ? armColor(s.site_id) : undefined,
@@ -82,15 +96,51 @@ export function insertFlags(sites: readonly L1Site[], orderedLength: number | nu
     .sort((a, b) => a.insertAfterResidue - b.insertAfterResidue);
 }
 
+/** Alternative sites that have a folded structure tab, drawn as secondary dashed pins on
+ *  the topology strip so reviewers can see where an alternative fold (e.g. `Fold (after 186)`)
+ *  sits relative to the primary pick and jump straight to it. */
+export function altFoldFlags(
+  sites: readonly L1Site[],
+  models: readonly Pick<L1Structure, "structure_id" | "kind" | "site_id" | "refold_verdict">[],
+  orderedLength: number | null,
+  activeStructureId?: string | null,
+): AltInsertFlag[] {
+  const foldBySite = new Map<string, Pick<L1Structure, "structure_id" | "kind" | "site_id" | "refold_verdict">>();
+  for (const m of models) {
+    if (m.kind === "tagged" && m.site_id && !foldBySite.has(m.site_id)) {
+      foldBySite.set(m.site_id, m);
+    }
+  }
+  return sites
+    .filter((s) => s.is_primary === false && s.insert_after_residue != null && s.insert_after_residue >= 0 && foldBySite.has(s.site_id))
+    .map((s) => {
+      const r = s.insert_after_residue as number;
+      const m = foldBySite.get(s.site_id)!;
+      const where = l1SiteLabel(s, orderedLength);
+      return {
+        siteId: s.site_id,
+        structureId: m.structure_id,
+        insertAfterResidue: r,
+        label: r === 0 ? "N" : String(r),
+        legend: where,
+        title: `alternative fold — tag insert ${where}${m.refold_verdict ? ` (${m.refold_verdict})` : ""}`,
+        active: activeStructureId != null && m.structure_id === activeStructureId,
+      };
+    })
+    .sort((a, b) => a.insertAfterResidue - b.insertAfterResidue);
+}
+
 export function L1TopologyStrip({
   topology,
   flags,
+  altFlags = [],
   gene,
   variantLabel,
   nAlternatives,
   sp,
   focusSiteId,
   onFlagClick,
+  onAltFlagClick,
   onPickResidue,
   suggestedResidue,
   onClearSuggested,
@@ -99,6 +149,10 @@ export function L1TopologyStrip({
   focusSiteId?: string | null;
   /** Clicking a flag focuses that arm on the structure. */
   onFlagClick?: (siteId: string) => void;
+  /** Secondary dashed pins for alternative sites that have a folded tab. */
+  altFlags?: AltInsertFlag[];
+  /** Clicking an alternative fold pin selects its structure tab and focuses it. */
+  onAltFlagClick?: (flag: AltInsertFlag) => void;
   /** Clicking the topology bar itself suggests inserting a tag after that residue. */
   onPickResidue?: (residue: number) => void;
   /** The reviewer's suggested insert residue (typed or clicked), drawn as its own flag. */
@@ -148,6 +202,26 @@ export function L1TopologyStrip({
             aria-hidden="true"
           />
         ) : null}
+        {altFlags.map((f) => {
+          const x = pct(f.insertAfterResidue);
+          const headShift = x < 6 ? "translateX(-12%)" : x > 94 ? "translateX(-88%)" : "translateX(-50%)";
+          const on = Boolean(f.active || focusSiteId === f.siteId);
+          return (
+            <button
+              type="button"
+              key={`alt-${f.siteId}`}
+              className={on ? `${styles.insert} ${styles.insertAlt} ${styles.insertAltOn}` : `${styles.insert} ${styles.insertAlt}`}
+              style={{ left: `${x}%` }}
+              title={`${f.title} — click to view fold`}
+              aria-pressed={on}
+              onClick={() => (onAltFlagClick ? onAltFlagClick(f) : onFlagClick?.(f.siteId))}
+            >
+              <span className={styles.insertHead} style={{ transform: headShift }}>
+                {f.label}
+              </span>
+            </button>
+          );
+        })}
         {flags.map((f) => {
           const x = pct(f.insertAfterResidue);
           // The head is wider than the 6px mark it sits on, so a flag at either end
@@ -215,6 +289,12 @@ export function L1TopologyStrip({
               {flags.length ? ` — ${flags[0].legend}` : " — none picked for this member"}
             </li>
           )}
+          {altFlags.map((f) => (
+            <li key={`alt-leg-${f.siteId}`}>
+              <span className={styles.insertAltSwatch} aria-hidden="true" />{" "}
+              alternative fold — {f.legend}{f.active ? " (viewing)" : ""}
+            </li>
+          ))}
           {sp && sp.to >= sp.from ? (
             <li>
               <span className={sp.kind === "replaced" ? `${styles.spSwatch} ${styles.spReplaced}` : styles.spSwatch} aria-hidden="true" />{" "}
