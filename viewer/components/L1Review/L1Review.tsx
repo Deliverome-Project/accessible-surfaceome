@@ -694,6 +694,29 @@ export function ReviewPanel({
   );
 }
 
+const CONTACT_SIDE_LABEL: Record<string, string> = {
+  O: "outside",
+  I: "inside",
+  M: "TM helix",
+  S: "signal peptide",
+  B: "β-strand",
+};
+
+function fmtContactTokens(raw: string | null | undefined): string {
+  if (!raw) return "—";
+  return raw
+    .split(/\s*[;,]\s*/)
+    .filter(Boolean)
+    .map((t) => t.replace(/_/g, " "))
+    .join(", ");
+}
+
+function fmtContactSide(c: Pick<L1Contact, "in_extracellular" | "topology_state">): string {
+  if (c.in_extracellular) return "outside";
+  if (!c.topology_state) return "—";
+  return CONTACT_SIDE_LABEL[c.topology_state] ?? c.topology_state;
+}
+
 function ContactsTable({ contacts, showHidden }: { contacts: L1Contact[]; showHidden: boolean }) {
   const rows = visibleContacts(contacts, showHidden);
   if (!rows.length) return <p className={styles.muted}>No contact annotations for this member.</p>;
@@ -704,22 +727,35 @@ function ContactsTable({ contacts, showHidden }: { contacts: L1Contact[]; showHi
           <tr><th>Residue</th><th>Source</th><th>Tier</th><th>Evidence</th><th>Class</th><th>Partner</th><th>Side</th><th>PMIDs</th></tr>
         </thead>
         <tbody>
-          {rows.map((c) => (
-            <tr key={`${c.residue}-${c.source}`}>
-              <td className={styles.mono}>{c.aa ?? ""}{c.residue}{c.canonical_residue != null && c.canonical_residue !== c.residue ? ` (canon. ${c.canonical_residue})` : ""}</td>
-              <td><span className={styles.swatch} style={{ background: contactColor(c) }} />{c.source === "literature_agent" ? "literature (agent-extracted)" : "UniProt binding site"}</td>
-              <td>{c.confidence_tier}{c.ion_site ? " · ion site" : ""}{c.additive_only ? " · additive" : ""}</td>
-              <td>{c.evidence_types ?? "—"}</td>
-              <td>{c.contact_classes ?? "—"}</td>
-              <td>{c.ligands ?? "—"}</td>
-              <td>{c.in_extracellular ? "outside" : c.topology_state ?? "—"}</td>
-              <td>
-                {(c.pmids ?? "").split(/[;,\s]+/).filter(Boolean).map((p) => (
-                  <a key={p} href={`https://pubmed.ncbi.nlm.nih.gov/${p}/`} target="_blank" rel="noreferrer" className={styles.pmid}>{p}</a>
-                ))}
-              </td>
-            </tr>
-          ))}
+          {rows.map((c) => {
+            const pmids = (c.pmids ?? "").split(/[;,\s]+/).filter(Boolean);
+            return (
+              <tr key={`${c.residue}-${c.source}`}>
+                <td className={`${styles.mono} ${styles.cellNowrap}`}>
+                  {c.aa ?? ""}{c.residue}
+                  {c.canonical_residue != null && c.canonical_residue !== c.residue ? ` (canon. ${c.canonical_residue})` : ""}
+                </td>
+                <td className={styles.cellNowrap}>
+                  <span className={styles.swatch} style={{ background: contactColor(c) }} />
+                  {c.source === "literature_agent" ? "literature" : "UniProt"}
+                </td>
+                <td className={styles.cellNowrap}>
+                  {c.confidence_tier}{c.ion_site ? " · ion" : ""}{c.additive_only ? " · additive" : ""}
+                </td>
+                <td className={styles.cellSoft}>{fmtContactTokens(c.evidence_types)}</td>
+                <td className={styles.cellNowrap}>{fmtContactTokens(c.contact_classes)}</td>
+                <td className={styles.cellWrap}>{c.ligands ?? "—"}</td>
+                <td className={styles.cellNowrap}>{fmtContactSide(c)}</td>
+                <td className={styles.cellPmids}>
+                  {pmids.length
+                    ? pmids.map((p) => (
+                        <a key={p} href={`https://pubmed.ncbi.nlm.nih.gov/${p}/`} target="_blank" rel="noreferrer" className={styles.pmid}>{p}</a>
+                      ))
+                    : "—"}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -745,11 +781,11 @@ function CuratedContacts({ gene, aligned, acc }: { gene: CuratedContactsData | n
           <tbody>
             {gene.sites.map((c, i) => (
               <tr key={`${c.observation_id ?? i}`}>
-                <td><span className={styles.swatch} style={{ background: COLORS.curated }} />{c.partner_label ?? c.partner}</td>
-                <td>{c.source}</td>
-                <td className={styles.mono}>{(c.positions ?? []).length} ({(c.positions ?? []).slice(0, 8).join(", ")}{(c.positions ?? []).length > 8 ? ", …" : ""})</td>
-                <td>{c.context ?? "—"}</td>
-                <td>{c.reference ? <a href={c.reference} target="_blank" rel="noreferrer">link</a> : "—"}</td>
+                <td className={styles.cellSoft}><span className={styles.swatch} style={{ background: COLORS.curated }} />{c.partner_label ?? c.partner}</td>
+                <td className={styles.cellNowrap}>{c.source}</td>
+                <td className={`${styles.mono} ${styles.cellSoft}`}>{(c.positions ?? []).length} ({(c.positions ?? []).slice(0, 8).join(", ")}{(c.positions ?? []).length > 8 ? ", …" : ""})</td>
+                <td className={styles.cellWrap}>{c.context ?? "—"}</td>
+                <td className={styles.cellNowrap}>{c.reference ? <a href={c.reference} target="_blank" rel="noreferrer">link</a> : "—"}</td>
               </tr>
             ))}
           </tbody>
