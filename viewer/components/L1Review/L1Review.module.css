@@ -368,6 +368,31 @@
   display: inline-block; width: 6px; height: 13px; vertical-align: -0.15rem; margin-right: 0.3rem;
   background: var(--l1-insert); border: 1px solid var(--l1-insert-edge); border-radius: 1px;
 }
+.insertAlt {
+  width: 5px;
+  background: #FEF3C7;
+  border: 1.5px dashed #B45309;
+  z-index: 1;
+}
+.insertAlt .insertHead {
+  background: #FFFBEB;
+  border: 1px dashed #B45309;
+  color: #92400E;
+}
+.insertAltOn {
+  z-index: 3;
+  box-shadow: 0 0 0 2px #B45309;
+}
+.insertAltOn .insertHead {
+  background: #D97706;
+  border-style: solid;
+  border-color: #92400E;
+  color: #FFFFFF;
+}
+.insertAltSwatch {
+  display: inline-block; width: 6px; height: 13px; vertical-align: -0.15rem; margin-right: 0.3rem;
+  background: #FEF3C7; border: 1.5px dashed #B45309; border-radius: 1px;
+}
 
 /* ------------------------------------------------------------- gene grouping and tabs */
 .geneGroup { border-bottom: 1px solid var(--line-soft); }

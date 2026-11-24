@@ -54,7 +54,7 @@ import {
   type L1Structure,
 } from "../../lib/l1-design";
 import type { LibraryTopologyRow } from "../../lib/structure-viewer-types";
-import { L1TopologyStrip, armColor, insertFlags } from "./L1TopologyStrip";
+import { L1TopologyStrip, altFoldFlags, armColor, insertFlags } from "./L1TopologyStrip";
 import { L1Structure3D, type L1Mark } from "./L1Structure3D";
 import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
 import { InfoTip } from "../InfoTip/InfoTip";
@@ -823,6 +823,7 @@ function MemberDetail({
   const [showAlts, setShowAlts] = useState(true);
   const [showContacts, setShowContacts] = useState(true);
   const [showHidden, setShowHidden] = useState(false);
+  const [showNativeOverlay, setShowNativeOverlay] = useState(false);
   // A residue clicked on either model, as {r, n}: n changes on every click so clicking
   // the same residue again (after typing another) still reaches the review card.
   const [picked, setPicked] = useState<{ r: number; n: number } | null>(null);
@@ -852,6 +853,12 @@ function MemberDetail({
   const model: L1Structure | undefined = models.find((m) => m.structure_id === modelId) ?? models[0];
   const url = model ? l1StructureUrl(model) : null;
   const offset = model?.kind === "native" ? model.residue_offset ?? 0 : 0;
+  const nativeModel = useMemo(() => models.find((m) => m.kind === "native") ?? null, [models]);
+  const nativeUrl = nativeModel ? l1StructureUrl(nativeModel) : null;
+  const nativeSegments = useMemo(
+    () => (nativeModel ? l1ResidueSegments(member, nativeModel) : null),
+    [member, nativeModel],
+  );
 
   // Marks are placed through the model's own residue map, so picks, the focused arm and
   // the reviewer's suggestion show on the fold as well as on the native model.
@@ -890,10 +897,11 @@ function MemberDetail({
     }
   }
   // Alternatives first, current picks last: when both name the same residue, the current
-  // pick must be the sphere you see. The focused arm goes on top, larger and labelled.
+  // pick must be the sphere you see. The focused arm (or active alt fold) goes on top, labelled.
   for (const s of [...sites].reverse()) {
     if (s.insert_after_residue == null || s.insert_after_residue < 1) continue;
-    if (s.is_primary === false && !showAlts && s.site_id !== focusSite) continue;
+    const isActiveAltFold = s.is_primary === false && model?.kind === "tagged" && model.site_id === s.site_id;
+    if (s.is_primary === false && !showAlts && s.site_id !== focusSite && !isActiveAltFold) continue;
     const resi = toModel(s.insert_after_residue);
     if (resi == null) continue;
     const on = s.site_id === focusSite;
@@ -901,8 +909,13 @@ function MemberDetail({
     marks.push({
       resi,
       color: siteColor(s),
-      radius: on ? 4.2 : s.is_primary === false ? 2.4 : 3.2,
-      label: on || s.is_primary !== false ? `${arm ? `${arm} ` : ""}${s.residue_before ?? ""}${s.insert_after_residue}` : undefined,
+      radius: on ? 4.2 : isActiveAltFold ? 3.2 : s.is_primary === false ? 2.4 : 3.2,
+      label:
+        on || s.is_primary !== false
+          ? `${arm ? `${arm} ` : ""}${s.residue_before ?? ""}${s.insert_after_residue}`
+          : isActiveAltFold
+            ? `alt ${s.residue_before ?? ""}${s.insert_after_residue}`
+            : undefined,
     });
   }
   if (suggested != null) {
@@ -977,6 +990,9 @@ function MemberDetail({
 
   const topology = topologyRow?.per_residue_topology ?? "";
   const flags = insertFlags(sites, member.ordered_length_aa);
+  const altFlags = altFoldFlags(sites, models, member.ordered_length_aa, model?.structure_id ?? null);
+  const undrawnAlternatives = Math.max(0, sites.filter((s) => s.is_primary === false).length - altFlags.length);
+  const canOverlayNative = Boolean(model?.kind === "tagged" && nativeUrl && nativeSegments && segments);
   const modelMap = topology && model ? l1ModelMap(member, model, topology) : null;
   const sp = memberSp(member, topology || null);
   const pickLeader = sites.find((s) => s.is_primary !== false)?.leader ?? null;
@@ -1025,11 +1041,16 @@ function MemberDetail({
           topology={topology}
           sp={sp.band ? { ...sp.band, label: sp.text } : null}
           flags={flags}
+          altFlags={altFlags}
           gene={member.gene_symbol}
           variantLabel={memberChipText(member, topologyRow)}
-          nAlternatives={sites.filter((s) => s.is_primary === false).length}
+          nAlternatives={undrawnAlternatives}
           focusSiteId={focusSite}
           onFlagClick={showSite}
+          onAltFlagClick={(f) => {
+            if (f.structureId) setModelId(f.structureId);
+            setFocusSite((cur) => (cur === f.siteId ? null : f.siteId));
+          }}
           onPickResidue={(r) => setPicked({ r, n: Date.now() })}
           suggestedResidue={suggested}
           onClearSuggested={suggested != null ? clearSuggested : undefined}
@@ -1086,6 +1107,17 @@ function MemberDetail({
             {!models.some((m) => m.kind === "tagged") ? <span className={styles.muted}>No tagged refold yet.</span> : null}
           </div>
           <div className={styles.structureControls} aria-label="Structure overlays">
+            {canOverlayNative ? (
+              <span className={styles.ctrlGroup}>
+                <label className={showNativeOverlay ? styles.ctrlOn : styles.ctrl}>
+                  <input type="checkbox" checked={showNativeOverlay} onChange={(e) => setShowNativeOverlay(e.target.checked)} />
+                  Overlay native
+                </label>
+                <InfoTip align="end" label="About native overlay">
+                  Kabsch-superpose this member&rsquo;s untagged native model (translucent teal) onto the tagged refold using matched native Cα residues, excluding the inserted cassette.
+                </InfoTip>
+              </span>
+            ) : null}
             <span className={styles.ctrlGroup}>
               <label className={showAlts ? styles.ctrlOn : styles.ctrl}>
                 <input type="checkbox" checked={showAlts} onChange={(e) => setShowAlts(e.target.checked)} />
@@ -1147,6 +1179,10 @@ function MemberDetail({
                 ? "Igκ leader construct residues (not this protein's own)"
                 : "added residues (not this protein's own)"
             }
+            nativeOverlayUrl={canOverlayNative ? nativeUrl : null}
+            nativeOverlaySegments={canOverlayNative ? nativeSegments : null}
+            primarySegments={segments}
+            showNativeOverlay={canOverlayNative && showNativeOverlay}
           />
         ) : (
           <p className={styles.muted}>No model for this member.</p>

@@ -14,7 +14,9 @@ import {
   l1ModelToMember,
   topologyStatesPresent,
   type L1ModelMap,
+  type TaggedModelLayout,
 } from "../../lib/l1-design";
+import { superposePdb } from "../../lib/pdb-superpose";
 import styles from "./L1Review.module.css";
 
 /** One residue to mark, in MODEL numbering. */
@@ -57,10 +59,25 @@ interface Props {
   onReset?: () => void;
   /** Increment to trigger a camera reset from a keyboard shortcut (key 0). */
   resetSeq?: number;
+  /** Optional native PDB URL to Kabsch-superpose as a translucent ghost cartoon over a tagged fold. */
+  nativeOverlayUrl?: string | null;
+  /** Member-residue segments for the native overlay PDB (`l1ResidueSegments(member, native)`). */
+  nativeOverlaySegments?: TaggedModelLayout["segments"] | null;
+  /** Member-residue segments for the primary PDB (`l1ResidueSegments(member, model)`). */
+  primarySegments?: TaggedModelLayout["segments"] | null;
+  /** Whether to fetch/show the superposed native ghost cartoon. */
+  showNativeOverlay?: boolean;
 }
 
+type GLModel = {
+  setStyle: (sel: object, style: object) => void;
+  hide?: () => void;
+  show?: () => void;
+};
+
 type Viewer = {
-  addModel: (data: string, fmt: string) => void;
+  addModel: (data: string, fmt: string) => GLModel;
+  removeModel?: (model: GLModel) => void;
   setStyle: (sel: object, style: object) => void;
   addStyle: (sel: object, style: object) => void;
   addSphere: (spec: object) => void;
@@ -86,6 +103,38 @@ type Viewer = {
 /** The membrane drawn on the gene page has the same colour and opacity. */
 const MEMBRANE_OPACITY = 0.34;
 const OUTSIDE_COLOR = "#ECEEF1";
+/** Translucent teal ghost for the optional native-structure superposition: clearly
+ *  distinct from silver-gray extracellular, yellow TM, green cytoplasmic, electric-blue
+ *  cassette and vivid-orange leader remnants. */
+const NATIVE_OVERLAY_COLOR = "#14B8A6";
+const NATIVE_OVERLAY_OPACITY = 0.44;
+const NATIVE_OVERLAY_SWATCH = "rgba(20, 184, 166, 0.55)";
+const NATIVE_OVERLAY_STYLE = { cartoon: { color: NATIVE_OVERLAY_COLOR, opacity: NATIVE_OVERLAY_OPACITY } };
+
+/** Bounded cache of raw native PDB texts so toggling the overlay or switching between
+ *  fold tabs of the same member does not re-fetch the native coordinates. */
+const nativePdbCache = new Map<string, string>();
+const MAX_CACHED_NATIVE_PDBS = 20;
+
+async function fetchCachedPdb(url: string): Promise<string> {
+  const cached = nativePdbCache.get(url);
+  if (cached != null) return cached;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  if (nativePdbCache.size >= MAX_CACHED_NATIVE_PDBS) {
+    const oldest = nativePdbCache.keys().next().value;
+    if (oldest !== undefined) nativePdbCache.delete(oldest);
+  }
+  nativePdbCache.set(url, text);
+  return text;
+}
+
+type OverlayStatus =
+  | { status: "loading" }
+  | { status: "ready"; rmsd: number; alignedCount: number; confidentOnly: boolean }
+  | { status: "unavailable" }
+  | { status: "error" };
 /** Side colours on L1 models. Extracellular is a neutral slate gray (Becca, 2026-11-22:
  *  "the ec is gray so the orange stand out more"): the orange cassette sits on the
  *  extracellular side, so the side it touches carries no hue of its own. Darker than the
@@ -135,9 +184,31 @@ function orient(text: string, topology: string | null | undefined, map: L1ModelM
  * Deliberately separate from the gene page's StructureViewer: this one draws one model,
  * the member's membrane and side shading, a few marked residues and a click-to-pick.
  */
-export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMemberResi, topology, map, modelLength, compact, nonNativeLabel, focusResi, onReset, resetSeq = 0 }: Props) {
+export function L1Structure3D({
+  pdbUrl,
+  span,
+  marks,
+  cassette,
+  onPick,
+  modelToMemberResi,
+  topology,
+  map,
+  modelLength,
+  compact,
+  nonNativeLabel,
+  focusResi,
+  onReset,
+  resetSeq = 0,
+  nativeOverlayUrl,
+  nativeOverlaySegments,
+  primarySegments,
+  showNativeOverlay = false,
+}: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<Viewer | null>(null);
+  const orientedPdbRef = useRef<string | null>(null);
+  const overlayModelRef = useRef<GLModel | null>(null);
+  const overlayUrlRef = useRef<string | null>(null);
   const initialViewRef = useRef<number[] | null>(null);
   const pickRef = useRef(onPick);
   pickRef.current = onPick;
@@ -145,9 +216,12 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
   const [loaded, setLoaded] = useState(0);
   const [membrane, setMembrane] = useState<MembraneSlab | null>(null);
   const [hoverAtom, setHoverAtom] = useState<{ resi: number; resn?: string } | null>(null);
+  const [overlayInfo, setOverlayInfo] = useState<OverlayStatus | null>(null);
   const shaded = !!(topology && map);
   // Orientation depends on the topology and map, so a change in either reloads the model.
   const orientKey = shaded ? JSON.stringify([topology, map?.segments]) : "";
+  const effectivePrimarySegments = primarySegments ?? map?.segments ?? null;
+  const overlaySegKey = JSON.stringify([nativeOverlaySegments, effectivePrimarySegments]);
 
   // (1) Load + orient the model once per URL/topology. Restyling never refetches.
   useEffect(() => {
@@ -155,6 +229,10 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     setState("loading");
     setMembrane(null);
     setHoverAtom(null);
+    setOverlayInfo(null);
+    orientedPdbRef.current = null;
+    overlayModelRef.current = null;
+    overlayUrlRef.current = null;
     initialViewRef.current = null;
     (async () => {
       try {
@@ -169,6 +247,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
         ref.current.innerHTML = "";
         const v = $3Dmol.createViewer(ref.current, { backgroundColor: "white", antialias: true });
         v.addModel(pdbText, "pdb");
+        orientedPdbRef.current = pdbText;
         viewerRef.current = v;
         setMembrane(slab);
         setState("ready");
@@ -181,6 +260,9 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
       live = false;
       viewerRef.current?.clear();
       viewerRef.current = null;
+      orientedPdbRef.current = null;
+      overlayModelRef.current = null;
+      overlayUrlRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdbUrl, orientKey]);
@@ -191,14 +273,15 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     const v = viewerRef.current;
     if (!v || state !== "ready" || focusResi == null) return;
     try {
-      v.center({ resi: focusResi, atom: "CA" }, 400);
+      v.center({ model: 0, resi: focusResi, atom: "CA" }, 400);
     } catch {
       /* residue not in this model: leave the view as it is */
     }
   }, [focusResi, state, loaded]);
 
-  // (2) Style: side shading (or plain span), cassette, marked residues. Zoom only on first
-  // load, then add the membrane so the wider slab never pulls the camera out.
+  // (2) Style primary model (model: 0): side shading (or plain span), cassette, marked
+  // residues. Scoped to model: 0 so an attached native overlay (model: 1) stays isolated.
+  // Zoom only on first load, then add the membrane so the wider slab never pulls the camera out.
   const styleKey = JSON.stringify([span, cassette, marks, map?.nonNative]);
   const zoomedFor = useRef(-1);
   useEffect(() => {
@@ -206,47 +289,47 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     if (!v || state !== "ready") return;
     v.removeAllLabels();
     if (shaded && topology && map) {
-      v.setStyle({}, { cartoon: { color: OUTSIDE_COLOR, opacity: 1 } });
+      v.setStyle({ model: 0 }, { cartoon: { color: OUTSIDE_COLOR, opacity: 1 } });
       for (const r of l1ModelStateRuns(topology, map)) {
         const color = L1_SIDE_COLORS[r.state];
-        if (color) v.setStyle({ resi: `${r.lo}-${r.hi}` }, { cartoon: { color } });
+        if (color) v.setStyle({ model: 0, resi: `${r.lo}-${r.hi}` }, { cartoon: { color } });
       }
       for (const [lo, hi] of map.nonNative) {
-        v.setStyle({ resi: `${lo}-${hi}` }, { cartoon: { color: L1_NONNATIVE_COLOR, thickness: 0.8 } });
+        v.setStyle({ model: 0, resi: `${lo}-${hi}` }, { cartoon: { color: L1_NONNATIVE_COLOR, thickness: 0.8 } });
       }
     } else {
-      v.setStyle({}, { cartoon: { color: "#D6D9DE", opacity: 1 } });
-      if (span) v.setStyle({ resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
+      v.setStyle({ model: 0 }, { cartoon: { color: "#D6D9DE", opacity: 1 } });
+      if (span) v.setStyle({ model: 0, resi: `${span[0]}-${span[1]}` }, { cartoon: { color: "#9AA5B1" } });
     }
     if (cassette) {
       // WebGL caps GL_LINE width at 1px on macOS, so use a thicker cartoon + thin backbone
       // sticks to give the inserted tag cassette real 3D visual weight.
       v.setStyle(
-        { resi: `${cassette[0]}-${cassette[1]}` },
+        { model: 0, resi: `${cassette[0]}-${cassette[1]}` },
         { cartoon: { color: L1_CASSETTE_COLOR, thickness: 1.0 }, stick: { color: L1_CASSETTE_COLOR, radius: 0.14 } },
       );
     }
     for (const m of marks) {
-      if (m.stick) v.addStyle({ resi: m.resi }, { stick: { color: m.color, radius: 0.35 } });
-      v.addStyle({ resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
+      if (m.stick) v.addStyle({ model: 0, resi: m.resi }, { stick: { color: m.color, radius: 0.35 } });
+      v.addStyle({ model: 0, resi: m.resi, atom: "CA" }, { sphere: { color: m.color, radius: m.radius } });
       if (m.label) {
         v.addLabel(m.label, {
-          position: { resi: m.resi, atom: "CA" }, fontSize: 11, fontColor: "#1F2933",
+          position: { model: 0, resi: m.resi, atom: "CA" }, fontSize: 11, fontColor: "#1F2933",
           backgroundColor: "#FFFFFF", backgroundOpacity: 0.75, inFront: true,
         } as object);
       }
     }
     // Clickability and hover bind to the styled atoms, so both are re-applied after every restyle.
-    v.setClickable({}, true, (atom) => pickRef.current?.(atom.resi));
+    v.setClickable({ model: 0 }, true, (atom) => pickRef.current?.(atom.resi));
     v.setHoverable?.(
-      {},
+      { model: 0 },
       true,
       (atom) => setHoverAtom({ resi: atom.resi, resn: atom.resn }),
       () => setHoverAtom(null),
     );
     const firstZoom = zoomedFor.current !== loaded;
     if (firstZoom) {
-      v.zoomTo(span ? { resi: `${span[0]}-${span[1]}` } : {});
+      v.zoomTo(span ? { model: 0, resi: `${span[0]}-${span[1]}` } : { model: 0 });
       zoomedFor.current = loaded;
       if (membrane) {
         const h = L1_MEMBRANE_HALF_THICKNESS;
@@ -272,13 +355,75 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [styleKey, state, loaded, membrane, shaded]);
 
+  // (4) Optional Kabsch-superposed native structure overlay (model: 1). Lazily fetched on
+  // demand and hidden/shown in place so toggling never refetches or moves the camera.
+  useEffect(() => {
+    const v = viewerRef.current;
+    if (!v || state !== "ready") return;
+    const existing = overlayModelRef.current;
+    if (!showNativeOverlay || !nativeOverlayUrl) {
+      if (existing) {
+        existing.setStyle({}, {});
+        existing.hide?.();
+        v.render();
+      }
+      return;
+    }
+    if (existing && overlayUrlRef.current === nativeOverlayUrl) {
+      existing.setStyle({}, NATIVE_OVERLAY_STYLE);
+      existing.show?.();
+      v.render();
+      return;
+    }
+    const targetPdb = orientedPdbRef.current;
+    if (!targetPdb || !nativeOverlaySegments || !effectivePrimarySegments) {
+      setOverlayInfo({ status: "unavailable" });
+      return;
+    }
+    let live = true;
+    setOverlayInfo({ status: "loading" });
+    (async () => {
+      try {
+        const rawNative = await fetchCachedPdb(nativeOverlayUrl);
+        if (!live || viewerRef.current !== v) return;
+        const aligned = superposePdb(rawNative, targetPdb, nativeOverlaySegments, effectivePrimarySegments);
+        if (!live || viewerRef.current !== v) return;
+        if (!aligned) {
+          setOverlayInfo({ status: "unavailable" });
+          return;
+        }
+        if (overlayModelRef.current) {
+          v.removeModel?.(overlayModelRef.current);
+          overlayModelRef.current = null;
+        }
+        const m = v.addModel(aligned.pdbText, "pdb");
+        m.setStyle({}, NATIVE_OVERLAY_STYLE);
+        overlayModelRef.current = m;
+        overlayUrlRef.current = nativeOverlayUrl;
+        v.render();
+        setOverlayInfo({
+          status: "ready",
+          rmsd: aligned.rmsd,
+          alignedCount: aligned.alignedCount,
+          confidentOnly: aligned.confidentOnly,
+        });
+      } catch {
+        if (live) setOverlayInfo({ status: "error" });
+      }
+    })();
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showNativeOverlay, nativeOverlayUrl, overlaySegKey, state, loaded]);
+
   const handleReset = () => {
     const v = viewerRef.current;
     if (!v) return;
     if (initialViewRef.current && v.setView) {
       v.setView(initialViewRef.current);
     } else {
-      v.zoomTo(span ? { resi: `${span[0]}-${span[1]}` } : {});
+      v.zoomTo(span ? { model: 0, resi: `${span[0]}-${span[1]}` } : { model: 0 });
     }
     v.render();
     onReset?.();
@@ -307,6 +452,25 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     if (!onPick) return `model ${hoverAtom.resi} — switch to Native to click-pick`;
     return `model ${hoverAtom.resi} (not in member sequence)`;
   })();
+  const overlayLegendItem = showNativeOverlay && nativeOverlayUrl ? (
+    <li
+      key="native-overlay"
+      title={
+        overlayInfo?.status === "ready"
+          ? `Native structure Kabsch-aligned on ${overlayInfo.alignedCount}${overlayInfo.confidentOnly ? " confident (pLDDT ≥ 70)" : ""} matched Cα residues`
+          : "Native structure superposed onto this tagged refold"
+      }
+    >
+      <i style={{ background: NATIVE_OVERLAY_SWATCH }} />
+      {overlayInfo?.status === "ready"
+        ? `native overlay (${overlayInfo.rmsd.toFixed(2)} Å Cα RMSD, ${overlayInfo.alignedCount} res)`
+        : overlayInfo?.status === "unavailable"
+          ? "native overlay unavailable"
+          : overlayInfo?.status === "error"
+            ? "native overlay failed to load"
+            : "native overlay (aligning…)"}
+    </li>
+  ) : null;
   return (
     <div className={styles.viewerWrap}>
       <div className={styles.viewerStage}>
@@ -343,6 +507,7 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
                 {cassette ? (
                   <li><i style={{ background: L1_CASSETTE_COLOR }} /> tag cassette{side ? ` (inserted on the ${side} side)` : ""}</li>
                 ) : null}
+                {overlayLegendItem}
                 {map?.nonNative.length ? (
                   <li title="Model residues before the tag that are not part of this member's protein">
                     <i style={{ background: L1_NONNATIVE_COLOR }} /> {nonNativeLabel ?? "added residues (not this protein's own)"}
@@ -371,10 +536,13 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
               ) : null}
             </>
           ) : (
-            <p className={styles.sideNote}>
-              No side shading or membrane: no DeepTMHMM v1 topology matches this member&rsquo;s sequence yet
-              {topology ? ", or this model's residues could not be mapped onto it" : ""}.
-            </p>
+            <>
+              {overlayLegendItem ? <ul className={styles.sideExtra}>{overlayLegendItem}</ul> : null}
+              <p className={styles.sideNote}>
+                No side shading or membrane: no DeepTMHMM v1 topology matches this member&rsquo;s sequence yet
+                {topology ? ", or this model's residues could not be mapped onto it" : ""}.
+              </p>
+            </>
           )}
         </div>
       ) : null}

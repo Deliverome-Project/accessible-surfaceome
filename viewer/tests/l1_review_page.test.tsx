@@ -357,6 +357,47 @@ test("every current pick gets a flag, ordered along the sequence and labelled by
   assert.equal(armLabel("l1-p1088-a2"), "a2");
   assert.equal(insertFlags([arm("l1-p2089-res1-igk_tag", 1)], 299)[0].label, "1");
   assert.equal(insertFlags([arm("l1-p0001-nterm", 0)], 299)[0].label, "N");
+  // Single-arm member with an append-only arm suffix (e.g. CD20 l1-p1249-a4 at 162):
+  // label the pin head by residue (`162`) while keeping `a4` in legend and tooltip.
+  const singleA4 = insertFlags([arm("l1-p1249-a4", 162)], 297);
+  assert.equal(singleA4[0].label, "162");
+  assert.match(singleA4[0].legend, /^a4 between H162 and D163$/);
+  assert.match(singleA4[0].title, /^a4 — tag insert/);
+});
+
+test("alternative fold tabs get secondary dashed pins on the topology strip", async () => {
+  const { L1TopologyStrip, altFoldFlags, insertFlags } = await import("../components/L1Review/L1TopologyStrip");
+  const cd20Sites: L1Site[] = [
+    site({ site_id: "l1-p1249-a4", insert_after_residue: 162, residue_before: "I", residue_after: "N", is_primary: true }),
+    site({ site_id: "l1-p1249-alt-186", insert_after_residue: 186, residue_before: "N", residue_after: "S", is_primary: false }),
+  ];
+  const cd20Models = [
+    { structure_id: "fold-162", kind: "tagged" as const, site_id: "l1-p1249-a4", refold_verdict: "fail" },
+    { structure_id: "fold-186", kind: "tagged" as const, site_id: "l1-p1249-alt-186", refold_verdict: "fail" },
+    { structure_id: "native", kind: "native" as const, site_id: null, refold_verdict: null },
+  ];
+  const flags = insertFlags(cd20Sites, 297);
+  const altFlags = altFoldFlags(cd20Sites, cd20Models, 297, "fold-186");
+  assert.equal(flags.length, 1);
+  assert.equal(flags[0].label, "162");
+  assert.equal(altFlags.length, 1);
+  assert.equal(altFlags[0].label, "186");
+  assert.equal(altFlags[0].active, true);
+  assert.equal(altFlags[0].structureId, "fold-186");
+  const html = renderToStaticMarkup(
+    React.createElement(L1TopologyStrip, {
+      topology: "I".repeat(50) + "M".repeat(20) + "O".repeat(150) + "M".repeat(20) + "I".repeat(57),
+      flags,
+      altFlags,
+      gene: "MS4A1",
+      variantLabel: "Canonical",
+      nAlternatives: 0,
+    }),
+  );
+  assert.match(html, />162</);
+  assert.match(html, />186</);
+  assert.match(html, /alternative fold — between N186 and S187 \(viewing\)/);
+  assert.doesNotMatch(html, /not drawn here/);
 });
 
 test("the strip reuses the gene pages' topology bands and flags the insert over them", async () => {
