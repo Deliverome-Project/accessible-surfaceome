@@ -8,7 +8,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ReviewPanel, SiteCard, structureTabLabel } from "../components/L1Review/L1Review";
+import { RefoldFlagBanner, ReviewPanel, SiteCard, SpMetricsBox, structureTabLabel } from "../components/L1Review/L1Review";
 import {
   currentMemberModels,
   filterIndex,
@@ -665,4 +665,60 @@ test("ReviewPanel renders an out-of-date warning banner and badge when a standin
   assert.match(html, /Previous review is out of date/);
   assert.match(html, /tag location changed/);
   assert.match(html, /out of date: tag location changed/);
+});
+
+test("built refold-flagged constructs (CRHR2) show 'refold flag (kept)' and an explanatory banner", () => {
+  const builtSite = site({ site_id: "l1-p0475-res1-tag_alone", status: "built", insert_after_residue: 0 });
+  const crhr2Fold = {
+    kind: "tagged" as const,
+    site_id: "l1-p0475-res1-tag_alone",
+    mean_plddt: 69.2,
+    refold_verdict: "fail",
+    note: "rung multipass; insert after 0; TM to native 0.934; SpyTag003 buried (RSA 0.17); ALFA RSA 0.614",
+  };
+  assert.equal(structureTabLabel(crhr2Fold, [builtSite], false), "Fold · pLDDT 69 · refold flag (kept)");
+  const banner = renderToStaticMarkup(React.createElement(RefoldFlagBanner, { model: crhr2Fold, site: builtSite }));
+  assert.match(banner, /Automated refold screen flagged \(kept as built\)/);
+  assert.match(banner, /SpyTag003 buried \(RSA 0\.17\)/);
+  // Passing or non-built folds do not render the kept-as-built banner.
+  assert.equal(renderToStaticMarkup(React.createElement(RefoldFlagBanner, { model: { ...crhr2Fold, refold_verdict: "pass" }, site: builtSite })), "");
+  assert.equal(renderToStaticMarkup(React.createElement(RefoldFlagBanner, { model: crhr2Fold, site: { status: "decided_not_built" } })), "");
+});
+
+test("SpMetricsBox renders pre-/post-tag SignalP vs DeepTMHMM metrics and filterIndex filters by spConcern", () => {
+  const html = renderToStaticMarkup(
+    React.createElement(SpMetricsBox, {
+      metrics: {
+        deeptmhmm_v1_cut: 24,
+        signalp_pre_pred: "SP",
+        signalp_pre_cut: 30,
+        signalp_pre_sp_prob: 0.9998,
+        signalp_pre_cs_prob: 0.496,
+        signalp_post_pred: "SP",
+        signalp_post_cut: 30,
+        signalp_post_sp_prob: 0.6664,
+        signalp_post_cs_prob: 0.6288,
+        cut_spread_aa: 6,
+        cleavage_prob_delta: 0.1328,
+        post_leader: "native",
+        concern: "concerning",
+        concern_reasons: ["DeepTMHMM v1 vs SignalP 6 cut spread 6 aa", "weak pre-tag cleavage (p=0.50)"],
+      },
+    }),
+  );
+  assert.match(html, /SP concerning/);
+  assert.match(html, /DeepTMHMM v1 @24/);
+  assert.match(html, /SignalP 6 pre @30/);
+  assert.match(html, /Δ 6 aa/);
+  assert.match(html, /Pre-tag SignalP 6:/);
+  assert.match(html, /Post-tag \(native SP\):/);
+  assert.match(html, /weak pre-tag cleavage/);
+
+  const idx: L1IndexMember[] = [
+    { ...m("l1-m0001", "CD52", "N after SP", "GPI-anchored", ["built"]), sp_concern: "clean" },
+    { ...m("l1-m0002", "TMEM81", "N after SP", "single-pass type I", ["built"]), sp_concern: "concerning" },
+    { ...m("l1-m0003", "CRHR2", "N at residue 1, multipass", "GPCR", ["built"]), sp_concern: null },
+  ];
+  assert.deepEqual(filterIndex(idx, { spConcern: "concerning" }).map((x) => x.gene_symbol), ["TMEM81"]);
+  assert.deepEqual(filterIndex(idx, { spConcern: "clean" }).map((x) => x.gene_symbol), ["CD52"]);
 });

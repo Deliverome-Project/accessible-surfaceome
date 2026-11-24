@@ -26,6 +26,8 @@ export interface L1Mark {
   /** Also draw full-residue sidechain sticks (used for contact sites so they stand out from the ribbon). */
   stick?: boolean;
   label?: string;
+  /** Shown in the residue hover tooltip (e.g. "curated contact: ligand (PDB)"). */
+  hover?: string;
 }
 
 interface Props {
@@ -298,14 +300,16 @@ export function L1Structure3D({ pdbUrl, span, marks, cassette, onPick, modelToMe
     if (cassette && hoverAtom.resi >= cassette[0] && hoverAtom.resi <= cassette[1]) {
       return `tag cassette (model ${hoverAtom.resi})`;
     }
+    const markNotes = [...new Set(marks.filter((m) => m.resi === hoverAtom.resi && m.hover).map((m) => m.hover!))];
+    const markText = markNotes.length ? ` · ${markNotes.slice(0, 2).join("; ")}${markNotes.length > 2 ? ` (+${markNotes.length - 2})` : ""}` : "";
     const memRes = modelToMemberResi ? modelToMemberResi(hoverAtom.resi) : null;
     if (memRes != null && memRes >= 1) {
       const st = topology && memRes <= topology.length ? SIDE_LABEL[topology[memRes - 1]] : null;
       const prefix = hoverAtom.resn ? `${hoverAtom.resn} ${memRes}` : `residue ${memRes}`;
-      return `${prefix}${st ? ` · ${st}` : ""}${onPick ? " — click to suggest" : ""}`;
+      return `${prefix}${st ? ` · ${st}` : ""}${markText}${onPick ? " — click to suggest" : ""}`;
     }
-    if (!onPick) return `model ${hoverAtom.resi} — switch to Native to click-pick`;
-    return `model ${hoverAtom.resi} (not in member sequence)`;
+    if (!onPick) return `model ${hoverAtom.resi}${markText} — switch to Native to click-pick`;
+    return `model ${hoverAtom.resi}${markText} (not in member sequence)`;
   })();
   return (
     <div className={styles.viewerWrap}>
