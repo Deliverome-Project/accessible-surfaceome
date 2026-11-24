@@ -300,9 +300,13 @@
 .caveat { font-size: 0.84rem; background: var(--bg-warm); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); }
 .tablewrap { overflow-x: auto; }
 .table { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
-.table th { text-align: left; color: var(--muted); font-weight: var(--fw-medium); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.3rem 0.6rem 0.3rem 0; border-bottom: 1px solid var(--line-soft); }
-.table td { padding: 0.3rem 0.6rem 0.3rem 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
-.pmid { margin-right: 0.35rem; }
+.table th { text-align: left; color: var(--muted); font-weight: var(--fw-medium); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; padding: 0.35rem 0.75rem 0.35rem 0; border-bottom: 1px solid var(--line-soft); }
+.table td { padding: 0.35rem 0.75rem 0.35rem 0; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.cellNowrap { white-space: nowrap; }
+.cellSoft { white-space: normal; word-break: normal; overflow-wrap: normal; }
+.cellWrap { min-width: 12rem; max-width: 30rem; white-space: normal; overflow-wrap: break-word; }
+.cellPmids { min-width: 5.5rem; white-space: normal; }
+.pmid { display: inline-block; white-space: nowrap; margin-right: 0.4rem; }
 
 /* --------------------------------------------------- topology strip + tag insert flag
    Bands and legend come from the gene pages' TopologyBar / TopologyLegend, so the
