@@ -121,6 +121,8 @@ export interface L1Member {
   sp_status?: L1SpStatus | null;
   native_sp_last_residue?: number | null;
   sp_evidence?: string | null;
+  sp_concern?: L1SpConcern | null;
+  sp_metrics?: L1SpMetrics | null;
   uniprot_canonical_acc?: string | null;
   uniprot_canonical_length?: number | null;
   matches_uniprot_canonical?: boolean | number | null;
@@ -162,6 +164,7 @@ export interface L1IndexMember {
    *  predates the field, which keeps the SP filter hidden rather than wrong. */
   pick_leader?: string | null;
   sp_status?: L1SpStatus | null;
+  sp_concern?: L1SpConcern | null;
   matches_uniprot_canonical?: boolean | number | null;
   /** True when any primary pick uses a snorkel tag construct; undefined when the API predates it. */
   has_snorkel?: boolean | number | null;
@@ -287,6 +290,8 @@ export function filterIndex(
     rung?: string; membraneClass?: string; query?: string; status?: string;
     /** "native" | "igk_swap" | "igk_res1" | "none" */
     sp?: string;
+    /** "concerning" | "clean" (N-after-SP SignalP vs DeepTMHMM pre/post checks) */
+    spConcern?: string;
     /** "yes" = differs from the UniProt canonical, "no" = identical */
     diff?: string;
     /** "yes" = uses a snorkel tag, "no" = does not */
@@ -305,6 +310,7 @@ export function filterIndex(
     .filter((m) => !f.membraneClass || m.membrane_class === f.membraneClass)
     .filter((m) => !f.status || (f.status === "none" ? m.pick_status.length === 0 : m.pick_status.includes(f.status as L1SiteStatus)))
     .filter((m) => !f.sp || indexSpStatus(m) === f.sp)
+    .filter((m) => !f.spConcern || m.sp_concern === f.spConcern)
     .filter((m) => !f.diff || (f.diff === "yes" ? uniprotDiffers(m) === true : uniprotDiffers(m) === false))
     .filter((m) => !f.snorkel || (f.snorkel === "yes" ? memberHasSnorkel(m) === true : memberHasSnorkel(m) === false))
     .filter((m) => {
@@ -333,6 +339,31 @@ export function filterIndex(
 // ------------------------------------------------------------ signal peptide / UniProt
 
 export type L1SpStatus = "native" | "igk_swap" | "igk_res1" | "none";
+export type L1SpConcern = "clean" | "concerning";
+
+export interface L1SpMetrics {
+  deeptmhmm_v1_cut?: number | null;
+  signalp_pre_pred?: string | null;
+  signalp_pre_cut?: number | null;
+  signalp_pre_sp_prob?: number | null;
+  signalp_pre_cs_prob?: number | null;
+  signalp_post_pred?: string | null;
+  signalp_post_cut?: number | null;
+  signalp_post_sp_prob?: number | null;
+  signalp_post_cs_prob?: number | null;
+  cut_spread_aa?: number | null;
+  cleavage_prob_delta?: number | null;
+  post_leader?: "native" | "igk" | string | null;
+  insert_after_residue?: number | null;
+  igk_replaces_residues?: string | null;
+  concern?: L1SpConcern | null;
+  concern_reasons?: string[] | null;
+}
+
+export const SP_CONCERN_LABEL: Record<L1SpConcern, string> = {
+  concerning: "concerning",
+  clean: "clean",
+};
 
 export const SP_LABEL: Record<L1SpStatus, string> = {
   native: "native SP",
