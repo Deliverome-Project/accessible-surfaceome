@@ -1883,7 +1883,11 @@ export function L1Review() {
           {current ? (
             <>
               <div className={styles.detailHead}>
-                <button type="button" onClick={() => go(-1)} aria-label="Previous member">←</button>
+                <button type="button" onClick={() => go(-1)} aria-label="Previous member" title="Previous member (←)">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M10 3.5L5.5 8L10 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
                 <div>
                   <h2 className={styles.h2}>
                     <a
@@ -1936,7 +1940,11 @@ export function L1Review() {
                     </div>
                   ) : null}
                 </div>
-                <button type="button" onClick={() => go(1)} aria-label="Next member">→</button>
+                <button type="button" onClick={() => go(1)} aria-label="Next member" title="Next member (→)">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M6 3.5L10.5 8L6 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
               </div>
               {member ? (
                 <MemberDetail
