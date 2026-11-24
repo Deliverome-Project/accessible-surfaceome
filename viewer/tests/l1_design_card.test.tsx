@@ -161,7 +161,7 @@ test("the exclusion block names the partners, the basis and the rationale", () =
   const html = renderToStaticMarkup(
     React.createElement(ObligatePartnerAbsence, { symbol: "GENEA", cr: coReceptor() }),
   );
-  assert.match(html, /is not an L1 library member/);
+  assert.match(html, /is not a v1 library member/);
   assert.match(html, /GENEB, GENEC/);
   assert.match(html, /Obligate partners/);
   assert.match(html, /does not reach the surface as a monomer/);

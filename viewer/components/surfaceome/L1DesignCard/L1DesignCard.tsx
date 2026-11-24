@@ -142,7 +142,7 @@ export function ObligatePartnerAbsence({
   return (
     <div className={styles.absence}>
       <p className={styles.absenceLede}>
-        <strong>{symbol} is not an L1 library member</strong>, so no tag site or folded
+        <strong>{symbol} is not a v1 library member</strong>, so no tag site or folded
         model was designed for it.
       </p>
       <div className={styles.absenceChips}>
@@ -269,7 +269,7 @@ export function L1DesignCard({
     <SectionCard
       n={n}
       eyebrow="Library design"
-      title="L1 library design"
+      title="v1 library design"
       meta={
         excluded
           ? "Why this gene has no L1 design."
@@ -289,8 +289,8 @@ export function L1DesignCard({
           <p className={styles.muted}>
             No L1 design is published for {symbol} yet.
             {inFgLibrary
-              ? " It is an L1 library member, so this is a gap in the published load rather than an exclusion."
-              : " It is not an L1 library member, and its record gives no reason that explains the absence."}
+              ? " It is a v1 library member, so this is a gap in the published load rather than an exclusion."
+              : " It is not a v1 library member, and its record gives no reason that explains the absence."}
           </p>
         )}
         {state === "ok" && data && (
@@ -299,7 +299,7 @@ export function L1DesignCard({
             {data.members.map((m) => <L1MemberBlock key={m.member_id} m={m} />)}
             <p className={styles.muted}>
               Alternatives, scores and contact sites:{" "}
-              <a href={`/l1-review/?q=${encodeURIComponent(symbol)}&m=${encodeURIComponent(data.members[0]?.design_id ?? "")}`}>L1 review page</a>
+              <a href={`/v1-review/?q=${encodeURIComponent(symbol)}&m=${encodeURIComponent(data.members[0]?.design_id ?? "")}`}>v1 review page</a>
             </p>
             {data.load ? (
               <p className={`${styles.muted} ${styles.mono}`}>load {data.load.load_version} · {data.load.created_at}</p>

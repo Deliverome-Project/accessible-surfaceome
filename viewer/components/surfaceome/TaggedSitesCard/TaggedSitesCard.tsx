@@ -742,17 +742,17 @@ export function TaggedSitesCard({ taggedSites, n, computedRetiredForL1 = false }
 
       {computedRetiredForL1 ? (
         <p className={styles.lede}>
-          This protein is in the L1 library: its tag site is the L1 design&rsquo;s current
-          pick (see the <a href="#section-l1-design">L1 design</a> section and the{" "}
-          <a href="/l1-review/">L1 review page</a>). The legacy computed candidates from the
-          disorder / surface-loop pipeline are retired for L1 members.
+          This protein is in the v1 library: its tag site is the v1 design&rsquo;s current
+          pick (see the <a href="#section-l1-design">v1 library design</a> section and the{" "}
+          <a href="/v1-review/">v1 review page</a>). The legacy computed candidates from the
+          disorder / surface-loop pipeline are retired for v1 library members.
         </p>
       ) : null}
       {det.length > 0 ? (
         <details className={styles.legacy}>
           <summary className={styles.subhead}>
             Legacy computed candidates ({det.length}) — disorder / surface-loop pipeline,
-            superseded by the L1 tag-site design
+            superseded by the v1 tag-site design
           </summary>
           <SortableTable sites={det} columns={DET_COLUMNS} />
         </details>
