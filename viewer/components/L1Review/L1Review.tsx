@@ -1259,46 +1259,86 @@ function MemberDetail({
         ) : (
           <p className={styles.muted}>No model for this member.</p>
         )}
-        {/* Compact color key directly under the canvas so everything stays above the fold. */}
-        <div className={styles.legend}>
-          {flags.length > 1 ? (
-            flags.map((f) => (
-              <span key={f.siteId}>
-                <i style={{ background: f.color ?? COLORS.pick }} /> {f.label}
-              </span>
-            ))
-          ) : (
-            <span><i style={{ background: COLORS.pick }} /> pick</span>
-          )}
-          {showAlts ? (
-            <>
-              <span><i style={{ background: COLORS.ranker }} /> ranker alt</span>
-              <span><i style={{ background: COLORS.agent }} /> agent alt</span>
-            </>
-          ) : null}
-          {segments && showContacts ? (
-            <>
-              <span title="Curated ligand/partner contact residues from PDB/PDBe structures (shown as purple sticks + spheres)">
-                <i style={{ background: COLORS.curated }} /> curated contact
-              </span>
-              <span title="Literature-extracted ligand/partner contact residues (high confidence)">
-                <i style={{ background: COLORS.litHigh }} /> lit contact
-              </span>
-              <span title="Literature-extracted contact residues (lower/model confidence)">
-                <i style={{ background: COLORS.litLower }} /> lit contact (model)
-              </span>
-              <span title="UniProt curated binding-site residues">
-                <i style={{ background: COLORS.uniprot }} /> UniProt binding
-              </span>
-            </>
-          ) : null}
-          <span>
-            <i style={{ background: COLORS.suggestion }} /> your pick
-            {suggested != null ? (
-              <>{" "}<button type="button" className={styles.clearInline} onClick={clearSuggested} aria-label="Clear suggested site">clear ×</button></>
-            ) : null}
-          </span>
-        </div>
+        {/* Two fixed single-line keys (Tag sites vs. Contacts) so toggling Contacts
+            never jumps between 1 and 2 lines, and only present sources are listed. */}
+        {(() => {
+          const hasRankerAlt = sites.some((s) => s.is_primary === false && s.site_source !== "agent_proposer");
+          const hasAgentAlt = sites.some((s) => s.is_primary === false && s.site_source === "agent_proposer");
+          const curatedPos = new Set<number>();
+          if (curatedAligned && curatedGene) {
+            for (const c of curatedGene.sites) for (const p of c.positions ?? []) curatedPos.add(p);
+          }
+          const visContacts = visibleContacts(member.contacts ?? [], showHidden);
+          const litHighN = visContacts.filter((c) => c.source === "literature_agent" && c.confidence_tier === "high").length;
+          const litLowerN = visContacts.filter((c) => c.source === "literature_agent" && c.confidence_tier !== "high").length;
+          const uniprotN = visContacts.filter((c) => c.source === "uniprot_binding").length;
+          const anyContacts = curatedPos.size + litHighN + litLowerN + uniprotN > 0;
+          return (
+            <div className={styles.legend}>
+              <div className={styles.legendRow}>
+                <span className={styles.legendLabel}>Tag sites:</span>
+                {flags.length > 1 ? (
+                  flags.map((f) => (
+                    <span key={f.siteId}>
+                      <i style={{ background: f.color ?? COLORS.pick }} /> {f.label}
+                    </span>
+                  ))
+                ) : (
+                  <span><i style={{ background: COLORS.pick }} /> chosen pick</span>
+                )}
+                {showAlts && hasRankerAlt ? (
+                  <span title="Runner-up candidate tag site scored by the tag-site ranker (not ordered)">
+                    <i style={{ background: COLORS.ranker }} /> runner-up (ranker)
+                  </span>
+                ) : null}
+                {showAlts && hasAgentAlt ? (
+                  <span title="Alternative candidate tag site proposed by an LLM (not ordered)">
+                    <i style={{ background: COLORS.agent }} /> runner-up (LLM)
+                  </span>
+                ) : null}
+                <span>
+                  <i style={{ background: COLORS.suggestion }} /> your suggestion
+                  {suggested != null ? (
+                    <>{" "}<button type="button" className={styles.clearInline} onClick={clearSuggested} aria-label="Clear suggested site">clear ×</button></>
+                  ) : null}
+                </span>
+              </div>
+              {segments ? (
+                <div className={styles.legendRow}>
+                  <span className={styles.legendLabel}>Contacts (sticks):</span>
+                  {!showContacts ? (
+                    <span className={styles.muted}>hidden</span>
+                  ) : !anyContacts ? (
+                    <span className={styles.muted}>none annotated on this protein</span>
+                  ) : (
+                    <>
+                      {curatedPos.size > 0 ? (
+                        <span title="Curated ligand/partner contact residues from PDB/PDBe structures and databases">
+                          <i style={{ background: COLORS.curated }} /> PDB / DB ({curatedPos.size})
+                        </span>
+                      ) : null}
+                      {litHighN > 0 ? (
+                        <span title="Paper-extracted ligand/partner contacts backed by direct structural or mutagenesis evidence">
+                          <i style={{ background: COLORS.litHigh }} /> literature, direct ({litHighN})
+                        </span>
+                      ) : null}
+                      {litLowerN > 0 ? (
+                        <span title="Paper-extracted contact residues inferred from homology or modeling">
+                          <i style={{ background: COLORS.litLower }} /> literature, inferred ({litLowerN})
+                        </span>
+                      ) : null}
+                      {uniprotN > 0 ? (
+                        <span title="UniProt-annotated ligand binding-site residues">
+                          <i style={{ background: COLORS.uniprot }} /> UniProt binding ({uniprotN})
+                        </span>
+                      ) : null}
+                    </>
+                  )}
+                </div>
+              ) : null}
+            </div>
+          );
+        })()}
         <RefoldFlagBanner
           model={model}
           site={model?.site_id ? sites.find((s) => s.site_id === model.site_id) : undefined}
