@@ -135,12 +135,14 @@
  * a real separator — was too faded (var(--line)) before. Now uses
  * muted-ink at full size so it scans as part of the lockup. */
 .brandSep {
+  /* Same size and line box as the wordmarks, so it sits on their line.
+   * The extra right margin balances the parent's trailing letter-space. */
   font-family: var(--font-sans);
-  font-size: 1.5rem;
-  font-weight: var(--fw-light, 300);
-  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: var(--fw-regular, 400);
+  color: var(--muted-soft);
   line-height: 1;
-  margin-inline: 0.1rem;
+  margin: 0 0.25rem 0 0;
   user-select: none;
 }
 
@@ -148,21 +150,20 @@
  * wordmark, a touch smaller, so the lockup reads as one line. */
 .brandLocal {
   display: inline-flex;
-  /* `flex-end` (was `baseline`) so the v1.0 pill sits at the bottom
-   * of the wordmark line — its lower edge aligns with the base of the
-   * "Surfaceome" letters rather than floating mid-cap-height. The
-   * version mark reads as metadata clipped onto the bottom of the
-   * word, not as inline text following it. */
-  align-items: flex-end;
+  /* Centred, with no vertical padding, so "Surfaceome" shares the parent
+   * wordmark's line and the version pill is centred on it. (flex-end let
+   * the pill's taller line box push the word below the parent.) */
+  align-items: center;
+  gap: 0.55rem;
   text-decoration: none;
   font-family: var(--font-sans);
   font-weight: var(--fw-medium, 500);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   line-height: 1;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--maroon-deepest);
-  padding: 0.55rem 0.3rem;
+  padding: 0 0.3rem;
   transition: color var(--dur-fast) var(--ease-out);
 }
 
@@ -175,22 +176,22 @@
   white-space: nowrap;
 }
 
-/* Small "v1.0" mark beside the Surfaceome wordmark — mono so it reads
-   as metadata next to the display-font wordmark, muted color so it
-   doesn't compete with the sub-brand itself. Hover state stays muted —
-   the link affordance is on the wordmark, not the version. */
+/* Small version pill beside the Surfaceome wordmark: the same Manrope as
+   the wordmarks (not mono), small and muted so it reads as metadata, and
+   centred on the wordmark line. Hover state stays muted; the link
+   affordance is on the wordmark, not the version. */
 .brandVersion {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   text-transform: none;
-  font-size: 0.75rem;
-  font-weight: var(--fw-regular);
-  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  font-weight: var(--fw-medium, 500);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
   color: var(--muted);
-  margin-left: 0.4rem;
-  padding: 0.05rem 0.35rem;
+  padding: 0.22rem 0.45rem;
   border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  line-height: 1.4;
+  border-radius: 999px;
+  line-height: 1;
   white-space: nowrap;
   user-select: none;
 }
@@ -386,26 +387,28 @@
 
 /* Wordmark steps, matching deliverome.org's header at the same widths:
  * 0.85rem / 0.12em from 1040px down, 0.8rem / 0.1em from 860px down. The
- * "Surfaceome" sub-brand follows one step smaller so the lockup still
- * reads as one line. */
+ * separator and "Surfaceome" step with the parent so the lockup stays on
+ * one line. */
 @media (max-width: 1040px) {
-  .brandParent {
+  .brandParent,
+  .brandLocal,
+  .brandSep {
     font-size: 0.85rem;
-    letter-spacing: 0.12em;
   }
+  .brandParent,
   .brandLocal {
-    font-size: 0.8rem;
     letter-spacing: 0.12em;
   }
 }
 
 @media (max-width: 860px) {
-  .brandParent {
+  .brandParent,
+  .brandLocal,
+  .brandSep {
     font-size: 0.8rem;
-    letter-spacing: 0.1em;
   }
+  .brandParent,
   .brandLocal {
-    font-size: 0.75rem;
     letter-spacing: 0.1em;
   }
 }
