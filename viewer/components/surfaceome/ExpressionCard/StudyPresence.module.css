@@ -1,0 +1,461 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.subhead {
+  color: var(--muted);
+  margin: 0;
+}
+
+.rollup {
+  margin-left: 0.5rem;
+  color: var(--ink-soft);
+  font-weight: var(--fw-regular, 400);
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.group {
+  display: grid;
+  grid-template-columns: minmax(12rem, 20rem) 1fr;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .group {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}
+
+.groupLabel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.1rem 0.4rem;
+}
+
+.groupName {
+  font-size: 0.82rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink-soft);
+}
+
+.groupStatus {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 0.7rem;
+}
+
+/* One study arm. Hollow = not listed; filled = listed, colored by method
+   class. Dimmed = arm is not counted as a surface detection. */
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: transparent;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+a.dot:hover,
+a.dot:focus-visible {
+  outline: 2px solid var(--maroon-mid);
+  outline-offset: 1px;
+}
+
+
+
+.dim {
+  opacity: 0.55;
+}
+
+.legend {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.legend .dot {
+  margin-right: 0;
+}
+
+.table {
+  width: auto;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.35rem 0.9rem 0.35rem 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+
+.table th {
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: var(--fw-medium);
+}
+
+.notCounted td {
+  color: var(--muted);
+}
+
+.armName {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.pmid {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.actions {
+  margin: 0;
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.actions label {
+  display: inline-flex;
+  gap: 0.3rem;
+  align-items: center;
+  color: var(--muted);
+}
+
+/* Links site-wide inherit color with no underline; make these read as links. */
+.table a,
+.actions a {
+  color: var(--maroon-mid);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--maroon-mid) 40%, transparent);
+  text-underline-offset: 2px;
+}
+
+.table a:hover,
+.actions a:hover {
+  text-decoration-color: currentColor;
+}
+
+.dotTip {
+  min-width: 20rem;
+  max-width: 26rem;
+  text-align: left;
+}
+
+.tipHit {
+  color: var(--teal-mid);
+}
+
+.tipMiss {
+  color: inherit;
+}
+
+.tipMuted {
+  opacity: 0.7;
+}
+
+
+
+
+
+.tipLine {
+  display: block;
+}
+
+.tipLine + .tipLine {
+  margin-top: 2px;
+}
+
+.studyCell {
+  min-width: 11rem;
+  max-width: 16rem;
+}
+
+.sampleCell {
+  min-width: 12rem;
+  max-width: 18rem;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.yn {
+  display: inline-flex;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: var(--fw-medium);
+  border: 1px solid transparent;
+}
+
+.ynYes {
+  background: var(--teal-tint);
+  border-color: var(--teal-lt);
+  color: var(--teal-deepest);
+}
+
+.ynNo {
+  background: var(--bg-soft);
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+/* Scrolls sideways only below the table's minimum width, so the styled
+   popovers inside it aren't clipped on desktop. */
+.tableScroll {
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 1240px) {
+  .tableScroll {
+    overflow-x: auto;
+  }
+}
+
+.lineDetail {
+  margin-top: 2px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.lineDetail strong {
+  white-space: nowrap;
+}
+
+.amountCell {
+  min-width: 10rem;
+}
+
+.amount {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pctLine {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.pctBar {
+  flex: none;
+  width: 3.5rem;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.pctBar > span {
+  display: block;
+  height: 100%;
+  background: var(--teal-mid);
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Column widths come from the <colgroup>, not the visible rows' content. */
+.fixedTable {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 78rem;
+}
+
+/* Break between words, never mid-word (globals.css sets overflow-wrap:
+   anywhere); only a token longer than its column may break. */
+.fixedTable td,
+.fixedTable th {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+/* Dot fill per labeling technology (same hues as the Chemistry pills). */
+.hit.fam_biotin_amine { background: var(--teal-mid); border-color: var(--teal-mid); }
+.hit.fam_glycoprotein_capture { background: var(--lavender-bright); border-color: var(--lavender-bright); }
+.hit.fam_glycopeptide_capture { background: var(--lavender-dark); border-color: var(--lavender-dark); }
+.hit.fam_peroxidase_proximity { background: var(--amber-mid); border-color: var(--amber-mid); }
+.hit.fam_other_chemoproteomic { background: var(--maroon-mid); border-color: var(--maroon-mid); }
+.hit.fam_membrane_fractionation { background: var(--muted); border-color: var(--muted); }
+
+/* Each technology's dots sit together, with a gap between technologies. */
+.famCluster {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 0.7rem;
+  margin-right: 0.1rem;
+  border-right: 1px solid var(--line-soft);
+}
+
+.famDots {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+/* Technology label sitting right above its dots, in the dots' hue. */
+.famLabel {
+  font-size: 0.75rem;
+  font-weight: var(--fw-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.famText_biotin_amine { color: var(--teal-dark); }
+.famText_glycoprotein_capture { color: var(--lavender-dark); }
+.famText_glycopeptide_capture { color: var(--lavender-deepest); }
+.famText_peroxidase_proximity { color: var(--amber-dark); }
+.famText_other_chemoproteomic { color: var(--maroon-mid); }
+.famText_membrane_fractionation { color: var(--ink-soft); }
+
+.famCluster:last-child {
+  border-right: 0;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.statusReason {
+  margin-top: 3px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+
+.prefBox {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.prefHead {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.prefLine {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* -50 … +50 points, centered. */
+.divBar {
+  position: relative;
+  flex: none;
+  width: 6rem;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.divPos,
+.divNeg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.divPos { background: var(--teal-mid); }
+.divNeg { background: var(--amber-mid); }
+
+.divMid {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  left: 50%;
+  width: 1px;
+  background: var(--ink-soft);
+}
+
+.prefRule {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.studyPref {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.prefPos { color: var(--teal-dark); font-weight: var(--fw-medium); }
+.prefNeg { color: var(--amber-dark); font-weight: var(--fw-medium); }
+
+/* The raw amount is secondary to the vs-background readout. */
+.amountCell .amount {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
