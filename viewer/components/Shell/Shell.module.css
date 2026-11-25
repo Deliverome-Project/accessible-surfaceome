@@ -183,12 +183,12 @@
 .brandVersion {
   font-family: var(--font-sans);
   text-transform: none;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: var(--fw-medium, 500);
   letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
-  padding: 0.22rem 0.45rem;
+  padding: 0.2rem 0.45rem;
   border: 1px solid var(--line-soft);
   border-radius: 999px;
   line-height: 1;
