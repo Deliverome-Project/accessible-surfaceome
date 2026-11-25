@@ -134,6 +134,12 @@
 .help { font-size: 0.75rem; color: var(--muted); }
 .saved { font-size: 0.85rem; color: var(--teal-dark); }
 .error { font-size: 0.85rem; color: var(--maroon-dark); }
+.indexError {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3);
+  padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md, 8px);
+  background: var(--bg-soft);
+}
+.indexError p { margin: 0; }
 .goodText { color: var(--teal-dark); font-weight: var(--fw-medium); }
 .noText { color: var(--maroon-dark); font-weight: var(--fw-medium); }
 .altGrid { display: flex; flex-direction: column; gap: 0.4rem; }

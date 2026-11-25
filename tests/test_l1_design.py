@@ -1439,6 +1439,159 @@ def test_worker_routes_against_sqlite(built):
     assert "ok" in res.stdout
 
 
+NODE_ERROR_HANDLING_TEST = r"""
+import assert from "node:assert/strict";
+import { DatabaseSync } from "node:sqlite";
+import worker from "./worker.mjs";
+
+globalThis.caches = { default: { match: async () => undefined, put: async () => {} } };
+const ctx = { waitUntil() {}, passThroughOnException() {} };
+const [migratedEmptyPath, unmigratedPath] = process.argv.slice(2);
+
+const d1 = (path) => {
+  const db = new DatabaseSync(path);
+  return {
+    prepare(sql) {
+      let args = [];
+      return {
+        bind(...v) { args = v; return this; },
+        async all() { return { results: db.prepare(sql).all(...args) }; },
+        async first() { return db.prepare(sql).get(...args) ?? null; },
+        async run() { db.prepare(sql).run(...args); return { success: true }; },
+      };
+    },
+  };
+};
+
+const call = async (path, db) => {
+  const res = await worker.fetch(new Request(`https://api.test${path}`), { DB: db }, ctx);
+  return {
+    status: res.status,
+    cacheControl: res.headers.get("Cache-Control"),
+    body: await res.json(),
+  };
+};
+
+// (a) Genuine empty table (migration applied, 0 rows): 200 { load: null, members: [] }
+for (const [path, expected] of [
+  ["/v1/l1-design", { load: null, members: [] }],
+  ["/v1/l1-design/TFRC", { gene_symbol: "TFRC", load: null, members: [] }],
+]) {
+  const r = await call(path, d1(migratedEmptyPath));
+  assert.equal(r.status, 200, path);
+  assert.deepEqual(r.body, expected, path);
+}
+
+// (b) Missing table (migration not applied yet): 200 { load: null, members: [] }
+for (const [path, expected] of [
+  ["/v1/l1-design", { load: null, members: [] }],
+  ["/v1/l1-design/TFRC", { gene_symbol: "TFRC", load: null, members: [] }],
+]) {
+  const r = await call(path, d1(unmigratedPath));
+  assert.equal(r.status, 200, path);
+  assert.deepEqual(r.body, expected, path);
+}
+
+// (c) Transient D1 errors must fail closed with 503 + non-cacheable headers, never 200 { load: null }
+const failingDb = (msg) => ({
+  prepare() {
+    const boom = async () => { throw new Error(msg); };
+    return { bind() { return this; }, all: boom, first: boom, run: boom };
+  },
+});
+
+for (const msg of [
+  "D1_ERROR: internal error",
+  "D1_ERROR: D1 DB is overloaded. Requests queued for too long.",
+  "Network connection lost.",
+]) {
+  for (const path of [
+    "/v1/l1-design",
+    "/v1/l1-design/TFRC",
+    "/v1/l1-design/TFRC/l1d-0123456789abcdef",
+  ]) {
+    const r = await call(path, failingDb(msg));
+    assert.equal(r.status, 503, `${path} (${msg})`);
+    assert.equal(r.cacheControl, "no-store", `${path} (${msg})`);
+    assert.deepEqual(r.body, { error: "l1_design_unavailable" }, `${path} (${msg})`);
+  }
+}
+
+// (d) Transient D1 error on a secondary table after l1Load succeeds also returns 503 no-store
+const memberQueryFailsDb = {
+  prepare(sql) {
+    return {
+      bind() { return this; },
+      async first() {
+        if (sql.includes("l1_design_load_public")) {
+          return {
+            load_version: "l1d-0123456789abcdef",
+            content_sha256: "a".repeat(64),
+            created_at: "2026-11-24T00:00:00Z",
+            inputs_json: "{}",
+            n_members: 1, n_sites: 1, n_structures: 0, n_contacts: 0,
+          };
+        }
+        throw new Error("D1_ERROR: storage operation exceeded timeout");
+      },
+      async all() {
+        throw new Error("D1_ERROR: storage operation exceeded timeout");
+      },
+    };
+  },
+};
+
+for (const path of ["/v1/l1-design", "/v1/l1-design/TFRC"]) {
+  const r = await call(path, memberQueryFailsDb);
+  assert.equal(r.status, 503, path);
+  assert.equal(r.cacheControl, "no-store", path);
+  assert.deepEqual(r.body, { error: "l1_design_unavailable" }, path);
+}
+
+console.log("ok");
+"""
+
+
+def test_worker_l1_design_error_handling(tmp_path):
+    """Transient D1 errors fail closed with 503 no-store; empty or missing tables answer load: null."""
+    node = shutil.which("node")
+    if node is None:
+        if os.environ.get("REQUIRE_WORKER_NODE") == "1":
+            pytest.fail("Worker checks require Node; refusing to skip")
+        pytest.skip("Node is required for Worker tests")
+    if subprocess.run(
+        [node, "-e", "require('node:sqlite')"], capture_output=True
+    ).returncode:
+        pytest.skip("this Node has no node:sqlite")
+
+    migrated_empty = tmp_path / "migrated_empty.sqlite"
+    db = sqlite3.connect(migrated_empty)
+    db.executescript(MIGRATION.read_text())
+    db.commit()
+    db.close()
+
+    unmigrated = tmp_path / "unmigrated.sqlite"
+    sqlite3.connect(unmigrated).close()
+
+    source = WORKER.read_text().replace(
+        'import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";',
+        "const deepDiveTier = () => ({tier: 'no', facet: null}); const isLowLiteratureSurface = () => false;",
+    )
+    for js in WORKER.parent.glob("*.js"):
+        if js.name != "index.js":
+            shutil.copy2(js, tmp_path / js.name)
+    (tmp_path / "worker.mjs").write_text(source)
+    (tmp_path / "test_errors.mjs").write_text(NODE_ERROR_HANDLING_TEST)
+    res = subprocess.run(
+        [node, "test_errors.mjs", str(migrated_empty), str(unmigrated)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0, res.stdout + res.stderr
+    assert "ok" in res.stdout
+
+
 def _internal_member(L):
     member = {"member_id": "l1-m0001", "design_id": "l1-p0001", "gene_symbol": "G", "species": "human",
               "candidate_set": "library_reference", "rung": "internal", "ordered_length_aa": 200,
