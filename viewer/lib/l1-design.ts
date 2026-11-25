@@ -614,14 +614,57 @@ export function l1AbsenceReason(a: {
   return "obligate_partner";
 }
 
-export async function fetchL1Index(apiBase: string): Promise<L1Index | null> {
+/**
+ * Outcome of fetching `/v1/l1-design`. Distinguishes a genuine `200` response
+ * (including `{ load: null, members: [] }` when no load is published) from a
+ * network failure, HTTP error, or unparseable body so the review page never
+ * tells a reviewer "No v1 library design is published on this API yet" on a
+ * transient 503 or network hiccup.
+ */
+export type L1IndexFetch =
+  | { kind: "ok"; data: L1Index }
+  | { kind: "error"; status?: number };
+
+async function fetchL1IndexOnce(apiBase: string): Promise<{ result: L1IndexFetch; retryable: boolean }> {
+  let res: Response;
   try {
-    const res = await fetch(`${apiBase}/v1/l1-design`);
-    if (!res.ok) return null;
-    return parseL1Index(await res.json());
+    res = await fetch(`${apiBase}/v1/l1-design`);
   } catch {
-    return null;
+    return { result: { kind: "error" }, retryable: true };
   }
+  if (!res.ok) {
+    return {
+      result: { kind: "error", status: res.status },
+      retryable: res.status >= 500 || res.status === 429,
+    };
+  }
+  let raw: unknown;
+  try {
+    raw = await res.json();
+  } catch {
+    return { result: { kind: "error", status: res.status }, retryable: true };
+  }
+  const data = parseL1Index(raw);
+  if (!data) return { result: { kind: "error", status: res.status }, retryable: false };
+  return { result: { kind: "ok", data }, retryable: false };
+}
+
+export async function fetchL1IndexResult(
+  apiBase: string,
+  { retryDelayMs = 500 }: { retryDelayMs?: number } = {},
+): Promise<L1IndexFetch> {
+  const first = await fetchL1IndexOnce(apiBase);
+  if (first.result.kind === "ok" || !first.retryable) return first.result;
+  if (retryDelayMs > 0) {
+    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+  }
+  const second = await fetchL1IndexOnce(apiBase);
+  return second.result;
+}
+
+export async function fetchL1Index(apiBase: string): Promise<L1Index | null> {
+  const r = await fetchL1IndexResult(apiBase);
+  return r.kind === "ok" ? r.data : null;
 }
 
 // --------------------------------------------------------------------------- reviews

@@ -10,7 +10,7 @@ import {
   countBy,
   currentMemberModels,
   fetchL1Design,
-  fetchL1Index,
+  fetchL1IndexResult,
   fetchL1MemberTopologies,
   fetchL1Reviews,
   filterIndex,
@@ -45,6 +45,7 @@ import {
   type L1Contact,
   type L1DesignFile,
   type L1Index,
+  type L1IndexFetch,
   type L1IndexMember,
   type L1Member,
   type L1Placement,
@@ -1412,8 +1413,48 @@ function MemberDetail({
   );
 }
 
-export function L1Review() {
-  const [index, setIndex] = useState<L1Index | null | "loading">("loading");
+export type L1IndexState = { kind: "loading" } | L1IndexFetch;
+
+export function L1IndexStatus({
+  state,
+  onRetry,
+}: {
+  state: L1IndexState;
+  onRetry: () => void;
+}) {
+  if (state.kind === "loading") {
+    return <p className={styles.muted}>Loading the library…</p>;
+  }
+  if (state.kind === "error") {
+    return (
+      <div className={styles.indexError} role="alert">
+        <p className={styles.error}>
+          Could not load the v1 library design from the API (temporary error or network issue
+          {state.status != null ? `; HTTP ${state.status}` : ""}).
+        </p>
+        <button type="button" className={styles.primary} onClick={onRetry}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+  if (!state.data.load) {
+    return <p className={styles.muted}>No v1 library design is published on this API yet.</p>;
+  }
+  return null;
+}
+
+export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexState } = {}) {
+  const [indexState, setIndexState] = useState<L1IndexState>(initialIndexState ?? { kind: "loading" });
+  const index: L1Index | null = indexState.kind === "ok" ? indexState.data : null;
+  const loadSeqRef = useRef(0);
+  const loadIndex = useCallback(() => {
+    const seq = ++loadSeqRef.current;
+    setIndexState({ kind: "loading" });
+    fetchL1IndexResult(API_BASE).then((res) => {
+      if (loadSeqRef.current === seq) setIndexState(res);
+    });
+  }, []);
   const [filters, setFilters] = useState(readUrl);
   const [detail, setDetail] = useState<L1DesignFile | null>(null);
   const [reviewer, setReviewer] = useState("");
@@ -1452,9 +1493,9 @@ export function L1Review() {
 
   useEffect(() => {
     setReviewer(store.get("l1-review-reviewer"));
-    fetchL1Index(API_BASE).then((d) => setIndex(d));
+    loadIndex();
     fetchGeneSynonyms().then((s) => setSynonyms(s));
-  }, []);
+  }, [loadIndex]);
 
   const loadReviews = useCallback(async () => {
     const r = await fetchL1Reviews(API_BASE);
@@ -1501,8 +1542,8 @@ export function L1Review() {
     };
   }, [serverReviews, savedHere]);
 
-  const members = index && index !== "loading" ? index.members : [];
-  const currentLoadVersion = index && index !== "loading" ? index.load?.load_version ?? null : null;
+  const members = index ? index.members : [];
+  const currentLoadVersion = index?.load?.load_version ?? null;
   const memberByDesign = useMemo(() => {
     const map = new Map<string, L1IndexMember>();
     for (const m of members) map.set(m.design_id ?? m.member_id, m);
@@ -1685,9 +1726,13 @@ export function L1Review() {
   // A detail from a newer load than the index means a load landed while the page was
   // open: refresh the index so both describe the same library.
   const detailLoad = detail?.load?.load_version;
-  const indexLoad = index && index !== "loading" ? index.load?.load_version : undefined;
+  const indexLoad = index?.load?.load_version;
   useEffect(() => {
-    if (detailLoad && indexLoad && detailLoad !== indexLoad) fetchL1Index(API_BASE).then((d) => setIndex(d));
+    if (detailLoad && indexLoad && detailLoad !== indexLoad) {
+      fetchL1IndexResult(API_BASE).then((res) => {
+        if (res.kind === "ok") setIndexState(res);
+      });
+    }
   }, [detailLoad, indexLoad]);
 
   useEffect(() => {
@@ -1752,8 +1797,9 @@ export function L1Review() {
     return () => window.removeEventListener("keydown", onKey);
   }, [go, goTo, jumpToLetter, visible.length]);
 
-  if (index === "loading") return <p className={styles.muted}>Loading the library…</p>;
-  if (!index || !index.load) return <p className={styles.muted}>No v1 library design is published on this API yet.</p>;
+  if (indexState.kind !== "ok" || !index || !index.load) {
+    return <L1IndexStatus state={indexState} onRetry={loadIndex} />;
+  }
 
   // Match on design id: member ids are renumbered between loads, design ids are not.
   const member = detail?.members.find((m) =>

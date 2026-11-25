@@ -4594,9 +4594,10 @@ async function handleCatalogOne(env, symbol) {
 // l1_design_load_public is served; the loader writes that row last, so a
 // half-applied load is invisible. `/v1/l1-design/{symbol}/{load_version}` pins an
 // older load for auditability (immutable, so edge-cached). The unpinned routes skip
-// the edge/KV cache and carry a 60 s browser TTL: a new load goes live within a
-// minute with no purge. Missing tables (Worker deployed before the migration) degrade to
-// `load: null` rather than a 500.
+// the edge/KV cache and carry a 30 s browser TTL: a new load goes live within a
+// minute with no purge. Missing tables (Worker deployed before the migration) and
+// empty tables degrade to `load: null`; transient D1/runtime errors fail closed
+// with 503 `{ error: "l1_design_unavailable" }` and `Cache-Control: no-store`.
 const L1_LOAD_OK = /^l1d-[0-9a-f]{16}$/;
 
 // The unpinned L1 routes must never be served stale: after a new load, a stale index
@@ -4606,6 +4607,22 @@ function l1Fresh(data) {
   const res = json(data, { ttl: 0 });
   res.headers.set("Cache-Control", "public, max-age=30");
   return res;
+}
+
+// Fail closed on transient D1/runtime errors: never mask them as `200 { load: null }`
+// (which would be cached for 30 s and read as "no library design published yet").
+function l1Unavailable() {
+  return new Response(
+    JSON.stringify({ error: "l1_design_unavailable" }, null, 2),
+    {
+      status: 503,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store",
+        ...CORS_HEADERS,
+      },
+    },
+  );
 }
 const L1_LOAD_COLS =
   "load_version, content_sha256, created_at, inputs_json, n_members, n_sites, n_structures, n_contacts";
@@ -4618,8 +4635,9 @@ async function l1Load(env, pinnedLoad) {
       : await env.DB.prepare(
           `SELECT ${L1_LOAD_COLS} FROM l1_design_load_public ORDER BY created_at DESC, load_version DESC LIMIT 1`
         ).first();
-  } catch {
-    return null;
+  } catch (e) {
+    if (/no such table/i.test(String(e?.message ?? e ?? ""))) return null;
+    throw e;
   }
 }
 
@@ -4679,28 +4697,38 @@ async function l1Annotations(env, lv, symbol = null) {
 const l1Bool = (v) => (v == null ? null : Number(v) === 1);
 
 async function handleL1DesignIndex(env) {
-  const load = await l1Load(env, null);
-  if (!load) return l1Fresh({ load: null, members: [] });
-  const lv = load.load_version;
-  const [members, picks, leaders, annotations] = await Promise.all([
-    env.DB.prepare(
-      `SELECT member_id, design_id, gene_symbol, species, candidate_set, rung, membrane_class,
-              n_tm, ordered_length_aa, sequence_sha256
-         FROM l1_member_public WHERE load_version = ? ORDER BY member_id`
-    ).bind(lv).all().then((r) => r?.results ?? []),
-    env.DB.prepare(
-      `SELECT member_id, status, COUNT(*) AS n FROM l1_tag_site_design_public
-        WHERE load_version = ? AND is_primary = 1 GROUP BY member_id, status`
-    ).bind(lv).all().then((r) => r?.results ?? []),
-    // The leader, snorkel presence, and primary site signature of the member's current pick(s),
-    // so the review page can filter by SP type / snorkel and detect stale reviews without one call per gene.
-    env.DB.prepare(
-      `SELECT member_id, leader, decision, cassette, site_id, insert_after_residue
-         FROM l1_tag_site_design_public
-        WHERE load_version = ? AND is_primary = 1`
-    ).bind(lv).all().then((r) => r?.results ?? []),
-    l1Annotations(env, lv),
-  ]);
+  let load;
+  let members;
+  let picks;
+  let leaders;
+  let annotations;
+  try {
+    load = await l1Load(env, null);
+    if (!load) return l1Fresh({ load: null, members: [] });
+    const lv = load.load_version;
+    [members, picks, leaders, annotations] = await Promise.all([
+      env.DB.prepare(
+        `SELECT member_id, design_id, gene_symbol, species, candidate_set, rung, membrane_class,
+                n_tm, ordered_length_aa, sequence_sha256
+           FROM l1_member_public WHERE load_version = ? ORDER BY member_id`
+      ).bind(lv).all().then((r) => r?.results ?? []),
+      env.DB.prepare(
+        `SELECT member_id, status, COUNT(*) AS n FROM l1_tag_site_design_public
+          WHERE load_version = ? AND is_primary = 1 GROUP BY member_id, status`
+      ).bind(lv).all().then((r) => r?.results ?? []),
+      // The leader, snorkel presence, and primary site signature of the member's current pick(s),
+      // so the review page can filter by SP type / snorkel and detect stale reviews without one call per gene.
+      env.DB.prepare(
+        `SELECT member_id, leader, decision, cassette, site_id, insert_after_residue
+           FROM l1_tag_site_design_public
+          WHERE load_version = ? AND is_primary = 1`
+      ).bind(lv).all().then((r) => r?.results ?? []),
+      l1Annotations(env, lv),
+    ]);
+  } catch (e) {
+    console.error("l1_design_index_failed", e?.message ?? e);
+    return l1Unavailable();
+  }
   const leaderBy = new Map();
   const snorkelBy = new Map();
   const sigPartsBy = new Map();
@@ -4752,40 +4780,51 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
   const sym = checkSymbol(symbol);
   if (!sym) return notFound("gene_not_found");
   if (pinnedLoad != null && !L1_LOAD_OK.test(pinnedLoad)) return badRequest("bad_load_version");
-  const load = await l1Load(env, pinnedLoad);
-  if (!load) {
-    if (pinnedLoad) return notFound("load_not_found");
-    return l1Fresh({ gene_symbol: sym, load: null, members: [] });
+  let load;
+  let memberRows;
+  let siteRows;
+  let structRows;
+  let contactRows;
+  let annotations;
+  try {
+    load = await l1Load(env, pinnedLoad);
+    if (!load) {
+      if (pinnedLoad) return notFound("load_not_found");
+      return l1Fresh({ gene_symbol: sym, load: null, members: [] });
+    }
+    const lv = load.load_version;
+    const q = (sql) => env.DB.prepare(sql).bind(lv, sym).all().then((r) => r?.results ?? []);
+    [memberRows, siteRows, structRows, contactRows, annotations] = await Promise.all([
+      q(`SELECT member_id, design_id, gene_symbol, species, candidate_set, rung, membrane_class,
+                n_tm, ordered_length_aa, sequence_sha256, topology_version, uniprot_acc, proteoform_json
+           FROM l1_member_public
+          WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+          ORDER BY member_id`),
+      q(`SELECT site_id, member_id, design_id, rung, site_source, is_primary, insert_after_residue,
+                residue_before, residue_after, leader, cassette, cassette_aa, rank, status, decision,
+                status_detail, confidence, rejected_alternative, rationale_json, tagged_protein_sha256,
+                source_pr, source_pr_state, source_commit, source_path, decided_by, implemented_by, reason
+           FROM l1_tag_site_design_public
+          WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+          ORDER BY member_id, is_primary DESC, site_source, rank, insert_after_residue, site_id`),
+      q(`SELECT structure_id, member_id, kind, site_id, source, release, s3_uri, r2_key,
+                model_url, proteoform_match, residue_offset, ordered_length_aa,
+                model_length_aa, is_chosen, mean_plddt, cassette_first_model_residue,
+                cassette_last_model_residue, refold_verdict, note, decided_by, implemented_by, reason
+           FROM l1_structure_design_public
+          WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+          ORDER BY member_id, kind, is_chosen DESC, structure_id`),
+      q(`SELECT member_id, residue, aa, canonical_residue, source, evidence_types, contact_classes,
+                confidence_tier, ion_site, additive_only, in_extracellular, topology_state, ligands, pmids
+           FROM l1_contact_site_public
+          WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
+          ORDER BY member_id, residue, source`),
+      l1Annotations(env, lv, sym),
+    ]);
+  } catch (e) {
+    console.error("l1_design_gene_failed", sym, e?.message ?? e);
+    return l1Unavailable();
   }
-  const lv = load.load_version;
-  const q = (sql) => env.DB.prepare(sql).bind(lv, sym).all().then((r) => r?.results ?? []);
-  const [memberRows, siteRows, structRows, contactRows, annotations] = await Promise.all([
-    q(`SELECT member_id, design_id, gene_symbol, species, candidate_set, rung, membrane_class,
-              n_tm, ordered_length_aa, sequence_sha256, topology_version, uniprot_acc, proteoform_json
-         FROM l1_member_public
-        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
-        ORDER BY member_id`),
-    q(`SELECT site_id, member_id, design_id, rung, site_source, is_primary, insert_after_residue,
-              residue_before, residue_after, leader, cassette, cassette_aa, rank, status, decision,
-              status_detail, confidence, rejected_alternative, rationale_json, tagged_protein_sha256,
-              source_pr, source_pr_state, source_commit, source_path, decided_by, implemented_by, reason
-         FROM l1_tag_site_design_public
-        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
-        ORDER BY member_id, is_primary DESC, site_source, rank, insert_after_residue, site_id`),
-    q(`SELECT structure_id, member_id, kind, site_id, source, release, s3_uri, r2_key,
-              model_url, proteoform_match, residue_offset, ordered_length_aa,
-              model_length_aa, is_chosen, mean_plddt, cassette_first_model_residue,
-              cassette_last_model_residue, refold_verdict, note, decided_by, implemented_by, reason
-         FROM l1_structure_design_public
-        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
-        ORDER BY member_id, kind, is_chosen DESC, structure_id`),
-    q(`SELECT member_id, residue, aa, canonical_residue, source, evidence_types, contact_classes,
-              confidence_tier, ion_site, additive_only, in_extracellular, topology_state, ligands, pmids
-         FROM l1_contact_site_public
-        WHERE load_version = ? AND gene_symbol = ? COLLATE NOCASE
-        ORDER BY member_id, residue, source`),
-    l1Annotations(env, lv, sym),
-  ]);
   const num = (v) => (v == null ? null : Number(v));
   const parse = (s) => {
     if (!s) return null;

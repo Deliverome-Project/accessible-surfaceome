@@ -8,10 +8,20 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { RefoldFlagBanner, ReviewPanel, SiteCard, SpMetricsBox, structureTabLabel } from "../components/L1Review/L1Review";
+import {
+  L1IndexStatus,
+  L1Review,
+  RefoldFlagBanner,
+  ReviewPanel,
+  SiteCard,
+  SpMetricsBox,
+  structureTabLabel,
+} from "../components/L1Review/L1Review";
 import { L1TopologyStrip } from "../components/L1Review/L1TopologyStrip";
 import {
   currentMemberModels,
+  fetchL1Index,
+  fetchL1IndexResult,
   filterIndex,
   latestVerdicts,
   modelToMemberResidue,
@@ -750,4 +760,157 @@ test("L1TopologyStrip labels the N- and C-terminal ends", () => {
   );
   assert.match(html, /N · 1/);
   assert.match(html, /C · 20/);
+});
+
+// ------------------------------------------- /v1/l1-design error handling & retry
+
+const SAMPLE_INDEX_PAYLOAD = {
+  load: { load_version: "l1d-0123456789abcdef", created_at: "2026-11-24T00:00:00Z" },
+  members: [
+    m("l1-m0001", "AXL", "N after SP", "single-pass type I", ["built"]),
+  ],
+};
+
+test("fetchL1IndexResult automatically retries once after 503 or network error and succeeds on second attempt", async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    // 503 -> 200
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      if (calls === 1) {
+        return new Response(JSON.stringify({ error: "l1_design_unavailable" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+        });
+      }
+      return new Response(JSON.stringify(SAMPLE_INDEX_PAYLOAD), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const after503 = await fetchL1IndexResult("https://api.test", { retryDelayMs: 5 });
+    assert.equal(calls, 2);
+    assert.equal(after503.kind, "ok");
+    if (after503.kind === "ok") {
+      assert.equal(after503.data.load?.load_version, "l1d-0123456789abcdef");
+      assert.equal(after503.data.members.length, 1);
+    }
+
+    // Network error -> 200
+    calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      if (calls === 1) throw new TypeError("Failed to fetch");
+      return new Response(JSON.stringify(SAMPLE_INDEX_PAYLOAD), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const afterNet = await fetchL1IndexResult("https://api.test", { retryDelayMs: 5 });
+    assert.equal(calls, 2);
+    assert.equal(afterNet.kind, "ok");
+    if (afterNet.kind === "ok") {
+      assert.equal(afterNet.data.members[0].gene_symbol, "AXL");
+    }
+
+    // 429 -> 200
+    calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      if (calls === 1) return new Response("rate limited", { status: 429 });
+      return new Response(JSON.stringify(SAMPLE_INDEX_PAYLOAD), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const after429 = await fetchL1IndexResult("https://api.test", { retryDelayMs: 5 });
+    assert.equal(calls, 2);
+    assert.equal(after429.kind, "ok");
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test("persistent 503 or network error returns error state and renders Retry button instead of unpublished copy", async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      return new Response(JSON.stringify({ error: "l1_design_unavailable" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const res503 = await fetchL1IndexResult("https://api.test", { retryDelayMs: 5 });
+    assert.equal(calls, 2);
+    assert.deepEqual(res503, { kind: "error", status: 503 });
+
+    const html503 = renderToStaticMarkup(React.createElement(L1Review, { initialIndexState: res503 }));
+    assert.match(html503, /Could not load the v1 library design from the API/);
+    assert.match(html503, /HTTP 503/);
+    assert.match(html503, /<button[^>]*>Retry<\/button>/);
+    assert.doesNotMatch(html503, /No v1 library design is published on this API yet\./);
+
+    // Persistent network error (no HTTP status)
+    calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      throw new TypeError("network down");
+    }) as typeof fetch;
+
+    const resNet = await fetchL1IndexResult("https://api.test", { retryDelayMs: 5 });
+    assert.equal(calls, 2);
+    assert.deepEqual(resNet, { kind: "error" });
+
+    const htmlNet = renderToStaticMarkup(React.createElement(L1IndexStatus, { state: resNet, onRetry: () => {} }));
+    assert.match(htmlNet, /Could not load the v1 library design from the API/);
+    assert.match(htmlNet, /<button[^>]*>Retry<\/button>/);
+    assert.doesNotMatch(htmlNet, /HTTP /);
+    assert.doesNotMatch(htmlNet, /No v1 library design is published on this API yet\./);
+
+    // Non-retryable 404 fails immediately without retry; fetchL1Index stays null-compatible.
+    calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      return new Response("not found", { status: 404 });
+    }) as typeof fetch;
+
+    const res404 = await fetchL1IndexResult("https://api.test", { retryDelayMs: 5 });
+    assert.equal(calls, 1);
+    assert.deepEqual(res404, { kind: "error", status: 404 });
+    assert.equal(await fetchL1Index("https://api.test"), null);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test("genuine 200 { load: null, members: [] } still renders the unpublished message without Retry", async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls += 1;
+      return new Response(JSON.stringify({ load: null, members: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof fetch;
+
+    const res = await fetchL1IndexResult("https://api.test", { retryDelayMs: 5 });
+    assert.equal(calls, 1);
+    assert.deepEqual(res, { kind: "ok", data: { load: null, members: [] } });
+
+    const html = renderToStaticMarkup(React.createElement(L1Review, { initialIndexState: res }));
+    assert.match(html, /No v1 library design is published on this API yet\./);
+    assert.doesNotMatch(html, /Could not load the v1 library design/);
+    assert.doesNotMatch(html, /<button[^>]*>Retry<\/button>/);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });
