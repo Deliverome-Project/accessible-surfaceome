@@ -97,15 +97,18 @@
    * vertically; horizontal padding is fine. */
   padding: 0 0.4rem 0 0;
   margin-left: -0.4rem;
-  font-family: var(--font-display);
-  /* Matches PR24's brand wordmark exactly — Playfair Display semibold
-   * upright (not italic). The italic was a misread of the parent's
-   * Header.tsx style on my first pass. */
-  font-weight: var(--fw-semibold);
-  font-size: 1.1rem;
+  /* Matches deliverome.org's header wordmark (deliverome-internal
+   * SiteShell.module.css `.brand`): Manrope medium caps, wide tracking,
+   * deepest maroon. The narrower-viewport steps are in the responsive
+   * section below. */
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium, 500);
+  font-size: 0.95rem;
   line-height: 1;
-  letter-spacing: -0.005em;
-  color: var(--ink);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--maroon-deepest);
   text-decoration: none;
   transition:
     color var(--dur-fast) var(--ease-out),
@@ -141,9 +144,8 @@
   user-select: none;
 }
 
-/* "Surfaceome" sub-brand — same family + weight as the parent wordmark,
- * slightly smaller so the hierarchy still reads. Upright (not italic)
- * to match PR24. */
+/* "Surfaceome" sub-brand — the same Manrope caps treatment as the parent
+ * wordmark, a touch smaller, so the lockup reads as one line. */
 .brandLocal {
   display: inline-flex;
   /* `flex-end` (was `baseline`) so the v1.0 pill sits at the bottom
@@ -153,12 +155,13 @@
    * word, not as inline text following it. */
   align-items: flex-end;
   text-decoration: none;
-  font-family: var(--font-display);
-  font-weight: var(--fw-semibold);
-  font-size: 1.05rem;
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium, 500);
+  font-size: 0.9rem;
   line-height: 1;
-  letter-spacing: -0.005em;
-  color: var(--ink);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--maroon-deepest);
   padding: 0.55rem 0.3rem;
   transition: color var(--dur-fast) var(--ease-out);
 }
@@ -178,6 +181,7 @@
    the link affordance is on the wordmark, not the version. */
 .brandVersion {
   font-family: var(--font-mono);
+  text-transform: none;
   font-size: 0.75rem;
   font-weight: var(--fw-regular);
   letter-spacing: 0.04em;
@@ -380,34 +384,36 @@
 
 /* ---------- responsive ---------- */
 
-/* Below ~1120px the full brand lockup ("The Deliverome Project /
- * Surfaceome v1.3.0", ~430px) + 5-item nav + GitHub icon (~620px)
- * doesn't fit in one row, and the items collide because each text
- * node has white-space: nowrap (measured: they overlapped at 1041px
- * when this sat at 1040px). Drop the parent wordmark first — keep the
- * logo and "Surfaceome" so the local brand still reads. */
-@media (max-width: 1120px) {
-  .brandParentText {
-    display: none;
+/* Wordmark steps, matching deliverome.org's header at the same widths:
+ * 0.85rem / 0.12em from 1040px down, 0.8rem / 0.1em from 860px down. The
+ * "Surfaceome" sub-brand follows one step smaller so the lockup still
+ * reads as one line. */
+@media (max-width: 1040px) {
+  .brandParent {
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
   }
-  .brandSep {
-    /* The separator is meaningless without the wordmark on its left,
-     * so hide it too. The Deliverome logo on its own is enough parent
-     * context. */
-    display: none;
+  .brandLocal {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
   }
-  /* With the parent wordmark + separator gone, the brand lockup
-   * shrinks to logo + "Surfaceome" sub-brand. The default
-   * `.headerInner` gap of 1.5rem leaves "Surfaceome" sitting tight
-   * against "Compare" (now the first nav slot after 8d748cf5), and
-   * the two read as one wordy phrase. Open it up so the brand /
-   * nav boundary is visually clear at narrow widths too. */
-  .headerInner {
-    gap: 2.75rem;
+}
+
+@media (max-width: 860px) {
+  .brandParent {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
   }
-  /* The brand never shrinks: when it could, the 617px nav squeezed it
-   * and "Surfaceome v1.3.0" drew underneath "Compare" (~760–950px).
-   * Tighter nav spacing buys back most of that width instead. */
+  .brandLocal {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
+}
+
+/* Below this width the brand lockup (~485px) + 5-item nav and GitHub
+ * icon (~570px) no longer fit on one row. Tighten the nav and keep the
+ * brand from shrinking, so the two never overlap. */
+@media (max-width: 1180px) {
   .brandLockup {
     flex: none;
   }
@@ -417,11 +423,11 @@
   }
 }
 
-/* Seven nav items need about 830px beside a brand lockup of up to ~445px,
- * so below ~1300px the tightened single-row nav would run into the
- * brand. Put the nav on its own full-width row there; it scrolls inside
- * itself rather than widening the page. */
-@media (max-width: 1300px) {
+/* Below ~1080px even the tightened single row (brand ~500px + nav
+ * ~530px + padding) overflows the page, so put the nav on its own
+ * full-width row; it scrolls inside itself rather than widening the
+ * page. */
+@media (max-width: 1080px) {
   /* Two-row header: measured 100px (brand row + nav row + padding).
    * The gene page's sticky AnchorNav docks at this offset, so it must
    * match or the AnchorNav slides under the nav row. */
@@ -448,5 +454,16 @@
 @media (max-width: 760px) {
   .brandLockup {
     gap: 0.45rem;
+  }
+}
+
+/* Phones: the full lockup (~415px at the 0.8rem step) is wider than the
+ * screen. Drop the parent wordmark and its separator; the Deliverome
+ * logo still links back to deliverome.org, and "Surfaceome" + the
+ * version pill stay. */
+@media (max-width: 600px) {
+  .brandParentText,
+  .brandSep {
+    display: none;
   }
 }
