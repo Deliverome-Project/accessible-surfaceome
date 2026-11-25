@@ -11,11 +11,56 @@
  *
  * Joins are on UniProt accession (isoform suffix stripped), never on symbol.
  * Only `core` / `provisional` arms count as surface detections; the rest are
- * shown but labeled (held, below the reference-overlap screen, or a
- * comparator). Whole-lysate arms are left out of the data entirely.
+ * shown but labeled (held, below the reference-overlap screen, a comparator,
+ * or another condition of a counted study's samples). Whole-lysate arms are
+ * left out of the data entirely.
  */
 
-export type ArmStatus = "core" | "provisional" | "held" | "below_screen" | "comparator";
+export type ArmStatus =
+  | "core"
+  | "provisional"
+  | "held"
+  | "below_screen"
+  | "annotation_selected"
+  | "comparator"
+  | "perturbed";
+
+/** Every status, in the order the viewer lists them (counted first). */
+export const STATUS_ORDER: ArmStatus[] = [
+  "core",
+  "provisional",
+  "held",
+  "below_screen",
+  "annotation_selected",
+  "comparator",
+  "perturbed",
+];
+
+/** Wording for the sweep-v15 annotation_selected role, verbatim from the S3E8 review. */
+export const ANNOTATION_SELECTED_LABEL = "Pre-filtered by surface annotation (shown, not counted)";
+/** The same label where a "not counted" marker already sits beside it. */
+export const statusShortLabel = (s: ArmStatus) =>
+  s === "annotation_selected" ? "Pre-filtered by surface annotation" : STATUS_LABEL[s];
+/** The status pill in a table row, where "not counted" and the reason
+ *  ("author pre-filtered to …") sit right under it. */
+export const statusPillLabel = (s: ArmStatus) =>
+  s === "annotation_selected" ? "Pre-filtered" : STATUS_LABEL[s];
+/** A dataset's own status label: as its status's, except the one comparator that is
+ *  not a membrane fraction (an intact-cell label that reaches the inner side of the
+ *  membrane), which "Membrane fraction" would misdescribe. */
+export const INNER_SIDE_LABEL = "Inner-side labeling";
+export function armStatusLabel(
+  arm: Pick<StudyArm, "status" | "method_class">,
+  form: "short" | "pill" = "short",
+): string {
+  if (arm.status === "comparator" && arm.method_class !== "fractionation") return INNER_SIDE_LABEL;
+  return form === "pill" ? statusPillLabel(arm.status) : statusShortLabel(arm.status);
+}
+export const ANNOTATION_SELECTED_METHODS =
+  "Pre-filtered by surface annotation (shown, not counted): the published table was already restricted to proteins annotated or predicted as surface or membrane proteins. Such a table cannot add a candidate or reveal a miss, and it would inflate the share of known surface proteins that the quality screen measures, so it is shown, cited only as support for proteins already in the reference, and never counted.";
+/** Added to the held-arm wording with sweep-v15, verbatim. */
+export const IMPUTED_NOT_HELD =
+  "Imputed values alone do not hold an arm: when every row passed the authors' identification filters, presence in the study is counted (provisional), though per-sample detection is not available.";
 export type MethodClass = "intact_cell" | "fractionation";
 
 export interface StudyArm {
@@ -23,6 +68,10 @@ export interface StudyArm {
   name: string;
   publication: string;
   first_author: string | null;
+  /** "George et al. 2026", "A and B 2020" or "A 2020" (surname only), built
+   *  from the PubMed author list; "et al." when the author count is unknown. */
+  citation?: string | null;
+  n_authors?: number | null;
   year: number | null;
   journal: string | null;
   title: string | null;
@@ -35,14 +84,38 @@ export interface StudyArm {
   intact_cell_verified: boolean;
   sample: string | null;
   status: ArmStatus;
+  /** For a `perturbed` arm: the arm whose baseline samples it departs from,
+   *  the condition ("replicative senescence, …") and its class
+   *  ("senescence", "infection", "genetic perturbation", …). */
+  parent?: string | null;
+  condition?: string | null;
+  perturbation?: string | null;
   /** Why this dataset isn't Core ("author pre-filtered to …", "values are
    *  imputed …"); null for Core. Derived in the build, not free text. */
   status_reason?: string | null;
   admitted: boolean;
   n_proteins: number;
   reference_overlap: number | null;
+  /** Which screen judged it: "abundance" (share of its length-corrected amount in
+   *  Canonical or Likely proteins, when the table reports usable amounts) or "count"
+   *  (reference_overlap). Absent on arms the screen doesn't apply to. */
+  screen_basis?: "abundance" | "count" | null;
+  abundance_share?: number | null;
+  abundance_cutoff?: number | null;
+  /** Within-table AUROC of the same length-corrected amounts for Canonical or Likely
+   *  membership: whether the amounts rank surface proteins first. */
+  abundance_auroc?: number | null;
+  auroc_rescue_cutoff?: number | null;
+  /** Counted through the AUROC rescue: under the amount cutoff, but its amounts rank
+   *  Canonical or Likely proteins first (abundance_auroc >= auroc_rescue_cutoff). */
+  auroc_rescued?: boolean;
   repository: string | null;
   repository_ids: string[];
+  /** Where the raw instrument files are, from the S3E8 raw-data audit
+   *  (an arm split from a parent study uses the parent's row). */
+  raw_data?: RawData | null;
+  /** This arm's tab in the shared study workbook (StudyIndex.study_list). */
+  sheet_tab?: string | null;
   /** Curated cell-type group (CELL_GROUPS in the build script). */
   cell_group?: CellGroup;
   /** Cell-line names, for atlases whose table has one column per line. */
@@ -97,6 +170,8 @@ export interface StudyIndex {
   n_accessions_admitted: number;
   /** Registry ids the snapshot split into several arms → those arm ids. */
   aliases?: Record<string, string[]>;
+  /** The shared study workbook: one tab per study arm. */
+  study_list?: { name: string; url: string };
   /** counted_detection_hist[k] = proteins detected in exactly k counted arms (k >= 1). */
   counted_detection_hist?: number[];
   /** Same over the deep-dived cohort including k = 0: "all" plus one per tier. */
@@ -151,18 +226,43 @@ export const STATUS_LABEL: Record<ArmStatus, string> = {
   provisional: "Provisional",
   held: "Held",
   below_screen: "High background",
-  comparator: "Comparator",
+  annotation_selected: ANNOTATION_SELECTED_LABEL,
+  comparator: "Membrane fraction",
+  perturbed: "Other condition",
 };
 
 export const STATUS_HELP: Record<ArmStatus, string> = {
-  core: "Core: intact-cell labeling, and at least 20% of the list are Canonical or Likely Surfaceome proteins. Counts as surface evidence.",
+  core: "Core: intact-cell labeling that passes the surface screen: at least 25% of its length-corrected protein amount is Canonical or Likely Surfaceome proteins when the table reports amounts, otherwise at least 20% of its protein list. Counts as surface evidence.",
   provisional:
-    "Provisional: intact-cell labeling that passes with a caveat, for example the authors pre-filtered the list to annotated surface proteins, or it sits within 2 points below the 20% screen (18–20%). Counts as surface evidence.",
-  held: "Held: the published table can't yet tell us which proteins were detected, for example every value is imputed. Listed, not counted.",
+    "Provisional: intact-cell labeling that passes with a caveat: it sits within 2 points below the 20% list screen (18–20%), it has no no-label control, it was built from a partial author export, or its values are imputed (presence counted, per-sample detection not available). Counts as surface evidence.",
+  held: "Held: the published table can't yet tell us which proteins were detected, for example conditions are pooled with no separable baseline. Listed, not counted.",
   below_screen:
-    "High background: intact-cell labeling, but fewer than 20% of the list are Canonical or Likely Surfaceome proteins, so it is mostly intracellular contamination. Listed, not counted.",
+    "High background: intact-cell labeling, but under the surface screen (25% of its length-corrected amount, or 20% of its list when no amounts are published, are Canonical or Likely Surfaceome proteins), so it is mostly intracellular contamination. Listed, not counted.",
+  annotation_selected: ANNOTATION_SELECTED_METHODS,
   comparator:
-    "Comparator: membrane fractionation, or labeling that reaches the inner side of the membrane. Shows a protein is on a membrane, not that it faces outward. Not counted.",
+    "Membrane fraction: cells broken open and membranes purified, so it shows a protein is on a membrane (internal membranes included), not that it faces outward. Listed for comparison, not counted. One dataset here is instead an intact-cell label that reaches the inner side of the membrane, marked Inner-side labeling.",
+  perturbed:
+    "Other condition: the same study's samples after a change of state, such as senescence, infection, a knockout, a drug or a disease. Each study counts only its baseline (untreated, wild-type or healthy) samples; this list shows what was detected in the other condition. Listed, not counted by default; the \"Also count other conditions\" switch counts it when the study's baseline dataset is counted.",
+};
+
+/**
+ * One-line meaning of each status, for the Status ⓘ. Rules from the S3E8
+ * study (deliverome-analysis, s3e8-cross-method-surfaceome: README,
+ * CALIBRATED_INCLUSION.md, FRACTIONATION.md).
+ */
+export const STATUS_DEFINITION: Record<ArmStatus, string> = {
+  core: "Counted. Intact-cell labeling, and at least 25% of its length-corrected protein amount (or, without published amounts, 20% of its proteins) is known surface proteins (Canonical or Likely).",
+  provisional:
+    "Counted, with the caveat shown next to it: it falls within 2 points below the 20% list screen, it has no no-label control, it is a partial export, or its values are imputed (presence counted, per-sample detection not available).",
+  held: "Shown, not counted until a data problem is resolved, such as pooled conditions or an unpublished sample map; the reason is shown next to it.",
+  below_screen:
+    "Shown, not counted: too little of it is known surface proteins (under 25% of its length-corrected amount, under 20% of its proteins when no amounts are published, or under the higher bar for a pre-filtered list).",
+  annotation_selected:
+    "The published table was already restricted to proteins annotated or predicted as surface or membrane proteins; shown, never counted.",
+  comparator:
+    "Shown for comparison, never counted: a membrane fraction (or a label that reaches inside the cell) shows a protein is on a membrane, not that it faces outward.",
+  perturbed:
+    "Shown, not counted by default: a non-baseline condition (senescent, infected, knockout, treated or diseased samples) of a study whose baseline list is shown separately. The \"Also count other conditions\" switch counts it when that baseline is counted.",
 };
 
 export const METHOD_CLASS_LABEL: Record<MethodClass, string> = {
@@ -179,6 +279,30 @@ export function studyHref(armIds: string[]): string {
 
 /** Surface-reference overlap a counted intact-cell arm must reach (the S3E8 screen). */
 export const OVERLAP_SCREEN = 0.2;
+
+/** Share of a dataset's length-corrected protein amount that must be Canonical or
+ *  Likely when its table reports usable amounts (the S3E8 abundance screen; calibrated
+ *  so it passes as many membrane preparations as the 20% list screen). Must match
+ *  every arm's `abundance_cutoff`, which a test checks. */
+export const ABUNDANCE_SCREEN = 0.25;
+
+/** AUROC rescue: a dataset with amounts that falls under ABUNDANCE_SCREEN still counts
+ *  when its amounts rank Canonical or Likely proteins first at or above this AUROC.
+ *  Calibrated like the amount screen, so share-or-AUROC passes no more membrane
+ *  preparations than the list screen. Must match every arm's `auroc_rescue_cutoff`. */
+export const AUROC_RESCUE = 0.58;
+
+/** The number a dataset was screened on, and the bar it had to reach. */
+export function screenScore(arm: StudyArm): {
+  value: number | null;
+  cutoff: number;
+  basis: "abundance" | "count";
+} {
+  if (arm.screen_basis === "abundance" && arm.abundance_share != null) {
+    return { value: arm.abundance_share, cutoff: arm.abundance_cutoff ?? ABUNDANCE_SCREEN, basis: "abundance" };
+  }
+  return { value: arm.reference_overlap, cutoff: OVERLAP_SCREEN, basis: "count" };
+}
 /** S3E8 admits an intact-cell list up to this many points below the screen, as Provisional only. */
 export const OVERLAP_ALLOWANCE_PTS = 2;
 
@@ -253,6 +377,29 @@ export function shareBelow(hist: number[] | undefined, k: number): { below: numb
   if (!total) return null;
   return { below: hist.slice(0, k).reduce((s, x) => s + x, 0) / total, total };
 }
+
+export type RawFlag =
+  | "raw_public"
+  | "raw_private_or_embargoed"
+  | "processed_only"
+  | "accession_invalid"
+  | "raw_not_deposited";
+
+export interface RawData {
+  flag: RawFlag;
+  repository?: string;
+  accessions?: string[];
+  url?: string;
+}
+
+/** Short wording for each raw-data audit flag. */
+export const RAW_FLAG_LABEL: Record<RawFlag, string> = {
+  raw_public: "raw files",
+  raw_private_or_embargoed: "raw files, not yet released",
+  processed_only: "processed files only, no raw files",
+  accession_invalid: "printed accession doesn't resolve",
+  raw_not_deposited: "raw data not deposited",
+};
 
 /** Labeling chemistry families, each with its own chip color. */
 export const FAMILY_ORDER = [
@@ -380,6 +527,51 @@ export function isCounted(arm: StudyArm): boolean {
   return arm.status === "core" || arm.status === "provisional";
 }
 
+/**
+ * The counting rule a page applies. By default it is `isCounted`: each study
+ * counts only its baseline samples. A reader can opt in to also counting the
+ * other conditions (senescent, infected, knockout, treated, diseased), and
+ * then an other-condition arm counts only when its baseline arm is counted,
+ * so the same lab, method and quality screen stand behind it. Other
+ * conditions of held, high-background or comparator studies never count.
+ */
+export function countingRule(
+  arms: readonly StudyArm[],
+  includeOther: boolean,
+): (arm: StudyArm) => boolean {
+  if (!includeOther) return isCounted;
+  const byId = new Map(arms.map((a) => [a.id, a]));
+  return (arm) => {
+    if (isCounted(arm)) return true;
+    if (arm.status !== "perturbed" || !arm.parent) return false;
+    const parent = byId.get(arm.parent);
+    return parent ? isCounted(parent) : false;
+  };
+}
+
+/** Other-condition arms that would count with the opt-in (their baseline is counted). */
+export function countableOtherConditions(arms: readonly StudyArm[]): StudyArm[] {
+  const counts = countingRule(arms, true);
+  return arms.filter((a) => a.status === "perturbed" && counts(a));
+}
+
+/** URL parameter that turns the opt-in on (`?oc=1`), shared by the study
+ *  table and the gene-page link into it. */
+export const INCLUDE_OTHER_PARAM = "oc";
+
+export const INCLUDE_OTHER_LABEL = "Also count other conditions";
+
+/** Why the opt-in is off by default, for the toggle's tooltip. */
+export function includeOtherHelp(nCountable: number, nOther: number): string {
+  return (
+    `Off by default. Each study counts only its baseline samples (untreated, wild-type or healthy cells). ` +
+    `Switching this on also counts the same studies' other conditions, such as senescent, infected, knockout, ` +
+    `drug-treated, differentiated or diseased samples, but only where the study's baseline dataset is itself counted: ` +
+    `${nCountable} of the ${nOther} other-condition datasets qualify. Other conditions of held, high-background or ` +
+    `comparator studies stay uncounted. The totals at the top of the Surface proteomics page are always baseline-only.`
+  );
+}
+
 export function baseAccession(acc: string): string {
   return acc.trim().split("-")[0].toUpperCase();
 }
@@ -408,18 +600,57 @@ export function repositoryUrl(id: string): string | null {
   return null;
 }
 
+/** How the viewer names a study: "George et al. 2026", surname only. */
 export function shortCitation(arm: StudyArm): string {
-  const author = (arm.first_author ?? "").split(" ")[0];
-  return [author, arm.year].filter(Boolean).join(" ") || arm.name;
+  if (arm.citation) return arm.citation;
+  // Older studies.json without `citation`: drop the initials, assume "et al.".
+  const surname = (arm.first_author ?? "").trim().replace(/\s+[A-Z]{1,4}$/, "");
+  return surname ? [`${surname} et al.`, arm.year].filter(Boolean).join(" ") : arm.name;
 }
 
 let _index: Promise<StudyIndex> | null = null;
 const _shards = new Map<number, Promise<PresenceShard>>();
 
+/** Statuses worth a second try: a transient edge or network hiccup, never a real 404. */
+const RETRY_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+
+/** Attempts per request, and the backoff before each retry. */
+const FETCH_TRIES = 3;
+const RETRY_DELAY_MS = 200;
+
+/** Fetch JSON, retrying a transient failure.
+ *
+ * The studies explorer asks for all 32 presence shards at once, so a single dropped
+ * request — a hiccup, or a deploy swapping files underneath an open page — used to reject
+ * the whole `Promise.all` and leave the view reading "Protein lists could not be loaded."
+ * with no way back. A 404 or other non-retryable status still throws on the first try.
+ */
+class HttpError extends Error {
+  constructor(readonly status: number, url: string) {
+    super(`${url}: HTTP ${status}`);
+    this.name = "HttpError";
+  }
+}
+
 async function getJson<T>(url: string): Promise<T> {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
-  return (await r.json()) as T;
+  let last: unknown;
+  for (let attempt = 0; attempt < FETCH_TRIES; attempt++) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new HttpError(r.status, url);
+      return (await r.json()) as T;
+    } catch (e) {
+      // A status the server meant (404, 403) is an answer, not a hiccup: fail now rather
+      // than sleep through two more attempts. Anything else — a dropped connection, a
+      // half-written body — is what the retries are for.
+      if (e instanceof HttpError && !RETRY_STATUS.has(e.status)) throw e;
+      last = e;
+    }
+    if (attempt < FETCH_TRIES - 1) {
+      await new Promise((res) => setTimeout(res, RETRY_DELAY_MS * 2 ** attempt));
+    }
+  }
+  throw last;
 }
 
 export function loadStudyIndex(): Promise<StudyIndex> {

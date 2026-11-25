@@ -459,3 +459,50 @@ a.dot:focus-visible {
   color: var(--ink-soft);
   font-size: 0.85rem;
 }
+
+.headWithTip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.studiesLink {
+  white-space: nowrap;
+}
+
+/* Detected in a dataset we don't count: a ring in the technology's color,
+   not a filled dot, so counted and not-counted detections read apart. */
+.hit.dim {
+  opacity: 0.8;
+  background: transparent !important;
+  border-width: 2.5px;
+}
+
+/* Other conditions: not counted by default; the reader can opt in. */
+.otherNote {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--line);
+  background: var(--surface);
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+}
+
+.otherNote[data-on="true"] {
+  border-left-color: var(--amber-mid);
+  background: var(--amber-tint);
+  color: var(--ink);
+}
+
+.otherToggle {
+  display: inline-flex;
+  gap: 0.3rem;
+  align-items: center;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}

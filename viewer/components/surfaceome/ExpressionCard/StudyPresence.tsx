@@ -1,15 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  isCounted,
+  armStatusLabel,
+  countableOtherConditions,
+  countingRule,
+  INCLUDE_OTHER_LABEL,
+  INCLUDE_OTHER_PARAM,
+  includeOtherHelp,
   loadPresence,
   METHOD_CLASS_LABEL,
   paperUrl,
   shortCitation,
+  STATUS_DEFINITION,
   STATUS_HELP,
   STATUS_LABEL,
+  statusShortLabel,
+  statusPillLabel,
+  STATUS_ORDER,
   STUDIES_PATH,
   FAMILY_ORDER,
   PREF_LABEL,
@@ -25,6 +34,7 @@ import {
   type StudyIndex,
 } from "../../../lib/surface-proteomics";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { tooltips } from "../../../lib/tooltips";
 import { HoverTip } from "../_shared/HoverTip";
 import tip from "../../InfoTip/InfoTip.module.css";
 import { FamilyChip } from "../../StudiesExplorer/FamilyChip";
@@ -48,14 +58,20 @@ const GROUPS: { key: string; label: string; desc: string; statuses: ArmStatus[] 
   {
     key: "held",
     label: "Surface experiments we don't count",
-    desc: "Also intact-cell labeling, but most of the list is intracellular background (high background), or the published table can't tell us which proteins were detected (held).",
-    statuses: ["held", "below_screen"],
+    desc: "Also intact-cell labeling, but most of the list is intracellular background (high background), the published table was already restricted to annotated or predicted surface proteins (pre-filtered by surface annotation), or the published table can't tell us which proteins were detected (held).",
+    statuses: ["held", "below_screen", "annotation_selected"],
   },
   {
     key: "comparator",
-    label: "Membrane preps, for context",
+    label: "Membrane fractions, for context",
     desc: "Cells broken open and membranes purified, or labels that reach inside the cell. Shows a protein is on a membrane, not that it faces outward.",
     statuses: ["comparator"],
+  },
+  {
+    key: "perturbed",
+    label: "Other conditions in the same studies",
+    desc: "The same experiments after a change of state: senescent, infected, knockout, drug-treated or diseased samples. Each study counts only its baseline samples; these lists show what was detected in the other condition.",
+    statuses: ["perturbed"],
   },
 ];
 
@@ -64,13 +80,12 @@ const FAMILY_SHORT: Record<string, string> = {
   "biotin-amine": "Amine biotin",
   "glycoprotein-capture": "Glycoprotein",
   "glycopeptide-capture": "Glycopeptide",
-  "peroxidase-proximity": "Peroxidase",
+  "peroxidase-proximity": "Peroxidase / laccase",
   "other-chemoproteomic": "Other",
   "membrane-fractionation": "Fractionation",
 };
 
 type RowSort = "study" | "found" | "bg" | "amount" | "method" | "family" | "sample" | "status";
-const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const pct = (x: number) => `${Math.floor(x * 100)}%`;
 
 /** "Detected in 18 of 25 lines", with the lines listed on hover. */
@@ -318,6 +333,8 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
   const [error, setError] = useState(false);
   const [showOther, setShowOther] = useState(false);
   const [showMissing, setShowMissing] = useState(false);
+  // Opt-in: off by default, so each study counts only its baseline samples.
+  const [includeOther, setIncludeOther] = useState(false);
   const { sortKey, sortDir, onSort, ariaSort, sortRows } = useTableSort<RowSort>();
 
   useEffect(() => {
@@ -343,14 +360,18 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
 
   const summary = useMemo(() => {
     if (!data) return null;
+    const counts = countingRule(data.index.arms, includeOther);
     const arms = data.index.arms.map((arm, i) => ({ arm, i, hit: data.hits.has(i) }));
-    const counted = arms.filter((x) => isCounted(x.arm));
+    const counted = arms.filter((x) => counts(x.arm));
     const countedHits = counted.filter((x) => x.hit);
     const pubs = new Set(counted.map((x) => x.arm.publication));
     const pubHits = new Set(countedHits.map((x) => x.arm.publication));
-    const otherHits = arms.filter((x) => x.hit && !isCounted(x.arm)).length;
-    return { arms, counted, countedHits, pubs, pubHits, otherHits };
-  }, [data]);
+    const otherHits = arms.filter((x) => x.hit && !counts(x.arm)).length;
+    const nOther = data.index.arms.filter((a) => a.status === "perturbed").length;
+    const nCountableOther = countableOtherConditions(data.index.arms).length;
+    const otherCountedHits = countedHits.filter((x) => x.arm.status === "perturbed").length;
+    return { counts, arms, counted, countedHits, pubs, pubHits, otherHits, nOther, nCountableOther, otherCountedHits };
+  }, [data, includeOther]);
 
   if (error) {
     return <p className={styles.empty}>Study presence data could not be loaded.</p>;
@@ -359,14 +380,15 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
     return <p className={styles.empty}>Loading study presence…</p>;
   }
 
-  const { arms, counted, countedHits, pubs, pubHits, otherHits } = summary;
-  const filtered = arms.filter((x) => (showMissing || x.hit) && (showOther || isCounted(x.arm)));
+  const { counts, arms, counted, countedHits, pubs, pubHits, otherHits, nOther, nCountableOther, otherCountedHits } =
+    summary;
+  const filtered = arms.filter((x) => (showMissing || x.hit) && (showOther || counts(x.arm)));
   const rows =
     sortKey === null
       ? [...filtered].sort(
           (a, b) =>
             Number(b.hit) - Number(a.hit) ||
-            Number(isCounted(b.arm)) - Number(isCounted(a.arm)) ||
+            Number(counts(b.arm)) - Number(counts(a.arm)) ||
             // Most enriched over background first; datasets without a value last.
             (studyPrefMean(data.quant[String(b.i)]?.[1], data.refs) ?? -999) -
               (studyPrefMean(data.quant[String(a.i)]?.[1], data.refs) ?? -999) ||
@@ -385,11 +407,18 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           sample: (r) => r.arm.sample ?? "",
           status: (r) => STATUS_ORDER.indexOf(r.arm.status),
         } satisfies Record<RowSort, (r: (typeof filtered)[number]) => SortValue>);
-  const th = (key: RowSort, text: string) => (
+  const th = (key: RowSort, text: string, info?: ReactNode) => (
     <th aria-sort={ariaSort(key)}>
-      <SortableHeader k={key} active={sortKey === key} direction={sortDir} onSort={onSort}>
-        {text}
-      </SortableHeader>
+      <span className={styles.headWithTip}>
+        <SortableHeader k={key} active={sortKey === key} direction={sortDir} onSort={onSort}>
+          {text}
+        </SortableHeader>
+        {info ? (
+          <InfoTip wide align="end" label={`About ${text}`}>
+            {info}
+          </InfoTip>
+        ) : null}
+      </span>
     </th>
   );
 
@@ -398,9 +427,23 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       <div className={`label-mono ${styles.subhead}`}>
         Published surface-proteomics studies
         <span className={styles.rollup}>
-          Detected in {countedHits.length} of {counted.length} counted datasets ({pubHits.size} of{" "}
-          {pubs.size} papers)
-          {otherHits > 0 ? ` · listed in ${otherHits} not-counted dataset${otherHits === 1 ? "" : "s"}` : ""}
+          Detected in {countedHits.length} of {counted.length} counted datasets (
+          {counted.length ? Math.round((100 * countedHits.length) / counted.length) : 0}%;{" "}
+          {pubHits.size} of {pubs.size} papers)
+          {includeOther ? `, counting ${otherCountedHits} other-condition dataset${otherCountedHits === 1 ? "" : "s"}` : ""}
+          {otherHits > 0 ? `, plus ${otherHits} not counted` : ""}.
+          {countedHits.length + otherHits > 0 ? (
+            <>
+              {" "}
+              <Link
+                href={`${STUDIES_PATH}?det=${encodeURIComponent(uniprotAcc)}${includeOther ? `&${INCLUDE_OTHER_PARAM}=1` : ""}`}
+                className={styles.studiesLink}
+              >
+                See {countedHits.length + otherHits === 1 ? "this dataset" : `these ${countedHits.length + otherHits} datasets`}{" "}
+                in the study table →
+              </Link>
+            </>
+          ) : null}
         </span>
         <InfoTip wide label="About study presence">
           Whether {symbol} ({uniprotAcc}) appears in the protein list of each
@@ -413,10 +456,9 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
           <strong>Counted</strong> datasets label proteins on intact cells and
           pass review (core or provisional). <strong>Held</strong> and{" "}
           <strong>high-background</strong> datasets are listed but not counted.{" "}
-          <strong>Comparators</strong> (membrane fractionation, or labeling
-          that reaches the inner side of the membrane) show that a protein
-          co-purifies with membranes, not that it is reachable from outside
-          the cell.
+          <strong>Membrane fractions</strong> (and one label that reaches the
+          inner side of the membrane) show that a protein co-purifies with
+          membranes, not that it is reachable from outside the cell.
           <br />
           <br />
           The compendium covers whole-surface measurements: labeling of exposed proteins on intact cells, and membrane fractionation. It does not include targeted membrane enrichment of chosen proteins, such as proximity labeling around a single bait, antibody or affinity pulldowns, or lists restricted to a target panel.
@@ -439,7 +481,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                 <span className={styles.groupName}>{g.label}</span>
                 <InfoTip label={`About ${g.label}`}>{g.desc}</InfoTip>
                 <span className={styles.groupStatus}>
-                  {g.statuses.map((st) => STATUS_LABEL[st]).join(" + ")}
+                  {g.statuses.map((st) => statusShortLabel(st)).join(" + ")}
                 </span>
               </span>
               <span className={styles.dots}>
@@ -460,7 +502,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                       </span>
                       <span className={styles.famDots}>
                         {inFam.map(({ arm, hit, i }) => (
-                          <Dot key={arm.id} arm={arm} hit={hit} q={data.quant[String(i)]} />
+                          <Dot key={arm.id} arm={arm} hit={hit} counted={counts(arm)} q={data.quant[String(i)]} />
                         ))}
                       </span>
                     </span>
@@ -473,10 +515,31 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
       </div>
       <p className={styles.legend}>
         <span className={styles.legendItem}>
-          Filled = detected; <span className={styles.dot} /> hollow = not detected; faded = not
-          counted. Hover a dot for the study.
+          <span className={`${styles.dot} ${styles.hit} ${styles.fam_biotin_amine}`} /> filled = detected in
+          a counted dataset; <span className={`${styles.dot} ${styles.hit} ${styles.fam_biotin_amine} ${styles.dim}`} />{" "}
+          colored ring = detected in a dataset we don&apos;t count; <span className={styles.dot} /> gray ring = not
+          detected. Hover a dot for the study.
         </span>
       </p>
+
+      {nOther > 0 ? (
+        <p className={styles.otherNote} data-on={includeOther ? "true" : "false"}>
+          {includeOther
+            ? "Counting other conditions (not the default): the same studies' senescent, infected, knockout, treated or diseased samples count wherever the study's baseline dataset counts."
+            : "Other conditions of these studies (senescent, infected, knockout, treated or diseased samples) are shown but not counted: each study counts only its baseline samples."}{" "}
+          <label className={styles.otherToggle}>
+            <input
+              type="checkbox"
+              checked={includeOther}
+              onChange={(e) => setIncludeOther(e.target.checked)}
+            />{" "}
+            {INCLUDE_OTHER_LABEL}
+          </label>
+          <InfoTip wide label={`About ${INCLUDE_OTHER_LABEL.toLowerCase()}`}>
+            {includeOtherHelp(nCountableOther, nOther)}
+          </InfoTip>
+        </p>
+      ) : null}
 
       <p className={styles.actions}>
         <label>
@@ -514,14 +577,14 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
               {th("method", "Method")}
               {th("family", "Chemistry")}
               {th("sample", "Cell type / sample")}
-              {th("status", "Status")}
+              {th("status", "Status", tooltips.arm_status)}
             </tr>
           </thead>
           <tbody>
             {rows.map(({ arm, hit, i }) => {
               const url = paperUrl(arm);
               return (
-                <tr key={arm.id} className={isCounted(arm) ? undefined : styles.notCounted}>
+                <tr key={arm.id} className={counts(arm) ? undefined : styles.notCounted}>
                   <td className={styles.studyCell}>
                     {url ? (
                       <a href={url} target="_blank" rel="noreferrer">
@@ -560,7 +623,7 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
                   </td>
                   <td>
                     <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
-                      {STATUS_LABEL[arm.status]}
+                      {armStatusLabel(arm, "pill")}
                     </StatusPill>
                     {arm.status_reason ? (
                       <div className={styles.statusReason}>{arm.status_reason}</div>
@@ -583,11 +646,20 @@ export function StudyPresence({ uniprotAcc, symbol }: Props) {
   );
 }
 
-function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number] }) {
-  const counted = isCounted(arm);
+function Dot({
+  arm,
+  hit,
+  counted,
+  q,
+}: {
+  arm: StudyArm;
+  hit: boolean;
+  counted: boolean;
+  q?: [number, number];
+}) {
   const label =
     `${shortCitation(arm)}: ${arm.name}. ${hit ? "Detected" : "Not detected"}; ` +
-    `${STATUS_LABEL[arm.status]}${counted ? "" : ", not counted"}`;
+    `${armStatusLabel(arm)}${counted ? "" : ", not counted"}`;
   const cls = [
     styles.dot,
     hit ? `${styles[`fam_${arm.family.replace(/-/g, "_")}`] ?? ""} ${styles.hit}` : "",
@@ -621,6 +693,9 @@ function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number
           {arm.reference_overlap != null
             ? `, ${Math.round(arm.reference_overlap * 100)}% Canonical or Likely`
             : ""}
+          {arm.screen_basis === "abundance" && arm.abundance_share != null
+            ? ` (${Math.round(arm.abundance_share * 100)}% of its length-corrected amount)`
+            : ""}
         </span>
         {hit && q && arm.quant_unit ? (
           <span className={styles.tipLine}>
@@ -629,8 +704,11 @@ function Dot({ arm, hit, q }: { arm: StudyArm; hit: boolean; q?: [number, number
           </span>
         ) : null}
         <span className={styles.tipLine}>
-          <span className={styles.tipMuted}>Status:</span> {STATUS_LABEL[arm.status]},{" "}
-          {counted ? "counted as surface evidence" : "not counted"}
+          <span className={styles.tipMuted}>Status:</span> {armStatusLabel(arm)}
+          {/* The dataset's own reason when it has one; the status's definition otherwise. */}
+          {arm.status_reason
+            ? `: ${arm.status_reason}.`
+            : `. ${STATUS_DEFINITION[arm.status]}`}
         </span>
         <span className={`${styles.tipLine} ${styles.tipMuted}`}>
           Click to open this dataset&apos;s protein list.

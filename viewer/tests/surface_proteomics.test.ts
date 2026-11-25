@@ -9,12 +9,17 @@ import {
   formatQuant,
   ordinalPct,
   shareBelow,
+  ABUNDANCE_SCREEN,
+  AUROC_RESCUE,
+  countableOtherConditions,
+  countingRule,
   isCounted,
   letter,
   studyHref,
   TIER_HELP,
   TIER_LABEL,
   TIER_ORDER,
+  loadShard,
   shardOf,
   type PresenceShard,
   type StudyIndex,
@@ -122,4 +127,84 @@ test("surface preference: differences, mean and verdict", () => {
   assert.equal(surfacePreference([97, 78, 85]).verdict, "enriched");
   assert.equal(surfacePreference([99, 97, 98]).verdict, "unclear");
   assert.equal(surfacePreference([80, null, 60]).mean, 20);
+});
+
+test("other conditions are not counted unless the reader opts in, and then only under a counted baseline", () => {
+  const arms = index.arms;
+  const other = arms.filter((a) => a.status === "perturbed");
+  assert.ok(other.length > 0, "the committed snapshot carries other-condition arms");
+  const byId = new Map(arms.map((a) => [a.id, a]));
+
+  // Default rule: identical to isCounted, so no other condition counts.
+  const base = countingRule(arms, false);
+  for (const a of arms) assert.equal(base(a), isCounted(a), a.id);
+  assert.ok(other.every((a) => !base(a)));
+
+  // Opt-in: every baseline arm still counts the same way, and an other
+  // condition counts exactly when its parent baseline arm is counted.
+  const opted = countingRule(arms, true);
+  for (const a of arms) {
+    if (a.status !== "perturbed") {
+      assert.equal(opted(a), isCounted(a), a.id);
+      continue;
+    }
+    const parent = a.parent ? byId.get(a.parent) : undefined;
+    assert.ok(parent, `${a.id} names a parent that exists`);
+    assert.equal(opted(a), isCounted(parent), a.id);
+  }
+  const countable = countableOtherConditions(arms);
+  assert.ok(countable.length > 0 && countable.length < other.length);
+});
+
+test("datasets with published amounts are screened on their amount, at the viewer's bar", () => {
+  const scored = index.arms.filter((a) => a.screen_basis === "abundance");
+  assert.ok(scored.length > 0, "the snapshot carries abundance-screened arms");
+  // Other-condition arms carry the same amount scores but are never counted.
+  const other = scored.filter((a) => a.status === "perturbed");
+  assert.ok(other.length > 0, "other-condition arms are scored by amount too");
+  for (const a of other) assert.ok(!isCounted(a), `${a.id}: an other condition is never counted`);
+  const byAmount = scored.filter((a) => a.status !== "perturbed");
+  for (const a of byAmount) {
+    assert.equal(a.abundance_cutoff, ABUNDANCE_SCREEN, `${a.id}: cutoff matches ABUNDANCE_SCREEN`);
+    assert.ok(a.abundance_share != null, `${a.id}: has a share`);
+    assert.equal(a.auroc_rescue_cutoff, AUROC_RESCUE, `${a.id}: rescue cutoff matches AUROC_RESCUE`);
+    const byShare = a.abundance_share! + 1e-9 >= ABUNDANCE_SCREEN;
+    const byRank = a.abundance_auroc != null && a.abundance_auroc + 1e-9 >= AUROC_RESCUE;
+    assert.equal(isCounted(a), byShare || byRank, `${a.id}: counted exactly when its share or its AUROC passes`);
+    assert.equal(Boolean(a.auroc_rescued), !byShare && byRank, `${a.id}: rescued exactly when only its AUROC passes`);
+  }
+});
+
+test("a presence shard survives a transient failure but not a real 404", async () => {
+  const realFetch = globalThis.fetch;
+  const calls: string[] = [];
+  const reply = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  try {
+    // Two hiccups then success: the shard still loads, so one dropped request out of the
+    // 32 the explorer asks for cannot strand the whole view.
+    let n = 0;
+    globalThis.fetch = (async (url: string) => {
+      calls.push(String(url));
+      n += 1;
+      if (n === 1) throw new TypeError("network error");
+      if (n === 2) return reply({}, 503);
+      return reply({ P12345: { s: "SHARD_OK", a: [] } });
+    }) as typeof fetch;
+    const ok = (await loadShard(900)) as PresenceShard;
+    assert.equal(ok.P12345?.s, "SHARD_OK");
+    assert.equal(n, 3, "retried twice before succeeding");
+
+    // A 404 is the server's answer, not a hiccup: it fails on the first try rather than
+    // spending two more round trips and the backoff on a file that is not there.
+    calls.length = 0;
+    globalThis.fetch = (async (url: string) => {
+      calls.push(String(url));
+      return reply({}, 404);
+    }) as typeof fetch;
+    await assert.rejects(() => loadShard(901), /HTTP 404/);
+    assert.equal(calls.length, 1, "a 404 is not retried");
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });

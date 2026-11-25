@@ -10,6 +10,8 @@ import {
   type SourceFile,
   type StudyArm,
 } from "../../lib/surface-proteomics";
+import { tooltips } from "../../lib/tooltips";
+import { InfoTip } from "../InfoTip/InfoTip";
 import styles from "./MethodsPanel.module.css";
 
 const pct = (x: number | null | undefined) => (x == null ? null : `${(x * 100).toFixed(1)}%`);
@@ -53,7 +55,12 @@ export function MethodsBody({ arm, m }: { arm: StudyArm; m: ArmMethods }) {
       <section>
         <h3 className={styles.h}>Review decision</h3>
         <dl className={styles.dl}>
-          <dt>Status</dt>
+          <dt>
+            Status{" "}
+            <InfoTip wide align="start" label="About Status">
+              {tooltips.arm_status}
+            </InfoTip>
+          </dt>
           <dd>
             {STATUS_LABEL[arm.status]}
             {arm.status_reason ? `: ${arm.status_reason}` : ""}
@@ -66,13 +73,34 @@ export function MethodsBody({ arm, m }: { arm: StudyArm; m: ArmMethods }) {
           ) : null}
           {m.n_total_ids != null ? (
             <>
-              <dt>Reference overlap</dt>
+              <dt>
+                Reference overlap{" "}
+                <InfoTip wide align="start" label="About the reference">
+                  {tooltips.reference}
+                </InfoTip>
+              </dt>
               <dd>
                 {(m.n_in_reference ?? 0).toLocaleString("en-US")} of{" "}
                 {m.n_total_ids.toLocaleString("en-US")} reported IDs are Canonical or Likely
                 {arm.reference_overlap != null ? ` (${pct(arm.reference_overlap)})` : ""}
                 {m.overlap_cutoff != null ? `; screen ${pct(m.overlap_cutoff)}` : ""}
                 {m.borderline_margin ? `, with a ${Math.round(m.borderline_margin * 100)}-point allowance` : ""}
+              </dd>
+            </>
+          ) : null}
+          {arm.screen_basis === "abundance" && arm.abundance_share != null ? (
+            <>
+              <dt>Abundance screen</dt>
+              <dd>
+                {pct(arm.abundance_share)} of its length-corrected protein amount is Canonical or
+                Likely; screen {pct(arm.abundance_cutoff ?? 0.25)}. This dataset reports
+                per-protein amounts, so it is judged on them rather than on its protein list.
+                {arm.status === "perturbed"
+                  ? " As another condition of its study, it is scored the same way as the baseline but never counted."
+                  : ""}
+                {arm.auroc_rescued && arm.abundance_auroc != null
+                  ? ` It ${arm.status === "perturbed" ? "would count" : "counts"} through the AUROC rescue: its amounts rank Canonical or Likely proteins above its other proteins (AUROC ${arm.abundance_auroc.toFixed(2)}, rescue ${(arm.auroc_rescue_cutoff ?? 0.58).toFixed(2)}), so a long tail of faint background does not hold it back.`
+                  : ""}
               </dd>
             </>
           ) : null}
@@ -303,9 +331,10 @@ function AccessionResolution() {
         <li>
           Each reported UniProt accession is brought up to date with UniProt&apos;s accession history (the
           release files sec_ac.txt and delac_sp.txt of January 28, 2026): a deleted Swiss-Prot entry is dropped, a
-          merged (secondary) accession becomes its current primary, and a split accession becomes each of its
-          successors. This is the catalog&apos;s rule in{" "}
-          {code("src/accessible_surfaceome/merge/normalize.py", 28, "merge/normalize.py")}.
+          merged (secondary) accession becomes its current primary, and a split accession becomes its human
+          successor; one split into several human successors is not counted, as in the catalog (
+          {code("src/accessible_surfaceome/merge/normalize.py", 28, "merge/normalize.py")} and{" "}
+          {code("src/accessible_surfaceome/merge/__init__.py", 234, "merge/__init__.py")}).
         </li>
         <li>
           The current accession is matched to its gene through the HGNC gene ID (HGNC&apos;s own UniProt cross-reference

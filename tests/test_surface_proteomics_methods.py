@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -142,10 +143,13 @@ def test_source_sentences() -> None:
         b.instrument_source_sentence("ProteomeXchange record PXD1, PXD2")
         == "Instrument as listed in the ProteomeXchange records PXD1 and PXD2."
     )
-    audit = b.instrument_source_sentence(
-        "methods as recorded in this audit (verified_method)"
+    # Read from the same source as the method: no separate instrument line.
+    assert (
+        b.instrument_source_sentence(
+            "methods as recorded in this audit (verified_method)"
+        )
+        is None
     )
-    assert audit and "audit" not in audit and "verified_method" not in audit
     assert (
         b.instrument_source_sentence("PMC5341332 Methods (Europe PMC XML)")
         == "Instrument as named in the paper's Methods (full text PMC5341332)."
@@ -167,3 +171,170 @@ def test_published_sources_are_sentences() -> None:
             if text:
                 assert text.endswith("."), (arm, key, text)
                 assert "verified_method" not in text and "this audit" not in text, arm
+                assert "same source as the method" not in text, arm
+
+
+def test_study_citation_style() -> None:
+    cite = b.study_citation
+    assert cite({"first_author": "George BM", "year": 2026}) == "George et al. 2026"
+    assert (
+        cite({"author_surname": "Cohen Yaron", "n_authors": 9, "year": 2026})
+        == "Cohen Yaron et al. 2026"
+    )
+    assert cite({"first_author": "Cohen Yaron K", "year": 2026}) == (
+        "Cohen Yaron et al. 2026"
+    )
+    assert (
+        cite(
+            {
+                "author_surname": "Smith",
+                "second_author_surname": "Jones",
+                "n_authors": 2,
+                "year": 2020,
+            }
+        )
+        == "Smith and Jones 2020"
+    )
+    assert cite({"author_surname": "Smith", "n_authors": 1, "year": 2020}) == (
+        "Smith 2020"
+    )
+    assert cite({"first_author": None, "year": 2019}) is None
+
+
+def test_published_citations_use_surnames() -> None:
+    path = ROOT / "viewer" / "public" / "data" / "surface-proteomics" / "studies.json"
+    if not path.exists():
+        return
+    for arm in json.loads(path.read_text())["arms"]:
+        c = arm.get("citation")
+        if not c:
+            continue
+        assert re.fullmatch(r"\S.*?( et al\.| and \S.*)? \d{4}", c), (arm["id"], c)
+        assert not re.search(r"\b[A-Z]{2,4} \d{4}$", c), (arm["id"], c)
+        if arm.get("n_authors") is None:
+            assert " et al. " in c, (arm["id"], c)
+
+
+def test_raw_locations_keep_public_fields_only() -> None:
+    tsv = (
+        "key\tstudy_id\trecord\tflag\trepository\taccessions\turl\tnotes\n"
+        "a\ta\tregistry\traw_public\tPRIDE\tPXD000001; PXD000002\t"
+        "https://www.ebi.ac.uk/pride/archive/projects/PXD000001\tsome note\n"
+        "b\tb\tregistry\traw_not_deposited\t\t\t\t\n"
+        "x\t\tnot_obtained\traw_public\tPRIDE\tPXD9\t\t\n"
+    )
+    raw = b.load_raw_locations(tsv)
+    assert set(raw) == {"a", "b"}
+    assert raw["a"] == {
+        "flag": "raw_public",
+        "repository": "PRIDE",
+        "accessions": ["PXD000001", "PXD000002"],
+        "url": "https://www.ebi.ac.uk/pride/archive/projects/PXD000001",
+    }
+    assert raw["b"] == {"flag": "raw_not_deposited"}
+
+
+def test_split_arms_use_the_parent_tab_and_raw_row() -> None:
+    arms = [{"id": "p-child-2026"}, {"id": "solo-2026"}]
+    raw = {"p-2026": {"flag": "raw_public"}, "solo-2026": {"flag": "processed_only"}}
+    b.attach_sources(arms, {"p-child-2026": "p-2026"}, raw, {"p-2026", "solo-2026"})
+    assert arms[0]["raw_data"] == {"flag": "raw_public"}
+    assert arms[0]["sheet_tab"] == "p-2026"
+    assert arms[1]["sheet_tab"] == "solo-2026"
+
+
+def test_workbook_sheet_names() -> None:
+    import io
+    import zipfile
+
+    xml = (
+        '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+        '<sheets><sheet name="Studies" sheetId="1"/><sheet name="abc-2026" sheetId="2"/>'
+        "</sheets></workbook>"
+    )
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("xl/workbook.xml", xml)
+    assert b.workbook_sheet_names(buf.getvalue()) == ["Studies", "abc-2026"]
+
+
+def test_published_arms_have_sources() -> None:
+    path = ROOT / "viewer" / "public" / "data" / "surface-proteomics" / "studies.json"
+    if not path.exists():
+        return
+    data = json.loads(path.read_text())
+    if "study_list" not in data:
+        return
+    assert data["study_list"]["url"].startswith("https://drive.google.com/")
+    for arm in data["arms"]:
+        assert arm.get("sheet_tab"), arm["id"]
+        assert (arm.get("raw_data") or {}).get("flag") in b.RAW_FLAGS, arm["id"]
+        assert "notes" not in (arm.get("raw_data") or {}), arm["id"]
+
+
+def test_annotation_selected_is_shown_not_counted() -> None:
+    assert b.STATUS_BY_ROLE["annotation_selected"] == "annotation_selected"
+    reason = b.status_reason(
+        {"filter_universe": "surfy", "pct_in_surf": 0.9}, "annotation_selected", 0.2
+    )
+    assert reason == "author pre-filtered to SURFY-predicted surface proteins"
+
+
+def test_published_statuses_are_known() -> None:
+    path = ROOT / "viewer" / "public" / "data" / "surface-proteomics" / "studies.json"
+    if not path.exists():
+        return
+    known = set(b.STATUS_BY_ROLE.values())
+    for arm in json.loads(path.read_text())["arms"]:
+        assert arm["status"] in known, (arm["id"], arm["status"])
+        assert arm["admitted"] == (arm["status"] in ("core", "provisional")), arm["id"]
+
+
+def test_imputed_provisional_reason() -> None:
+    d = {
+        "reason": "provisional: values imputed; presence counted.",
+        "pct_in_surf": 0.34,
+    }
+    assert b.status_reason(d, "provisional", 0.2) == (
+        "values are imputed: presence counted, per-sample detection not available"
+    )
+
+
+def test_storage_references_are_scrubbed() -> None:
+    text = (
+        "bioRxiv supplementary S4 (surface compiled), as banked in "
+        "external://cell-surface-proteomics/2026-09-19-george-v1/: mean abundance"
+    )
+    out = b.americanize(text)
+    assert out == "bioRxiv supplementary S4 (surface compiled): mean abundance"
+    assert not b._STORAGE_LEAK.search(out)
+
+
+def test_held_reason_prefers_the_real_reason_over_imputation() -> None:
+    lasa = {
+        "reason": "hold: current table has imputed abundance and unresolved input/sample selection."
+    }
+    assert b.status_reason(lasa, "held", 0.2) == (
+        "the input sample and baseline can't be identified in the published table"
+    )
+    mahameed = {
+        "reason": "Hold: no unperturbed baseline exists; per-replicate, non-imputed LFQ."
+    }
+    assert b.status_reason(mahameed, "held", 0.2) == (
+        "every arm is treated, so there is no unperturbed baseline"
+    )
+    only = {"reason": "hold: every value is imputed."}
+    assert b.status_reason(only, "held", 0.2) == (
+        "values are imputed, so detection can't be read per protein"
+    )
+
+
+def test_published_held_arms_have_specific_reasons() -> None:
+    path = ROOT / "viewer" / "public" / "data" / "surface-proteomics" / "studies.json"
+    if not path.exists():
+        return
+    generic = "per-protein detection can't be recovered from the table"
+    for arm in json.loads(path.read_text())["arms"]:
+        if arm["status"] == "held":
+            assert arm.get("status_reason") not in (None, generic), arm["id"]
+            assert "imputed" not in arm["status_reason"], arm["id"]

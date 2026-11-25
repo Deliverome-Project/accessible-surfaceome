@@ -19,6 +19,11 @@ every human-only study arm we ingested, with the review decision for each:
   2026 was wired in after the sweep and is missing from the sweep-v5 manifest).
   A registry id the snapshot split into several arms becomes an alias, so a
   link to the parent id (``?arm=vilen-2022``) opens all of its arms.
+* the perturbed-state snapshot (``PERTURBED_SNAPSHOT``, built from the same sweep by
+  the analysis repo's ``perturbed_arms.py``) — one arm per non-baseline condition of an
+  input (senescent, infected, knockout, treated or diseased samples). Each is shown with
+  status ``perturbed`` ("Other condition") and never counted, and it takes its parent's
+  method audit, raw-data row, source files and cell-type group.
 
 Outputs (committed; the viewer serves them as static files):
 
@@ -83,6 +88,7 @@ import shutil
 import statistics
 import subprocess
 import time
+import xml.etree.ElementTree as ET
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
@@ -98,11 +104,33 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surface-proteomics"
 HGNC_TSV = REPO_ROOT / "data" / "external" / "hgnc" / "hgnc_complete_set.tsv"
 
-SNAPSHOT = "2026-11-15-sweep-v12"
+SNAPSHOT = "2026-11-23-abundance-v8"
+# Non-baseline states of the sweep's inputs (senescent, infected, knockout, treated cells),
+# one shown-not-counted arm each; built by the analysis repo's perturbed_arms.py from SNAPSHOT.
+PERTURBED_SNAPSHOT = "2026-11-23-perturbed-v6"
 PROCESSED_PREFIX = "sprint3/s3e8-cross-method-surfaceome"
 ANALYSIS_DIR = "analysis/sprint3/s3e8-cross-method-surfaceome"
 METHOD_AUDIT_PATH = f"{ANALYSIS_DIR}/method_audit.json"
 SOURCES_PATH = f"{ANALYSIS_DIR}/sources.json"
+RAW_DATA_PATH = f"{ANALYSIS_DIR}/raw_data_locations.tsv"
+# The shared study workbook (one tab per study arm, named by its id cut to
+# Excel's 31-character limit). Its durable copy is on S3; the viewer links
+# the Drive copy of the same file, which outside readers can open.
+STUDY_LIST_KEY = (
+    f"{PROCESSED_PREFIX}/study-list/Deliverome_surface_proteomics_studies.xlsx"
+)
+STUDY_LIST = {
+    "name": "Deliverome_surface_proteomics_studies_sweep-v12.xlsx",
+    "url": "https://drive.google.com/file/d/1ZZwZHYQo8P9dipYKZIMztVNOf2yA3utI/view",
+}
+# Raw-data audit flags, as the viewer words them.
+RAW_FLAGS = (
+    "raw_public",
+    "raw_private_or_embargoed",
+    "processed_only",
+    "accession_invalid",
+    "raw_not_deposited",
+)
 API_BASE = "https://api.deliverome.org/surfaceome"
 
 # Must match ``shardOf`` in viewer/lib/surface-proteomics.ts.
@@ -115,6 +143,11 @@ STATUS_BY_ROLE = {
     "hold": "held",
     "below_adjusted_screen": "below_screen",
     "complementary": "comparator",
+    # sweep-v15: a table already restricted to annotated or predicted surface
+    # proteins is shown but never counted (it cannot add a candidate).
+    "annotation_selected": "annotation_selected",
+    # A non-baseline state of another arm's samples (perturbed_arms.py): shown, never counted.
+    "perturbed_state": "perturbed",
     # sources.json's role for an arm the registry admits as a primary input.
     "primary": "core",
 }
@@ -178,6 +211,12 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "yanagida-hl60-raft-2007",
     ),
     "solid_cancer": (
+        # sweep-v19: ES2, Kuramochi, OVCAR8 and PEO4 high-grade serous ovarian cancer lines.
+        "govindarajan-hgsc-csc-2026",
+        # sweep-v19: malignant rhabdoid tumor and matched normal kidney organoids (one pooled list).
+        "buhl-mrt-organoid-2026",
+        # sweep-v16: BxPC-3, PANC-1 and CFPAC-1 xenograft tumors.
+        "zimmerman-pdac-xenograft-2025",
         "salmela-cscc-2026",
         "porter-gbm-2026",
         "glyco-pdx-csc-2026",
@@ -259,6 +298,7 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "karhemo-mda435-2012",
         "lethlarsen-mda-pm-2009",
         "li-hela-biotin-2019",
+        "anitei-hela-ier3ip1-2024",
         "li-hepg2-pecsl-insulin-2023",
         "liu-hela-pda-2018",
         "ozlu-hela-mitosis-2015",
@@ -315,6 +355,8 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
     ),
     "stem_stromal": (
         "wojdyla-2020",
+        # sweep-v19: ovarian cancer-associated fibroblasts.
+        "govindarajan-caf-csc-2026",
         "matta-2019",
         "hepatic-endoderm-2017",
         "niehage-dpsc-2016",
@@ -330,6 +372,8 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "mcquade-hesc-membrane-2009",
     ),
     "other_normal": (
+        # sweep-v19: immortalized fallopian tube epithelium (FT194, FT237).
+        "govindarajan-fte-csc-2026",
         "mesidor-cf-s1-2026",
         "mesidor-cf-s2-2026",
         "mesidor-cf-s3-2026",
@@ -349,6 +393,7 @@ CELL_GROUPS: dict[str, tuple[str, ...]] = {
         "myc-wells-2021",
         "ito-bbb-2020",
         "soh-hacat-pmp-2020",
+        "soh-hacat-silac-pmp-2020",
         "leung-2020",
         "giovani-pdl-2019",
         "mallanna-2016",
@@ -414,7 +459,7 @@ FAMILY_LABEL = {
     "biotin-amine": "Amine biotinylation",
     "glycoprotein-capture": "Glycoprotein capture",
     "glycopeptide-capture": "Glycopeptide capture",
-    "peroxidase-proximity": "Peroxidase proximity labeling",
+    "peroxidase-proximity": "Peroxidase or laccase proximity labeling",
     "other-chemoproteomic": "Other chemoproteomic labeling",
     "membrane-fractionation": "Membrane fractionation",
 }
@@ -454,9 +499,9 @@ def _read_s3(bucket: str, key: str) -> bytes:
     return s3.get_object(Bucket=bucket, Key=key)["Body"].read()
 
 
-def _git_show(args: argparse.Namespace, path: str) -> str:
+def _git_show(args: argparse.Namespace, path: str, ref: str | None = None) -> str:
     return subprocess.run(
-        ["git", "-C", args.analysis_repo, "show", f"{args.analysis_ref}:{path}"],
+        ["git", "-C", args.analysis_repo, "show", f"{ref or args.analysis_ref}:{path}"],
         check=True,
         capture_output=True,
         text=True,
@@ -481,7 +526,218 @@ def load_inputs(args: argparse.Namespace) -> tuple[dict, list[dict], dict, dict]
         audit = json.loads(_git_show(args, METHOD_AUDIT_PATH))
         sources = json.loads(_git_show(args, SOURCES_PATH))
     detections = list(csv.DictReader(io.StringIO(detections_text), delimiter="\t"))
+    base = (manifest.get("derived_from") or {}).get("snapshot")
+    add_perturbed_arms(manifest, detections, *load_perturbed(args, base))
     return manifest, detections, audit, sources
+
+
+def load_perturbed(
+    args: argparse.Namespace, base: str | None = None
+) -> tuple[dict, list[dict]]:
+    """The perturbed-state snapshot's manifest and detections (empty with --no-perturbed)."""
+    if args.no_perturbed:
+        return {"datasets": []}, []
+    if args.perturbed_dir:
+        src = Path(args.perturbed_dir)
+        manifest = json.loads((src / "manifest.json").read_text())
+        text = (src / "detections_long.tsv").read_text()
+    else:
+        import os
+
+        bucket = os.environ["S3_BUCKET_PROCESSED"]
+        prefix = f"{PROCESSED_PREFIX}/{args.perturbed_snapshot}"
+        manifest = json.loads(_read_s3(bucket, f"{prefix}/manifest.json"))
+        text = _read_s3(bucket, f"{prefix}/detections_long.tsv").decode()
+    # The main snapshot may itself be an overlay of a sweep (the abundance screen);
+    # the perturbed arms are then built from that same sweep.
+    if manifest.get("derived_from") not in (None, args.snapshot, base):
+        raise SystemExit(
+            f"perturbed snapshot was built from {manifest['derived_from']}, not {args.snapshot}"
+        )
+    return manifest, list(csv.DictReader(io.StringIO(text), delimiter="\t"))
+
+
+# The condition part of an arm's name repeats the method, which the study's name
+# already carries. These phrases are method, not condition, and are dropped from it.
+_METHOD_PHRASES = re.compile(
+    r"\bMem-PER Plus membrane fraction\b|\b(?:crude )?membrane fraction\b|"
+    r"\bcrude membrane(?: \(differential ultracentrifugation\))?|\bSPION plasma-membrane isolate\b|"
+    r"\bmembrane-impermeable biotin surface capture\b|\bsurface capture\b|"
+    r"\bsucrose-gradient raft fraction\b|\bTX-114 detergent phase\b|\bintact-cell trypsin shaving\b|"
+    r"\bPierce cell-surface biotinylation\b|\bperiodate/biocytin-hydrazide intact cells\b|"
+    r"\bwhole-lysate hydrazide glycoprotein capture\b|\bplasma-membrane lipid rafts\b|"
+    r"\bPAL on-bead trypsin digest\b|\bintact-cell(?: [\w-]+)*|"
+    r"\bsulfo-NHS[\w-]*\b|\b[\w-]*biotin\b|\b(?:then )?PECSL\b|\bPMP\b|\bCSC\b|"
+    r"\blabell?ed\b|\bchannels?\b|\bpulldown\b|\bbaseline\b|\binferred\b|"
+    r"\bnot used for membership\b",
+    re.I,
+)
+# "X, proliferating vs senescent" / "X, wild type vs YIPF5 KO/mutant/rescue": the
+# paper's comparison, which each arm's own condition now replaces.
+_VS_CLAUSE = re.compile(r",\s*[^,()]*\bvs\.?\s[^,()]*")
+# "X, mock arm" / "X, control siRNA": a name that describes the baseline arm only.
+_BASELINE_TAIL = re.compile(
+    r",\s*(?:[^,()]*\barm|[^,()]*\bcontrol(?: channels| siRNA)?|parental arm)\s*$", re.I
+)
+# Hand labels where the rules read badly.
+STUDY_STEMS: dict[str, str] = {
+    "bakhshinyan-mb-glyco-2023": "Group 3 medulloblastoma PDX lysate N-glycopeptide capture",
+    "cohenyaron-hela-2026": "HeLa sulfo-NHS surfaceome with no-biotin controls",
+    "ehlers-ampd2-2021": "Sulfo-NHS-SS-biotin surface pulldown with no-biotin control, unstated human cell type",
+    "graessel-cd4t-pal-2015": "Primary human naive CD4+ T cell PAL surface glycoproteome",
+    "herhaus-8988t-2024": "PaTu 8988T pancreatic cancer sulfo-NHS-LC surfaceome with no-biotin control",
+    "kopecka-ht29-csc-2015": "HT29 colon carcinoma hydrazide cell surface capture",
+    "soh-hacat-pmp-2020": "HaCaT keratinocyte plasma membrane profiling, TMT (GOPC knockout experiment)",
+    "soh-hacat-silac-pmp-2020": "HaCaT keratinocyte plasma membrane profiling, SILAC (HSV-1 infection experiment)",
+    "li-hepg2-pecsl-insulin-2023": "HepG2 10-s peroxidase-mediated (PECSL) surface biotinylation",
+    "mahameed-hepg2-2020": "HepG2 sulfo-NHS-SS-biotin surfaceome",
+    "ozlu-hela-mitosis-2015": "HeLa SILAC sulfo-NHS-SS-biotin surfaceome",
+    "srivastava-tnbc-cm-2026": "TNBC line crude membrane, DIA",
+    "srivastava-tnbc-csp-2026": "TNBC line surface biotinylation, DIA",
+    "vaish-hek293tshaving-2024": "HEK293T intact-cell trypsin shaving",
+    "weekes-hfff-qtv-2014": "Primary HFFF fibroblast plasma membrane profiling",
+    "yanagida-hl60-raft-2007": "HL-60 plasma-membrane lipid rafts",
+    "ye-mcf10a-csc-2016": "MCF10A hydrazide cell surface capture",
+    "ye-mcf10a-membrane-2016": "MCF10A carbonate-washed crude membrane shotgun proteome",
+}
+CONDITION_LABELS: dict[str, str] = {
+    "cohenyaron-hela-2026": "wild-type",
+    "ehlers-ampd2-2021": "normoxia (inferred)",
+    "ehlers-ampd2-2021--hox-sulfo-nhs-ss-biotin-pulldown": "hypoxia (inferred)",
+    "bakhshinyan-mb-glyco-2023": "untreated control xenograft, endpoint",
+    "friedlova-cervix-2025": "untreated",
+    "liu-ovcar8-hydrazide-2025": "sgGAL4 control",
+    "liu-ovcar8-hydrazide-2025--atg9a-knockout-periodate-biocytin-hydrazide-labelled": "ATG9A knockout",
+    "graessel-cd4t-pal-2015": "unstimulated (0 h), on-bead trypsin digest",
+    "mahameed-hepg2-2020": "thapsigargin alone 16 h",
+    "muller-monocyte-glyco-2017": "unstimulated 24 h culture",
+    "hammoud-mdm-raft-2022": "ethanol vehicle 1 h",
+    "harant-sma-srm-2023": "nine cell types",
+    "harant-sma-srm-2023--sma-resistant-membrane-fragments-of-jurkat-mutant-lines": "Jurkat mutant lines",
+    "heider-mm1s-2021": "DMSO solvent (inferred)",
+    "heider-mm1s-2021--lenalidomide-48-h-surface-capture": "lenalidomide 48 h (inferred)",
+    "oates-macrophage-2023": "M0 unpolarised",
+    "ozlu-hela-mitosis-2015": "interphase (thymidine-arrested)",
+    "ozlu-hela-mitosis-2015--mitotic-arrest-labelled": "mitotic arrest (S-trityl-L-cysteine)",
+    "srivastava-tnbc-cm-2026": "cisplatin-sensitive",
+    "srivastava-tnbc-cm-2026--cisplatin-resistant-crude-membrane": "cisplatin-resistant",
+    "srivastava-tnbc-csp-2026": "cisplatin-sensitive",
+    "srivastava-tnbc-csp-2026--cisplatin-resistant-membrane-impermeable-biotin-surface": "cisplatin-resistant",
+    "taggi-bbb-2025": "Ad-LacZ control",
+    "tharkeshwar-hela-pm-2017": "wild-type",
+    "tharkeshwar-hela-pm-2017--hela-npc1-ko-clone-1-npc1-knockout-spion-plasma-membrane-isolate": "NPC1 knockout, clone 1",
+    "tharkeshwar-hela-pm-2017--hela-npc1-ko-clone-2-npc1-knockout-spion-plasma-membrane-isolate": "NPC1 knockout, clone 2",
+    "vaish-hek293tshaving-2024": "untreated",
+    **{
+        f"graessel-cd4t-pal-2015--cd3-cd28-stimulated-{h}-pal-{k}": f"CD3/CD28 stimulated {h}, {prep}"
+        for h in ("3h", "6h", "12h", "24h", "48h")
+        for k, prep in (
+            ("pngase-f-released-n", "PNGase F-released glycopeptides"),
+            ("on-bead-trypsin-digest", "on-bead trypsin digest"),
+        )
+    },
+}
+
+
+def study_stem(name: str, study_id: str = "") -> str:
+    """A study's name without its citation, its "A vs B" comparison or a baseline-only tail."""
+    if study_id in STUDY_STEMS:
+        return STUDY_STEMS[study_id]
+    stem = _strip_citation(name)
+    stem = _VS_CLAUSE.sub("", stem)
+    stem = _BASELINE_TAIL.sub("", stem)
+    stem = re.sub(r"\s*\(", " (", stem).strip(" ,;·")
+    return stem or _strip_citation(name)
+
+
+def short_condition(text: str | None) -> str:
+    """A condition without its method phrases: "replicative senescence, Mem-PER Plus
+    membrane fraction" -> "replicative senescence"."""
+    text = _METHOD_PHRASES.sub("", text or "")
+    # Split on commas outside parentheses, so "(120 nM, 72 h)" stays whole.
+    pieces, depth, cur = [], 0, ""
+    for ch in text:
+        depth += (ch == "(") - (ch == ")")
+        if ch in ",;" and depth <= 0:
+            pieces.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    pieces.append(cur)
+    out = []
+    for p in pieces:
+        p = re.sub(r"\s+", " ", p)
+        p = re.sub(r"\(\s*[,;]?\s*", "(", p)
+        p = re.sub(r"\s*[,;]?\s*\)", ")", p)
+        p = re.sub(r"\(\s*\)", "", p).strip()
+        if p.count("(") > p.count(")"):
+            p = p.rstrip(" ,;") + ")"
+        p = p.strip(" ,;")
+        if p and p not in ("()",):
+            out.append(p)
+    return re.sub(r",\s*\(", " (", ", ".join(out))
+
+
+def baseline_condition(d: dict) -> str:
+    """The baseline group's own condition, from the extraction recipe."""
+    for e in d.get("extractions") or []:
+        for g in e.get("sample_groups") or []:
+            if g.get("use_for_membership", True):
+                label = short_condition(g.get("condition"))
+                if label and not re.fullmatch(r"(?i)baseline|control", label):
+                    return label
+    return "untreated"
+
+
+def add_perturbed_arms(
+    manifest: dict, detections: list[dict], perturbed: dict, rows: list[dict]
+) -> None:
+    """Append each perturbed-state arm to ``manifest``/``detections``.
+
+    The arm takes its parent's place in the method audit, raw-data audit and cell-type
+    groups (through ``recovery_parent_study``) and lists the parent's source files. Its
+    own protein table is not read for quantities (it carries none), so it has no
+    ``control_tsv_key`` here.
+    """
+    by_id = {d["study_id"]: d for d in manifest["datasets"]}
+    # Name every arm of a study that has other conditions "<study> · <its own condition>",
+    # baseline included, so four arms of one paper don't all read "X, A vs B".
+    seen: dict[tuple[str, str], int] = defaultdict(int)
+    for d in perturbed["datasets"]:
+        seen[(d["parent_study_id"], short_condition(d["condition"]))] += 1
+    for d in perturbed["datasets"]:
+        parent = by_id.get(d["parent_study_id"])
+        if parent is None:
+            raise SystemExit(
+                f"{d['study_id']}: parent {d['parent_study_id']} not in snapshot"
+            )
+        entry = {
+            k: v
+            for k, v in d.items()
+            if k not in ("control_tsv_key", "control_tsv_sha256")
+        }
+        entry["recovery_parent_study"] = d["parent_study_id"]
+        label = CONDITION_LABELS.get(d["study_id"]) or short_condition(d["condition"])
+        if (
+            d["study_id"] not in CONDITION_LABELS
+            and seen[(d["parent_study_id"], short_condition(d["condition"]))] > 1
+        ):
+            label = f"{d['cell_or_tissue_type']}, {label}"
+        entry["name"] = f"{study_stem(parent['name'], d['parent_study_id'])} · {label}"
+        entry["sources"] = parent.get("sources") or []
+        manifest["datasets"].append(entry)
+    for sid in {d["parent_study_id"] for d in perturbed["datasets"]}:
+        parent = by_id[sid]
+        label = CONDITION_LABELS.get(sid) or baseline_condition(parent)
+        parent["name"] = f"{study_stem(parent['name'], sid)} · {label} (baseline)"
+    detections.extend(
+        {
+            "uniprot_accession": r["uniprot_accession"],
+            "gene_symbol": r.get("gene_symbol") or "",
+            "study_id": r["study_id"],
+        }
+        for r in rows
+    )
 
 
 def _pick(columns: list[str], wanted: tuple[str, ...], first: str | None) -> str | None:
@@ -1142,9 +1398,11 @@ def write_downloads(
     # Ends on always-present columns: a trailing empty field would leave a
     # trailing tab, which whitespace-trimming tools (and pre-commit) strip.
     cols = [
-        "id", "name", "first_author", "year", "journal", "pmid", "doi", "repository",
+        "id", "name", "citation", "first_author", "year", "journal", "pmid", "doi", "repository",
         "repository_ids", "method_class", "family", "family_label", "cell_group",
-        "sample", "reference_overlap", "n_proteins", "admitted", "status",
+        "sample", "reference_overlap", "screen_basis", "abundance_share", "abundance_auroc",
+        "auroc_rescued", "n_proteins",
+        "admitted", "status",
     ]  # fmt: skip
     with (out / "surface_proteomics_datasets.tsv").open("w", newline="") as fh:
         w = csv.writer(fh, delimiter="\t", lineterminator="\n")
@@ -1238,6 +1496,65 @@ def load_pubmed(pmids: list[str]) -> dict[str, dict[str, Any]]:
     return out
 
 
+def load_pubmed_authors(pmids: list[str]) -> dict[str, dict[str, Any]]:
+    """First author's surname and the author count, from the PubMed record.
+
+    esummary's ``sortfirstauthor`` is "Surname Initials", and a surname can
+    have several words ("Cohen Yaron K"), so the surname comes from the
+    efetch XML's ``LastName`` (or ``CollectiveName`` for a consortium).
+    """
+    if not pmids:
+        return {}
+    url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+    params = {"db": "pubmed", "retmode": "xml", "id": ",".join(sorted(set(pmids)))}
+    headers = {"User-Agent": "accessible-surfaceome build (surface-proteomics studies)"}
+    r = httpx.post(url, data=params, headers=headers, timeout=120)
+    r.raise_for_status()
+    out: dict[str, dict[str, Any]] = {}
+    for art in ET.fromstring(r.content).iter("PubmedArticle"):
+        pmid = art.findtext("MedlineCitation/PMID")
+        authors = [
+            a
+            for a in art.findall("MedlineCitation/Article/AuthorList/Author")
+            if a.get("ValidYN", "Y") == "Y"
+        ]
+        if not pmid or not authors:
+            continue
+        surnames = [
+            a.findtext("LastName") or a.findtext("CollectiveName") for a in authors[:2]
+        ]
+        out[pmid] = {
+            "author_surname": surnames[0],
+            "second_author_surname": surnames[1] if len(authors) == 2 else None,
+            "n_authors": len(authors),
+        }
+    return out
+
+
+_INITIALS = re.compile(r"\s+[A-Z]{1,4}$")
+
+
+def study_citation(arm: dict[str, Any]) -> str | None:
+    """ "George et al. 2026", "A and B 2020" or "A 2020": surname only.
+
+    With no known author count, "et al." is the default. A two-author
+    paper names both only when the second surname is known.
+    """
+    surname = arm.get("author_surname") or _INITIALS.sub(
+        "", (arm.get("first_author") or "").strip()
+    )
+    if not surname:
+        return None
+    n = arm.get("n_authors")
+    if n == 1:
+        names = surname
+    elif n == 2 and arm.get("second_author_surname"):
+        names = f"{surname} and {arm['second_author_surname']}"
+    else:
+        names = f"{surname} et al."
+    return " ".join(x for x in (names, str(arm.get("year") or "")) if x)
+
+
 # The viewer uses American spelling. Our own curated descriptions (arm names,
 # sample text) are normalized; published paper titles are left as published.
 _AMERICAN = (
@@ -1260,9 +1577,29 @@ _AMERICAN = (
 )
 
 
+# Internal storage references ("as banked in external://bucket/prefix/") that
+# curated text sometimes carries. Never published: the phrase is dropped.
+_STORAGE_REF = re.compile(
+    r",?\s*(?:as\s+)?(?:banked|stored|archived|copied|saved)?\s*(?:in|at|under)?\s*"
+    r"\b(?:external|processed|raw|s3)://[^\s:;,)]*"
+)
+# Anything that still looks like one after scrubbing fails the build.
+_STORAGE_LEAK = re.compile(
+    r"\b(?:external|processed|raw|s3)://|cell-surface-proteomics/"
+)
+
+
+def scrub_storage(text: str | None) -> str | None:
+    """Drop internal storage references from curated free text."""
+    if not text:
+        return text
+    return _STORAGE_REF.sub("", text).strip()
+
+
 def americanize(text: str | None) -> str | None:
     if not text:
         return text
+    text = scrub_storage(text) or text
     for a, b in _AMERICAN:
         text = text.replace(a, b)
     return text
@@ -1279,8 +1616,56 @@ FILTER_UNIVERSE_LABEL = {
 
 # Held reasons, matched in order against the review note (lower-cased). The
 # note itself is not exported; only this short structured label is.
+# Matched as regular expressions. sweep-v15: imputed values alone no longer
+# hold an arm, so imputation is tried last; a note that mentions it alongside
+# its real reason ("current table has imputed abundance and unresolved
+# input...", "non-imputed LFQ") gets the real reason.
 HELD_REASONS = (
-    ("imput", "values are imputed, so detection can't be read per protein"),
+    # Before the generic keys: such a note goes on to mention "biological
+    # replicates", which the "biological" key below would otherwise claim.
+    (
+        r"defined by detection in the",
+        "the published table keeps only proteins detected in the other condition, so the baseline list is cut short",
+    ),
+    (
+        r"unresolved input",
+        "the input sample and baseline can't be identified in the published table",
+    ),
+    (
+        r"no unperturbed baseline",
+        "every arm is treated, so there is no unperturbed baseline",
+    ),
+    # Specific reasons that otherwise fell to the generic default (or, for
+    # an unnamed cell line, to "pooled"); each paraphrases its review note.
+    (
+        r"cell line\(s\) and whether",
+        "the cell line, and whether runs were pooled, aren't stated",
+    ),
+    (
+        r"does not name the cell line",
+        "the deposit doesn't name the cell line or reagent, and there is no paper",
+    ),
+    (
+        r"does not state the cell type",
+        "the deposit can't be matched to the paper's cell type",
+    ),
+    (
+        r"design of the four biotin runs",
+        "the run design is only in a supplement we couldn't retrieve",
+    ),
+    (r"barely enriched", "the pull-downs are barely enriched over total lysate"),
+    (
+        r"dominated by intracellular",
+        "the shaved fraction is mostly intracellular proteins",
+    ),
+    (
+        r"tce table is not public",
+        "the total-lysate table needed to remove contaminants isn't public",
+    ),
+    (
+        r"equal-protein mix",
+        "each sample mixes several cell lines, so membership can't be stated per line",
+    ),
     ("does not match", "the deposited table doesn't match the paper's design"),
     ("channel", "the sample-to-condition map is unpublished"),
     ("reported surface set", "only the authors' pre-selected surface list is public"),
@@ -1294,6 +1679,7 @@ HELD_REASONS = (
     ("barcoded", "samples can't be separated in the published table"),
     ("pool", "conditions are pooled in one list, with no separable baseline"),
     ("biological", "only biological comparisons are published, not a baseline list"),
+    (r"(?<!non-)imput", "values are imputed, so detection can't be read per protein"),
 )
 
 
@@ -1302,12 +1688,33 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
     pct = d.get("pct_in_surf")
     universe = d.get("filter_universe")
     filtered = universe not in (None, "human")
+    share, cutoff = d.get("abundance_share"), d.get("abundance_cutoff")
+    by_amount = d.get("screen_basis") == "abundance" and share is not None
+    if status == "below_screen" and by_amount:
+        return f"{share:.1%} of its length-corrected amount in Canonical or Likely proteins, under {cutoff:.0%}"
     if status == "provisional":
+        # sweep-v15: imputation alone no longer holds an arm.
+        if "imput" in (d.get("reason") or "").lower():
+            return "values are imputed: presence counted, per-sample detection not available"
         if filtered:
             what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
             return f"author pre-filtered to {what}"
-        if pct is not None and pct < base:
+        # Passing by amount, but an earlier review had marked it low-overlap: its only
+        # comparison is biological (cell states, a scrambled guide), with no no-label control.
+        if by_amount and d.get("previous_review_role") == "low_overlap":
+            note = (d.get("previous_reason") or "").lower()
+            why = (
+                "its comparison is biological, with no no-label control"
+                if "biological" in note
+                else "an earlier review flagged its low overlap"
+            )
+            return f"counted by its length-corrected amount ({share:.1%}); {why}"
+        if pct is not None and pct < base and not by_amount:
             return f"within 2 points of the {base:.0%} screen ({pct:.1%})"
+        # sweep-v17: an arm kept above its matched no-label control by our
+        # own fold cutoff rather than the authors' published one (LaccID).
+        if any("enriched_over_control" in x for x in d.get("extractions") or []):
+            return "filtered against its matched no-label control by our cutoff, not the authors'"
         return "built from a partial author export (peptide-level table)"
     if status == "below_screen":
         if filtered and pct is not None:
@@ -1320,12 +1727,19 @@ def status_reason(d: dict[str, Any], status: str, base: float) -> str | None:
     if status == "held":
         note = (d.get("reason") or "").lower()
         return next(
-            (label for key, label in HELD_REASONS if key in note),
+            (label for key, label in HELD_REASONS if re.search(key, note)),
             "per-protein detection can't be recovered from the table",
         )
+    if status == "annotation_selected":
+        what = FILTER_UNIVERSE_LABEL.get(universe, "annotated surface proteins")
+        return f"author pre-filtered to {what}"
+    if status == "perturbed":
+        cond = short_condition(d.get("condition")) or (d.get("condition") or "")
+        cls = d.get("perturbation") or "other condition"
+        return cond if cls.lower() in cond.lower() else f"{cls}: {cond}"
     if status == "comparator":
         if d.get("method_group") == "membrane-fractionation":
-            return "membrane fractionation, not intact-cell labeling"
+            return "cells broken open and membranes purified, so it can't show a protein faces outward"
         if "inner-leaflet" in (d.get("reason") or "").lower():
             return "labeling reaches the inner side of the membrane"
         return "not intact-cell surface labeling"
@@ -1372,12 +1786,18 @@ def build_arms(
             else bool(d.get("surface_accessibility_evidence"))
         )
         role = d["review_role"]
+        if role not in STATUS_BY_ROLE:
+            raise SystemExit(
+                f"{sid}: unknown review role {role!r}; add it to STATUS_BY_ROLE"
+            )
         arms.append(
             {
                 "id": sid,
                 "name": americanize(_strip_citation(d["name"])),
                 "publication": str(d.get("publication_id") or paper.get("pmid") or sid),
                 "first_author": paper.get("first_author"),
+                "citation": study_citation(paper),
+                "n_authors": paper.get("n_authors"),
                 "year": paper.get("year"),
                 "journal": paper.get("journal"),
                 "title": paper.get("title"),
@@ -1392,12 +1812,37 @@ def build_arms(
                     d.get("human_sample_type") or d.get("cell_or_tissue_type")
                 ),
                 "status": STATUS_BY_ROLE.get(role, role),
+                # A perturbed-state arm: the arm whose baseline it departs from, the
+                # condition, and its class ("infection", "genetic perturbation", ...).
+                "parent": d.get("parent_study_id"),
+                "condition": americanize(d.get("condition")),
+                "perturbation": d.get("perturbation"),
                 "status_reason": status_reason(
                     d, STATUS_BY_ROLE.get(role, role), base_cutoff
                 ),
                 "admitted": bool(d.get("admitted")),
                 "n_proteins": counts.get(sid, 0),
                 "reference_overlap": d.get("pct_in_surf"),
+                # The abundance screen (2026-11-18-abundance-v1): datasets whose table
+                # carries usable amounts are judged by the share of their length-corrected
+                # amount in Canonical or Likely proteins; the rest by reference_overlap.
+                "screen_basis": d.get("screen_basis"),
+                "abundance_share": (
+                    round(d["abundance_share"], 4)
+                    if d.get("abundance_share") is not None
+                    else None
+                ),
+                "abundance_cutoff": d.get("abundance_cutoff"),
+                # The AUROC rescue (2026-11-22-abundance-v6): an arm under the amount cutoff
+                # still counts when its length-corrected amounts rank Canonical or Likely
+                # proteins first (within-table AUROC at or above auroc_rescue_cutoff).
+                "abundance_auroc": (
+                    round(d["abundance_auroc"], 4)
+                    if d.get("abundance_auroc") is not None
+                    else None
+                ),
+                "auroc_rescue_cutoff": d.get("auroc_rescue_cutoff"),
+                "auroc_rescued": bool(d.get("auroc_rescued")),
                 "repository": (d.get("accession") or {}).get("repository"),
                 "repository_ids": (d.get("accession") or {}).get("ids") or [],
             }
@@ -1410,7 +1855,8 @@ _URL = re.compile(r"https?://[^\s)\"']+")
 # "hold: threshold 20.0000%; borderline allowance 0.0%. " — the screen numbers
 # are exported as fields of their own, so the rationale starts after them.
 _REASON_PREFIX = re.compile(
-    r"^[a-z_ ]+:\s*(?:threshold [\d.]+%;\s*borderline allowance [\d.]+%\.?\s*)?"
+    r"^[a-z_ ]+:\s*(?:threshold [\d.]+%;\s*borderline allowance [\d.]+%\.?\s*"
+    r"|abundance screen [\d.]+%;.*?of proteins\)(?:; counted by the AUROC rescue.*?\(AUROC [\d.]+ >= [\d.]+\))?\.\s*)?"
 )
 
 
@@ -1518,15 +1964,14 @@ _AUDIT_METHOD = "methods as recorded in this audit (verified_method)"
 
 
 def instrument_source_sentence(text: str | None) -> str | None:
-    """Where the instrument was read, as a sentence for the panel."""
+    """Where the instrument was read, as a sentence for the panel.
+
+    None when the instrument came from the same source as the method: the
+    method-source line already says where it was read.
+    """
     text = public_wording(text)
-    if not text:
+    if not text or text == _AUDIT_METHOD:
         return None
-    if text == _AUDIT_METHOD:
-        return (
-            "Instrument taken from our verified summary of the paper's methods,"
-            " read from the same source as the method."
-        )
     if m := _PX_RECORD.match(text):
         ids = m.group("ids").split(", ")
         listed = ids[0] if len(ids) == 1 else ", ".join(ids[:-1]) + f" and {ids[-1]}"
@@ -1630,6 +2075,17 @@ def _filters(e: dict[str, Any]) -> list[str]:
         )
     if e.get("symbol_regex"):
         rules.append(f"symbols matching {e['symbol_regex']}")
+    rule = e.get("enriched_over_control")
+    if rule:
+        # sweep-v17: membership also needs enrichment over a matched no-label control.
+        fold = 2 ** float(rule["min_log2"])
+        control = rule.get("control_label") or "matched no-label control"
+        rules.append(
+            f"keep proteins at least {fold:g}-fold above the {control} "
+            f"(mean of the {len(rule['labeled'])} labeled versus "
+            f"{len(rule['control'])} control channels); a protein the control "
+            "did not detect stays"
+        )
     return rules
 
 
@@ -1721,7 +2177,7 @@ def build_methods(
 
 
 METHODS_TSV_COLS = (
-    "id", "name", "first_author", "year", "pmid", "doi", "status", "status_reason",
+    "id", "name", "citation", "first_author", "year", "pmid", "doi", "status", "status_reason",
     "rationale", "repository", "repository_ids", "source_files", "method",
     "method_source", "beads", "lot", "instrument", "instrument_detail",
     "instrument_source", "cell_or_tissue", "sample_scope", "accession_columns",
@@ -1785,6 +2241,64 @@ def write_methods_tsv(
             w.writerow([_tsv_cell(row.get(c)) for c in METHODS_TSV_COLS])
 
 
+def load_raw_locations(text: str) -> dict[str, dict[str, Any]]:
+    """Where each study arm's raw instrument files are, from the S3E8 raw-data audit.
+
+    Keeps only the public location fields (flag, repository, accessions, URL);
+    the audit's free-text notes are not carried over.
+    """
+    out: dict[str, dict[str, Any]] = {}
+    for row in csv.DictReader(io.StringIO(text), delimiter="\t"):
+        sid = row.get("study_id")
+        if not sid or row.get("record") != "registry":
+            continue
+        flag = row.get("flag") or ""
+        if flag not in RAW_FLAGS:
+            raise SystemExit(f"unknown raw-data flag {flag!r} for {sid}")
+        accessions = [
+            x.strip() for x in (row.get("accessions") or "").split(";") if x.strip()
+        ]
+        out[sid] = {
+            k: v
+            for k, v in {
+                "flag": flag,
+                "repository": row.get("repository") or None,
+                "accessions": accessions or None,
+                "url": _public_url(row.get("url")),
+            }.items()
+            if v
+        }
+    return out
+
+
+def workbook_sheet_names(data: bytes) -> list[str]:
+    """Sheet names of an .xlsx, read from its workbook.xml (no full parse)."""
+    import zipfile
+
+    with zipfile.ZipFile(io.BytesIO(data)) as z:
+        root = ET.fromstring(z.read("xl/workbook.xml"))
+    ns = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+    return [s.get("name") or "" for s in root.iter(f"{ns}sheet")]
+
+
+def attach_sources(
+    arms: list[dict[str, Any]],
+    parent_of: dict[str, str],
+    raw: dict[str, dict[str, Any]],
+    tabs: set[str] | None,
+) -> None:
+    """Give each arm its raw-data location and its study-workbook tab.
+
+    An arm split out of a parent study has no row or tab of its own; it uses
+    its parent's.
+    """
+    for a in arms:
+        keys = [a["id"], *([parent_of[a["id"]]] if a["id"] in parent_of else [])]
+        a["raw_data"] = next((raw[k] for k in keys if k in raw), None)
+        if tabs is not None:
+            a["sheet_tab"] = next((k[:31] for k in keys if k[:31] in tabs), None)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--snapshot", default=SNAPSHOT)
@@ -1792,11 +2306,23 @@ def main() -> None:
         "--source-dir",
         help="Local dir with manifest.json, detections_long.tsv, method_audit.json",
     )
+    p.add_argument("--perturbed-snapshot", default=PERTURBED_SNAPSHOT)
+    p.add_argument(
+        "--perturbed-dir",
+        help="Local dir with the perturbed snapshot's manifest.json and detections_long.tsv",
+    )
+    p.add_argument(
+        "--no-perturbed", action="store_true", help="Leave the perturbed-state arms out"
+    )
     p.add_argument("--env-file", type=Path, help=".env holding the S3_* credentials")
     p.add_argument(
         "--analysis-repo", default=str(Path.home() / "git" / "deliverome-analysis")
     )
     p.add_argument("--analysis-ref", default="origin/main")
+    p.add_argument(
+        "--raw-data-ref",
+        help="analysis-repo ref holding raw_data_locations.tsv (default: --analysis-ref)",
+    )
     p.add_argument("--api-base", default=API_BASE)
     p.add_argument("--out", type=Path, default=OUT_DIR)
     args = p.parse_args()
@@ -1825,16 +2351,46 @@ def main() -> None:
         for d in manifest["datasets"]
     ]
     pubmed = load_pubmed([p for p in pmids if p.isdigit()])
+    for pmid, authors in load_pubmed_authors(list(pubmed)).items():
+        pubmed[pmid].update(authors)
     built = build_arms(manifest, audit, {k: len(v) for k, v in counts.items()}, pubmed)
     # Whole-lysate arms measure neither intact cells nor a membrane fraction.
     excluded = sorted(a["id"] for a in built if a["method_class"] == "lysate")
     arms = [a for a in built if a["method_class"] != "lysate"]
     group_of = {sid: g for g, ids in CELL_GROUPS.items() for sid in ids}
+    # A perturbed-state arm is in its parent's group.
+    group_of.update(
+        {a["id"]: group_of[a["parent"]] for a in arms if a["parent"] in group_of}
+    )
     missing = [a["id"] for a in arms if a["id"] not in group_of]
     if missing:
         raise SystemExit(f"add these arms to CELL_GROUPS: {', '.join(missing)}")
     for a in arms:
         a["cell_group"] = group_of[a["id"]]
+    parent_of = {
+        d["study_id"]: d["recovery_parent_study"]
+        for d in manifest["datasets"]
+        if d.get("recovery_parent_study")
+    }
+    parent_of.update({c: k for k, v in aliases.items() for c in v})
+    if args.source_dir:
+        raw_path = Path(args.source_dir) / "raw_data_locations.tsv"
+        raw = load_raw_locations(raw_path.read_text()) if raw_path.exists() else {}
+        tabs_path = Path(args.source_dir) / "study_list_tabs.json"
+        tabs = set(json.loads(tabs_path.read_text())) if tabs_path.exists() else None
+    else:
+        import os
+
+        raw = load_raw_locations(_git_show(args, RAW_DATA_PATH, args.raw_data_ref))
+        tabs = set(
+            workbook_sheet_names(
+                _read_s3(os.environ["S3_BUCKET_PROCESSED"], STUDY_LIST_KEY)
+            )
+        )
+    attach_sources(arms, parent_of, raw, tabs)
+    no_raw = [a["id"] for a in arms if not a["raw_data"]]
+    if raw and no_raw:
+        raise SystemExit(f"no raw-data audit row for: {', '.join(no_raw)}")
     index = {a["id"]: i for i, a in enumerate(arms)}
     aliases = {k: [c for c in v if c in index] for k, v in aliases.items()}
     aliases = {k: v for k, v in aliases.items() if v}
@@ -1886,10 +2442,19 @@ def main() -> None:
         shards[shard_of(acc)][acc] = entry
 
     admitted = [a for a in arms if a["admitted"]]
+    # The viewer counts by status; the totals above count by `admitted`.
+    mismatch = [
+        a["id"]
+        for a in arms
+        if a["admitted"] != (a["status"] in ("core", "provisional"))
+    ]
+    if mismatch:
+        raise SystemExit(f"admitted disagrees with status for: {', '.join(mismatch)}")
     meta = {
         "_generated_by": "scripts/build/build_surface_proteomics_studies.py",
         "generated_at": datetime.now(UTC).strftime("%Y-%m-%d"),
         "snapshot": args.snapshot,
+        "perturbed_snapshot": None if args.no_perturbed else args.perturbed_snapshot,
         "source": f"S3E8 cross-method surfaceome compendium, processed snapshot {args.snapshot}",
         "n_shards": N_SHARDS,
         "n_arms": len(arms),
@@ -1915,9 +2480,19 @@ def main() -> None:
         "cohort_detection_hist": cohort_hists(presence, arms, deep, tiers),
         "accession_normalization": norm_stats,
         "aliases": aliases,
+        "study_list": STUDY_LIST,
         "excluded_arms": excluded,
         "arms": arms,
     }
+
+    methods = build_methods(manifest, audit, arms)
+    # Last line of defense for the "no storage paths in public output" rule.
+    for label, blob in (("studies.json", meta), ("methods.json", methods)):
+        leak = _STORAGE_LEAK.search(json.dumps(blob, ensure_ascii=False))
+        if leak:
+            raise SystemExit(
+                f"{label} would publish a storage reference near {leak.group(0)!r}"
+            )
 
     if args.out.exists():
         shutil.rmtree(args.out)
@@ -1930,7 +2505,6 @@ def main() -> None:
             json.dumps(shard, separators=(",", ":"), ensure_ascii=False) + "\n"
         )
     write_downloads(args.out, arms, shards)
-    methods = build_methods(manifest, audit, arms)
     (args.out / "methods.json").write_text(
         json.dumps(methods, separators=(",", ":"), ensure_ascii=False) + "\n"
     )

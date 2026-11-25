@@ -3,15 +3,24 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
-  isCounted,
+  armStatusLabel,
+  countableOtherConditions,
+  countingRule,
+  INCLUDE_OTHER_LABEL,
+  INCLUDE_OTHER_PARAM,
+  includeOtherHelp,
   letter,
   loadAllPresence,
   METHOD_CLASS_LABEL,
   OVERLAP_ALLOWANCE_PTS,
   OVERLAP_SCREEN,
+  screenScore,
   shortCitation,
   STATUS_HELP,
   STATUS_LABEL,
+  statusShortLabel,
+  statusPillLabel,
+  STATUS_ORDER,
   TIER_LABEL,
   TIER_ORDER,
   type ArmStatus,
@@ -30,6 +39,9 @@ import {
   PREF_LABEL,
   surfacePreference,
   type PresenceEntry,
+  loadPresence,
+  RAW_FLAG_LABEL,
+  repositoryUrl,
 } from "../../lib/surface-proteomics";
 import { ProteinLookup } from "./ProteinLookup";
 import { HoverTip } from "../surfaceome/_shared/HoverTip";
@@ -53,7 +65,6 @@ type Tier = TierCode | "none";
 type StudySort = "study" | "year" | "method" | "family" | "sample" | "n" | "overlap" | "status";
 type ProteinSort = "protein" | "name" | "votes" | "tier" | "counted" | "amount" | "pref";
 
-const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 const ALL_CLASSES: MethodClass[] = ["intact_cell", "fractionation"];
 const PAGE = 200;
 /** Above this many selected studies the exact-intersection list stops being readable. */
@@ -123,7 +134,7 @@ const CHOICES: { key: Choice; label: string; desc: (nCounted: number) => string 
     key: "compare",
     label: "Compare studies",
     desc: () =>
-      "Tick one dataset to see its proteins, or several to see which proteins they share.",
+      "Every dataset, one row per paper (expand a paper for its datasets), counted ones first. Tick one dataset to see its proteins, or several to see which proteins they share.",
   },
   {
     key: "lookup",
@@ -131,6 +142,26 @@ const CHOICES: { key: Choice; label: string; desc: (nCounted: number) => string 
     desc: () => "Type a symbol, name or accession to see every dataset that detected it.",
   },
 ];
+
+/** Bring a table row into view once it has rendered (retries for about a
+ *  second: the row appears after the selection and its paper are set). */
+function scrollToRow(id: string, tries = 20) {
+  // The browser restores the scroll position when the page finishes
+  // loading, which would undo an earlier scroll; wait for that first.
+  if (document.readyState !== "complete") {
+    window.addEventListener("load", () => setTimeout(() => scrollToRow(id, tries), 0), {
+      once: true,
+    });
+    return;
+  }
+  const el = document.getElementById(id);
+  if (!el) {
+    if (tries > 0) setTimeout(() => scrollToRow(id, tries - 1), 50);
+    return;
+  }
+  const top = el.getBoundingClientRect().top + window.scrollY - window.innerHeight / 3;
+  window.scrollTo({ top: Math.max(0, top), behavior: "instant" });
+}
 
 /** One query parameter, or null (server render / absent). */
 function param(name: string): string | null {
@@ -165,30 +196,93 @@ export function StudiesExplorer({ index }: Props) {
     () => ALL_CLASSES.filter((c) => arms.some((a) => a.method_class === c)),
     [arms],
   );
-  const countedIdx = useMemo(() => arms.flatMap((a, i) => (isCounted(a) ? [i] : [])), [arms]);
-  const [query, setQuery] = useState(() => param("dq") ?? "");
+  // Opt-in (?oc=1): also count other conditions whose baseline arm counts.
+  // Off by default, so each study counts only its baseline samples.
+  const [includeOther, setIncludeOther] = useState(false);
+  const counts = useMemo(() => countingRule(arms, includeOther), [arms, includeOther]);
+  const nOther = useMemo(() => arms.filter((a) => a.status === "perturbed").length, [arms]);
+  const nCountableOther = useMemo(() => countableOtherConditions(arms).length, [arms]);
+  const countedIdx = useMemo(() => arms.flatMap((a, i) => (counts(a) ? [i] : [])), [arms, counts]);
+  const [query, setQuery] = useState("");
   // Catalog-style chips: nothing checked = no filter; checked values OR together.
-  const [statuses, setStatuses] = useState<Set<ArmStatus>>(
-    () => new Set((param("st")?.split(",").filter(Boolean) ?? []) as ArmStatus[]),
+  const [statuses, setStatuses] = useState<Set<ArmStatus>>(() => new Set());
+  const [classes, setClasses] = useState<Set<MethodClass>>(() => new Set());
+  const [cellGroups, setCellGroups] = useState<Set<CellGroup>>(() => new Set());
+  const [families, setFamilies] = useState<Set<string>>(() => new Set());
+  // The page is prerendered without query parameters, so these have to START at the
+  // prerendered defaults and take the URL only after mount — the same shape as the
+  // ?arm= effect below. Reading the URL in a useState initializer instead makes the
+  // first client render disagree with the HTML it is hydrating (?oc=1 rendered "129
+  // counted datasets" over a prerendered "92"), and React answers a text mismatch by
+  // throwing the whole prerendered page away and rebuilding it in the browser.
+  useEffect(() => {
+    const csv = <T,>(name: string): Set<T> =>
+      new Set((param(name)?.split(",").filter(Boolean) ?? []) as T[]);
+    if (param(INCLUDE_OTHER_PARAM) === "1") setIncludeOther(true);
+    const q = param("dq");
+    if (q) setQuery(q);
+    const st = csv<ArmStatus>("st");
+    if (st.size) setStatuses(st);
+    const mc = csv<MethodClass>("mc");
+    if (mc.size) setClasses(mc);
+    const cg = csv<CellGroup>("cg");
+    if (cg.size) setCellGroups(cg);
+    const fam = csv<string>("fam");
+    if (fam.size) setFamilies(fam);
+  }, []);
+  const FAMILIES = useMemo(
+    () => FAMILY_ORDER.filter((f) => arms.some((a) => a.family === f)),
+    [arms],
   );
-  const [classes, setClasses] = useState<Set<MethodClass>>(
-    () => new Set((param("mc")?.split(",").filter(Boolean) ?? []) as MethodClass[]),
+  const familyLabel = useMemo(
+    () => new Map(arms.map((a) => [a.family, a.family_label])),
+    [arms],
   );
-  const [cellGroups, setCellGroups] = useState<Set<CellGroup>>(
-    () => new Set((param("cg")?.split(",").filter(Boolean) ?? []) as CellGroup[]),
-  );
+  // ?det=ACC (from a gene page): only the datasets that detected that protein.
+  // Read after mount: the static HTML has no query string, so reading it
+  // during the first render would not match the server markup.
+  const [det, setDet] = useState<string | null>(null);
+  useEffect(() => setDet(param("det")), []);
+  const [detHits, setDetHits] = useState<{ set: Set<number>; symbol: string } | null>(null);
+  useEffect(() => {
+    if (!det) {
+      setDetHits(null);
+      return;
+    }
+    let live = true;
+    loadPresence(det).then(
+      ({ entry }) => live && setDetHits({ set: new Set(entry?.a ?? []), symbol: entry?.s || det }),
+      () => live && setDetHits({ set: new Set(), symbol: det }),
+    );
+    return () => {
+      live = false;
+    };
+  }, [det]);
   useEffect(() => {
     setParams({
       dq: query.trim() || null,
       st: [...statuses].join(",") || null,
       mc: [...classes].join(",") || null,
       cg: [...cellGroups].join(",") || null,
+      fam: [...families].join(",") || null,
+      det,
+      [INCLUDE_OTHER_PARAM]: includeOther ? "1" : null,
     });
-  }, [query, statuses, classes, cellGroups]);
+  }, [query, statuses, classes, cellGroups, families, det, includeOther]);
+  // Papers opened to show their datasets.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggleExpanded = (pub: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(pub)) next.delete(pub);
+      else next.add(pub);
+      return next;
+    });
   const [selected, setSelected] = useState<number[]>([]);
   const [view, setView] = useState<View | null>(null);
   // Hand-picked modes; a preset view takes precedence when set.
-  const [mode, setMode] = useState<"compare" | "lookup" | null>(null);
+  // The study table is the landing state; a preset view replaces it.
+  const [mode, setMode] = useState<"compare" | "lookup" | null>("compare");
   const [pickOpen, setPickOpen] = useState(true);
   const { sortKey, sortDir, onSort, reset, ariaSort, sortRows } = useTableSort<StudySort>();
   const showResults = () => {
@@ -207,10 +301,24 @@ export function StudiesExplorer({ index }: Props) {
       : ids.map((id) => idxById.get(id)).filter((i): i is number => i !== undefined);
     setView(v);
     setSelected(sel);
-    if (!v && sel.length) setMode("compare");
-    // Arriving from a link (a gene page dot, an email): go straight to the results.
-    if (sel.length) setPickOpen(false);
-  }, [idxById, aliases, countedIdx]);
+    if (!v && sel.length) {
+      // Arriving from a link (a gene page dot, an email): open each linked
+      // dataset's paper in the table and bring the first one into view.
+      setMode("compare");
+      setExpanded(new Set(sel.map((i) => arms[i].publication)));
+      if (sel.length > 1 && param("pf")) {
+        // A link that also names a protein (?pf=DPP4) is a comparison to read, not a
+        // selection to make: open on the results with the picker folded away.
+        setPickOpen(false);
+        requestAnimationFrame(() =>
+          document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+        );
+      } else {
+        scrollToRow(`arm-${arms[sel[0]].id}`);
+      }
+    }
+    // Read the URL once; a later change of counting rule is handled below.
+  }, [idxById, aliases, arms]);
   const updateSelected = useCallback(
     (next: number[], nextView: View | null = null) => {
       setSelected(next);
@@ -224,6 +332,12 @@ export function StudiesExplorer({ index }: Props) {
     },
     [arms],
   );
+  // A preset view runs over every counted dataset, so it follows the toggle.
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  useEffect(() => {
+    if (viewRef.current) setSelected(countedIdx);
+  }, [countedIdx]);
   const openView = (v: View) => {
     setMode(null);
     updateSelected(countedIdx, v);
@@ -247,10 +361,12 @@ export function StudiesExplorer({ index }: Props) {
   const visible = arms
     .map((arm, i) => ({ arm, i }))
     .filter(
-      ({ arm }) =>
+      ({ arm, i }) =>
+        (!det || (detHits !== null && detHits.set.has(i))) &&
         (statuses.size === 0 || statuses.has(arm.status)) &&
         (classes.size === 0 || classes.has(arm.method_class)) &&
         (cellGroups.size === 0 || (arm.cell_group != null && cellGroups.has(arm.cell_group))) &&
+        (families.size === 0 || families.has(arm.family)) &&
         (!q ||
           [arm.name, arm.first_author, arm.sample, arm.family_label, arm.journal, arm.pmid, String(arm.year)]
             .filter(Boolean)
@@ -265,18 +381,193 @@ export function StudiesExplorer({ index }: Props) {
     family: (r) => FAMILY_ORDER.indexOf(r.arm.family as (typeof FAMILY_ORDER)[number]),
     sample: (r) => r.arm.sample ?? "",
     n: (r) => r.arm.n_proteins,
-    overlap: (r) => r.arm.reference_overlap ?? -1,
+    overlap: (r) => screenScore(r.arm).value ?? -1,
     status: (r) => STATUS_ORDER.indexOf(r.arm.status),
   };
   const rows = sortRows(visible, comparators);
   const maxN = Math.max(...arms.map((a) => a.n_proteins));
   const letterOf = new Map(selected.map((i, k) => [i, letter(k)]));
 
-  const header = (k: StudySort, label: string, num = false) => (
+  // Default order (no column sorted): counted datasets first, then by
+  // status, newest first.
+  const ordered =
+    sortKey === null
+      ? [...visible].sort(
+          (a, b) =>
+            Number(counts(b.arm)) - Number(counts(a.arm)) ||
+            STATUS_ORDER.indexOf(a.arm.status) - STATUS_ORDER.indexOf(b.arm.status) ||
+            (b.arm.year ?? 0) - (a.arm.year ?? 0) ||
+            shortCitation(a.arm).localeCompare(shortCitation(b.arm)),
+        )
+      : rows;
+  // One row per paper, placed where its first dataset falls in that order.
+  type Item = { arm: StudyArm; i: number };
+  const groups: { pub: string; items: Item[] }[] = [];
+  {
+    const at = new Map<string, number>();
+    for (const r of ordered) {
+      const k = at.get(r.arm.publication);
+      if (k === undefined) {
+        at.set(r.arm.publication, groups.length);
+        groups.push({ pub: r.arm.publication, items: [r] });
+      } else groups[k].items.push(r);
+    }
+  }
+  // A search or a gene filter opens every matching paper.
+  const autoOpen = q.length > 0 || det !== null;
+  const nPapersShown = groups.length;
+
+  const armRow = ({ arm, i }: Item, nested: boolean) => {
+              const sel = selected.includes(i);
+              const counted = counts(arm);
+              return (
+                <tr
+                  key={arm.id}
+                  id={`arm-${arm.id}`}
+                  className={`${sel ? styles.selectedRow : ""} ${counted ? "" : styles.notCounted} ${nested ? styles.armRow : ""}`}
+                >
+                  <td>
+                    <label className={styles.pick}>
+                      <input
+                        type="checkbox"
+                        checked={sel}
+                        onChange={() => toggle(i)}
+                        aria-label={`Select ${arm.name}`}
+                      />
+                      {sel ? <span className={styles.letter}>{letterOf.get(i)}</span> : null}
+                    </label>
+                  </td>
+                  <td className={styles.studyCell}>
+                    <button type="button" className={styles.studyButton} onClick={() => toggle(i)}>
+                      {nested ? arm.name : shortCitation(arm)}
+                    </button>
+                    {nested ? null : <div className={styles.sub}>{arm.name}</div>}
+                    {nested ? null : <PaperLinks arm={arm} />}
+                    <ArmSources arm={arm} studyList={index.study_list} />
+                  </td>
+                  <td>{arm.year ?? "—"}</td>
+                  <td>
+                    <span className={styles.method}>
+                      <span className={`${styles.swatch} ${styles[`sw_${arm.method_class}`]}`} aria-hidden="true" />
+                      {METHOD_CLASS_LABEL[arm.method_class]}
+                    </span>
+                  </td>
+                  <td className={styles.chemCell}>
+                    <FamilyChip arm={arm} />
+                  </td>
+                  <td className={styles.sample}>
+                    {arm.sample}
+                    {arm.cell_group ? (
+                      <div className={styles.sub}>{CELL_GROUP_LABEL[arm.cell_group]}</div>
+                    ) : null}
+                  </td>
+                  <td className={styles.countCell}>
+                    {/* Bar inline with the number, like Surface overlap, so the
+                        two bars sit on the same line in every row — and, like it,
+                        left-aligned, so the header sits over the start of the bar
+                        instead of floating in the middle of the bar-plus-number pair. */}
+                    <span className={styles.countInline}>
+                      <Bar value={arm.n_proteins / maxN} inline />
+                      <span className={styles.countInlineNum}>{arm.n_proteins.toLocaleString("en-US")}</span>
+                    </span>
+                  </td>
+                  <td>
+                    <OverlapBar arm={arm} />
+                  </td>
+                  <td>
+                    <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
+                      {armStatusLabel(arm, "pill")}
+                    </StatusPill>
+                    <div className={counted ? styles.countedYes : styles.countedNo}>
+                      {counted ? "counted" : "not counted"}
+                    </div>
+                    {arm.status_reason ? (
+                      <div className={styles.statusReason}>{arm.status_reason}</div>
+                    ) : null}
+                  </td>
+                </tr>
+              );
+  };
+
+  const paperRows = (g: { pub: string; items: Item[] }) => {
+    if (g.items.length === 1) return [armRow(g.items[0], false)];
+    const all = arms.filter((a) => a.publication === g.pub);
+    const first = g.items[0].arm;
+    const open = autoOpen || expanded.has(g.pub);
+    const nCounted = all.filter(counts).length;
+    const anySelected = g.items.some(({ i }) => selected.includes(i));
+    // Select or clear all of a paper's datasets at once (Kim et al. 2017's four, say).
+    const paperIdx = arms.flatMap((a, i) => (a.publication === g.pub ? [i] : []));
+    const allSelected = paperIdx.every((i) => selected.includes(i));
+    const togglePaper = () => {
+      if (allSelected) {
+        updateSelected(selected.filter((i) => !paperIdx.includes(i)));
+      } else {
+        updateSelected([...selected, ...paperIdx.filter((i) => !selected.includes(i))]);
+        if (!expanded.has(g.pub)) toggleExpanded(g.pub);
+      }
+    };
+    const head = (
+      <tr
+        key={`paper-${g.pub}`}
+        className={`${styles.paperRow} ${anySelected ? styles.selectedRow : ""} ${nCounted ? "" : styles.notCounted}`}
+      >
+        <td className={styles.paperPick}>
+          <input
+            type="checkbox"
+            checked={allSelected}
+            ref={(el) => {
+              if (el) el.indeterminate = anySelected && !allSelected;
+            }}
+            onChange={togglePaper}
+            aria-label={`Select all ${all.length} datasets of ${shortCitation(first)}`}
+            title={`Select all ${all.length} datasets of this paper`}
+          />
+          <button
+            type="button"
+            className={styles.expandButton}
+            aria-expanded={open}
+            aria-label={`${open ? "Hide" : "Show"} the ${all.length} datasets of ${shortCitation(first)}`}
+            onClick={() => toggleExpanded(g.pub)}
+          >
+            {open ? "▾" : "▸"}
+          </button>
+        </td>
+        <td className={styles.studyCell}>
+          <button type="button" className={styles.studyButton} onClick={() => toggleExpanded(g.pub)}>
+            {shortCitation(first)}
+          </button>
+          {first.title ? <div className={styles.sub}>{first.title}</div> : null}
+          <PaperLinks arm={first} />
+        </td>
+        <td>{first.year ?? "—"}</td>
+        <td colSpan={6} className={styles.paperSummary}>
+          {all.length} datasets: {nCounted} counted
+          {all.length - nCounted ? `, ${all.length - nCounted} not counted` : ""}
+          {g.items.length < all.length ? ` · ${g.items.length} match the filters` : ""}
+          {!open ? (
+            <button type="button" className={styles.linkButton} onClick={() => toggleExpanded(g.pub)}>
+              show datasets
+            </button>
+          ) : null}
+        </td>
+      </tr>
+    );
+    return open ? [head, ...g.items.map((it) => armRow(it, true))] : [head];
+  };
+
+  const header = (k: StudySort, label: string, num = false, info?: ReactNode) => (
     <th aria-sort={ariaSort(k)} className={num ? styles.num : undefined}>
-      <SortableHeader k={k} active={sortKey === k} direction={sortDir} onSort={onSort}>
-        {label}
-      </SortableHeader>
+      <span className={styles.headWithTip}>
+        <SortableHeader k={k} active={sortKey === k} direction={sortDir} onSort={onSort}>
+          {label}
+        </SortableHeader>
+        {info ? (
+          <InfoTip wide align="end" label={`About ${label}`}>
+            {info}
+          </InfoTip>
+        ) : null}
+      </span>
     </th>
   );
 
@@ -285,6 +576,16 @@ export function StudiesExplorer({ index }: Props) {
       <section className={styles.start} aria-label="Where to start">
         <div className={styles.startRow} role="group" aria-label="Where to start">
           <span className={`label-mono ${styles.startLabel}`}>Start with</span>
+          <InfoTip wide align="start" label="About the starting views">
+            The three preset views, each over every counted dataset:
+            <ul className={styles.tipList}>
+              {CHOICES.filter((c) => VIEWS.includes(c.key as View)).map((c) => (
+                <li key={c.key}>
+                  <strong>{c.label}:</strong> {c.desc(countedIdx.length)}
+                </li>
+              ))}
+            </ul>
+          </InfoTip>
           {CHOICES.map((c) => (
             <button
               key={c.key}
@@ -299,10 +600,26 @@ export function StudiesExplorer({ index }: Props) {
           ))}
         </div>
         <p className={styles.startDesc}>
-          {active
-            ? CHOICES.find((c) => c.key === active)?.desc(countedIdx.length)
-            : "Pick one to begin."}
+          {CHOICES.find((c) => c.key === (active ?? "compare"))?.desc(countedIdx.length)}
         </p>
+        {nOther > 0 ? (
+          <p className={styles.otherNote} data-on={includeOther ? "true" : "false"}>
+            {includeOther
+              ? `Counting other conditions (not the default): ${nCountableOther} senescent, infected, knockout, treated or diseased datasets count alongside their studies' baselines.`
+              : `Each study counts only its baseline samples. The same studies' ${nOther} other-condition datasets (senescent, infected, knockout, treated or diseased samples) are listed but not counted.`}{" "}
+            <label className={styles.otherToggle}>
+              <input
+                type="checkbox"
+                checked={includeOther}
+                onChange={(e) => setIncludeOther(e.target.checked)}
+              />{" "}
+              {INCLUDE_OTHER_LABEL}
+            </label>
+            <InfoTip wide align="start" label={`About ${INCLUDE_OTHER_LABEL.toLowerCase()}`}>
+              {includeOtherHelp(nCountableOther, nOther)}
+            </InfoTip>
+          </p>
+        ) : null}
         {active === "lookup" ? <ProteinLookup /> : null}
       </section>
 
@@ -336,6 +653,7 @@ export function StudiesExplorer({ index }: Props) {
         />
         <ChipGroup
           label="Status"
+          info={tooltips.arm_status}
           options={STATUS_ORDER}
           labelOf={(s) => STATUS_LABEL[s]}
           titleOf={(s) => STATUS_HELP[s]}
@@ -359,10 +677,29 @@ export function StudiesExplorer({ index }: Props) {
           value={classes}
           onChange={setClasses}
         />
+        <ChipGroup
+          label="Chemistry"
+          options={FAMILIES as unknown as string[]}
+          labelOf={(f) => familyLabel.get(f) ?? f}
+          countOf={(f) => arms.filter((a) => a.family === f).length}
+          value={families}
+          onChange={setFamilies}
+        />
       </div>
 
+      {det ? (
+        <div className={styles.detBanner} role="status">
+          {detHits === null
+            ? "Loading the datasets that detected this protein…"
+            : `Showing the ${detHits.set.size} dataset${detHits.set.size === 1 ? "" : "s"} that detected ${detHits.symbol} (${det}).`}
+          <button type="button" className={styles.linkButton} onClick={() => setDet(null)}>
+            show all datasets
+          </button>
+        </div>
+      ) : null}
+
       <div className={styles.count}>
-        {rows.length} of {arms.length} datasets shown
+        {rows.length} of {arms.length} datasets shown, from {nPapersShown} paper{nPapersShown === 1 ? "" : "s"}
         {selected.length > 0 ? ` · ${selected.length} selected` : ""}
         {selected.length > 0 ? (
           <button type="button" className={styles.linkButton} onClick={() => updateSelected([])}>
@@ -382,96 +719,13 @@ export function StudiesExplorer({ index }: Props) {
               {header("method", "Method")}
               {header("family", "Chemistry")}
               {header("sample", "Cell type / sample")}
-              {header("n", "Proteins", true)}
-              {header("overlap", "Surface overlap")}
-              {header("status", "Status")}
+              {header("n", "Proteins")}
+              {header("overlap", "Surface overlap", false, tooltips.surface_overlap)}
+              {header("status", "Status", false, tooltips.arm_status)}
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ arm, i }) => {
-              const sel = selected.includes(i);
-              const counted = isCounted(arm);
-              return (
-                <tr
-                  key={arm.id}
-                  className={`${sel ? styles.selectedRow : ""} ${counted ? "" : styles.notCounted}`}
-                >
-                  <td>
-                    <label className={styles.pick}>
-                      <input
-                        type="checkbox"
-                        checked={sel}
-                        onChange={() => toggle(i)}
-                        aria-label={`Select ${arm.name}`}
-                      />
-                      {sel ? <span className={styles.letter}>{letterOf.get(i)}</span> : null}
-                    </label>
-                  </td>
-                  <td className={styles.studyCell}>
-                    <button type="button" className={styles.studyButton} onClick={() => toggle(i)}>
-                      {shortCitation(arm)}
-                    </button>
-                    <div className={styles.sub}>{arm.name}</div>
-                    <div className={styles.paperLinks}>
-                      {arm.pmid ? (
-                        <a href={`https://pubmed.ncbi.nlm.nih.gov/${arm.pmid}/`} target="_blank" rel="noreferrer">
-                          PMID {arm.pmid}
-                        </a>
-                      ) : null}
-                      {arm.doi ? (
-                        <a href={`https://doi.org/${arm.doi}`} target="_blank" rel="noreferrer">
-                          DOI
-                        </a>
-                      ) : null}
-                      {arm.repository_ids.length ? (
-                        <span className={styles.sub}>
-                          {arm.repository ? `${arm.repository} ` : ""}
-                          {arm.repository_ids.join(", ")}
-                        </span>
-                      ) : null}
-                    </div>
-                  </td>
-                  <td>{arm.year ?? "—"}</td>
-                  <td>
-                    <span className={styles.method}>
-                      <span className={`${styles.swatch} ${styles[`sw_${arm.method_class}`]}`} aria-hidden="true" />
-                      {METHOD_CLASS_LABEL[arm.method_class]}
-                    </span>
-                  </td>
-                  <td>
-                    <FamilyChip arm={arm} />
-                  </td>
-                  <td className={styles.sample}>
-                    {arm.sample}
-                    {arm.cell_group ? (
-                      <div className={styles.sub}>{CELL_GROUP_LABEL[arm.cell_group]}</div>
-                    ) : null}
-                  </td>
-                  <td className={styles.num}>
-                    {arm.n_proteins.toLocaleString("en-US")}
-                    <Bar value={arm.n_proteins / maxN} />
-                  </td>
-                  <td>
-                    <OverlapBar
-                      value={arm.reference_overlap}
-                      intact={arm.method_class === "intact_cell"}
-                      status={arm.status}
-                    />
-                  </td>
-                  <td>
-                    <StatusPill size="sm" tone={statusTone(arm.status)} title={STATUS_HELP[arm.status]}>
-                      {STATUS_LABEL[arm.status]}
-                    </StatusPill>
-                    <div className={counted ? styles.countedYes : styles.countedNo}>
-                      {counted ? "counted" : "not counted"}
-                    </div>
-                    {arm.status_reason ? (
-                      <div className={styles.statusReason}>{arm.status_reason}</div>
-                    ) : null}
-                  </td>
-                </tr>
-              );
-            })}
+            {groups.flatMap((g) => paperRows(g))}
           </tbody>
         </table>
       </div>
@@ -499,6 +753,7 @@ export function StudiesExplorer({ index }: Props) {
             arms={arms}
             selected={selected}
             countedIdx={countedIdx}
+            counts={counts}
             view={
               view ??
               (selected.length === countedIdx.length && countedIdx.every((i) => selected.includes(i))
@@ -512,45 +767,52 @@ export function StudiesExplorer({ index }: Props) {
   );
 }
 
-function Bar({ value }: { value: number }) {
+function Bar({ value, inline = false }: { value: number; inline?: boolean }) {
   return (
-    <span className={styles.bar} aria-hidden="true">
+    <span className={inline ? `${styles.bar} ${styles.barInline}` : styles.bar} aria-hidden="true">
       <span style={{ width: `${Math.max(2, value * 100)}%` }} />
     </span>
   );
 }
 
-/** Surface overlap with a tick at the screen an intact-cell arm must reach. */
-function OverlapBar({
-  value,
-  intact,
-  status,
-}: {
-  value: number | null;
-  intact: boolean;
-  status: StudyArm["status"];
-}) {
+/** The screen score (share of the amount, or of the list) with a tick at the bar
+ *  an intact-cell arm must reach. */
+function OverlapBar({ arm }: { arm: StudyArm }) {
+  const { value, cutoff, basis } = screenScore(arm);
+  const intact = arm.method_class === "intact_cell";
+  const status = arm.status;
   if (value == null) return <span className={styles.sub}>—</span>;
+  const byAmount = basis === "abundance";
   // Color follows the review outcome, not the raw number: a provisional
   // arm inside the 2-point allowance is counted (light teal), and a
   // pre-filtered list below its raised bar is high background (amber).
   const counted = status === "core" || status === "provisional";
-  const tone = !intact
+  // A table pre-filtered by surface annotation has an inflated overlap by
+  // construction, so it is drawn neutral rather than as a pass.
+  const tone = !intact || status === "annotation_selected" || status === "perturbed"
     ? styles.na
     : status === "below_screen"
       ? styles.fail
-      : counted && value < OVERLAP_SCREEN
+      : counted && value < cutoff
         ? styles.near
-        : value >= OVERLAP_SCREEN
+        : value >= cutoff
           ? styles.pass
           : styles.fail;
   return (
     <HoverTip
-      tip={`${pct(value)} of this dataset's proteins are Canonical or Likely in our Surfaceome${
-        intact
-          ? `; counted datasets need at least ${pct(OVERLAP_SCREEN)} (the tick), or are Provisional within ${OVERLAP_ALLOWANCE_PTS} points below it`
-          : ""
-      }.`}
+      tip={
+        byAmount
+          ? `${pct(value)} of this dataset's length-corrected protein amount is Canonical or Likely in our Surfaceome (${pct(arm.reference_overlap)} of its proteins). Datasets whose table reports amounts need at least ${pct(cutoff)} of their amount (the tick)${
+              arm.auroc_rescued && arm.abundance_auroc != null
+                ? `, or amounts that rank Canonical or Likely proteins first. This one ${status === "perturbed" ? "would count" : "counts"} that way: AUROC ${arm.abundance_auroc.toFixed(2)}, at or above ${(arm.auroc_rescue_cutoff ?? 0.58).toFixed(2)}`
+                : ""
+            }.${status === "perturbed" ? " As another condition of its study, it is shown with the same score but never counted." : ""}`
+          : `${pct(value)} of this dataset's proteins are Canonical or Likely in our Surfaceome${
+              intact
+                ? `; datasets without published amounts need at least ${pct(OVERLAP_SCREEN)} of their proteins (the tick), or are Provisional within ${OVERLAP_ALLOWANCE_PTS} points below it`
+                : ""
+            }.`
+      }
     >
     <span className={styles.overlap}>
       <span className={styles.overlapTrack}>
@@ -558,9 +820,10 @@ function OverlapBar({
           className={`${styles.overlapFill} ${tone}`}
           style={{ width: `${Math.min(100, value * 100)}%` }}
         />
-        <span className={styles.overlapTick} style={{ left: `${OVERLAP_SCREEN * 100}%` }} />
+        <span className={styles.overlapTick} style={{ left: `${cutoff * 100}%` }} />
       </span>
       <span className={styles.overlapNum}>{pct(value)}</span>
+      {byAmount ? <span className={styles.overlapBasis}>amount</span> : null}
     </span>
     </HoverTip>
   );
@@ -568,6 +831,7 @@ function OverlapBar({
 
 function ChipGroup<T extends string>({
   label,
+  info,
   options,
   labelOf,
   titleOf,
@@ -576,6 +840,7 @@ function ChipGroup<T extends string>({
   onChange,
 }: {
   label: string;
+  info?: ReactNode;
   options: T[];
   labelOf: (v: T) => string;
   titleOf?: (v: T) => string;
@@ -586,6 +851,11 @@ function ChipGroup<T extends string>({
   return (
     <fieldset className={styles.chips}>
       <legend className="label-mono">{label}</legend>
+      {info ? (
+        <InfoTip wide align="start" label={`About ${label}`}>
+          {info}
+        </InfoTip>
+      ) : null}
       {options.map((o) => {
         const on = value.has(o);
         const chip = (
@@ -618,6 +888,32 @@ function ChipGroup<T extends string>({
   );
 }
 
+/** When a filter finds nothing in "In all" (or an intersection) but the protein is in
+ *  some of the selected datasets, say so, so an empty table doesn't read as "not detected". */
+function OutsideModeHint({
+  matches,
+  total,
+  onAny,
+}: {
+  matches: { symbol: string; acc: string; arms: Set<number> }[];
+  total: number;
+  onAny: () => void;
+}) {
+  if (!matches.length) return null;
+  const first = matches[0];
+  const name = first.symbol || first.acc;
+  return (
+    <p className={styles.filterHint}>
+      {matches.length === 1
+        ? `${name} is in ${first.arms.size} of the ${total} selected datasets, so it is not listed here.`
+        : `${matches.length} matching proteins are in some of the selected datasets but not this set.`}{" "}
+      <button type="button" className={styles.linkButton} onClick={onAny}>
+        Show proteins in any selected dataset
+      </button>
+    </p>
+  );
+}
+
 /** Mode: "all" / "any" selected studies, or one exact intersection (sorted arm indices). */
 type Mode = "all" | "any" | `c:${string}`;
 
@@ -629,19 +925,28 @@ function SelectionPanel({
   arms,
   selected,
   countedIdx,
+  counts,
   view,
 }: {
   arms: StudyArm[];
   selected: number[];
   countedIdx: number[];
+  /** The page's counting rule (baseline only, or with other conditions). */
+  counts: (arm: StudyArm) => boolean;
   /** A preset over all counted datasets, or null for a hand-picked selection. */
   view: View | null;
 }) {
   const consensus = view !== null;
   const [presence, setPresence] = useState<PresenceShard | null>(null);
   const [error, setError] = useState(false);
+  // Bumped by the retry button, to re-run the load effect after a failure.
+  const [attempt, setAttempt] = useState(0);
   // Filters start from the URL (pf, tiers, min, mode, ps) so Back restores them.
   const restored = useRef(param("pf") != null || param("tiers") != null || param("min") != null || param("mode") != null);
+  // These may read the URL during render, unlike the page's own parameters above: this
+  // panel renders nothing but "Loading protein lists…" until the shards arrive on the
+  // client, so none of it reaches the prerendered HTML and none of it can mismatch on
+  // hydration. Anything moved above that early return has to move into an effect.
   const [filter, setFilter] = useState(() => param("pf") ?? "");
   const [mode, setMode] = useState<Mode>(() => (param("mode") as Mode | null) ?? "any");
   // Same as the catalog's tier filter: nothing checked = every tier; checked tiers OR together.
@@ -691,8 +996,16 @@ function SelectionPanel({
   }, [filter, tierSel, minCounted, mode, sortKey, sortDir, maxDb, minPref, view]);
 
   useEffect(() => {
-    loadAllPresence().then(setPresence, () => setError(true));
-  }, []);
+    let live = true;
+    setError(false);
+    loadAllPresence().then(
+      (p) => live && setPresence(p),
+      () => live && setError(true),
+    );
+    return () => {
+      live = false;
+    };
+  }, [attempt]);
   // An intersection stops making sense once the selection changes under it.
   const selKey = selected.join(",");
   useEffect(() => {
@@ -701,7 +1014,8 @@ function SelectionPanel({
       restored.current = false;
       return;
     }
-    setMode(selKey.includes(",") && selKey.split(",").length <= MAX_UPSET ? "all" : "any");
+    // Every protein any selected dataset detected; "In all" narrows to the shared ones.
+    setMode("any");
     setLimit(PAGE);
   }, [selKey]);
 
@@ -746,7 +1060,15 @@ function SelectionPanel({
     return [...m.values()].sort((a, b) => b.n - a.n || b.members.size - a.members.size);
   }, [proteins, selected]);
 
-  if (error) return <p className={styles.empty}>Protein lists could not be loaded.</p>;
+  if (error)
+    return (
+      <p className={styles.empty} role="alert">
+        Protein lists could not be loaded.{" "}
+        <button type="button" className={styles.linkButton} onClick={() => setAttempt((n) => n + 1)}>
+          Try again
+        </button>
+      </p>
+    );
   if (!presence) return <p className={styles.empty}>Loading protein lists…</p>;
 
   const single = selected.length === 1;
@@ -943,7 +1265,7 @@ function SelectionPanel({
                 <strong>{shortCitation(arms[i])}</strong> · {arms[i].name}{" "}
                 <span className={styles.sub}>
                   ({arms[i].n_proteins.toLocaleString("en-US")} proteins
-                  {isCounted(arms[i]) ? "" : `; ${STATUS_LABEL[arms[i].status].toLowerCase()}, not counted`})
+                  {counts(arms[i]) ? "" : `; ${armStatusLabel(arms[i]).toLowerCase()}, not counted`})
                 </span>
               </span>
             </li>
@@ -951,13 +1273,13 @@ function SelectionPanel({
         </ol>
       ) : null}
 
-      {single && !isCounted(arms[selected[0]]) ? (
+      {single && !counts(arms[selected[0]]) ? (
         <p className={styles.caveat}>{STATUS_HELP[arms[selected[0]].status]}</p>
       ) : null}
       {single && !consensus ? <MethodsPanel key={arms[selected[0]].id} arm={arms[selected[0]]} /> : null}
-      {!single && selected.some((i) => !isCounted(arms[i])) ? (
+      {!single && selected.some((i) => !counts(arms[i])) ? (
         <p className={styles.caveat}>
-          The selection includes datasets that are not counted as surface evidence (held, high background, or comparators).
+          The selection includes datasets that are not counted as surface evidence (held, high background, pre-filtered by surface annotation, membrane fractions, or other conditions of a study's samples).
         </p>
       ) : null}
 
@@ -1176,8 +1498,20 @@ function SelectionPanel({
         Click a protein name to open its page in the Surfaceome viewer, with the full evidence
         record. Names in gray were not deep-dived, so they link to their UniProt entry instead.
       </p>
+      {shown.length === 0 && f && mode !== "any" ? (
+        <OutsideModeHint
+          matches={proteins.filter(
+            (p) =>
+              p.acc.includes(f) ||
+              p.symbol.toUpperCase().includes(f) ||
+              p.name.toUpperCase().includes(f),
+          )}
+          total={selected.length}
+          onAny={() => setMode("any")}
+        />
+      ) : null}
       <div className={styles.count}>
-        {shown.length.toLocaleString("en-US")} proteins
+        {shown.length.toLocaleString("en-US")} protein{shown.length === 1 ? "" : "s"}
         <button type="button" className={styles.linkButton} onClick={downloadCsv}>
           download CSV
         </button>
@@ -1196,7 +1530,7 @@ function SelectionPanel({
               {pHeader(
                 "pref",
                 "Surface pref.",
-                true,
+                false,
                 <>
                   How much higher the protein ranks in surface preps than in two backgrounds,
                   in percentile points. It averages two comparisons: its median percentile in
@@ -1257,7 +1591,9 @@ function SelectionPanel({
                   <span className={styles.countedNum}>{p.nCounted}</span>
                   <Bar value={p.nCounted / Math.max(1, countedIdx.length)} />
                 </td>
-                <td className={styles.num}>
+                {/* Left-aligned like Proteins: the cell is a widget, not a bare
+                    number, so a right-aligned header would sit well left of it. */}
+                <td className={styles.countCell}>
                   <PrefCell pref={p.pref} raw={p.prefRaw} />
                 </td>
                 {single && arms[selected[0]].quant_unit ? (
@@ -1393,5 +1729,74 @@ function PrefCell({
     >
       <span className={`${styles.prefNum} ${cls}`}>{sign(pref.mean)}</span>
     </HoverTip>
+  );
+}
+
+/** The paper itself: PubMed and DOI links. */
+function PaperLinks({ arm }: { arm: StudyArm }) {
+  if (!arm.pmid && !arm.doi) return null;
+  return (
+    <div className={styles.paperLinks}>
+      {arm.pmid ? (
+        <a href={`https://pubmed.ncbi.nlm.nih.gov/${arm.pmid}/`} target="_blank" rel="noreferrer">
+          PMID {arm.pmid}
+        </a>
+      ) : null}
+      {arm.doi ? (
+        <a href={`https://doi.org/${arm.doi}`} target="_blank" rel="noreferrer">
+          DOI
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
+/** One dataset's own sources: its tab in the shared study workbook, and
+ *  where its raw instrument files are (from the S3E8 raw-data audit). */
+export function ArmSources({
+  arm,
+  studyList,
+}: {
+  arm: StudyArm;
+  studyList?: { name: string; url: string };
+}) {
+  const raw = arm.raw_data;
+  const accs = raw?.accessions ?? arm.repository_ids;
+  const rawHref = raw?.url ?? (accs.length ? repositoryUrl(accs[0]) : null);
+  return (
+    <div className={styles.paperLinks}>
+      {studyList && arm.sheet_tab ? (
+        <a
+          href={studyList.url}
+          target="_blank"
+          rel="noreferrer"
+          title={`Opens ${studyList.name}; this dataset is on the tab named ${arm.sheet_tab}`}
+        >
+          Study list, tab “{arm.sheet_tab}”
+        </a>
+      ) : null}
+      {raw ? (
+        raw.flag === "raw_not_deposited" || raw.flag === "accession_invalid" || !accs.length ? (
+          <span className={styles.sub}>{RAW_FLAG_LABEL[raw.flag]}</span>
+        ) : (
+          <span className={styles.sub}>
+            {rawHref ? (
+              <a href={rawHref} target="_blank" rel="noreferrer">
+                {raw.repository ? `${raw.repository} ` : ""}
+                {accs.join(", ")}
+              </a>
+            ) : (
+              `${raw.repository ? `${raw.repository} ` : ""}${accs.join(", ")}`
+            )}
+            : {RAW_FLAG_LABEL[raw.flag]}
+          </span>
+        )
+      ) : accs.length ? (
+        <span className={styles.sub}>
+          {arm.repository ? `${arm.repository} ` : ""}
+          {accs.join(", ")}
+        </span>
+      ) : null}
+    </div>
   );
 }

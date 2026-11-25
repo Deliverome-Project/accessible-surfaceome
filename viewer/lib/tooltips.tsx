@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { CITATIONS, doiUrl, pubmedUrl } from "./citations";
+import { STATUS_DEFINITION, STATUS_ORDER, statusShortLabel } from "./surface-proteomics";
 
 /**
  * Field-provenance tooltip text — one place to edit, shared across
@@ -489,6 +490,48 @@ export const tooltips: Record<string, ReactNode> = {
       candidate-universe build. A high count means the databases agree; a
       low count doesn&apos;t rule a protein out, since every database misses
       some surface proteins.
+    </>
+  ),
+
+  // What each surface-proteomics dataset status means — shown beside every
+  // Status field (studies table and filter, methods panel, gene-page list).
+  arm_status: (
+    <>
+      <strong>Status</strong> says whether a dataset counts as surface
+      evidence in the cross-study comparison.
+      <ul style={{ margin: "0.35rem 0 0", paddingLeft: "1.1rem" }}>
+        {STATUS_ORDER.map((s) => (
+          <li key={s}>
+            <strong>
+              {statusShortLabel(s)}
+              {s === "below_screen" ? " (below screen)" : ""}:
+            </strong>{" "}
+            {STATUS_DEFINITION[s]}
+          </li>
+        ))}
+      </ul>
+    </>
+  ),
+
+  // Surface overlap / reference — the review screen each dataset is scored on
+  // (StudyArm.reference_overlap = proteins in the reference ÷ proteins listed).
+  surface_overlap: (
+    <>
+      <strong>Surface overlap</strong>: how much of a dataset is in the
+      reference (Canonical or Likely in our Surfaceome catalog). When the
+      published table reports per-protein amounts, it is the share of the
+      dataset&apos;s total amount, each protein&apos;s amount divided by its
+      length so the share counts molecules (marked &ldquo;amount&rdquo;), and the
+      dataset needs at least 25% to count. Otherwise it is the share of the
+      dataset&apos;s proteins, and it needs at least 20%, or a higher bar if
+      the authors pre-filtered its list. The tick marks the bar.
+    </>
+  ),
+  reference: (
+    <>
+      <strong>Reference</strong>: the Canonical and Likely tiers of our
+      Surfaceome catalog, the known surface proteins each dataset&apos;s list
+      is compared with.
     </>
   ),
 

@@ -4,19 +4,25 @@ import type { Metadata } from "next";
 import { Shell } from "../../components/Shell/Shell";
 import { StudiesExplorer } from "../../components/StudiesExplorer/StudiesExplorer";
 import { TierPill } from "../../components/StudiesExplorer/TierPill";
+import { countedTotals } from "../../lib/surface-proteomics-server";
 import {
   DOWNLOADS,
   isCounted,
   METHOD_CLASS_LABEL,
   OVERLAP_ALLOWANCE_PTS,
   OVERLAP_SCREEN,
+  ABUNDANCE_SCREEN,
+  AUROC_RESCUE,
   STATUS_HELP,
-  STATUS_LABEL,
+  STATUS_ORDER,
   TIER_HELP,
   TIER_ORDER,
   type ArmStatus,
   type MethodClass,
   type StudyIndex,
+  ANNOTATION_SELECTED_METHODS,
+  IMPUTED_NOT_HELD,
+  statusShortLabel,
 } from "../../lib/surface-proteomics";
 import styles from "./page.module.css";
 
@@ -37,7 +43,6 @@ const METHOD_HELP: Record<MethodClass, string> = {
 
 const sentence = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
-const STATUS_ORDER: ArmStatus[] = ["core", "provisional", "held", "below_screen", "comparator"];
 
 /**
  * /surface-proteomics/ — the S3E8 study compendium, linked from
@@ -55,7 +60,10 @@ export default function SurfaceProteomicsPage() {
   ) as StudyIndex;
 
   const counted = index.arms.filter(isCounted);
+  const countedPapers = new Set(counted.map((a) => a.publication)).size;
   const countByStatus = (s: ArmStatus) => index.arms.filter((a) => a.status === s).length;
+  // The same totals with the opt-in other conditions, so the headline shows both rules.
+  const withOther = countedTotals(true);
 
   return (
     <Shell>
@@ -67,11 +75,21 @@ export default function SurfaceProteomicsPage() {
             outside of human cells? We collected {index.n_arms} datasets from {index.n_publications} cell-surface
             proteomics papers and matched every reported protein to its UniProt
             accession. <strong>{counted.length} datasets</strong> from{" "}
-            {index.n_admitted_publications} papers pass our quality review (see &ldquo;How to read this page&rdquo;)
+            {countedPapers} papers pass our quality review (see &ldquo;How to interpret these datasets&rdquo;)
             and count as surface evidence; together they detect{" "}
             <strong>{index.n_accessions_admitted.toLocaleString("en-US")} proteins</strong>.
             The other {index.n_arms - counted.length} are listed for completeness
             and marked as not counted.
+          </p>
+          <p className={styles.lede}>
+            Those totals count each study&apos;s baseline samples only. The{" "}
+            {countByStatus("perturbed")} other-condition datasets (senescent, infected, knockout,
+            treated or diseased samples of the same studies) are not counted by default. Counting
+            the {withOther.datasets - counted.length} whose study&apos;s baseline dataset passes review
+            gives <strong>{withOther.datasets} datasets</strong> from {withOther.papers} papers
+            detecting <strong>{withOther.proteins.toLocaleString("en-US")} proteins</strong>; the
+            &ldquo;Also count other conditions&rdquo; switch below applies that rule to the study table and
+            every view.
           </p>
           <p className={styles.scope}>
             The compendium covers whole-surface measurements: labeling of exposed proteins on intact cells, and membrane fractionation. It does not include targeted membrane enrichment of chosen proteins, such as proximity labeling around a single bait, antibody or affinity pulldowns, or lists restricted to a target panel.
@@ -94,7 +112,7 @@ export default function SurfaceProteomicsPage() {
 
         <details className={styles.key}>
           <summary className={styles.keySummary}>
-            How to read this page{" "}
+            How to interpret these datasets{" "}
             <span className={styles.keyHint}>
               what counts as surface evidence, methods, scores and Surfaceome tiers
             </span>
@@ -104,7 +122,7 @@ export default function SurfaceProteomicsPage() {
             What our quality review checks
           </h2>
           <p className={styles.reviewLede}>
-            A dataset counts as surface evidence only if it passes all four checks, judged
+            A dataset counts as surface evidence only if it passes all five checks, judged
             from each paper&apos;s methods section and supplementary tables. The reading is
             AI-assisted and still under review; report an error to{" "}
             <a href="mailto:surfaceome-viewer@deliverome.org">surfaceome-viewer@deliverome.org</a>.
@@ -119,32 +137,60 @@ export default function SurfaceProteomicsPage() {
               capture, proximity label) went on before the cells were broken open, so it
               could only reach proteins facing outward. Membrane fractionation and labels
               that reach inside the cell fail this check.{" "}
-              <span className={styles.fails}>{countByStatus("comparator")} datasets → Comparator</span>
+              <span className={styles.fails}>{countByStatus("comparator")} datasets → Membrane fraction</span>
             </li>
             <li>
-              <strong>Mostly surface proteins, not background.</strong> At least{" "}
-              {Math.round(OVERLAP_SCREEN * 100)}% of the dataset&apos;s proteins must be
-              established surface proteins, meaning Canonical or Likely in our Surfaceome; a list
-              within {OVERLAP_ALLOWANCE_PTS} points below that counts only as Provisional. A list
-              further below is dominated by intracellular contamination. (A random set of
-              human proteins scores about 15%.) When the authors pre-filtered their list to
-              annotated surface proteins, the bar is raised to match.{" "}
+              <strong>Mostly surface proteins, not background.</strong> When the published
+              table reports per-protein amounts (intensities or spectral counts), at least{" "}
+              {Math.round(ABUNDANCE_SCREEN * 100)}% of the dataset&apos;s total amount must be
+              established surface proteins, meaning Canonical or Likely in our Surfaceome. Each
+              protein&apos;s amount is divided by its length first, so the share counts molecules
+              and a long protein is not favored. A deep list picks up many faint intracellular
+              proteins, so judging by amount keeps it from being penalized for depth. A deep
+              dataset under that share still counts when its amounts rank established surface
+              proteins above everything else it detected (AUROC at least{" "}
+              {AUROC_RESCUE.toFixed(2)}). Together the two bars pass as many membrane
+              preparations as the list screen does. When the table reports
+              no usable amounts, at least {Math.round(OVERLAP_SCREEN * 100)}% of the
+              dataset&apos;s proteins must be established surface proteins, and a list within{" "}
+              {OVERLAP_ALLOWANCE_PTS} points below that counts only as Provisional. (A random set
+              of human proteins scores about 15%.) When the authors pre-filtered their list to
+              annotated surface proteins, the bar is raised to match — though such a list is not
+              counted either way, so the raised bar only decides whether it lands here or under
+              &ldquo;Pre-filtered by surface annotation&rdquo; below.{" "}
               <span className={styles.fails}>
                 {countByStatus("below_screen")} datasets → High background
               </span>
             </li>
             <li>
               <strong>Readable per protein.</strong> The published table has to say which
-              proteins were detected. Tables where every value is imputed, or where the
-              baseline sample can&apos;t be identified, fail.{" "}
+              proteins were detected. Tables that pool conditions with no separable baseline,
+              or where the baseline sample can&apos;t be identified, fail. {IMPUTED_NOT_HELD}{" "}
               <span className={styles.fails}>{countByStatus("held")} datasets → Held</span>
+            </li>
+            <li>
+              <strong>Not pre-filtered by surface annotation.</strong>{" "}
+              {ANNOTATION_SELECTED_METHODS}{" "}
+              <span className={styles.fails}>
+                {countByStatus("annotation_selected")} datasets → Pre-filtered by surface annotation
+              </span>
             </li>
           </ol>
           <p className={styles.reviewLede}>
             Datasets that pass are <strong>Core</strong> ({countByStatus("core")}), or{" "}
             <strong>Provisional</strong> ({countByStatus("provisional")}) when they pass with a
             caveat, such as sitting within two points of the {Math.round(OVERLAP_SCREEN * 100)}%
-            bar. Both count.
+            list bar or having no no-label control. Both count.
+          </p>
+          <p className={styles.reviewLede}>
+            A study counts only its baseline samples: untreated, wild-type, uninfected or
+            healthy. When it also measured the same cells after a change of state (senescence,
+            infection, a knockout, a drug, a disease), that condition is listed as its own{" "}
+            <strong>Other condition</strong> dataset ({countByStatus("perturbed")}), not
+            counted by default. A reader can switch on &ldquo;Also count other conditions&rdquo;,
+            which counts one only when its study&apos;s baseline dataset passes review. A condition is not listed when the published table reports every protein in
+            every sample, as multiplexed tables do, because it would only repeat the baseline
+            list.
           </p>
         </section>
           <p className={styles.snapshot}>
@@ -173,7 +219,7 @@ export default function SurfaceProteomicsPage() {
                 {STATUS_ORDER.map((s) => (
                   <div key={s}>
                     <dt>
-                      {STATUS_LABEL[s]}{" "}
+                      {statusShortLabel(s)}{" "}
                       <span className={s === "core" || s === "provisional" ? styles.yes : styles.no}>
                         {s === "core" || s === "provisional" ? "counted" : "not counted"}
                       </span>{" "}
@@ -190,12 +236,16 @@ export default function SurfaceProteomicsPage() {
                 <div>
                   <dt>Surface overlap</dt>
                   <dd>
-                    The share of a study&apos;s proteins that are Canonical or Likely in our
-                    Surfaceome. A clean intact-cell experiment scores high; one
-                    swamped by intracellular contamination scores low. Intact-cell datasets
-                    need at least {Math.round(OVERLAP_SCREEN * 100)}% (the tick on each
-                    bar) to be counted, or count as Provisional within{" "}
-                    {OVERLAP_ALLOWANCE_PTS} points below it (light bar).
+                    How much of a study is Canonical or Likely in our Surfaceome. A clean
+                    intact-cell experiment scores high; one swamped by intracellular
+                    contamination scores low. For datasets that report amounts (marked
+                    &ldquo;amount&rdquo;) it is the share of the length-corrected amount, and
+                    they need at least {Math.round(ABUNDANCE_SCREEN * 100)}%, or amounts that rank
+                    surface proteins first (AUROC at least {AUROC_RESCUE.toFixed(2)}); for the rest it
+                    is the share of proteins, and they need at least{" "}
+                    {Math.round(OVERLAP_SCREEN * 100)}%, or count as Provisional within{" "}
+                    {OVERLAP_ALLOWANCE_PTS} points below it (light bar). The tick on each bar
+                    marks the bar that dataset had to reach.
                   </dd>
                 </div>
                 <div>
