@@ -30,16 +30,19 @@ function parentHref(path: string): string {
  * Shell — site-wide layout for surfaceome.deliverome.org.
  *
  * Single-row header (Pattern B in the sub-site shell taxonomy):
- *   • Brand lockup on the left — Deliverome logo + "The Deliverome Project"
- *     wordmark in Playfair Display italic, sized + spaced to match
- *     ``deliverome-internal:site/components/SiteShell/Header.tsx``. The
- *     wordmark is a link back to deliverome.org.
- *   • A `/` separator + "Surfaceome" sub-brand so the URL hierarchy
- *     reads inline ("Deliverome / Surfaceome") without a second nav row.
- *   • Right side: local Surfaceome nav (L1 library · Compare · Surface
- *     proteomics · SurfaceBench · API · Prompts · Reproducibility) + GitHub
- *     icon. Mirrors the spacing / typography of the parent's primary nav
- *     (`Team · News · Careers · Contact`) so the two sites visually share a header shape.
+ *   • Brand lockup on the left — Deliverome logo + "Deliverome Project"
+ *     wordmark in Manrope medium caps, matching deliverome.org's header
+ *     (``deliverome-internal:site/components/SiteShell/SiteShell.module.css``
+ *     `.brand`). The wordmark is a link back to deliverome.org.
+ *   • A `/` separator + "Surfaceome" sub-brand in the same caps style, so
+ *     the lockup reads as one line ("Deliverome Project / Surfaceome").
+ *   • Right side: local Surfaceome nav (Compare · SurfaceBench · API ·
+ *     Prompts · Reproducibility) + GitHub icon. The v1 library
+ *     (/v1-review/) and surface-proteomics (/surface-proteomics/) pages
+ *     stay live but are deliberately not in this nav; deliverome.org's
+ *     Open Data menu links to them. Mirrors the spacing / typography of
+ *     the parent's primary nav (`Team · News · Careers · Contact`) so the
+ *     two sites visually share a header shape.
  *
  * Why single-row instead of the prior two-row shell: a sub-site doesn't
  * need to claim a whole nav strip for the parent's links — visitors
@@ -79,7 +82,7 @@ export function Shell({ children }: ShellProps) {
                 height={40}
               />
               <span className={styles.brandParentText}>
-                The Deliverome Project
+                Deliverome Project
               </span>
             </a>
             <span className={styles.brandSep} aria-hidden="true">
@@ -102,14 +105,8 @@ export function Shell({ children }: ShellProps) {
             </Link>
           </div>
           <nav id="primary-nav" className={styles.nav} aria-label="Surfaceome sections">
-            <NavLink href="/v1-review" matchPrefix>
-              v1 library
-            </NavLink>
             <NavLink href="/compare" matchPrefix>
               Compare
-            </NavLink>
-            <NavLink href="/surface-proteomics" matchPrefix>
-              Surface proteomics
             </NavLink>
             <NavLink href="/benchmark" matchPrefix>
               SurfaceBench
