@@ -10,6 +10,7 @@ import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { ExpressionTable } from "./ExpressionTable";
+import { StudyPresence } from "./StudyPresence";
 import styles from "./ExpressionCard.module.css";
 
 interface Props {
@@ -94,6 +95,8 @@ export function ExpressionCard({ rec, n }: Props) {
     >
       <FeatureRationales category="expression" rec={rec} />
 
+      <StudyPresence uniprotAcc={rec.gene.uniprot_acc} symbol={rec.gene.hgnc_symbol} />
+
       <div className={styles.subsection}>
         {/* Subhead is a <div>, not a <p>, because the InfoTip body
          *  contains a <ul> — putting a <ul> inside a <p> triggers
@@ -158,6 +161,7 @@ export function ExpressionCard({ rec, n }: Props) {
           </p>
         ) : null}
       </div>
+
     </SectionCard>
   );
 }
