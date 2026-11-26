@@ -12,6 +12,7 @@ import {
   explainDecision,
   explainRungContext,
   fetchL1Design,
+  fetchL1ExternalTagSites,
   fetchL1GeneData,
   fetchL1IndexResult,
   fetchL1Reviews,
@@ -29,6 +30,7 @@ import {
   nearestContactInfo,
   nextIndexByLetter,
   parseRefoldMetrics,
+  renderableExternalTagSites,
   reviewScopeLabel,
   reviewStaleReason,
   sortSites,
@@ -48,6 +50,7 @@ import {
   visibleContacts,
   type L1Contact,
   type L1DesignFile,
+  type L1ExternalTagSite,
   type L1GeneContext,
   type L1Index,
   type L1IndexFetch,
@@ -81,6 +84,8 @@ export const COLORS = {
   pick: "#B3243B",
   ranker: "#E0A100",
   agent: "#C2410C",
+  tedman: "#E5342E",
+  litTag: "#059669",
   litHigh: "#0F766E",
   litLower: "#0369A1",
   uniprot: "#1E1B4B",
@@ -1117,10 +1122,88 @@ export function DesignContextCard({
   );
 }
 
+/** Compact reference table of published literature tag sites and Tedman screen-validated controls. */
+export function ExternalTagSitesTable({
+  sites,
+  aligned,
+}: {
+  sites: readonly L1ExternalTagSite[];
+  aligned: boolean;
+}) {
+  if (!sites.length) return null;
+  const posLabel = (s: L1ExternalTagSite) => {
+    if (s.site_kind === "terminal_n") {
+      return s.insert_after_residue != null && s.insert_after_residue > 0
+        ? `N-term (after ${s.insert_after_residue})`
+        : "N-terminus";
+    }
+    if (s.site_kind === "terminal_c") return "C-terminus";
+    if (s.insert_after_residue != null) {
+      const before = s.residue_before ? `${s.residue_before}${s.insert_after_residue}` : `${s.insert_after_residue}`;
+      const after = s.residue_after ? `${s.residue_after}${s.insert_after_residue + 1}` : `${s.insert_after_residue + 1}`;
+      return `between ${before} and ${after}`;
+    }
+    return s.residue_label ?? "—";
+  };
+  return (
+    <div className={styles.extTagSection}>
+      <h4 className={styles.h4}>
+        Literature &amp; Tedman tag sites ({sites.length})
+        {!aligned ? (
+          <span className={styles.muted}> — numbered on human canonical (listed, not drawn on this isoform/ortholog)</span>
+        ) : null}
+      </h4>
+      <div className={styles.tablewrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr><th>Source</th><th>Position</th><th>Tag</th><th>Rationale / validation</th><th>Refs</th></tr>
+          </thead>
+          <tbody>
+            {sites.map((s) => {
+              const isTedman = s.provenance === "screen_validated";
+              const refs = (s.sources ?? []).filter((src) => src.pmid || src.doi);
+              return (
+                <tr key={s.site_id}>
+                  <td className={styles.cellNowrap}>
+                    <span className={styles.swatch} style={{ background: isTedman ? COLORS.tedman : COLORS.litTag }} />
+                    {isTedman ? "Tedman control" : "Literature"}
+                  </td>
+                  <td className={`${styles.mono} ${styles.cellNowrap}`}>{posLabel(s)}</td>
+                  <td className={styles.cellNowrap}>{s.tag_type || "—"}</td>
+                  <td className={styles.cellWrap}>
+                    {s.rationale || s.functional_impact_measured || (isTedman ? "Tedman GPCR N-terminal HA surface-expression control" : "—")}
+                    {s.validation_level ? <span className={styles.muted}> · {s.validation_level.replace(/_/g, " ")}</span> : null}
+                  </td>
+                  <td className={styles.cellPmids}>
+                    {refs.length
+                      ? refs.slice(0, 3).map((src, i) =>
+                          src.pmid ? (
+                            <a key={i} href={`https://pubmed.ncbi.nlm.nih.gov/${src.pmid}/`} target="_blank" rel="noreferrer" className={styles.pmid}>
+                              {src.pmid}
+                            </a>
+                          ) : src.doi ? (
+                            <a key={i} href={`https://doi.org/${src.doi}`} target="_blank" rel="noreferrer" className={styles.pmid}>
+                              DOI
+                            </a>
+                          ) : null,
+                        )
+                      : "—"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function MemberDetail({
   member,
   topologyRow,
   geneContext,
+  externalTagSites,
   loadVersion,
   reviews,
   auth,
@@ -1133,6 +1216,7 @@ function MemberDetail({
   member: L1Member;
   topologyRow: LibraryTopologyRow | null;
   geneContext: L1GeneContext | null;
+  externalTagSites: readonly L1ExternalTagSite[];
   loadVersion: string;
   reviews: L1Reviews | null;
   auth: ReviewAuth;
@@ -1152,6 +1236,7 @@ function MemberDetail({
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [modelId, setModelId] = useState<string>("");
   const [showAlts, setShowAlts] = useState(true);
+  const [showExternalTags, setShowExternalTags] = useState(true);
   const [showContacts, setShowContacts] = useState(true);
   const [showHidden, setShowHidden] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -1242,6 +1327,32 @@ function MemberDetail({
         const hover = `${kind}${c.ligands ? `: ${c.ligands}` : ""}`;
         if (resi != null) marks.push({ resi, color: contactColor(c), radius: 2.8, stick: true, hover });
       }
+    }
+  }
+  const differs = uniprotDiffers(member);
+  const externalAligned = differs === false;
+  const renderableExternal = useMemo(
+    () =>
+      externalAligned && member.ordered_length_aa
+        ? renderableExternalTagSites(externalTagSites, member.ordered_length_aa)
+        : [],
+    [externalAligned, externalTagSites, member.ordered_length_aa],
+  );
+  // External literature & Tedman screen-validated tag sites (drawn before current picks so
+  // the primary pick sphere stays prominent when they share a residue).
+  if (segments && showExternalTags && renderableExternal.length) {
+    for (const ext of renderableExternal) {
+      const resi = toModel(ext.residue);
+      if (resi == null) continue;
+      marks.push({
+        resi,
+        color: ext.isTedman ? COLORS.tedman : COLORS.litTag,
+        radius: ext.isTedman ? 2.8 : 2.6,
+        label: ext.isTedman ? `Tedman ${ext.tagType}` : `lit ${ext.tagType}`,
+        hover: ext.isTedman
+          ? `Tedman control (${ext.tagType}, res ${ext.residue})`
+          : `literature tag (${ext.tagType}, after ${ext.residue})`,
+      });
     }
   }
   // Alternatives first, current picks last: when both name the same residue, the current
@@ -1336,7 +1447,6 @@ function MemberDetail({
   const modelMap = topology && model ? l1ModelMap(member, model, topology) : null;
   const sp = memberSp(member, topology || null);
   const pickLeader = sites.find((s) => s.is_primary !== false)?.leader ?? null;
-  const differs = uniprotDiffers(member);
   const diffLines = uniprotDiffLines(member.uniprot_diff ?? []);
 
   return (
@@ -1463,6 +1573,17 @@ function MemberDetail({
                 Candidate tag sites proposed by the ranker (gold) and agent proposer (burnt orange) that were not chosen as the primary pick.
               </InfoTip>
             </span>
+            {renderableExternal.length > 0 ? (
+              <span className={styles.ctrlGroup}>
+                <label className={showExternalTags ? styles.ctrlOn : styles.ctrl}>
+                  <input type="checkbox" checked={showExternalTags} onChange={(e) => setShowExternalTags(e.target.checked)} />
+                  Lit &amp; Tedman tags
+                </label>
+                <InfoTip align="end" label="About literature and Tedman tag sites">
+                  Published extracellular tag insertion sites from literature (emerald) and Tedman GPCR N-terminal HA controls (red) aligned to the human canonical sequence.
+                </InfoTip>
+              </span>
+            ) : null}
             {segments ? (
               <>
                 <span className={styles.ctrlGroup}>
@@ -1558,6 +1679,16 @@ function MemberDetail({
                     <i style={{ background: COLORS.agent }} /> runner-up (LLM)
                   </span>
                 ) : null}
+                {showExternalTags && renderableExternal.some((x) => x.isTedman) ? (
+                  <span title="Tedman screen-validated N-terminal HA surface-expression control">
+                    <i style={{ background: COLORS.tedman }} /> Tedman ({renderableExternal.filter((x) => x.isTedman).length})
+                  </span>
+                ) : null}
+                {showExternalTags && renderableExternal.some((x) => !x.isTedman) ? (
+                  <span title="Published extracellular tag insertion site from the literature">
+                    <i style={{ background: COLORS.litTag }} /> literature tag ({renderableExternal.filter((x) => !x.isTedman).length})
+                  </span>
+                ) : null}
                 <span>
                   <i style={{ background: COLORS.suggestion }} /> your suggestion
                   {suggested != null ? (
@@ -1643,6 +1774,7 @@ function MemberDetail({
             <SiteCard key={s.site_id} site={s} length={member.ordered_length_aa} focused={focusSite === s.site_id} onShow={() => showSite(s.site_id)} />
           ))
           : <p className={styles.muted}>No tag site is recorded for this member yet.</p>}
+        <ExternalTagSitesTable sites={externalTagSites} aligned={externalAligned} />
       </section>
       <section>
         <h3 className={styles.h3}>Contact sites</h3>
@@ -1734,6 +1866,8 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [topologies, setTopologies] = useState<LibraryTopologyRow[]>([]);
   const [geneContext, setGeneContext] = useState<L1GeneContext | null>(null);
+  const [externalTagSites, setExternalTagSites] = useState<L1ExternalTagSite[]>([]);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [synonyms, setSynonyms] = useState<SynonymOverlay | null>(null);
   // What the last letter key did, shown for a moment so a key that found nothing is not
   // silent (pressing Z with no Z gene in the filter otherwise looks like a dead page).
@@ -1897,6 +2031,7 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
       setDetail(null);
       setTopologies([]);
       setGeneContext(null);
+      setExternalTagSites([]);
       return;
     }
     let live = true;
@@ -1906,10 +2041,15 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
     // the design payload. Fetched once per gene in parallel with the design.
     setTopologies([]);
     setGeneContext(null);
+    setExternalTagSites([]);
     fetchL1GeneData(current.gene_symbol, API_BASE, ctl.signal).then(({ topologies: rows, context }) => {
       if (!live) return;
       setTopologies(rows);
       setGeneContext(context);
+    });
+    fetchL1ExternalTagSites(current.gene_symbol, API_BASE, ctl.signal).then((keep) => {
+      if (!live) return;
+      setExternalTagSites(keep);
     });
     return () => {
       live = false;
@@ -2439,6 +2579,22 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
                     {current.design_id && current.design_id !== current.member_id ? (
                       <> <span className={`${styles.mono} ${styles.muted}`}>{current.design_id}</span></>
                     ) : null}
+                    <button
+                      type="button"
+                      className={styles.copyLinkBtn}
+                      title="Copy direct link to this member"
+                      onClick={() => {
+                        try {
+                          navigator.clipboard?.writeText(window.location.href);
+                          setCopiedLink(true);
+                          window.setTimeout(() => setCopiedLink(false), 1500);
+                        } catch {
+                          /* clipboard unavailable */
+                        }
+                      }}
+                    >
+                      {copiedLink ? "Copied ✓" : "Copy link"}
+                    </button>
                   </h2>
                   <p className={styles.muted}>
                     {current.species} {current.candidate_set?.replace(/_/g, " ")} · {current.rung} · {current.membrane_class}
@@ -2487,6 +2643,7 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
                   member={member}
                   topologyRow={l1MemberTopology(topologies, member)}
                   geneContext={geneContext}
+                  externalTagSites={externalTagSites}
                   loadVersion={index.load.load_version}
                   reviews={reviews}
                   auth={auth}

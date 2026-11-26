@@ -10,6 +10,7 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   DesignContextCard,
+  ExternalTagSitesTable,
   L1IndexStatus,
   L1Review,
   RefoldFlagBanner,
@@ -1020,4 +1021,40 @@ test("DesignContextCard explains BST2 dual-anchor strategy, refold QC metrics, n
   assert.match(html, /Co-receptor \/ partner/);
   assert.match(html, /CD79A/);
   assert.match(html, /Homo-oligomer \(2-mer\)/);
+});
+
+test("ExternalTagSitesTable renders Tedman controls and literature tag sites with alignment note", () => {
+  const sampleSites = [
+    {
+      site_id: "glp2r-tedman", gene_symbol: "GLP2R", uniprot_acc: "O95838",
+      provenance: "screen_validated" as const, det_path: null, site_kind: "terminal_n" as const,
+      insert_after_residue: null, residue_before: null, residue_after: null, topology_state: "O",
+      extracellular: true, compartment: "extracellular" as const, tag_type: "HA", tag_length_aa: 9,
+      linker: null, evidence_type: "screen", functional_impact_measured: null, confidence: "high" as const,
+      rationale: null, sources: [{ pmid: "38123456" }], plddt: null, conservation_rank: null, median_conservation: null,
+    },
+    {
+      site_id: "glp2r-lit", gene_symbol: "GLP2R", uniprot_acc: "O95838",
+      provenance: "literature_retrieved" as const, det_path: null, site_kind: "terminal_n" as const,
+      insert_after_residue: 24, residue_before: "A", residue_after: "S", topology_state: "O",
+      extracellular: true, compartment: "extracellular" as const, tag_type: "HA (YPYDVPDYA)", tag_length_aa: 9,
+      linker: null, evidence_type: "flow_cytometry", functional_impact_measured: "cAMP intact", confidence: "high" as const,
+      rationale: "N-terminal HA after SP cleavage retains surface expression.", sources: [{ doi: "10.1000/test" }],
+      plddt: null, conservation_rank: null, median_conservation: null,
+    },
+  ];
+  const alignedHtml = renderToStaticMarkup(
+    React.createElement(ExternalTagSitesTable, { sites: sampleSites, aligned: true }),
+  );
+  assert.match(alignedHtml, /Literature &amp; Tedman tag sites \(2\)/);
+  assert.match(alignedHtml, /Tedman control/);
+  assert.match(alignedHtml, /N-term \(after 24\)/);
+  assert.match(alignedHtml, /38123456/);
+  assert.match(alignedHtml, /DOI/);
+  assert.doesNotMatch(alignedHtml, /not drawn on this isoform\/ortholog/);
+
+  const unalignedHtml = renderToStaticMarkup(
+    React.createElement(ExternalTagSitesTable, { sites: sampleSites, aligned: false }),
+  );
+  assert.match(unalignedHtml, /not drawn on this isoform\/ortholog/);
 });

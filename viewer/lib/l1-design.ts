@@ -1494,6 +1494,89 @@ export interface L1NearestContact {
   label: string;
 }
 
+export interface L1ExternalTagSite {
+  site_id: string;
+  provenance: string;
+  site_kind: string;
+  insert_after_residue: number | null;
+  residue_before?: string | null;
+  residue_after?: string | null;
+  residue_label?: string | null;
+  extracellular: boolean;
+  tag_type: string;
+  rationale?: string | null;
+  functional_impact_measured?: string | null;
+  validation_level?: string | null;
+  sources?: { pmid?: string | null; doi?: string | null }[];
+}
+
+export interface L1RenderableExternalTagSite {
+  siteId: string;
+  residue: number;
+  isTedman: boolean;
+  tagType: string;
+  siteKind: string;
+}
+
+export function isL1LiteratureTagProvenance(provenance: string): boolean {
+  return provenance === "literature_retrieved" || provenance === "literature_enriched";
+}
+
+/**
+ * Fetch published literature tag sites and Tedman screen-validated controls from
+ * `/v1/tag-sites/{SYMBOL}`, excluding legacy deterministic_computed candidates and
+ * non-rendered validated_literature rows.
+ */
+export async function fetchL1ExternalTagSites(
+  symbol: string,
+  apiBase: string,
+  signal?: AbortSignal,
+): Promise<L1ExternalTagSite[]> {
+  try {
+    const res = await fetch(`${apiBase}/v1/tag-sites/${encodeURIComponent(symbol)}`, { signal });
+    if (!res.ok) return [];
+    const body = (await res.json()) as { sites?: unknown };
+    if (!Array.isArray(body?.sites)) return [];
+    return (body.sites as L1ExternalTagSite[]).filter(
+      (s) =>
+        s &&
+        typeof s.site_id === "string" &&
+        (s.provenance === "screen_validated" || isL1LiteratureTagProvenance(s.provenance)),
+    );
+  } catch {
+    return [];
+  }
+}
+
+/** Resolve extracellular literature & Tedman tag sites to 1-indexed canonical residues. */
+export function renderableExternalTagSites(
+  sites: readonly L1ExternalTagSite[],
+  length: number,
+): L1RenderableExternalTagSite[] {
+  if (length <= 0) return [];
+  const out: L1RenderableExternalTagSite[] = [];
+  for (const s of sites) {
+    const isTedman = s.provenance === "screen_validated";
+    if (!isTedman && !isL1LiteratureTagProvenance(s.provenance)) continue;
+    if (!isTedman && !s.extracellular && s.site_kind !== "terminal_n") continue;
+    const raw =
+      s.site_kind === "terminal_c"
+        ? length
+        : s.insert_after_residue == null || s.insert_after_residue === 0
+          ? 1
+          : s.insert_after_residue;
+    if (raw < 1 || raw > length) continue;
+    out.push({
+      siteId: s.site_id,
+      residue: raw,
+      isTedman,
+      tagType: s.tag_type || (isTedman ? "HA" : "tag"),
+      siteKind: s.site_kind,
+    });
+  }
+  return out;
+}
+
 /**
  * Sequence distance (in aa) from a tag insertion residue to the nearest annotated
  * contact residue (curated PDB/DB, UniProt binding, or visible literature contacts).
