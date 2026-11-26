@@ -520,3 +520,31 @@ span.insertSuggested { pointer-events: none; }
 .welcomeSteps { margin: 0 0 1rem; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.88rem; color: var(--ink); line-height: 1.45; }
 .welcomeSteps code { font-family: var(--font-mono); font-size: 0.8rem; padding: 0.05rem 0.3rem; border-radius: 3px; background: var(--bg); border: 1px solid var(--line-soft); }
 .welcomeActions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+
+/* Design & biological context strip above the Tag sites cards. */
+.contextCard {
+  display: flex; flex-direction: column; gap: 0.45rem;
+  padding: 0.65rem var(--space-3); margin-bottom: var(--space-2);
+  border: 1px solid var(--line); border-radius: var(--radius-md, 8px);
+  background: var(--bg-soft); font-size: 0.84rem; line-height: 1.45;
+}
+.contextStrategy { margin: 0; color: var(--ink); }
+.metricStrip { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+.metricPass, .metricWarn, .metricNeutral {
+  display: inline-flex; align-items: center; padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-pill); font-size: 0.74rem; font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+}
+.metricPass { background: var(--teal-soft); color: var(--teal-dark); }
+.metricWarn { background: #fffbeb; color: #92400e; border: 1px solid #f59e0b; }
+.metricNeutral { background: var(--bg); color: var(--ink-soft); border: 1px solid var(--line); }
+.bioSection { border-top: 1px solid var(--line-soft); padding-top: 0.45rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.bioSummary { margin: 0; color: var(--ink-soft); font-size: 0.82rem; }
+.bioSummary strong { color: var(--ink); }
+.bioFlags { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.28rem; font-size: 0.8rem; color: var(--ink-soft); }
+.bioTagWarn, .bioTagNeutral {
+  display: inline-block; padding: 0.02rem 0.42rem; border-radius: var(--radius-pill);
+  font-size: 0.72rem; font-weight: var(--fw-medium); margin-right: 0.25rem;
+}
+.bioTagWarn { background: #fffbeb; color: #92400e; border: 1px solid #f59e0b; }
+.bioTagNeutral { background: var(--bg); color: var(--ink); border: 1px solid var(--line); }

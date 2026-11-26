@@ -9,9 +9,11 @@ import {
   armLabel,
   countBy,
   currentMemberModels,
+  explainDecision,
+  explainRungContext,
   fetchL1Design,
+  fetchL1GeneData,
   fetchL1IndexResult,
-  fetchL1MemberTopologies,
   fetchL1Reviews,
   filterIndex,
   groupByGene,
@@ -24,7 +26,9 @@ import {
   l1SiteSignature,
   l1StructureUrl,
   latestVerdicts,
+  nearestContactInfo,
   nextIndexByLetter,
+  parseRefoldMetrics,
   reviewScopeLabel,
   reviewStaleReason,
   sortSites,
@@ -44,6 +48,7 @@ import {
   visibleContacts,
   type L1Contact,
   type L1DesignFile,
+  type L1GeneContext,
   type L1Index,
   type L1IndexFetch,
   type L1IndexMember,
@@ -179,10 +184,13 @@ function isRedacted(v: string | null | undefined): boolean {
   return !v || /^withheld\b/i.test(v.trim());
 }
 
+const INTERNAL_NOISE_CHIPS = /^(?:order rule\s+\S+|GPCR=[01]|decided|loop best)$/i;
+
 /**
  * Split semicolon-delimited status_detail outside parentheses so internal parentheticals
  * like `(built; flag, never hold, Becca 2026-11-22)` are never torn across two chips,
- * and strip trailing internal date-stamped policy notes from public chips.
+ * strip trailing internal date-stamped policy notes, and drop purely internal tokens
+ * like `order rule order_1` or `GPCR=1`.
  */
 export function formatStatusDetailChips(raw: string): string[] {
   const parts: string[] = [];
@@ -202,7 +210,7 @@ export function formatStatusDetailChips(raw: string): string[] {
   if (cur) parts.push(cur);
   return parts
     .map((p) => p.replace(/\s*\([^)]*\b20\d{2}-\d{2}-\d{2}\b[^)]*\)\s*/g, " ").trim())
-    .filter(Boolean);
+    .filter((p) => p && !INTERNAL_NOISE_CHIPS.test(p));
 }
 
 /**
@@ -316,7 +324,7 @@ export function SiteCard({
         {hasDecidedBy ? (<><dt>decided by</dt><dd>{site.decided_by}</dd></>) : null}
         {site.reason ? (<><dt>reason</dt><dd>{site.reason}</dd></>) : null}
         {site.rejected_alternative ? (<><dt>rejected alternative</dt><dd>{site.rejected_alternative}</dd></>) : null}
-        {site.decision ? (<><dt>decision</dt><dd>{site.decision}</dd></>) : null}
+        {site.decision ? (<><dt>decision</dt><dd>{explainDecision(site.decision)}</dd></>) : null}
         {site.status_detail ? (() => {
           const parts = formatStatusDetailChips(site.status_detail);
           if (!parts.length) return null;
@@ -988,9 +996,131 @@ export function structureTabLabel(
   ].filter(Boolean).join(" · ");
 }
 
+/**
+ * Consolidates why this tagging strategy was picked, quantitative refold QC metrics,
+ * nearest-contact clearance, and surface-biology considerations (proteolytic cleavage/shedding,
+ * co-receptors, epitope masking, oligomerization, GPI/dual-anchor topology) from the gene record.
+ */
+export function DesignContextCard({
+  member,
+  topology,
+  model,
+  geneContext,
+  curatedPositions,
+}: {
+  member: Pick<L1Member, "gene_symbol" | "rung" | "sites" | "contacts">;
+  topology: string | null | undefined;
+  model: Pick<L1Structure, "kind" | "site_id" | "mean_plddt" | "note"> | undefined;
+  geneContext: L1GeneContext | null | undefined;
+  curatedPositions: ReadonlySet<number>;
+}) {
+  const primary = member.sites.find((s) => s.is_primary !== false);
+  const strategy = explainRungContext(member, topology, geneContext);
+  const metrics = parseRefoldMetrics(model?.note, primary?.status_detail);
+  const nearest = nearestContactInfo(primary?.insert_after_residue, member.contacts ?? [], curatedPositions);
+  const hasBioFlags = !!(
+    geneContext?.shedding?.present ||
+    geneContext?.coReceptor ||
+    geneContext?.epitopeMasking ||
+    geneContext?.homoOligomer
+  );
+  if (!strategy && !metrics.length && !nearest && !geneContext?.summary && !hasBioFlags) return null;
+
+  return (
+    <div className={styles.contextCard}>
+      {strategy ? (
+        <p className={styles.contextStrategy}>
+          <strong>Why this strategy:</strong> {strategy}
+        </p>
+      ) : null}
+      {metrics.length || nearest ? (
+        <div className={styles.metricStrip} aria-label="Refold QC and contact clearance">
+          {model?.kind === "tagged" && model.mean_plddt != null ? (
+            <span
+              className={model.mean_plddt >= 70 ? styles.metricPass : styles.metricWarn}
+              title="Mean predicted local distance difference test (pLDDT) across the tagged refold."
+            >
+              pLDDT {model.mean_plddt.toFixed(1)}
+            </span>
+          ) : null}
+          {metrics.map((m) => (
+            <span
+              key={m.label}
+              className={m.tone === "pass" ? styles.metricPass : m.tone === "warn" ? styles.metricWarn : styles.metricNeutral}
+              title={m.help}
+            >
+              {m.label} {m.value}
+            </span>
+          ))}
+          {nearest ? (
+            <span
+              className={nearest.distanceAa <= 10 ? styles.metricWarn : styles.metricPass}
+              title={`Sequence distance from the chosen tag insertion to the nearest annotated contact: ${nearest.label}.`}
+            >
+              {nearest.distanceAa <= 10 ? "⚠ " : ""}Nearest contact: {nearest.distanceAa} aa ({nearest.label})
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      {geneContext?.summary || hasBioFlags ? (
+        <div className={styles.bioSection}>
+          {geneContext?.summary ? (
+            <p className={styles.bioSummary}>
+              <strong>Protein context:</strong> {geneContext.summary}{" "}
+              <a href={`/${encodeURIComponent(member.gene_symbol)}`} target="_blank" rel="noreferrer">
+                full gene page
+              </a>
+            </p>
+          ) : null}
+          {hasBioFlags ? (
+            <ul className={styles.bioFlags}>
+              {geneContext?.shedding?.present ? (
+                <li>
+                  <span className={styles.bioTagWarn}>Proteolytic cleavage / shedding</span>
+                  {geneContext.shedding.sheddase ? ` (${geneContext.shedding.sheddase})` : ""}
+                  {geneContext.shedding.mechanism
+                    ? ` — ${geneContext.shedding.mechanism}`
+                    : geneContext.shedding.rationale
+                      ? ` — ${geneContext.shedding.rationale}`
+                      : ""}
+                </li>
+              ) : null}
+              {geneContext?.coReceptor ? (
+                <li>
+                  <span className={styles.bioTagWarn}>Co-receptor / partner</span>
+                  {geneContext.coReceptor.partners.length ? ` (${geneContext.coReceptor.partners.join(", ")})` : ""}
+                  {geneContext.coReceptor.rationale ? ` — ${geneContext.coReceptor.rationale}` : ""}
+                </li>
+              ) : null}
+              {geneContext?.epitopeMasking ? (
+                <li>
+                  <span className={styles.bioTagNeutral}>
+                    Epitope masking: {geneContext.epitopeMasking.mechanisms.join(", ")}
+                  </span>
+                  {geneContext.epitopeMasking.rationale ? ` — ${geneContext.epitopeMasking.rationale}` : ""}
+                </li>
+              ) : null}
+              {geneContext?.homoOligomer ? (
+                <li>
+                  <span className={styles.bioTagNeutral}>
+                    Homo-oligomer{geneContext.homoOligomer.stoichiometry ? ` (${geneContext.homoOligomer.stoichiometry}-mer)` : ""}
+                  </span>
+                  {geneContext.homoOligomer.isEcdOnly ? " — predicted ectodomain self-association" : " — predicted self-association"}
+                  {geneContext.homoOligomer.source ? ` (${geneContext.homoOligomer.source})` : ""}
+                </li>
+              ) : null}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function MemberDetail({
   member,
   topologyRow,
+  geneContext,
   loadVersion,
   reviews,
   auth,
@@ -1002,6 +1132,7 @@ function MemberDetail({
 }: {
   member: L1Member;
   topologyRow: LibraryTopologyRow | null;
+  geneContext: L1GeneContext | null;
   loadVersion: string;
   reviews: L1Reviews | null;
   auth: ReviewAuth;
@@ -1495,6 +1626,19 @@ function MemberDetail({
             (a1, a2, a3, …) tested or ordered at distinct extracellular loops; alternatives are runner-up sites not ordered.
           </InfoTip>
         </h3>
+        <DesignContextCard
+          member={member}
+          topology={topology || null}
+          model={model}
+          geneContext={geneContext}
+          curatedPositions={(() => {
+            const set = new Set<number>();
+            if (curatedAligned && curatedGene) {
+              for (const c of curatedGene.sites) for (const p of c.positions ?? []) set.add(p);
+            }
+            return set;
+          })()}
+        />
         {sites.length ? sites.map((s) => (
             <SiteCard key={s.site_id} site={s} length={member.ordered_length_aa} focused={focusSite === s.site_id} onShow={() => showSite(s.site_id)} />
           ))
@@ -1589,6 +1733,7 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
   // while the next design is fetched, which unmounts the panel the text was typed into.
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [topologies, setTopologies] = useState<LibraryTopologyRow[]>([]);
+  const [geneContext, setGeneContext] = useState<L1GeneContext | null>(null);
   const [synonyms, setSynonyms] = useState<SynonymOverlay | null>(null);
   // What the last letter key did, shown for a moment so a key that found nothing is not
   // silent (pressing Z with no Z gene in the filter otherwise looks like a dead page).
@@ -1751,18 +1896,21 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
     if (!current) {
       setDetail(null);
       setTopologies([]);
+      setGeneContext(null);
       return;
     }
     let live = true;
     const ctl = new AbortController();
     fetchL1Design(current.gene_symbol, API_BASE).then((d) => live && setDetail(d));
-    // The per-residue topology strings live on the gene record, not on the design
-    // payload. Fetched per gene, in parallel with the design, so stepping through
-    // members of one gene costs one call for the whole group.
+    // Per-residue topologies and surface-biology context live on the gene record, not on
+    // the design payload. Fetched once per gene in parallel with the design.
     setTopologies([]);
-    fetchL1MemberTopologies(current.gene_symbol, API_BASE, ctl.signal).then(
-      (rows) => live && setTopologies(rows),
-    );
+    setGeneContext(null);
+    fetchL1GeneData(current.gene_symbol, API_BASE, ctl.signal).then(({ topologies: rows, context }) => {
+      if (!live) return;
+      setTopologies(rows);
+      setGeneContext(context);
+    });
     return () => {
       live = false;
       ctl.abort();
@@ -2338,6 +2486,7 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
                 <MemberDetail
                   member={member}
                   topologyRow={l1MemberTopology(topologies, member)}
+                  geneContext={geneContext}
                   loadVersion={index.load.load_version}
                   reviews={reviews}
                   auth={auth}

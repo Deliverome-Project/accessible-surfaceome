@@ -1175,14 +1175,122 @@ interface RawGeneTopology {
   isoform_id?: string | null;
 }
 
-export async function fetchL1MemberTopologies(
+export interface L1GeneContext {
+  /** First sentence of the gene record's executive summary (e.g. topology / GPI / complex context). */
+  summary: string | null;
+  coReceptor: {
+    dependency: string;
+    partners: string[];
+    rationale: string | null;
+  } | null;
+  shedding: {
+    present: boolean;
+    severity: string | null;
+    sheddase: string | null;
+    mechanism: string | null;
+    rationale: string | null;
+  } | null;
+  epitopeMasking: {
+    mechanisms: string[];
+    severity: string | null;
+    rationale: string | null;
+  } | null;
+  homoOligomer: {
+    stoichiometry: number | null;
+    isEcdOnly: boolean;
+    source: string | null;
+  } | null;
+}
+
+/** Strip internal ledger evidence IDs like `(a1_evi_01, a2_evi_05)` from gene-record prose. */
+function cleanGeneProse(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = raw
+    .replace(/\s*\((?:[a-z]\d+_evi_\d+(?:\s*,\s*)?)+\)/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return cleaned || null;
+}
+
+function firstSentence(raw: string | null | undefined): string | null {
+  const s = cleanGeneProse(raw);
+  if (!s) return null;
+  const m = /^(.+?[.!?])(?:\s|$)/.exec(s);
+  return m ? m[1] : s;
+}
+
+export function extractL1GeneContext(body: unknown): L1GeneContext | null {
+  if (!body || typeof body !== "object") return null;
+  const d = body as Record<string, unknown>;
+  const exec = d.executive_summary as { one_paragraph?: string | null } | null | undefined;
+  const ar = d.accessibility_risks as Record<string, unknown> | null | undefined;
+  const cr = ar?.co_receptor_requirements as {
+    surface_expression_dependency?: string | null;
+    partners?: string[] | null;
+    rationale?: string | null;
+  } | null | undefined;
+  const sh = ar?.shed_form as {
+    present?: boolean | null;
+    severity?: string | null;
+    sheddase_if_known?: string | null;
+    mechanism?: string | null;
+    rationale?: string | null;
+  } | null | undefined;
+  const em = ar?.epitope_masking as {
+    mechanism?: string[] | null;
+    severity?: string | null;
+    rationale?: string | null;
+  } | null | undefined;
+  const ho = ar?.homo_oligomerization_prediction as {
+    present?: boolean | null;
+    stoichiometry?: number | null;
+    is_ecd_only?: boolean | null;
+    source?: string | null;
+  } | null | undefined;
+
+  const summary = firstSentence(exec?.one_paragraph);
+  const partners = Array.isArray(cr?.partners) ? cr.partners.filter((p): p is string => typeof p === "string" && !!p.trim()) : [];
+  const dep = cr?.surface_expression_dependency ?? "";
+  const coReceptor =
+    (dep && dep !== "none" && dep !== "unknown") || partners.length > 0
+      ? { dependency: dep || "partner", partners, rationale: firstSentence(cr?.rationale) }
+      : null;
+  const shedding = sh?.present
+    ? {
+        present: true,
+        severity: sh.severity ?? null,
+        sheddase: sh.sheddase_if_known ?? null,
+        mechanism: cleanGeneProse(sh.mechanism),
+        rationale: firstSentence(sh.rationale),
+      }
+    : null;
+  const mechanisms = Array.isArray(em?.mechanism)
+    ? em.mechanism.filter((x): x is string => typeof x === "string" && !!x.trim() && x !== "none")
+    : [];
+  const epitopeMasking =
+    mechanisms.length > 0
+      ? { mechanisms, severity: em?.severity ?? null, rationale: firstSentence(em?.rationale) }
+      : null;
+  const homoOligomer = ho?.present
+    ? {
+        stoichiometry: ho.stoichiometry ?? null,
+        isEcdOnly: !!ho.is_ecd_only,
+        source: ho.source ?? null,
+      }
+    : null;
+
+  if (!summary && !coReceptor && !shedding && !epitopeMasking && !homoOligomer) return null;
+  return { summary, coReceptor, shedding, epitopeMasking, homoOligomer };
+}
+
+export async function fetchL1GeneData(
   symbol: string,
   apiBase: string,
   signal?: AbortSignal,
-): Promise<LibraryTopologyRow[]> {
+): Promise<{ topologies: LibraryTopologyRow[]; context: L1GeneContext | null }> {
   try {
     const res = await fetch(`${apiBase}/v1/genes/${encodeURIComponent(symbol)}`, { signal });
-    if (!res.ok) return [];
+    if (!res.ok) return { topologies: [], context: null };
     const body = (await res.json()) as {
       deterministic_features?: {
         library_designed_topology?: LibraryTopologyRow[] | null;
@@ -1215,10 +1323,203 @@ export async function fetchL1MemberTopologies(
         topology_acc: raw.isoform_id ?? raw.uniprot_acc ?? undefined,
       });
     }
-    return rows;
+    return { topologies: rows, context: extractL1GeneContext(body) };
   } catch {
-    return [];
+    return { topologies: [], context: null };
   }
+}
+
+export async function fetchL1MemberTopologies(
+  symbol: string,
+  apiBase: string,
+  signal?: AbortSignal,
+): Promise<LibraryTopologyRow[]> {
+  return (await fetchL1GeneData(symbol, apiBase, signal)).topologies;
+}
+
+export interface L1RefoldMetric {
+  label: string;
+  value: string;
+  tone: "pass" | "warn" | "neutral";
+  help: string;
+}
+
+/**
+ * Parse quantitative refold QC metrics (`TM to native`, `site lDDT`, `native-region lDDT`,
+ * `SpyTag003 RSA`, `ALFA RSA`) out of `model.note` and/or `site.status_detail` so they can
+ * be shown as structured metric pills rather than buried in a muted caption.
+ */
+export function parseRefoldMetrics(
+  ...sources: (string | null | undefined)[]
+): L1RefoldMetric[] {
+  const joined = sources.filter(Boolean).join("; ");
+  if (!joined) return [];
+  const out: L1RefoldMetric[] = [];
+  const seen = new Set<string>();
+  const add = (m: L1RefoldMetric) => {
+    if (!seen.has(m.label)) {
+      seen.add(m.label);
+      out.push(m);
+    }
+  };
+
+  const tm = /TM to native\s+([0-9.]+)/i.exec(joined);
+  if (tm) {
+    const v = Number(tm[1]);
+    add({
+      label: "TM to native",
+      value: tm[1],
+      tone: v >= 0.8 ? "pass" : "warn",
+      help: "TM-score comparing the tagged refold to the native structure (≥0.80 = fold preserved).",
+    });
+  }
+  const siteLddt = /(?:site lDDT|lDDT within 15 of the site)\s+([0-9.]+)/i.exec(joined);
+  if (siteLddt) {
+    const v = Number(siteLddt[1]);
+    add({
+      label: "Site lDDT",
+      value: siteLddt[1],
+      tone: v >= 0.7 ? "pass" : "warn",
+      help: "Local structural preservation within 15 residues of the tag insertion (≥0.70 target).",
+    });
+  }
+  const natLddt = /native-region lDDT\s+([0-9.]+)/i.exec(joined);
+  if (natLddt) {
+    const v = Number(natLddt[1]);
+    add({
+      label: "Native lDDT",
+      value: natLddt[1],
+      tone: v >= 0.85 ? "pass" : "warn",
+      help: "Overall structural preservation across native residues (≥0.85 target).",
+    });
+  }
+  const spy = /SpyTag003\s+(?:buried\s*\()?RSA\s+([0-9.]+)/i.exec(joined);
+  if (spy) {
+    const v = Number(spy[1]);
+    const buried = /SpyTag003\s+buried/i.test(joined) || v < 0.35;
+    add({
+      label: "SpyTag003 RSA",
+      value: spy[1],
+      tone: buried ? "warn" : "pass",
+      help: "Relative solvent accessibility of SpyTag003 in the tagged refold (higher = more surface-exposed).",
+    });
+  }
+  const alfa = /ALFA\s+(?:buried\s*\()?RSA\s+([0-9.]+)/i.exec(joined);
+  if (alfa) {
+    const v = Number(alfa[1]);
+    const buried = /ALFA\s+buried/i.test(joined) || v < 0.35;
+    add({
+      label: "ALFA RSA",
+      value: alfa[1],
+      tone: buried ? "warn" : "pass",
+      help: "Relative solvent accessibility of the ALFA control tag in the tagged refold (higher = more exposed).",
+    });
+  }
+  return out;
+}
+
+const DECISION_LABELS: Record<string, string> = {
+  internal_loop: "Internal extracellular loop",
+  igk_swap: "Igκ leader replaces native signal peptide",
+  igk_res1: "Igκ leader added before residue 1",
+  native_site: "Tag after native signal-peptide cleavage",
+  tag_alone: "N-terminal tag without Igκ leader",
+  hold_no_passing_arm: "Retained after manual review (no arm passed automated refold thresholds)",
+  ranked_proposal: "Runner-up candidate (ranker)",
+  "ranked proposal": "Runner-up candidate (ranker)",
+  snorkel: "C-terminal snorkel TM-module tag",
+};
+
+/** Translate raw internal `decision` tokens into plain-English labels for external scientists. */
+export function explainDecision(decision: string | null | undefined): string | null {
+  if (!decision) return null;
+  const key = decision.trim();
+  return DECISION_LABELS[key] ?? key;
+}
+
+/**
+ * Plain-English explanation of WHY this member uses its assigned tagging strategy
+ * (e.g., why neither N- nor C-terminus was free on dual-anchor/intracellular-termini proteins like BST2).
+ */
+export function explainRungContext(
+  member: Pick<L1Member, "rung" | "sites">,
+  topology: string | null | undefined,
+  geneContext: L1GeneContext | null | undefined,
+): string | null {
+  const rung = member.rung.toLowerCase();
+  const primary = member.sites.find((s) => s.is_primary !== false);
+  const first = topology?.[0] ?? null;
+  const last = topology && topology.length > 0 ? topology[topology.length - 1] : null;
+  const gpiMention = !!(geneContext?.summary && /\bgpi\b/i.test(geneContext.summary));
+
+  if (rung === "internal" || rung.includes("internal")) {
+    const reasons: string[] = [];
+    if (first === "I") reasons.push("N-terminus is intracellular");
+    else if (first === "M") reasons.push("N-terminus starts in a TM helix");
+    if (gpiMention) reasons.push("C-terminus is GPI-anchored");
+    else if (last === "I") reasons.push("C-terminus is intracellular");
+    else if (last === "M") reasons.push("C-terminus ends in a TM helix");
+    if (reasons.length === 2) {
+      return `Tagged in an internal extracellular loop because neither terminus is free for extracellular tagging (${reasons.join("; ")}).`;
+    }
+    if (reasons.length === 1) {
+      return `Tagged in an internal extracellular loop (${reasons[0]}).`;
+    }
+    return "Tagged in an exposed internal extracellular loop selected to avoid binding sites and preserve native folding.";
+  }
+  if (rung.startsWith("n after sp")) {
+    if (primary?.leader?.toLowerCase().startsWith("igk")) {
+      return "Extracellular N-terminus with a native signal peptide; swapped for the Igκ leader so the N-terminal tag cleaves cleanly and stays exposed.";
+    }
+    return "Extracellular N-terminus with a native signal peptide; tag placed immediately after the native SP cleavage site.";
+  }
+  if (rung.startsWith("n at residue 1")) {
+    if (primary?.leader?.toLowerCase().startsWith("igk")) {
+      return "Extracellular N-terminus without a native signal peptide; Igκ leader added ahead of residue 1 to direct surface translocation of the tag.";
+    }
+    return "Extracellular N-terminus without a native signal peptide; tag placed directly at residue 1.";
+  }
+  if (rung.includes("c-term")) {
+    if (primary?.cassette?.toLowerCase().includes("snorkel")) {
+      return "Intracellular C-terminus; uses a C-terminal snorkel TM module to project the SpyTag003 + ALFA tag into the extracellular space.";
+    }
+    return "Extracellular C-terminus; tag placed at the free C-terminal end without disrupting internal loops.";
+  }
+  return null;
+}
+
+export interface L1NearestContact {
+  distanceAa: number;
+  residue: number;
+  label: string;
+}
+
+/**
+ * Sequence distance (in aa) from a tag insertion residue to the nearest annotated
+ * contact residue (curated PDB/DB, UniProt binding, or visible literature contacts).
+ */
+export function nearestContactInfo(
+  insertAfter: number | null | undefined,
+  contacts: readonly L1Contact[],
+  curatedPositions: ReadonlySet<number>,
+): L1NearestContact | null {
+  if (insertAfter == null) return null;
+  let best: L1NearestContact | null = null;
+  for (const pos of curatedPositions) {
+    const dist = Math.abs(pos - insertAfter);
+    if (!best || dist < best.distanceAa) {
+      best = { distanceAa: dist, residue: pos, label: `curated contact (${pos})` };
+    }
+  }
+  for (const c of contacts) {
+    if (c.confidence_tier === "hidden") continue;
+    const dist = Math.abs(c.residue - insertAfter);
+    if (!best || dist < best.distanceAa) {
+      const src = c.source === "uniprot_binding" ? "UniProt binding" : "literature contact";
+      best = { distanceAa: dist, residue: c.residue, label: `${src} (${c.aa ?? ""}${c.residue})` };
+    }
+  }
+  return best;
 }
 
 /**
