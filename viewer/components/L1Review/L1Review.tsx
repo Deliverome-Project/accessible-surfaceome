@@ -178,6 +178,95 @@ function isRedacted(v: string | null | undefined): boolean {
   return !v || /^withheld\b/i.test(v.trim());
 }
 
+/**
+ * Split semicolon-delimited status_detail outside parentheses so internal parentheticals
+ * like `(built; flag, never hold, Becca 2026-11-22)` are never torn across two chips,
+ * and strip trailing internal date-stamped policy notes from public chips.
+ */
+export function formatStatusDetailChips(raw: string): string[] {
+  const parts: string[] = [];
+  let cur = "";
+  let depth = 0;
+  for (let i = 0; i < raw.length; i += 1) {
+    const ch = raw[i];
+    if (ch === "(") depth += 1;
+    else if (ch === ")" && depth > 0) depth -= 1;
+    if (ch === ";" && depth === 0) {
+      parts.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur) parts.push(cur);
+  return parts
+    .map((p) => p.replace(/\s*\([^)]*\b20\d{2}-\d{2}-\d{2}\b[^)]*\)\s*/g, " ").trim())
+    .filter(Boolean);
+}
+
+/**
+ * Rewrite mature-chain `insert after 0` in Igκ-swap refold notes so it matches the
+ * member's own residue numbering shown in the header, strip, and Tag sites cards.
+ */
+export function formatModelNote(
+  note: string | null | undefined,
+  site: Pick<L1Site, "leader" | "insert_after_residue"> | undefined,
+): string | null {
+  if (!note) return null;
+  if (site?.leader?.toLowerCase().startsWith("igk") && site.insert_after_residue != null && site.insert_after_residue > 0) {
+    return note.replace(/\binsert after 0\b/i, `insert after ${site.insert_after_residue} (mature N-terminus after Igκ)`);
+  }
+  return note;
+}
+
+/** Strip a parenthetical `(<why>)` from `sp.source` when `sp.why` is rendered separately below. */
+export function formatSpSource(source: string, why: string | null): string {
+  if (!why) return source;
+  const suffix = ` (${why})`;
+  return source.endsWith(suffix) ? source.slice(0, -suffix.length) : source;
+}
+
+export function WelcomeCard({
+  totalMembers,
+  onStart,
+}: {
+  totalMembers: number;
+  onStart?: () => void;
+}) {
+  return (
+    <section className={styles.welcome} aria-label="How to review">
+      <h2 className={styles.welcomeTitle}>Welcome to the v1 library review</h2>
+      <p className={styles.welcomeLede}>
+        Each of the {totalMembers.toLocaleString()} members in the Deliverome surfaceome v1 library carries a proposed
+        extracellular <strong>SpyTag003 + ALFA</strong> tag site, a folded 3D model, a topology strip, and known
+        binding/contact sites.
+      </p>
+      <ol className={styles.welcomeSteps}>
+        <li>
+          <strong>Pick a protein</strong> on the left — search by gene symbol, alias (e.g. <code>CD20</code>,{" "}
+          <code>Nav1.7</code>), class, or rung, or expand <strong>Filters</strong> above.
+        </li>
+        <li>
+          <strong>Check the tag site</strong> on the 3D structure and topology bar: confirm the tag stays exposed and
+          clear of ligand/partner contacts or signal-peptide cleavage.
+        </li>
+        <li>
+          <strong>Record a verdict</strong> (<code>Site looks right</code>, <code>Concern</code>, or{" "}
+          <code>Suggest another site</code> by clicking any residue on the 3D structure or topology bar).
+        </li>
+      </ol>
+      {onStart ? (
+        <div className={styles.welcomeActions}>
+          <button type="button" className={styles.primary} onClick={onStart}>
+            Start reviewing
+          </button>
+          <span className={styles.help}>or press → to open the first member</span>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 export function SiteCard({
   site,
   length,
@@ -228,7 +317,8 @@ export function SiteCard({
         {site.rejected_alternative ? (<><dt>rejected alternative</dt><dd>{site.rejected_alternative}</dd></>) : null}
         {site.decision ? (<><dt>decision</dt><dd>{site.decision}</dd></>) : null}
         {site.status_detail ? (() => {
-          const parts = site.status_detail.split(/\s*;\s*/).filter(Boolean);
+          const parts = formatStatusDetailChips(site.status_detail);
+          if (!parts.length) return null;
           return (
             <>
               <dt>detail</dt>
@@ -237,7 +327,7 @@ export function SiteCard({
                   <ul className={styles.detailChips}>
                     {parts.map((part, idx) => <li key={idx}>{part}</li>)}
                   </ul>
-                ) : site.status_detail}
+                ) : parts[0]}
               </dd>
             </>
           );
@@ -825,6 +915,10 @@ export function SpMetricsBox({ metrics }: { metrics: L1SpMetrics }) {
           DeepTMHMM v1 {metrics.deeptmhmm_v1_cut != null ? `@${metrics.deeptmhmm_v1_cut}` : "—"} · SignalP 6 pre {preCut}
           {spread != null && spread > 0 ? ` (Δ ${spread} aa)` : spread === 0 ? " (exact match)" : ""}
         </span>
+        <InfoTip label="About signal peptide checks">
+          Compares DeepTMHMM v1 and SignalP 6 predicted cleavage sites before and after inserting the N-terminal tag.
+          SP p = signal peptide probability; cut p = cleavage-site probability; Δ = distance between the two predictors&apos; cut sites.
+        </InfoTip>
       </div>
       <div className={styles.spMetricsRows}>
         <span>
@@ -1123,7 +1217,7 @@ function MemberDetail({
         <dt>N-terminus</dt>
         <dd title={`from ${sp.source}`}>
           {sp.status ? <span className={styles.spTag}>{SP_LABEL[sp.status]}</span> : null} {sp.text}
-          <span className={styles.muted}> · from {sp.source}</span>
+          <span className={styles.muted}> · from {formatSpSource(sp.source, sp.why)}</span>
           {sp.why ? <span className={styles.spWhy}>{sp.why}</span> : null}
           {member.sp_metrics ? <SpMetricsBox metrics={member.sp_metrics} /> : null}
         </dd>
@@ -1375,20 +1469,31 @@ function MemberDetail({
             </div>
           );
         })()}
-        <RefoldFlagBanner
-          model={model}
-          site={model?.site_id ? sites.find((s) => s.site_id === model.site_id) : undefined}
-        />
-        {model?.note || model?.proteoform_match ? (
-          <p className={styles.modelNote}>
-            Model: {model.proteoform_match}{model.residue_offset ? `, member residue i = model residue i + ${model.residue_offset}` : ""}
-            {model.note ? ` · ${model.note}` : ""}
-          </p>
-        ) : null}
+        {(() => {
+          const modelSite = model?.site_id ? sites.find((s) => s.site_id === model.site_id) : undefined;
+          const formattedNote = formatModelNote(model?.note, modelSite);
+          return (
+            <>
+              <RefoldFlagBanner model={model} site={modelSite} />
+              {formattedNote || model?.proteoform_match ? (
+                <p className={styles.modelNote}>
+                  Model: {model?.proteoform_match}{model?.residue_offset ? `, member residue i = model residue i + ${model.residue_offset}` : ""}
+                  {formattedNote ? ` · ${formattedNote}` : ""}
+                </p>
+              ) : null}
+            </>
+          );
+        })()}
       </section>
       </div>
       <section>
-        <h3 className={styles.h3}>Tag sites</h3>
+        <h3 className={styles.h3}>
+          Tag sites{" "}
+          <InfoTip label="About tag sites and arm codes">
+            Each construct inserts an extracellular SpyTag003 + ALFA tag cassette. Multi-arm proteins carry numbered arms
+            (a1, a2, a3, …) tested or ordered at distinct extracellular loops; alternatives are runner-up sites not ordered.
+          </InfoTip>
+        </h3>
         {sites.length ? sites.map((s) => (
             <SiteCard key={s.site_id} site={s} length={member.ordered_length_aa} focused={focusSite === s.site_id} onShow={() => showSite(s.site_id)} />
           ))
@@ -1396,13 +1501,15 @@ function MemberDetail({
       </section>
       <section>
         <h3 className={styles.h3}>Contact sites</h3>
-        <p className={styles.caveat}>
-          <strong>Literature (agent-extracted)</strong> rows are residues that literature agents read out of papers and
-          that passed mechanical checks (the residue letter matches, the PMID resolves, the quote names the residue).
-          Passing means the paper says it, not that the residue contacts the ligand in this construct. Accuracy was
-          measured only on a 20-protein pilot against structural contacts (precision 0.47, recall 0.40); the
-          library-scale set is not scored against any truth set. Never use these as training labels.
-        </p>
+        {(member.contacts ?? []).some((c) => c.source === "literature_agent") ? (
+          <p className={styles.caveat}>
+            <strong>Literature (agent-extracted)</strong> rows are residues that literature agents read out of papers and
+            that passed mechanical checks (the residue letter matches, the PMID resolves, the quote names the residue).
+            Passing means the paper says it, not that the residue contacts the ligand in this construct. Accuracy was
+            measured only on a 20-protein pilot against structural contacts (precision 0.47, recall 0.40); the
+            library-scale set is not scored against any truth set. Never use these as training labels.
+          </p>
+        ) : null}
         <h4 className={styles.h4}>Curated contacts (structures and databases)</h4>
         <CuratedContacts gene={curated} aligned={curatedAligned} acc={acc} />
         <h4 className={styles.h4}>Literature contacts (agent-extracted) and UniProt binding sites</h4>
@@ -1819,7 +1926,7 @@ export function L1Review() {
         </summary>
       <div className={styles.facets}>
         <div>
-          <span className={styles.facetLabel}>Rung</span>
+          <span className={styles.facetLabel} title="Tagging strategy rung assigned from topology and signal-peptide structure (e.g. N after SP, N at residue 1, C-terminal, internal loop)">Rung</span>
           <button type="button" className={!filters.rung ? styles.chipOn : styles.chip} onClick={() => update({ rung: "" })}>
             all <span className={styles.n}>{without("rung").length}</span>
           </button>
@@ -1840,15 +1947,25 @@ export function L1Review() {
             </button>
           ))}
         </div>
-        <div>
-          <span className={styles.facetLabel}>Pick</span>
-          {["", "built", "decided_not_built", "pending", "no_tag", "none"].map((st) => (
-            <button key={st || "all"} type="button" className={filters.status === st ? styles.chipOn : styles.chip} onClick={() => update({ status: st })}>
-              {st === "" ? "all" : st === "none" ? "no pick yet" : STATUS_LABEL[st as L1Site["status"]]}{" "}
-              <span className={styles.n}>{statusCount(st)}</span>
-            </button>
-          ))}
-        </div>
+        {(() => {
+          const presentStatuses = ["built", "decided_not_built", "pending", "no_tag", "none"].filter(
+            (st) =>
+              filters.status === st ||
+              members.some((m) => (st === "none" ? !m.pick_status.length : m.pick_status.includes(st as L1Site["status"]))),
+          );
+          if (presentStatuses.length <= 1 && !filters.status) return null;
+          return (
+            <div>
+              <span className={styles.facetLabel}>Pick</span>
+              {["", ...presentStatuses].map((st) => (
+                <button key={st || "all"} type="button" className={filters.status === st ? styles.chipOn : styles.chip} onClick={() => update({ status: st })}>
+                  {st === "" ? "all" : st === "none" ? "no pick yet" : STATUS_LABEL[st as L1Site["status"]]}{" "}
+                  <span className={styles.n}>{statusCount(st)}</span>
+                </button>
+              ))}
+            </div>
+          );
+        })()}
         {spKnown ? (
           <div>
             <span className={styles.facetLabel} title="Signal peptide / leader at the N-terminus, from the primary pick (or the design export when it says)">SP</span>
@@ -1907,29 +2024,45 @@ export function L1Review() {
             open={identityOpen}
             onToggle={(e) => setIdentityOpen((e.currentTarget as HTMLDetailsElement).open)}
           >
-            <summary>
+            <summary title={`Design load ${index.load.load_version}`}>
               {reviewer.trim() ? `Reviewing as ${reviewer.trim()}` : "Add your name to review"}
               {reviews ? ` · ${reviewedN} of ${members.length} reviewed` : ""}
               {staleDesignIds.size > 0 ? ` · ${staleDesignIds.size} out of date` : ""}
-              {" · "}
-              <span className={styles.mono}>load {index.load.load_version}</span>
             </summary>
             <div className={styles.settings}>
               <label>
                 your name
-                <input
-                  ref={nameRef}
-                  value={reviewer}
-                  maxLength={80}
-                  autoComplete="name"
-                  onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }}
-                  placeholder="your name"
-                  title="Shown with each review; kept in this browser"
-                />
+                <span className={styles.nameInputRow}>
+                  <input
+                    ref={nameRef}
+                    value={reviewer}
+                    maxLength={80}
+                    autoComplete="name"
+                    onChange={(e) => { setReviewer(e.target.value); store.set("l1-review-reviewer", e.target.value); }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        setIdentityOpen(false);
+                        e.currentTarget.blur();
+                      }
+                    }}
+                    placeholder="your name"
+                    title="Shown with each review; kept in this browser"
+                  />
+                  <button
+                    type="button"
+                    className={styles.nameDoneBtn}
+                    onClick={() => setIdentityOpen(false)}
+                  >
+                    Done
+                  </button>
+                </span>
               </label>
-              {serverReviews ? null : (
-                <span className={styles.muted}>Reviews you save here are listed under each member; other reviewers&apos; are collected for the design team.</span>
-              )}
+              <span className={styles.muted}>
+                {serverReviews
+                  ? <>Design load <span className={styles.mono}>{index.load.load_version}</span>.</>
+                  : <>Reviews you save here are listed under each member; other reviewers&apos; are collected for the design team. · <span className={styles.mono}>{index.load.load_version}</span></>}
+              </span>
             </div>
           </details>
           <div
@@ -1965,7 +2098,7 @@ export function L1Review() {
                 e.currentTarget.blur();
               }
             }}
-            placeholder="gene, alias (CD20…), class, rung…  ( / )"
+            placeholder="gene, CD20, class…  (/)"
             aria-label="Search members by gene, protein alias, class, rung or SP type"
           />
           <div className={styles.listHead}>
@@ -2173,7 +2306,10 @@ export function L1Review() {
               )}
             </>
           ) : (
-            <p className={styles.muted}>Pick a member on the left, or a rung or class above and step through it with ← →.</p>
+            <WelcomeCard
+              totalMembers={members.length}
+              onStart={visible.length ? () => goTo(0) : undefined}
+            />
           )}
         </div>
       </div>

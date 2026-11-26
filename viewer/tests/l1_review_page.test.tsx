@@ -8,7 +8,17 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { RefoldFlagBanner, ReviewPanel, SiteCard, SpMetricsBox, structureTabLabel } from "../components/L1Review/L1Review";
+import {
+  RefoldFlagBanner,
+  ReviewPanel,
+  SiteCard,
+  SpMetricsBox,
+  WelcomeCard,
+  formatModelNote,
+  formatSpSource,
+  formatStatusDetailChips,
+  structureTabLabel,
+} from "../components/L1Review/L1Review";
 import { L1TopologyStrip } from "../components/L1Review/L1TopologyStrip";
 import {
   currentMemberModels,
@@ -750,4 +760,35 @@ test("L1TopologyStrip labels the N- and C-terminal ends", () => {
   );
   assert.match(html, /N · 1/);
   assert.match(html, /C · 20/);
+});
+
+test("formatStatusDetailChips keeps parentheticals intact and strips internal date-stamped notes", () => {
+  assert.deepEqual(
+    formatStatusDetailChips("internal_loop; refold verdict pending"),
+    ["internal_loop", "refold verdict pending"],
+  );
+  assert.deepEqual(
+    formatStatusDetailChips("lDDT within 15 of the site 0.493 < 0.7 (built; flag, never hold, Becca 2026-11-22); ALFA exposed"),
+    ["lDDT within 15 of the site 0.493 < 0.7", "ALFA exposed"],
+  );
+});
+
+test("formatSpSource avoids repeating sp_evidence already shown below, and formatModelNote clarifies Igκ insert after 0", () => {
+  assert.equal(formatSpSource("design export (DeepTMHMM v1: no SP)", "DeepTMHMM v1: no SP"), "design export");
+  assert.equal(formatSpSource("design export (DeepTMHMM v1: no SP)", "other reason"), "design export (DeepTMHMM v1: no SP)");
+  assert.equal(
+    formatModelNote("rung nterm; insert after 0; TM 0.94", { leader: "igk", insert_after_residue: 68 }),
+    "rung nterm; insert after 68 (mature N-terminus after Igκ); TM 0.94",
+  );
+  assert.equal(
+    formatModelNote("rung nterm; insert after 0; TM 0.94", { leader: null, insert_after_residue: 0 }),
+    "rung nterm; insert after 0; TM 0.94",
+  );
+});
+
+test("WelcomeCard gives first-time external reviewers a clear 3-step overview and start button", () => {
+  const html = renderToStaticMarkup(React.createElement(WelcomeCard, { totalMembers: 2710, onStart: () => {} }));
+  assert.match(html, /Welcome to the v1 library review/);
+  assert.match(html, /SpyTag003 \+ ALFA/);
+  assert.match(html, /Start reviewing/);
 });
