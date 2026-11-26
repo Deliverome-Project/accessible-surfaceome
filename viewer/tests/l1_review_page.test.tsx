@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
+  DesignContextCard,
   RefoldFlagBanner,
   ReviewPanel,
   SiteCard,
@@ -791,4 +792,75 @@ test("WelcomeCard gives first-time external reviewers a clear 3-step overview an
   assert.match(html, /Welcome to the v1 library review/);
   assert.match(html, /SpyTag003 \+ ALFA/);
   assert.match(html, /Start reviewing/);
+});
+
+test("DesignContextCard explains BST2 dual-anchor strategy, refold QC metrics, nearest contact, and surface biology risks", async () => {
+  const { explainDecision, explainRungContext, extractL1GeneContext, nearestContactInfo, parseRefoldMetrics } =
+    await import("../lib/l1-design");
+
+  assert.equal(explainDecision("internal_loop"), "Internal extracellular loop");
+  assert.equal(explainDecision("igk_swap"), "Igκ leader replaces native signal peptide");
+  assert.equal(explainDecision("hold_no_passing_arm"), "Retained after manual review (no arm passed automated refold thresholds)");
+
+  const bst2Ctx = extractL1GeneContext({
+    executive_summary: {
+      one_paragraph:
+        "BST2 (CD317/tetherin) is constitutively surface-accessible as a dual-anchor Type II single-pass protein with a GPI-anchored C-terminus (a1_evi_01). Second sentence.",
+    },
+    accessibility_risks: {
+      co_receptor_requirements: { surface_expression_dependency: "required", partners: ["CD79A"], rationale: "Requires CD79A for surface trafficking (a1_evi_02)." },
+      shed_form: { present: true, severity: "moderate", sheddase_if_known: "Furin / ADAM17", mechanism: "Proteolytic cleavage of the ectodomain (a1_evi_03).", rationale: "Shed in vivo." },
+      epitope_masking: { mechanism: ["oligomerization"], severity: "moderate", rationale: "Forms parallel coiled-coil homodimers (a1_evi_04)." },
+      homo_oligomerization_prediction: { present: true, stoichiometry: 2, is_ecd_only: true, source: "Schweke 2024" },
+    },
+  });
+  assert.ok(bst2Ctx);
+  assert.doesNotMatch(bst2Ctx!.summary ?? "", /a1_evi_01/);
+  assert.equal(bst2Ctx!.coReceptor?.partners[0], "CD79A");
+  assert.equal(bst2Ctx!.shedding?.sheddase, "Furin / ADAM17");
+
+  const bst2Member = member({
+    gene_symbol: "BST2",
+    rung: "internal",
+    sites: [site({ site_id: "l1-p0188-a3", insert_after_residue: 149, status_detail: "loop best; internal_loop; order rule order_1" })],
+    contacts: [{
+      residue: 154, aa: "K", canonical_residue: 154, source: "uniprot_binding",
+      evidence_types: null, contact_classes: null, confidence_tier: "high",
+      ion_site: false, additive_only: false, in_extracellular: true, topology_state: "O",
+      ligands: "ligand", pmids: null,
+    }],
+  });
+  const strategy = explainRungContext(bst2Member, "I".repeat(20) + "M".repeat(20) + "O".repeat(140), bst2Ctx);
+  assert.match(strategy ?? "", /N-terminus is intracellular; C-terminus is GPI-anchored/);
+
+  const metrics = parseRefoldMetrics("rung nterm; TM to native 0.934; site lDDT 0.963; SpyTag003 buried (RSA 0.17); ALFA RSA 0.614");
+  assert.deepEqual(metrics.map((x) => [x.label, x.value, x.tone]), [
+    ["TM to native", "0.934", "pass"],
+    ["Site lDDT", "0.963", "pass"],
+    ["SpyTag003 RSA", "0.17", "warn"],
+    ["ALFA RSA", "0.614", "pass"],
+  ]);
+
+  const near = nearestContactInfo(149, bst2Member.contacts ?? [], new Set([180]));
+  assert.deepEqual(near, { distanceAa: 5, residue: 154, label: "UniProt binding (K154)" });
+
+  const html = renderToStaticMarkup(
+    React.createElement(DesignContextCard, {
+      member: bst2Member,
+      topology: "I".repeat(20) + "M".repeat(20) + "O".repeat(140),
+      model: { kind: "tagged", site_id: "l1-p0188-a3", mean_plddt: 71.6, note: "TM to native 0.934; SpyTag003 RSA 0.686; ALFA RSA 0.78" },
+      geneContext: bst2Ctx,
+      curatedPositions: new Set([180]),
+    }),
+  );
+  assert.match(html, /Why this strategy:/);
+  assert.match(html, /N-terminus is intracellular; C-terminus is GPI-anchored/);
+  assert.match(html, /pLDDT 71\.6/);
+  assert.match(html, /TM to native 0\.934/);
+  assert.match(html, /Nearest contact: 5 aa/);
+  assert.match(html, /Proteolytic cleavage \/ shedding/);
+  assert.match(html, /Furin \/ ADAM17/);
+  assert.match(html, /Co-receptor \/ partner/);
+  assert.match(html, /CD79A/);
+  assert.match(html, /Homo-oligomer \(2-mer\)/);
 });
