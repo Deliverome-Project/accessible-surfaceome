@@ -9,12 +9,19 @@ triage and emits ``TriageOutcome`` objects — the exact shape
 
 from __future__ import annotations
 
+import json
+import logging
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
 from accessible_surfaceome.agents._support.api_retry import messages_create_with_backoff
 from accessible_surfaceome.agents._support.payload import cached_system
+from accessible_surfaceome.agents._support.pricing import (
+    record_from_response,
+    resolve_pricing_key,
+)
 from accessible_surfaceome.agents.internalization.model_prior import extract_json_object
 from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
     TriageOutcome,
@@ -22,14 +29,23 @@ from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
 )
 from accessible_surfaceome.agents.plan_trim_select.schemas import AbstractTriageResponse
 
-HAIKU_MODEL = "claude-haiku-4-5-20251001"
+logger = logging.getLogger(__name__)
+
+HAIKU_MODEL = "claude-haiku-5-5"
 MAX_TOKENS_TRIAGE = 512
 TRIAGE_CONCURRENCY = 10
 _PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "literature_triage_system.md"
+_TRIAGE_SCHEMA_JSON = json.dumps(AbstractTriageResponse.model_json_schema(), indent=2)
 
 
 def load_triage_prompt() -> str:
     return _PROMPT_PATH.read_text()
+
+
+def _cached_triage_system(system_prompt: str) -> str:
+    """Append the static AbstractTriageResponse JSON schema to the cached system
+    prompt (same pattern as plan_trim_select.abstract_triage)."""
+    return f"{system_prompt}\n\n# JSON Schema\n\n```json\n{_TRIAGE_SCHEMA_JSON}\n```"
 
 
 def _text_of(resp: Any) -> str:
@@ -47,6 +63,7 @@ def _triage_one(
     gene: str,
     system_prompt: str,
     synonyms: list[str] | None = None,
+    model: str = HAIKU_MODEL,
 ) -> TriageOutcome:
     pid = paper_source_id(paper)  # PMC:<id> > PMID:<id> > DOI:<doi>
     aka = f"Also known as: {', '.join(synonyms)}\n" if synonyms else ""
@@ -56,26 +73,45 @@ def _triage_one(
         f"Decide: discard | keep_abstract | worth_fetching. "
         f"Use paper_id={pid!r}. Return one ```json object."
     )
+    t0 = time.monotonic()
+    usage_rec = None
     try:
         resp = messages_create_with_backoff(
             client,
-            model=HAIKU_MODEL,
+            model=model,
             max_tokens=MAX_TOKENS_TRIAGE,
             system=cached_system(system_prompt),
             messages=[{"role": "user", "content": user}],
         )
+        raw_usage = getattr(resp, "usage", None)
+        pkey = resolve_pricing_key(model)
+        if raw_usage is not None and pkey is not None:
+            usage_rec = record_from_response(raw_usage, pkey, response=resp)
+        if getattr(resp, "stop_reason", None) == "refusal":
+            logger.warning("triage refusal (%s) on %s paper %s: %.120s", model, gene, pid, paper.title or "")
+            return TriageOutcome(
+                paper_id=pid,
+                response=None,
+                usage=usage_rec,
+                elapsed_s=round(time.monotonic() - t0, 3),
+                error="refusal",
+            )
         data = extract_json_object(_text_of(resp))
         data.setdefault("paper_id", pid)
         return TriageOutcome(
             paper_id=pid,
             response=AbstractTriageResponse.model_validate(data),
-            usage=None,
-            elapsed_s=0.0,
+            usage=usage_rec,
+            elapsed_s=round(time.monotonic() - t0, 3),
             error=None,
         )
     except Exception as err:  # noqa: BLE001 — one bad paper must not kill the batch
         return TriageOutcome(
-            paper_id=pid, response=None, usage=None, elapsed_s=0.0, error=str(err)
+            paper_id=pid,
+            response=None,
+            usage=usage_rec,
+            elapsed_s=round(time.monotonic() - t0, 3),
+            error=str(err),
         )
 
 
@@ -87,16 +123,18 @@ def triage_internalization_abstracts(
     synonyms: list[str] | None = None,
     system_prompt: str | None = None,
     concurrency: int = TRIAGE_CONCURRENCY,
+    usage_sink: list[Any] | None = None,
+    model: str = HAIKU_MODEL,
 ) -> list[TriageOutcome]:
     """Triage abstracts concurrently (order preserved). Each paper's Haiku call
     is independent; ``messages_create_with_backoff`` self-throttles on rate
     limits, so a pool of ~10 is safe at cohort scale."""
     if not papers:
         return []
-    system_prompt = system_prompt or load_triage_prompt()
+    system_prompt = _cached_triage_system(system_prompt or load_triage_prompt())
     workers = max(1, min(concurrency, len(papers)))
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        return list(
+        outcomes = list(
             ex.map(
                 lambda p: _triage_one(
                     client,
@@ -104,7 +142,11 @@ def triage_internalization_abstracts(
                     gene=gene,
                     system_prompt=system_prompt,
                     synonyms=synonyms,
+                    model=model,
                 ),
                 papers,
             )
         )
+    if usage_sink is not None:
+        usage_sink.extend(o.usage for o in outcomes if getattr(o, "usage", None) is not None)
+    return outcomes

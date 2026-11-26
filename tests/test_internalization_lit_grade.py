@@ -83,7 +83,11 @@ def test_grade_parses_and_scrubs_unknown_cites():
 
 
 def test_grade_passes_synonyms_into_user_prompt():
-    good = LiteratureLLMOut(overall_grade="low", overall_confidence="low").model_dump_json()
+    good = LiteratureLLMOut(
+        grades_by_mode=GradesByMode(basal=ModeGrade(grade="low", confidence="low")),
+        overall_grade="low",
+        overall_confidence="low",
+    ).model_dump_json()
     client = _FakeClient(["```json\n" + good + "\n```"])
     grade_from_evidence(
         client,
@@ -123,7 +127,11 @@ def test_grade_repairs_on_invalid_assay_other_then_succeeds():
     bad = json.dumps(
         {"observations": [{"assay_type": "other"}]}  # 'other' without other_label -> invalid
     )
-    good = LiteratureLLMOut(overall_grade="low", overall_confidence="low").model_dump_json()
+    good = LiteratureLLMOut(
+        grades_by_mode=GradesByMode(basal=ModeGrade(grade="low", confidence="low")),
+        overall_grade="low",
+        overall_confidence="low",
+    ).model_dump_json()
     client = _FakeClient(["```json\n" + bad + "\n```", "```json\n" + good + "\n```"])
     out = grade_from_evidence(
         client, gene="TFRC", evidence=[_ev("int_evi_01")], system_prompt="SYS"

@@ -243,9 +243,15 @@ export function EvidenceCard({
     const pmid = s.pmid ?? pmidFromSid;
     // Citation metadata is keyed on the VERBATIM ``source_id`` — the same
     // string the Worker looked up in ``paper_metadata`` — so no
-    // normalization step can mis-key it. Undefined whenever the paper
-    // isn't in the table or the whole map is absent (snapshot path).
-    const meta = sid ? papers?.[sid] : undefined;
+    // normalization step can mis-key it. Fall back to the span's embedded
+    // ``source.title`` when ``paper_metadata`` doesn't have the row yet
+    // (e.g. a freshly published internalization gene or bioRxiv preprint).
+    const rawMeta = sid ? papers?.[sid] : undefined;
+    const meta: PaperMetadata | undefined =
+      rawMeta ??
+      (s.title && s.title !== sid
+        ? ({ title: s.title } as PaperMetadata)
+        : undefined);
     if (pmcId && !seenKeys.has(`pmc:${pmcId}`)) {
       seenKeys.add(`pmc:${pmcId}`);
       sources.push({

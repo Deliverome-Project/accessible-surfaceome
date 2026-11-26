@@ -68,7 +68,20 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 #        from the per-observation species in literature_grade._rollup_species_scope
 #        (the model tagged per-obs species but left the record scope
 #        `unspecified` on every gene).
-LIT_PROMPT_VERSION = "0.1.9"
+# 0.2.0: major retrieval + grading overhaul — relevance-scored clip extraction
+#        + batched select (up to 300 clips), fixed PubTator + protein-name
+#        discovery, triage/discovery caching, real multi-stage cost accounting,
+#        additive rate_class + expression_context fields, quantitative grade
+#        anchors decoupled from confidence depth, fixed species_scope prompt
+#        contradiction, fixed pathogen_entry/modulator cite scrubbing, and
+#        deterministic quant/mode/species sanitizers.
+# 0.2.1: delivery-richness schema + prompt-cache hoist — adds binder_type,
+#        binder_valency, post_uptake_fate (+ record predominant_fate),
+#        replicates, steady_state_internal_pct, epitope_or_valency_dependence_note,
+#        ligand_dependence_summary, richer RateMetric values, and code-derived
+#        universal kinetics (derived_t_half_min / derived_ke_min_inv). Hoists
+#        static JSON schemas into cached system prompts across triage/select/grade.
+LIT_PROMPT_VERSION = "0.2.1"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
@@ -204,7 +217,68 @@ Mechanism = Literal[
 ]
 Magnitude = Literal["high", "moderate", "low", "none", "unknown"]
 RateMetric = Literal[
-    "ke_h_inv", "percent_internalized", "half_life", "fold_change", "other"
+    "ke_h_inv",
+    "rate_per_min",
+    "percent_per_min",
+    "percent_per_hour",
+    "percent_internalized",
+    "half_life",
+    "fold_change",
+    "other",
+]
+# Physical class of the reported internalization readout — keeps gross entry
+# rate constants, net surface clearance/accumulation, single-timepoint endpoint
+# fractions, relative fold-changes, and qualitative-only prose strictly apart.
+RateClass = Literal[
+    "gross_entry",
+    "net_accumulation",
+    "endpoint_fraction",
+    "relative",
+    "qualitative_only",
+    "unknown",
+]
+# Whether the target receptor was assayed at endogenous expression, ectopic
+# overexpression, or endogenous knock-in tagging.
+ExpressionContext = Literal[
+    "endogenous",
+    "overexpressed",
+    "knock_in_tagged",
+    "unknown",
+]
+# What actually bound/triggered the receptor — cleanly separated from how uptake
+# was measured (assay_type).
+BinderType = Literal[
+    "native_ligand",
+    "antibody",
+    "adc",
+    "nanobody_or_fab",
+    "bispecific_or_biparatopic",
+    "peptide",
+    "aptamer",
+    "oligonucleotide",
+    "nanoparticle_or_lnp",
+    "viral_or_toxin",
+    "small_molecule",
+    "none_constitutive",
+    "other",
+    "unknown",
+]
+# Binding valency of the reagent — key axis for interpreting crosslinking effects.
+BinderValency = Literal[
+    "monovalent",
+    "bivalent",
+    "multivalent",
+    "not_applicable",
+    "unknown",
+]
+# Functional intracellular fate after internalization (delivery-relevant axis).
+PostUptakeFate = Literal[
+    "recycles",
+    "degrades_lysosome",
+    "transcytoses",
+    "mixed",
+    "retained_intracellular",
+    "unknown",
 ]
 # Where the receptor traffics after uptake / its intracellular fate.
 TraffickingCompartment = Literal[
@@ -269,6 +343,11 @@ class InternalizationQuant(BaseModel):
     rate_unit: str | None = None
     time_point: str | None = None
     quant_summary: str = ""
+    # Deterministically derived universal kinetics (computed in Python code from
+    # verbatim gross_entry / net_accumulation rates — NEVER guessed by the LLM;
+    # always None for endpoint_fraction / relative / qualitative_only).
+    derived_t_half_min: float | None = None
+    derived_ke_min_inv: float | None = None
 
 
 class InternalizationObservation(BaseModel):
@@ -282,11 +361,18 @@ class InternalizationObservation(BaseModel):
     # doesn't state it. Additive (pre-0.1.7 records validate without it).
     species: str | None = None
     internalization_mode: InternalizationMode = "unknown"
+    binder_type: BinderType = "unknown"
+    binder_valency: BinderValency = "unknown"
     ligand_name: str | None = None
     ligand_effect: LigandEffect = "unknown"
     mechanism: Mechanism | None = None
     trafficking_compartment: TraffickingCompartment = "unknown"
+    post_uptake_fate: PostUptakeFate = "unknown"
     magnitude: Magnitude = "unknown"
+    rate_class: RateClass = "unknown"
+    expression_context: ExpressionContext = "unknown"
+    replicates: str | None = None
+    steady_state_internal_pct: str | None = None
     quant: InternalizationQuant = Field(default_factory=InternalizationQuant)
     controls_note: str | None = None
     condition_note: str = ""
@@ -339,6 +425,9 @@ class LiteratureLLMOut(BaseModel):
     rationale: str = ""
     cross_condition_note: str = ""
     trafficking_summary: str = ""
+    predominant_fate: PostUptakeFate = "unknown"
+    epitope_or_valency_dependence_note: str = ""
+    ligand_dependence_summary: str = ""
     observations: list[InternalizationObservation] = Field(default_factory=list)
     modulator_observations: list[ModulatorObservation] = Field(default_factory=list)
 
@@ -352,6 +441,9 @@ class LiteratureTrack(BaseModel):
     rationale: str = ""
     cross_condition_note: str = ""
     trafficking_summary: str = ""
+    predominant_fate: PostUptakeFate = "unknown"
+    epitope_or_valency_dependence_note: str = ""
+    ligand_dependence_summary: str = ""
     species_scope: str = "unspecified"
     species_inferred: bool = False
     has_primary_or_invivo_evidence: bool = False
@@ -372,7 +464,10 @@ class LiteratureTrack(BaseModel):
     #: literature grade could not be attributed to the model that produced it.
     cost_usd: float = 0.0
     n_model_calls: int = 0
+    n_refusals: int = 0
+    web_search_used: bool = False
     model: str | None = None
+    triage_model: str | None = None
     prompt_sha: str | None = None
     prompt_version: str | None = None
 

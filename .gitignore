@@ -223,5 +223,10 @@ data/external/tag_site_discovery/
 data/external/tag_site_runs/
 data/external/tag_site_triage/
 
+# Accumulated per-gene internalization literature caches & sweep ledgers (regenerable).
+data/external/internalization_discovery/
+data/external/internalization_triage/
+data/runs/internalization_lit/
+
 # audit_record_deterministic_consistency.py report + stale-gene list (regenerated per run)
 data/analysis/deterministic_consistency/

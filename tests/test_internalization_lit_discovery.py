@@ -58,10 +58,11 @@ def test_discovery_runs_citation_sorted_kinetics_pass(monkeypatch):
     discover_internalization_papers(
         cast(Any, bundle), http=cast(Any, object()), retraction_index=cast(Any, object())
     )
-    # exactly one europepmc_search call carries a CITED sort, and it's a kinetics query
+    # two CITED desc passes: kinetics-focused + classic foundational internalization
     cited = [(q, s) for q, s in calls if s == "CITED desc"]
-    assert len(cited) == 1
-    assert "rate constant" in cited[0][0]
+    assert len(cited) == 2
+    assert any("rate constant" in q for q, _ in cited)
+    assert all("TITLE_ABS:" in q for q, _ in calls)
 
 
 def test_kinetics_pass_uses_protein_name_not_noisy_short_symbols(monkeypatch):
@@ -95,12 +96,14 @@ def test_kinetics_pass_uses_protein_name_not_noisy_short_symbols(monkeypatch):
     )
     kinetics_q = next(q for q, s in calls if s == "CITED desc")
     assert '"transferrin receptor"' in kinetics_q  # full name drives the pass
-    # noisy short symbols must NOT be in the citation-sorted query
+    # noisy short symbols must NOT be in the citation-sorted OR broad queries
     for noisy in (" TR ", " T9 ", " p90 "):
         assert noisy not in f" {kinetics_q} "
-    # but the broad (recency) queries still use the full symbol set incl. noisy ones
     broad = " ".join(q for q, s in calls if s is None)
-    assert "T9" in broad
+    assert '"transferrin receptor"' in broad
+    assert "CD71" in broad
+    for noisy in (" TR ", " T9 ", " p90 "):
+        assert noisy not in f" {broad} "
 
 
 def _paper(pmid):

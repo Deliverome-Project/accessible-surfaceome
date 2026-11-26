@@ -80,6 +80,31 @@ PRICING: dict[str, ModelPricing] = {
         cache_creation_input_tokens=1.25,
         cache_read_input_tokens=0.10,
     ),
+    "claude-opus-5": ModelPricing(
+        input_tokens=5.0,
+        output_tokens=25.0,
+        cache_creation_input_tokens=6.25,
+        cache_read_input_tokens=0.50,
+    ),
+    # Claude 5.5 family (verified 2026-10-12, mirrored from benchmark_cost_vs_accuracy.py).
+    "claude-opus-5-5": ModelPricing(
+        input_tokens=4.0,
+        output_tokens=20.0,
+        cache_creation_input_tokens=5.00,
+        cache_read_input_tokens=0.20,
+    ),
+    "claude-sonnet-5-5": ModelPricing(
+        input_tokens=2.0,
+        output_tokens=10.0,
+        cache_creation_input_tokens=2.50,
+        cache_read_input_tokens=0.20,
+    ),
+    "claude-haiku-5-5": ModelPricing(
+        input_tokens=0.10,
+        output_tokens=0.50,
+        cache_creation_input_tokens=0.125,
+        cache_read_input_tokens=0.01,
+    ),
 }
 
 
@@ -111,6 +136,17 @@ class UsageRecord:
     api_stop_reason: str | None = None
 
 
+def resolve_pricing_key(model: str) -> str | None:
+    """Resolve a concrete dated model id (e.g. ``claude-haiku-4-5-20251001``) to
+    its key in :data:`PRICING`, or ``None`` if unknown."""
+    if model in PRICING:
+        return model
+    for key in sorted(PRICING, key=len, reverse=True):
+        if model.startswith(key):
+            return key
+    return None
+
+
 def cost_for_usage(usage: UsageRecord, model: str) -> float:
     """USD cost for a single ``messages.create`` call's token counts.
 
@@ -118,7 +154,10 @@ def cost_for_usage(usage: UsageRecord, model: str) -> float:
     silently-zero cost when a new model gets wired up without a pricing
     table entry.
     """
-    p = PRICING[model]
+    key = resolve_pricing_key(model)
+    if key is None:
+        raise KeyError(model)
+    p = PRICING[key]
     return (
         usage.input_tokens * p.input_tokens
         + usage.output_tokens * p.output_tokens
@@ -206,6 +245,13 @@ def record_from_response(
         ),
     )
     rec.cost_usd = cost_for_usage(rec, model)
+    # Anthropic server-side web_search bills $10 / 1,000 searches ($0.01 each)
+    # separately from token usage — fold it in so cost projections stay honest.
+    server_tool_use = getattr(usage, "server_tool_use", None)
+    if server_tool_use is not None:
+        ws_reqs = int(getattr(server_tool_use, "web_search_requests", 0) or 0)
+        if ws_reqs > 0:
+            rec.cost_usd += ws_reqs * 0.01
     if response is not None:
         rec.api_response_id = getattr(response, "id", None)
         # ``response.model`` is the resolved dated snapshot

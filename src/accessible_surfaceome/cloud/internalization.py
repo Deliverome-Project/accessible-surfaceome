@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from datetime import UTC, datetime
 from urllib.parse import urlparse
 
@@ -26,20 +27,14 @@ _PUBLIC_API_BASE = os.environ.get(
 _ROUTE_PREFIX = urlparse(_PUBLIC_API_BASE).path.rstrip("/")
 
 
-def _purge_internalization_cache(sym: str) -> None:
+def _purge_internalization_cache(sym: str, *, include_catalog: bool = True) -> None:
     """Best-effort edge-cache invalidation after an internalization D1 write.
 
     A republish must evict the gene's ``/v1/internalization/{sym}`` entry from
-    BOTH ``caches.default`` (per-POP) and the ``RECORD_CACHE`` KV mirror, plus the
-    genome-wide ``/v1/catalog`` (its ``intern``/``intern_lit_grade`` column for
-    this row changed) — otherwise the re-graded record serves stale until the
-    Worker's Cache-Control TTL (up to 1 day for a per-gene record).
-
-    Never raises and soft-skips with a warning when the Cloudflare env isn't
-    configured (same posture as the D1 push itself, so CI / offline dev never
-    breaks — the record then just goes live on the TTL). Reuses
-    surface_annotation's Cloudflare API helpers for the actual calls but pins the
-    keys to the internalization route on the host the Worker really uses.
+    BOTH ``caches.default`` (per-POP) and the ``RECORD_CACHE`` KV mirror, plus
+    (when ``include_catalog=True``) the genome-wide ``/v1/catalog``. During a
+    large cohort sweep, pass ``include_catalog=False`` per gene and call
+    :func:`purge_catalog_cache` once at the end of the sweep.
     """
     token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
     zone = os.environ.get("CLOUDFLARE_ZONE_ID", "").strip()
@@ -61,12 +56,12 @@ def _purge_internalization_cache(sym: str) -> None:
 
     epoch = _cache_epoch()
     rec_url = f"https://surfaceome-api.cache/{epoch}{_ROUTE_PREFIX}/v1/internalization/{sym}"
-    catalog_url = f"https://catalog.cache/{epoch}/v1/catalog"
+    urls = [rec_url]
+    if include_catalog:
+        urls.append(f"https://catalog.cache/{epoch}/v1/catalog")
     try:
         with httpx.Client(timeout=30.0) as client:
-            _purge_cf_cache(
-                [rec_url, catalog_url], zone_id=zone, token=token, client=client
-            )
+            _purge_cf_cache(urls, zone_id=zone, token=token, client=client)
             acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
             ns = os.environ.get("CLOUDFLARE_KV_RECORD_CACHE_ID", "").strip()
             if acct and ns:
@@ -80,7 +75,7 @@ def _purge_internalization_cache(sym: str) -> None:
                     "entry serves stale until its expiration TTL (1 day).",
                     sym,
                 )
-        logger.info("internalization edge-cache purged for %s (per-gene + catalog)", sym)
+        logger.info("internalization edge-cache purged for %s (catalog=%s)", sym, include_catalog)
     except Exception as exc:  # noqa: BLE001 — purge is best-effort, never fatal
         logger.warning(
             "internalization edge-cache purge failed for %s (%s) — record stale "
@@ -88,6 +83,73 @@ def _purge_internalization_cache(sym: str) -> None:
             sym,
             exc,
         )
+
+
+def purge_catalog_cache() -> None:
+    """Evict the genome-wide ``/v1/catalog`` cache once after a batch sweep."""
+    purge_internalization_batch([], include_catalog=True)
+
+
+def purge_internalization_batch(
+    symbols: list[str],
+    *,
+    include_catalog: bool = False,
+) -> None:
+    """Batch-evict ``/v1/internalization/{sym}`` edge cache (in chunks of 30
+    URLs, Cloudflare's per-call limit) + KV mirror entries using ONE httpx client.
+
+    Cuts 3,213 individual zone-purge API calls down to ~108 batched calls so a
+    large cohort sweep stays well under Cloudflare's purge rate limits.
+    """
+    token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
+    zone = os.environ.get("CLOUDFLARE_ZONE_ID", "").strip()
+    if not (token and zone):
+        return
+    import httpx
+
+    from accessible_surfaceome.cloud.surface_annotation import (
+        _cache_epoch,
+        _delete_kv_key,
+        _purge_cf_cache,
+    )
+
+    epoch = _cache_epoch()
+    rec_urls = [
+        f"https://surfaceome-api.cache/{epoch}{_ROUTE_PREFIX}/v1/internalization/{sym}"
+        for sym in dict.fromkeys(symbols)
+        if sym
+    ]
+    all_urls = list(rec_urls)
+    if include_catalog:
+        all_urls.append(f"https://catalog.cache/{epoch}/v1/catalog")
+    if not all_urls:
+        return
+
+    acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
+    ns = os.environ.get("CLOUDFLARE_KV_RECORD_CACHE_ID", "").strip()
+    try:
+        with httpx.Client(timeout=30.0) as client:
+            for i in range(0, len(all_urls), 30):
+                _purge_cf_cache(all_urls[i : i + 30], zone_id=zone, token=token, client=client)
+            if acct and ns:
+                for rec_url in rec_urls:
+                    try:
+                        _delete_kv_key(
+                            rec_url,
+                            account_id=acct,
+                            namespace_id=ns,
+                            token=token,
+                            client=client,
+                        )
+                    except Exception as exc:  # noqa: BLE001
+                        logger.debug("KV delete failed for %s: %s", rec_url, exc)
+        logger.info(
+            "batch-purged edge cache for %d internalization record(s) (catalog=%s)",
+            len(rec_urls),
+            include_catalog,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("batch edge-cache purge failed (%s)", exc)
 
 # DDL kept in sync with cloudflare/d1_internalization_schema.sql. D1's HTTP API
 # rejects multi-statement batches, so each statement is submitted separately.
@@ -207,43 +269,80 @@ def flat_row(record: InternalizationRecord) -> dict[str, object]:
 
 
 def publish_seq_record(
-    record: InternalizationRecord, *, client: D1Client | None = None
+    record: InternalizationRecord,
+    *,
+    client: D1Client | None = None,
+    purge_catalog: bool = True,
+    ensure_schema: bool = True,
+    purge_edge: bool = True,
+    max_retries: int = 3,
 ) -> None:
     """Validate + UPSERT one record into public D1 (INSERT OR REPLACE on the
     ``(gene_symbol, schema_version)`` PK). Drops stale-schema rows for the gene
     first, so a schema bump never leaves a resurfaceable old row. Caller owns the
-    client lifecycle when one is passed; otherwise a public client is opened."""
+    client lifecycle when one is passed; otherwise a public client is opened.
+
+    Batch sweeps should call :func:`ensure_table` once up front, pass
+    ``ensure_schema=False, purge_edge=False``, and call
+    :func:`purge_internalization_batch` periodically + at end of sweep.
+    """
     # Re-validate defensively (a caller might hand us a dict-built record).
     record = InternalizationRecord.model_validate(record.model_dump())
     row = flat_row(record)
 
     owns = client is None
     client = client or D1Client.public()
+    cols = ", ".join(_COLS)
+    placeholders = ", ".join(["?"] * len(_COLS))
+    values = [row[c] for c in _COLS]
     try:
-        ensure_table(client)
-        # drop stale schema_versions for this gene before upserting
-        existing = client.query(
-            "SELECT schema_version FROM surface_internalization WHERE gene_symbol = ?;",
-            [record.gene_symbol],
-        )
-        for r in existing:
-            ver = r.get("schema_version")
-            if ver and ver != record.schema_version:
-                client.query(
-                    "DELETE FROM surface_internalization "
-                    "WHERE gene_symbol = ? AND schema_version = ?;",
-                    [record.gene_symbol, ver],
+        if ensure_schema:
+            ensure_table(client)
+
+        last_exc: Exception | None = None
+        attempts = max(1, max_retries)
+        for attempt in range(1, attempts + 1):
+            try:
+                # drop stale schema_versions for this gene before upserting
+                existing = client.query(
+                    "SELECT schema_version FROM surface_internalization WHERE gene_symbol = ?;",
+                    [record.gene_symbol],
                 )
-        cols = ", ".join(_COLS)
-        placeholders = ", ".join(["?"] * len(_COLS))
-        client.query(
-            f"INSERT OR REPLACE INTO surface_internalization ({cols}) "
-            f"VALUES ({placeholders});",
-            [row[c] for c in _COLS],
-        )
+                for r in existing:
+                    ver = r.get("schema_version")
+                    if ver and ver != record.schema_version:
+                        client.query(
+                            "DELETE FROM surface_internalization "
+                            "WHERE gene_symbol = ? AND schema_version = ?;",
+                            [record.gene_symbol, ver],
+                        )
+                client.query(
+                    f"INSERT OR REPLACE INTO surface_internalization ({cols}) "
+                    f"VALUES ({placeholders});",
+                    values,
+                )
+                last_exc = None
+                break
+            except Exception as exc:  # noqa: BLE001
+                last_exc = exc
+                if attempt < attempts:
+                    wait_s = float(2 ** (attempt - 1))
+                    logger.warning(
+                        "D1 publish failed for %s (attempt %d/%d, retrying in %.0fs): %s",
+                        record.gene_symbol,
+                        attempt,
+                        attempts,
+                        wait_s,
+                        exc,
+                    )
+                    time.sleep(wait_s)
+        if last_exc is not None:
+            raise last_exc
+
         # Evict the gene's cached Worker responses so a re-grade goes live
         # immediately rather than on the Cache-Control TTL (up to 1 day).
-        _purge_internalization_cache(record.gene_symbol)
+        if purge_edge:
+            _purge_internalization_cache(record.gene_symbol, include_catalog=purge_catalog)
     finally:
         if owns:
             client.close()

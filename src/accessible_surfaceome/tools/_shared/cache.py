@@ -39,7 +39,8 @@ class Cache:
             )
 
     def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self._path)
+        conn = sqlite3.connect(self._path, timeout=30.0)
+        conn.execute("PRAGMA busy_timeout=30000")
         conn.execute("PRAGMA journal_mode=WAL")
         return conn
 
