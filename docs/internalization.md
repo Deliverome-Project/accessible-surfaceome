@@ -30,8 +30,8 @@ Implemented under `src/accessible_surfaceome/agents/internalization/` (`LIT_PROM
 
 ### Kinetics normalization rules (`schema_version 0.3.0`)
 
-- **Continuous kinetic fits (`k_int_per_min`, `t_half_min`):** populated from direct `k_int` / `t_half` measurements or exact linear continuous conversions (`percent_per_min` → $X / 100\;\text{min}^{-1}$; `percent_per_hour` → $X / 6000\;\text{min}^{-1}$), with `derived_kinetics_basis` recording the derivation and an `in_vivo` PK-fit guard preventing systemic plasma half-lives from being conflated with cellular $k_{\text{int}}$.
-- **Single-endpoint uptake (`apparent_t_half_min`):** strictly separated from fitted `t_half_min` and computed only for single-timepoint `percent_internalized` measurements at $\le 4\;\text{h}$ (`1 - f = \exp(-k_{\text{app}} t)`).
+- **Continuous kinetic fits (`derived_ke_min_inv`, `derived_t_half_min`):** populated from direct `k_int` / `t_half` measurements or exact linear continuous conversions (`percent_per_min` → $X / 100\;\text{min}^{-1}$; `percent_per_hour` → $X / 6000\;\text{min}^{-1}$), with `derived_kinetics_basis` recording the derivation and an `in_vivo` PK-fit guard preventing systemic plasma half-lives from being conflated with cellular $k_e$.
+- **Single-endpoint uptake (`apparent_t_half_min`):** strictly separated from fitted `derived_t_half_min` and computed only for single-timepoint `percent_internalized` measurements at $\le 4\;\text{h}$ (`1 - f = \exp(-k_{\text{app}} t)`).
 
 ## Durability, incremental updates & operations
 
@@ -47,6 +47,6 @@ Implemented under `src/accessible_surfaceome/agents/internalization/` (`LIT_PROM
 
 ## API & Viewer surface
 
-- `GET /v1/catalog`: exposes `intern_lit_grade` (literature overall grade, displayed as the `Intern · lit` catalog column and filter), `intern_lit` (`1` when literature exists), and `intern` (sequence-prior canonical grade).
+- `GET /v1/catalog` (`row_schema` 12+): exposes `intern_lit_grade` (literature overall grade, displayed as the `Intern · lit` catalog column), `intl` (slim scalar projection `{ conf, basal, native, therapeutic, pathogen, fate, primary, quant, fitted, binders[], mechs[] }` backing the deeper Internalization catalog filter group), `intern_lit` (`1` when literature exists), and `intern` (sequence-prior canonical grade).
 - `GET /v1/internalization/{SYMBOL}`: returns the full `InternalizationRecord` (`literature`, `model_priors`, and joined `papers` metadata keyed by `source_id`), or `null` outside the cohort.
-- Viewer gene page (`Internalization` tab): renders **Literature** first (overall grade, fate/ligand/valency notes, per-mode cards, sortable observations table with normalized kinetics and clickable evidence drawer chips, cross-gene modulators) followed by **Sequence prior** below.
+- Viewer gene page (`Internalization` tab): renders **Literature** first (overall grade, confidence, fate, primary/in vivo badge, fastest fitted `t½`, trafficking/ligand/valency summaries, per-mode cards, filterable & sortable observations table with binder/valency/system/fate/kinetics and clickable evidence drawer chips, cross-gene modulators) followed by **Sequence prior** below.

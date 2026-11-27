@@ -670,13 +670,15 @@ export const tooltips: Record<string, ReactNode> = {
 
   catalog_internalization_group: (
     <>
-      <strong>Internalization (literature)</strong> — a standalone facet,
-      separate from the triage / DB-vote and deep-dive filters. Filters by the
-      overall PMID/DOI-anchored literature internalization grade across the
-      3,213-gene internalization cohort (high, moderate, low, no internalization
-      observed, or unknown); selecting several grades matches any of them. The
-      sequence-prior model estimate stays on each gene&apos;s Internalization
-      tab below the literature evidence.
+      <strong>Internalization (literature)</strong> — a standalone facet group
+      across the 3,213-gene internalization cohort (independent of deep-dive
+      coverage). Filter by overall grade, confidence, per-mode grades (basal,
+      native ligand, therapeutic / Ab / ADC, pathogen entry), predominant
+      post-uptake fate (lysosomal degradation, recycling, transcytosis,
+      intracellular retention, mixed), observed binder class, endocytic
+      mechanism, primary/in vivo evidence, and quantitative / fitted kinetics.
+      The sequence prior stays on each gene&apos;s Internalization tab below
+      literature.
     </>
   ),
 

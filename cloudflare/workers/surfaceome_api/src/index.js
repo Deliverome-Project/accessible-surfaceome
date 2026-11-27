@@ -2645,6 +2645,17 @@ async function handleCatalog(env, request) {
             si.intern_grade AS intern_grade,
             si.intern_has_lit AS intern_has_lit,
             si.intern_lit_grade AS intern_lit_grade,
+            si.intern_lit_conf AS intern_lit_conf,
+            si.intern_lit_basal AS intern_lit_basal,
+            si.intern_lit_native AS intern_lit_native,
+            si.intern_lit_therapeutic AS intern_lit_therapeutic,
+            si.intern_lit_pathogen AS intern_lit_pathogen,
+            si.intern_lit_fate AS intern_lit_fate,
+            si.intern_lit_primary AS intern_lit_primary,
+            si.intern_lit_quant AS intern_lit_quant,
+            si.intern_lit_fitted AS intern_lit_fitted,
+            si.intern_lit_binders AS intern_lit_binders,
+            si.intern_lit_mechs AS intern_lit_mechs,
             CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
@@ -2666,7 +2677,18 @@ async function handleCatalog(env, request) {
          SELECT gene_symbol,
                 seq_canonical_grade AS intern_grade,
                 has_literature AS intern_has_lit,
-                lit_overall_grade AS intern_lit_grade
+                lit_overall_grade AS intern_lit_grade,
+                lit_overall_confidence AS intern_lit_conf,
+                lit_basal_grade AS intern_lit_basal,
+                lit_native_ligand_grade AS intern_lit_native,
+                lit_therapeutic_grade AS intern_lit_therapeutic,
+                lit_pathogen_entry_grade AS intern_lit_pathogen,
+                lit_predominant_fate AS intern_lit_fate,
+                lit_has_primary_or_invivo AS intern_lit_primary,
+                lit_has_quant AS intern_lit_quant,
+                lit_has_fitted_kinetics AS intern_lit_fitted,
+                lit_binder_types AS intern_lit_binders,
+                lit_mechanisms AS intern_lit_mechs
            FROM surface_internalization sii1
           WHERE schema_version = (
             SELECT MAX(schema_version) FROM surface_internalization sii2
@@ -2853,6 +2875,37 @@ async function handleCatalog(env, request) {
     }
   }
 
+  // Compact literature-track facet projection for /v1/catalog (row_schema v12).
+  // Reads only flat scalar columns from surface_internalization — never
+  // record_json — and omits unknown/empty/false fields to keep the wire payload
+  // slim (~50-90 bytes per graded gene).
+  const packInternLitFacets = (u) => {
+    if (!u.intern_has_lit) return null;
+    const out = {};
+    if (u.intern_lit_conf) out.conf = u.intern_lit_conf;
+    if (u.intern_lit_basal && u.intern_lit_basal !== "unknown") out.basal = u.intern_lit_basal;
+    if (u.intern_lit_native && u.intern_lit_native !== "unknown") out.native = u.intern_lit_native;
+    if (u.intern_lit_therapeutic && u.intern_lit_therapeutic !== "unknown") out.therapeutic = u.intern_lit_therapeutic;
+    if (u.intern_lit_pathogen && u.intern_lit_pathogen !== "unknown") out.pathogen = u.intern_lit_pathogen;
+    if (u.intern_lit_fate && u.intern_lit_fate !== "unknown") out.fate = u.intern_lit_fate;
+    if (u.intern_lit_primary) out.primary = true;
+    if (u.intern_lit_quant) out.quant = true;
+    if (u.intern_lit_fitted) out.fitted = true;
+    if (u.intern_lit_binders) {
+      try {
+        const parsed = JSON.parse(u.intern_lit_binders);
+        if (Array.isArray(parsed) && parsed.length) out.binders = parsed;
+      } catch { /* ignore malformed */ }
+    }
+    if (u.intern_lit_mechs) {
+      try {
+        const parsed = JSON.parse(u.intern_lit_mechs);
+        if (Array.isArray(parsed) && parsed.length) out.mechs = parsed;
+      } catch { /* ignore malformed */ }
+    }
+    return Object.keys(out).length ? out : null;
+  };
+
   const rows = enrichedRows.results.map((u) => {
     covered.add(u.gene_symbol);
     if (u.has_deep_dive) deepSet.add(u.gene_symbol);
@@ -2902,6 +2955,8 @@ async function handleCatalog(env, request) {
     // "Internalization (literature)" column + filter. Only present once a gene
     // has had a literature run; older viewers ignore this unknown field.
     if (u.intern_lit_grade) row.intern_lit_grade = u.intern_lit_grade;
+    const intl = packInternLitFacets(u);
+    if (intl) row.intl = intl;
     // Slim deep-dive filter projection — only the 21 fields the catalog
     // UI actually filters on. Skips continuous fields (max_paralog_ecd_
     // pct_identity, ortholog identities) and `has_restricted_subdomain`
@@ -2944,7 +2999,18 @@ async function handleCatalog(env, request) {
             gi.uniprot_acc AS uniprot_acc,
             si.seq_canonical_grade AS intern_grade,
             si.has_literature AS intern_has_lit,
-            si.lit_overall_grade AS intern_lit_grade
+            si.lit_overall_grade AS intern_lit_grade,
+            si.lit_overall_confidence AS intern_lit_conf,
+            si.lit_basal_grade AS intern_lit_basal,
+            si.lit_native_ligand_grade AS intern_lit_native,
+            si.lit_therapeutic_grade AS intern_lit_therapeutic,
+            si.lit_pathogen_entry_grade AS intern_lit_pathogen,
+            si.lit_predominant_fate AS intern_lit_fate,
+            si.lit_has_primary_or_invivo AS intern_lit_primary,
+            si.lit_has_quant AS intern_lit_quant,
+            si.lit_has_fitted_kinetics AS intern_lit_fitted,
+            si.lit_binder_types AS intern_lit_binders,
+            si.lit_mechanisms AS intern_lit_mechs
        FROM surface_annotation sa1
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = sa1.gene_symbol
        LEFT JOIN surface_internalization si ON si.gene_symbol = sa1.gene_symbol
@@ -2968,6 +3034,8 @@ async function handleCatalog(env, request) {
     if (r.intern_grade) row.intern = r.intern_grade;
     if (r.intern_has_lit) row.intern_lit = 1;
     if (r.intern_lit_grade) row.intern_lit_grade = r.intern_lit_grade;
+    const orphanIntl = packInternLitFacets(r);
+    if (orphanIntl) row.intl = orphanIntl;
     // Same v11 field as the main catalog rows; an orphan deep-dive gene can still
     // be a library member, and omitting it here would make `libtopo` depend on
     // which of the two row builders a gene happened to come through.
@@ -3093,7 +3161,14 @@ async function handleCatalog(env, request) {
       //        travel on the gene record as
       //        `deterministic_features.library_designed_topology`, not here.
       //        Older viewers ignore the new field.
-      row_schema: 11,
+      //   v12 = adds optional top-level `intl` — slim projection of the schema
+      //        0.3.0 literature internalization facets from flat scalar columns
+      //        on surface_internalization (conf, per-mode basal/native/
+      //        therapeutic/pathogen grades, predominant fate, primary/in vivo
+      //        flag, quant/fitted kinetics flags, distinct binder_types and
+      //        mechanisms). Unknown/empty/false keys omitted. Older viewers
+      //        ignore the new field.
+      row_schema: 12,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with

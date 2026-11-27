@@ -1,7 +1,7 @@
 /*
  * Server-render test for <InternalizationCardBody>:
  * Pins that Literature renders ABOVE the Sequence prior track, and that
- * schema 0.3.0 additive synthesis / kinetics fields render cleanly.
+ * schema 0.3.0 additive synthesis / kinetics / fate / binder fields render cleanly.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -41,9 +41,11 @@ const sampleRec: InternalizationRecord = {
     rationale: "Rapid constitutive clathrin-mediated endocytosis (int_evi_01).",
     cross_condition_note: "",
     species_scope: "human",
-    predominant_fate: "recycling",
+    predominant_fate: "recycles",
+    trafficking_summary: "Rapid recycling through early endosomes back to plasma membrane.",
     ligand_dependence_summary: "Constitutive recycling independent of transferrin binding.",
     epitope_or_valency_dependence_note: "Bivalent antibodies can reroute toward lysosomes.",
+    has_primary_or_invivo_evidence: true,
     grades_by_mode: {
       basal: { grade: "high", confidence: "high", rationale: "Fast constitutive uptake.", cited_source_ids: ["int_evi_01"] },
       native_ligand: { grade: "high", confidence: "high", rationale: "Holo-Tf cycles rapidly.", cited_source_ids: ["int_evi_01"] },
@@ -54,18 +56,23 @@ const sampleRec: InternalizationRecord = {
         assay_type: "radioligand_uptake",
         cell_line: "HepG2",
         cell_context: "endogenous",
+        expression_context: "endogenous",
         species: "human",
         internalization_mode: "basal",
         ligand_name: "transferrin",
+        binder_type: "native_ligand",
+        binder_valency: "monovalent",
+        post_uptake_fate: "recycles",
         mechanism: "clathrin",
         magnitude: "high",
         quant: {
-          rate_metric: "k_int",
-          rate_value: 0.14,
-          rate_unit: "min-1",
-          quant_summary: "First-order internalization rate constant",
-          k_int_per_min: 0.14,
-          t_half_min: 4.95,
+          rate_metric: "half_life",
+          rate_value: 3.5,
+          rate_unit: "min",
+          quant_summary: "First-order internalization half-life",
+          derived_t_half_min: 3.5,
+          derived_ke_min_inv: 0.198,
+          derived_kinetics_basis: "direct_half_life",
         },
         controls_note: null,
         cited_source_ids: ["int_evi_01"],
@@ -77,12 +84,14 @@ const sampleRec: InternalizationRecord = {
   },
 };
 
-test("renders Literature track ABOVE Sequence prior track", () => {
+test("renders Literature track ABOVE Sequence prior track with schema 0.3.0 richness", () => {
   const html = renderToStaticMarkup(
     React.createElement(InternalizationCardBody, {
       rec: sampleRec,
       obsSort: { key: "", dir: 1 },
       toggleObsSort: () => {},
+      setObsModeFilter: () => {},
+      setObsQuantOnly: () => {},
     }),
   );
   const litIdx = html.indexOf("Literature");
@@ -93,6 +102,11 @@ test("renders Literature track ABOVE Sequence prior track", () => {
     litIdx < seqIdx,
     `Expected Literature (${litIdx}) to appear before Sequence prior (${seqIdx})`,
   );
-  assert.ok(html.includes("k_int 0.14 min"), "normalized k_int should render");
-  assert.ok(html.includes("Ligand dependence:"), "ligand dependence summary should render");
+  assert.ok(html.includes("t½ 3.5 min"), "normalized derived_t_half_min should render");
+  assert.ok(html.includes("kₑ 0.198 min"), "normalized derived_ke_min_inv should render");
+  assert.ok(html.includes("recycling"), "human-readable predominant_fate should render");
+  assert.ok(html.includes("Trafficking:"), "trafficking_summary should render");
+  assert.ok(html.includes("Ligand dependence:"), "ligand_dependence_summary should render");
+  assert.ok(html.includes("primary / in vivo"), "primary/in vivo badge should render");
+  assert.ok(html.includes("native ligand · monovalent"), "binder type + valency should render");
 });
