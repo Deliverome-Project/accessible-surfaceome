@@ -95,6 +95,9 @@ image = (
         "/repo",
         copy=True,
         ignore=[
+            ".env",
+            ".env.*",
+            "**/wrangler.toml",
             ".venv",
             ".claude",
             ".runs",
