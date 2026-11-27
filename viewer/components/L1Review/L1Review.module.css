@@ -465,9 +465,6 @@
 .spBand { position: absolute; top: calc(1.15rem - 6px); height: 4px; background: var(--ink); opacity: 0.55; border-radius: 1px; pointer-events: auto; }
 .spReplaced { background: repeating-linear-gradient(135deg, var(--ink) 0 2px, transparent 2px 4px); opacity: 0.8; }
 .spSwatch { display: inline-block; width: 1rem; height: 4px; vertical-align: middle; background: var(--ink); opacity: 0.55; }
-/* Turnstile folds to nothing unless Cloudflare wants a click. */
-.turnstile { min-width: 0; }
-.turnstileFolded { height: 0; overflow: hidden; }
 .search { margin: 0 0 var(--space-2); width: 100%; box-sizing: border-box; }
 /* Insert flags are buttons now: clicking one focuses that arm on the structure. */
 button.insert { padding: 0; cursor: pointer; font: inherit; }

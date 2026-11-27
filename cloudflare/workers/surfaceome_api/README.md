@@ -194,12 +194,12 @@ Required secrets (`wrangler secret put`):
 `POST /v1/l1-review` stores a reviewer verdict or alternative-tag suggestion in the
 private `surfaceome_agents` D1 (`l1_review`, `l1_alt_tag`; migrations
 `cloudflare/migrations/l1_review_v1.sql` then `l1_review_v2.sql`). A write needs a
-non-empty `reviewer` (at most 80 characters, stored as typed) and either a valid
-`turnstile_token` (verified against `TURNSTILE_SECRET_KEY`, then limited to 30 per IP
-per hour in `FEEDBACK_RATELIMIT`) or header `X-L1-Review-Token` matching the optional
-`L1_REVIEW_TOKEN` secret. Each row records `auth_method` (`turnstile` or `token`).
-Errors: `invalid_reviewer` (400), `turnstile_failed` (400), `rate_limited` (429),
-`review_disabled` (503: no Turnstile secret / KV and no matching token). Reads
+non-empty `reviewer` (at most 80 characters, stored as typed) and is rate-limited to
+30 per IP per hour in `FEEDBACK_RATELIMIT` (or header `X-L1-Review-Token` matching
+the optional `L1_REVIEW_TOKEN` secret to skip the rate limit). Each row records
+`auth_method` (`rate_limited` or `token`).
+Errors: `invalid_reviewer` (400), `rate_limited` (429),
+`review_disabled` (503: no KV binding and no matching token). Reads
 (`GET /v1/l1-review`, `/v1/l1-review/export.tsv`) still need the token.
 
 ### Versioned contact evidence

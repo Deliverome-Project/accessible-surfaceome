@@ -733,17 +733,16 @@ export async function fetchL1Reviews(apiBase: string, token = ""): Promise<L1Rev
   }
 }
 
-/** Writes need the reviewer's name and a fresh Cloudflare Turnstile token (single use). */
+/** Writes need the reviewer's name (rate-limited per IP on the Worker). */
 export async function submitL1Review(
   apiBase: string,
-  turnstileToken: string,
   body: Record<string, unknown>,
 ): Promise<{ ok: true; id: string; created_at: string } | { ok: false; error: string }> {
   try {
     const res = await fetch(`${apiBase}/v1/l1-review`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...body, turnstile_token: turnstileToken }),
+      body: JSON.stringify(body),
     });
     if (res.ok) {
       const ok = (await res.json().catch(() => ({}))) as { review_id?: string; suggestion_id?: string; created_at?: string };

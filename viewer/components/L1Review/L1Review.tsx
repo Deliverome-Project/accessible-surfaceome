@@ -70,7 +70,6 @@ import { L1Structure3D, type L1Mark } from "./L1Structure3D";
 import { curatedContactsAlign, fetchCuratedContacts, type CuratedContacts as CuratedContactsData } from "../../lib/l1-design";
 import { fetchGeneSynonyms, matchingSynonym, type SynonymOverlay } from "../../lib/gene-jump-entries";
 import { InfoTip } from "../InfoTip/InfoTip";
-import { useTurnstile, type ReviewAuth } from "./useTurnstile";
 import styles from "./L1Review.module.css";
 
 // Same Worker base the other client-fetched pages use; NEXT_PUBLIC_L1_DESIGN_API_BASE
@@ -405,7 +404,6 @@ export function ReviewPanel({
   member,
   loadVersion,
   reviews,
-  auth,
   reviewer,
   onEditName,
   pickedResidue,
@@ -417,7 +415,6 @@ export function ReviewPanel({
   member: L1Member;
   loadVersion: string;
   reviews: L1Reviews | null;
-  auth: ReviewAuth;
   reviewer: string;
   /** Opens the reviewer bar at the top of the page and focuses the name field. */
   onEditName: () => void;
@@ -516,19 +513,6 @@ export function ReviewPanel({
       if (!name) onEditName();
       return;
     }
-    // Every submit spends the current Turnstile token, so a fresh one is fetched after it.
-    const t = auth.take();
-    if (!t) {
-      setMsg({
-        ok: false,
-        text: auth.status === "off"
-          ? "Not saved: the anti-bot check is not available on this build."
-          : auth.status === "error"
-            ? `Not saved: ${reviewErrorMessage("turnstile_failed")}`
-            : "Not saved: the anti-bot check is still running. Wait a second and submit again.",
-      });
-      return;
-    }
     const primarySig = l1PrimarySiteSignature(sites);
     const base = {
       reviewer: name, member_id: member.member_id, design_id: member.design_id, gene_symbol: member.gene_symbol,
@@ -546,7 +530,7 @@ export function ReviewPanel({
               ? "c_term"
               : "internal";
         const cassette = draft.alt.cassette || null;
-        const r = await submitL1Review(API_BASE, t, {
+        const r = await submitL1Review(API_BASE, {
           ...base, kind: "alt_tag", placement, insert_after_residue: residue,
           cassette_variant: cassette, reason, site_signature: primarySig,
         });
@@ -564,7 +548,7 @@ export function ReviewPanel({
       const site = siteId || null; // "" is the member as a whole, stored as NULL
       const targetSite = site ? sites.find((s) => s.site_id === site) : undefined;
       const siteSig = targetSite ? l1SiteSignature(targetSite) : primarySig;
-      const r = await submitL1Review(API_BASE, t, {
+      const r = await submitL1Review(API_BASE, {
         ...base, kind: "verdict", verdict: v, reason, site_id: site, site_signature: siteSig,
       });
       if (!r.ok) return setMsg({ ok: false, text: `Not saved: ${reviewErrorMessage(r.error)}` });
@@ -1206,7 +1190,6 @@ function MemberDetail({
   externalTagSites,
   loadVersion,
   reviews,
-  auth,
   reviewer,
   onEditName,
   drafts,
@@ -1219,7 +1202,6 @@ function MemberDetail({
   externalTagSites: readonly L1ExternalTagSite[];
   loadVersion: string;
   reviews: L1Reviews | null;
-  auth: ReviewAuth;
   reviewer: string;
   onEditName: () => void;
   drafts: Record<string, Draft>;
@@ -1514,7 +1496,6 @@ function MemberDetail({
         member={member}
         loadVersion={loadVersion}
         reviews={reviews}
-        auth={auth}
         reviewer={reviewer}
         onEditName={onEditName}
         pickedResidue={picked?.r ?? null}
@@ -1845,7 +1826,6 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
   // plus the rows this browser saved since the page opened, so a reviewer sees their own.
   const [serverReviews, setServerReviews] = useState<L1Reviews | null>(null);
   const [savedHere, setSavedHere] = useState<L1Reviews>({ reviews: [], alt_tags: [] });
-  const turnstile = useTurnstile();
   // The reviewer bar starts folded to one line, even with no name yet: open, it pushes the
   // structure below the fold at 1440x900. It opens on the first write attempt without a
   // name, or from the card's "Reviewing as … ▾" / "Add your name ▾", with the cursor in
@@ -1859,7 +1839,6 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
       nameRef.current?.focus();
     }, 0);
   }, []);
-  const auth: ReviewAuth = useMemo(() => ({ take: turnstile.take, status: turnstile.status }), [turnstile.take, turnstile.status]);
   // Unsaved review text, per member, for as long as the page is open. Held here because
   // this component outlives the detail panel: stepping to another gene empties `detail`
   // while the next design is fetched, which unmounts the panel the text was typed into.
@@ -2399,17 +2378,6 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
               </span>
             </div>
           </details>
-          <div
-            ref={turnstile.slotRef}
-            className={turnstile.needsClick ? styles.turnstile : `${styles.turnstile} ${styles.turnstileFolded}`}
-            aria-label="anti-bot check"
-            aria-hidden={!turnstile.needsClick}
-          />
-          {turnstile.status === "error" ? (
-            <span className={styles.warn}>The anti-bot check could not load. Reload the page to retry.</span>
-          ) : turnstile.status === "off" ? (
-            <span className={styles.warn}>The anti-bot check is not configured on this build, so saving will fail.</span>
-          ) : null}
         </div>
       </div>
 
@@ -2646,7 +2614,6 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
                   externalTagSites={externalTagSites}
                   loadVersion={index.load.load_version}
                   reviews={reviews}
-                  auth={auth}
                   reviewer={reviewer}
                   onEditName={editName}
                   drafts={drafts}

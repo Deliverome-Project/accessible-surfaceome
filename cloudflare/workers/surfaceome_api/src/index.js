@@ -4961,15 +4961,13 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
 // mirror. Never edge-cached.
 //
 // Writes (POST /v1/l1-review) need a non-empty reviewer name (<=80 chars) and either
-//   * a Cloudflare Turnstile token in `turnstile_token`, verified server-side against
-//     TURNSTILE_SECRET_KEY (the feedback form's secret) and rate-limited per IP to
-//     L1_REVIEW_RATE_MAX per hour in FEEDBACK_RATELIMIT -> auth_method "turnstile"; or
+//   * rate-limited per IP to L1_REVIEW_RATE_MAX per hour in FEEDBACK_RATELIMIT
+//     -> auth_method "rate_limited"; or
 //   * header `X-L1-Review-Token` equal to the optional L1_REVIEW_TOKEN secret, which
-//     skips Turnstile and the rate limit -> auth_method "token".
-// The name is trusted as typed: reviews are advisory and read by a person (Becca
-// Carlson, 2026-11-22: "yes let's do name and turnstile"; personal signed links were
-// declined). Reads (GET /v1/l1-review, /export.tsv) still need the token; with it
-// unset they answer 503 rather than run open.
+//     skips the rate limit -> auth_method "token".
+// The name is trusted as typed: reviews are advisory and read by a person (Turnstile
+// was removed on 2026-11-26 at Becca Carlson's request). Reads (GET /v1/l1-review,
+// /export.tsv) still need the token; with it unset they answer 503 rather than run open.
 const L1_REVIEW_HEADER = "X-L1-Review-Token";
 const L1_REVIEW_RATE_MAX = 30;
 const L1_PLACEMENTS = new Set(["rung_default", "n_term", "c_term", "internal", "after_sp", "igk_tag"]);
@@ -4995,24 +4993,20 @@ async function l1ReviewAuth(request, env) {
 }
 
 // Write gate. Returns { authMethod } or { denied: Response }. Called after the body
-// validates, so a form error never spends the single-use Turnstile token.
-async function l1ReviewWriteAuth(request, env, body) {
+// validates, so a form error never consumes the per-IP rate limit.
+async function l1ReviewWriteAuth(request, env) {
   if (await l1TokenMatches(request, env)) return { authMethod: "token" };
-  if (!env.TURNSTILE_SECRET_KEY || !env.FEEDBACK_RATELIMIT) {
+  if (!env.FEEDBACK_RATELIMIT) {
     return { denied: json({ error: "review_disabled" }, { status: 503, ttl: 0 }) };
   }
-  const tToken = String(body.turnstile_token ?? "").slice(0, 2048);
   const remoteIp = request.headers.get("CF-Connecting-IP") ?? null;
-  if (!(await verifyTurnstile(tToken, env.TURNSTILE_SECRET_KEY, remoteIp))) {
-    return { denied: badRequest("turnstile_failed") };
-  }
   const day = new Date().toISOString().slice(0, 10);
   const ipHash = await sha256Hex(`${remoteIp ?? "0"}|${day}`);
   const under = await checkRateLimit(env.FEEDBACK_RATELIMIT, ipHash, {
     prefix: "l1rl", max: L1_REVIEW_RATE_MAX,
   });
   if (!under) return { denied: json({ error: "rate_limited" }, { status: 429, ttl: 0 }) };
-  return { authMethod: "turnstile" };
+  return { authMethod: "rate_limited" };
 }
 
 // INSERT resilient to pending additive migrations (site_signature and/or auth_method
@@ -5075,7 +5069,7 @@ async function handleL1ReviewSubmit(request, env) {
   if (body.kind === "verdict") {
     if (body.verdict !== "good" && body.verdict !== "no") return badRequest("invalid_verdict");
     if (body.verdict === "no" && !reason) return badRequest("reason_required");
-    const auth = await l1ReviewWriteAuth(request, env, body);
+    const auth = await l1ReviewWriteAuth(request, env);
     if (auth.denied) return auth.denied;
     await l1Insert(
       env,
@@ -5098,7 +5092,7 @@ async function handleL1ReviewSubmit(request, env) {
     if (residue == null && (placement === "internal" || placement === "after_sp")) {
       return badRequest("residue_required");
     }
-    const auth = await l1ReviewWriteAuth(request, env, body);
+    const auth = await l1ReviewWriteAuth(request, env);
     if (auth.denied) return auth.denied;
     await l1Insert(
       env,

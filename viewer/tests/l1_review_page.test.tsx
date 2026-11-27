@@ -169,7 +169,7 @@ const panel = (over: Partial<Parameters<typeof ReviewPanel>[0]> = {}) =>
   renderToStaticMarkup(
     React.createElement(ReviewPanel, {
       member: member({ sites: twoArms }), loadVersion: "l1d-3", reviews: null,
-      auth: { take: () => "ts-token", status: "ready" }, reviewer: "Becca", onEditName: () => {}, pickedResidue: null,
+      reviewer: "Becca", onEditName: () => {}, pickedResidue: null,
       drafts: {}, setDrafts: () => {}, onSaved: () => {}, ...over,
     }),
   );
@@ -222,7 +222,7 @@ test("without a name the card says so, but nothing typed is locked away", () => 
   assert.match(panel(), /Reviewing as[\s\S]*Becca/);
 });
 
-test("a write sends the name and the Turnstile token in the body, and no token header", async () => {
+test("a write sends the name in the body, with no Turnstile token or token header", async () => {
   const { submitL1Review } = await import("../lib/l1-design");
   const seen: { headers: Record<string, string>; body: Record<string, unknown> }[] = [];
   const realFetch = globalThis.fetch;
@@ -231,12 +231,12 @@ test("a write sends the name and the Turnstile token in the body, and no token h
     return new Response(JSON.stringify({ ok: true, review_id: "r1", created_at: "2026-11-22T10:00:00Z" }), { status: 201 });
   }) as typeof fetch;
   try {
-    const r = await submitL1Review("https://api.test", "ts-token", { kind: "verdict", reviewer: "Ada" });
+    const r = await submitL1Review("https://api.test", { kind: "verdict", reviewer: "Ada" });
     assert.deepEqual(r, { ok: true, id: "r1", created_at: "2026-11-22T10:00:00Z" });
   } finally {
     globalThis.fetch = realFetch;
   }
-  assert.equal(seen[0].body.turnstile_token, "ts-token");
+  assert.equal("turnstile_token" in seen[0].body, false);
   assert.equal(seen[0].body.reviewer, "Ada");
   assert.ok(!Object.keys(seen[0].headers).some((h) => /review-token/i.test(h)));
 });
@@ -687,7 +687,6 @@ test("ReviewPanel renders an out-of-date warning banner and badge when a standin
       loadVersion: "l1d-1111111111111111",
       reviewer: "Becca",
       onEditName: () => {},
-      auth: { status: "ready", take: () => "tok" },
       reviews: { reviews: [staleRow], alt_tags: [] },
       onSaved: () => {},
       drafts: {},

@@ -1,22 +1,21 @@
-"""``POST /v1/l1-review`` takes a name + Cloudflare Turnstile, or the optional token.
+"""``POST /v1/l1-review`` takes a name (rate-limited per IP), or the optional token.
 
-Outside reviewers of the L1 library type a name and pass Turnstile; there is no
-shared token to paste (Becca Carlson, 2026-11-22: "yes let's do name and
-turnstile"). The name is trusted as typed because reviews are advisory and a person
-reads each one; Turnstile plus a per-IP limit keeps out bots and floods. The old
-``X-L1-Review-Token`` header still works and skips Turnstile.
+Outside reviewers of the L1 library type a name without a CAPTCHA or shared token
+(Turnstile was removed on 2026-11-26 at Becca Carlson's request). The name is trusted
+as typed because reviews are advisory and a person reads each one; a per-IP limit keeps
+out floods. The ``X-L1-Review-Token`` header still works and skips the rate limit.
 
-These tests pin, against the real Worker router with siteverify and D1 stubbed:
+These tests pin, against the real Worker router with D1 and KV stubbed:
 
-* a missing or over-long name is rejected before Turnstile is called (a form error
-  must not spend the single-use widget token);
-* a missing or failing Turnstile token is rejected, and nothing is stored;
-* the 31st Turnstile submission from one IP in an hour gets 429, under its own KV
-  counter (the feedback form's 5/hour counter is untouched);
+* a missing or over-long name is rejected before consuming rate-limit quota;
+* a normal submission without Turnstile succeeds with ``auth_method == "rate_limited"``
+  and never calls ``challenges.cloudflare.com``;
+* the 31st submission from one IP in an hour gets 429, under its own KV counter
+  (the feedback form's 5/hour counter is untouched);
 * a success stores the row with the name as typed and ``auth_method``;
-* the token path skips siteverify and the limit; a wrong token falls through to
-  Turnstile instead of passing;
-* with no Turnstile secret and no token the endpoint answers 503, never runs open;
+* the token path skips the rate limit; a wrong token falls through to the rate-limited
+  path instead of getting ``auth_method == "token"``;
+* with no KV rate-limit binding and no token the endpoint answers 503, never runs open;
 * a Worker deployed before migration ``l1_review_v2`` still stores the row;
 * reads still need the token.
 """
@@ -41,14 +40,10 @@ import worker from "./worker.mjs";
 const [, , outPath] = process.argv;
 globalThis.caches = { default: { match: async () => undefined, put: async () => {} } };
 
-// siteverify stub: "good" passes, anything else fails. Records every call.
-const verifyCalls = [];
-globalThis.fetch = async (url, init) => {
-  if (String(url).includes("challenges.cloudflare.com/turnstile")) {
-    const p = new URLSearchParams(init.body);
-    verifyCalls.push({ secret: p.get("secret"), response: p.get("response"), remoteip: p.get("remoteip") });
-    return new Response(JSON.stringify({ success: p.get("response") === "good" }));
-  }
+// Any outbound fetch (e.g. Turnstile siteverify) must fail loudly — L1 review writes do not use Turnstile.
+const fetchCalls = [];
+globalThis.fetch = async (url) => {
+  fetchCalls.push(String(url));
   throw new Error(`unexpected fetch ${url}`);
 };
 
@@ -101,29 +96,31 @@ const call = async (env, { method = "POST", path = "/v1/l1-review", body, token,
 };
 const baseEnv = (over = {}) => ({
   DB: makeDb(), FEEDBACK_DB: makeDb(), FEEDBACK_RATELIMIT: makeKv(),
-  TURNSTILE_SECRET_KEY: "ts-secret", L1_REVIEW_TOKEN: "s3cret", ...over,
+  L1_REVIEW_TOKEN: "s3cret", ...over,
 });
 
 const out = {};
 const run = async (name, env, opts) => {
-  const before = verifyCalls.length;
+  const before = fetchCalls.length;
   const r = await call(env, opts);
-  out[name] = { ...r, inserts: env.FEEDBACK_DB.inserts.slice(), verify: verifyCalls.slice(before) };
+  out[name] = {
+    ...r,
+    inserts: env.FEEDBACK_DB.inserts.slice(),
+    fetches: fetchCalls.slice(before),
+    kv_keys: env.FEEDBACK_RATELIMIT ? [...env.FEEDBACK_RATELIMIT.store.keys()] : [],
+  };
 };
 
-await run("missing_name", baseEnv(), { body: { ...verdict, reviewer: "   ", turnstile_token: "good" } });
-await run("long_name", baseEnv(), { body: { ...verdict, reviewer: "x".repeat(81), turnstile_token: "good" } });
-await run("no_turnstile", baseEnv(), { body: verdict });
-await run("bad_turnstile", baseEnv(), { body: { ...verdict, turnstile_token: "forged" } });
-await run("wrong_token_no_turnstile", baseEnv(), { body: verdict, token: "wrong" });
-await run("success_verdict", baseEnv(), { body: { ...verdict, turnstile_token: "good" } });
-await run("success_alt", baseEnv(), { body: { ...alt, turnstile_token: "good" } });
+await run("missing_name", baseEnv(), { body: { ...verdict, reviewer: "   " } });
+await run("long_name", baseEnv(), { body: { ...verdict, reviewer: "x".repeat(81) } });
+await run("wrong_token", baseEnv(), { body: verdict, token: "wrong" });
+await run("success_verdict", baseEnv(), { body: verdict });
+await run("success_alt", baseEnv(), { body: alt });
 await run("token_path", baseEnv(), { body: verdict, token: "s3cret" });
-await run("no_secrets", baseEnv({ TURNSTILE_SECRET_KEY: undefined, L1_REVIEW_TOKEN: undefined }),
-  { body: { ...verdict, turnstile_token: "good" } });
-await run("token_only_deploy", baseEnv({ TURNSTILE_SECRET_KEY: undefined }), { body: verdict, token: "s3cret" });
-await run("legacy_db", baseEnv({ FEEDBACK_DB: makeDb({ legacy: true }) }),
-  { body: { ...verdict, turnstile_token: "good" } });
+await run("no_ratelimit_no_token", baseEnv({ FEEDBACK_RATELIMIT: undefined, L1_REVIEW_TOKEN: undefined }),
+  { body: verdict });
+await run("token_only_deploy", baseEnv({ FEEDBACK_RATELIMIT: undefined }), { body: verdict, token: "s3cret" });
+await run("legacy_db", baseEnv({ FEEDBACK_DB: makeDb({ legacy: true }) }), { body: verdict });
 
 // Rate limit: 30 per IP per hour, then 429; another IP is unaffected; the token
 // path is not counted.
@@ -131,12 +128,12 @@ await run("legacy_db", baseEnv({ FEEDBACK_DB: makeDb({ legacy: true }) }),
   const env = baseEnv();
   const statuses = [];
   for (let i = 0; i < 31; i++) {
-    statuses.push((await call(env, { body: { ...verdict, turnstile_token: "good" } })).status);
+    statuses.push((await call(env, { body: verdict })).status);
   }
-  const other = await call(env, { body: { ...verdict, turnstile_token: "good" }, ip: "198.51.100.7" });
+  const other = await call(env, { body: verdict, ip: "198.51.100.7" });
   const viaToken = await call(env, { body: verdict, token: "s3cret" });
   out.rate = {
-    statuses, last: (await call(env, { body: { ...verdict, turnstile_token: "good" } })).body,
+    statuses, last: (await call(env, { body: verdict })).body,
     other: other.status, via_token: viaToken.status,
     stored: env.FEEDBACK_DB.inserts.length,
     keys: [...env.FEEDBACK_RATELIMIT.store.keys()],
@@ -180,61 +177,51 @@ def results(tmp_path_factory: pytest.TempPathFactory) -> dict:
 
 
 @pytest.mark.parametrize("case", ["missing_name", "long_name"])
-def test_name_is_required_and_checked_before_turnstile(
+def test_name_is_required_and_checked_before_rate_limit(
     results: dict, case: str
 ) -> None:
     r = results[case]
     assert r["status"] == 400
     assert r["body"] == {"error": "invalid_reviewer"}
-    assert r["verify"] == [], "a form error must not spend the Turnstile token"
+    assert r["kv_keys"] == [], "a form error must not consume rate-limit quota"
+    assert r["fetches"] == []
     assert r["inserts"] == []
 
 
-@pytest.mark.parametrize(
-    "case", ["no_turnstile", "bad_turnstile", "wrong_token_no_turnstile"]
-)
-def test_missing_or_failed_turnstile_is_rejected(results: dict, case: str) -> None:
-    r = results[case]
-    assert r["status"] == 400
-    assert r["body"] == {"error": "turnstile_failed"}
-    assert r["inserts"] == []
-
-
-def test_turnstile_is_verified_server_side_with_the_feedback_secret(
-    results: dict,
-) -> None:
-    (call,) = results["success_verdict"]["verify"]
-    assert call == {
-        "secret": "ts-secret",
-        "response": "good",
-        "remoteip": "203.0.113.9",
-    }
-
-
-def test_success_stores_the_name_as_typed_and_the_auth_path(results: dict) -> None:
+def test_success_stores_the_name_as_typed_without_turnstile(results: dict) -> None:
     r = results["success_verdict"]
     assert r["status"] == 201
-    assert r["body"]["auth_method"] == "turnstile"
+    assert r["fetches"] == []
+    assert r["body"]["auth_method"] == "rate_limited"
     (row,) = r["inserts"]
     assert row["reviewer"] == "Dr. Ada Q. Reviewer"
-    assert row["auth_method"] == "turnstile"
+    assert row["auth_method"] == "rate_limited"
     assert row["verdict"] == "good"
     a = results["success_alt"]
     assert a["status"] == 201
-    assert a["inserts"][0]["auth_method"] == "turnstile"
+    assert a["fetches"] == []
+    assert a["inserts"][0]["auth_method"] == "rate_limited"
     assert a["inserts"][0]["insert_after_residue"] == 60
 
 
-def test_token_path_skips_turnstile(results: dict) -> None:
+def test_wrong_token_falls_back_to_rate_limited_path(results: dict) -> None:
+    r = results["wrong_token"]
+    assert r["status"] == 201
+    assert r["body"]["auth_method"] == "rate_limited"
+    assert r["kv_keys"] and all(k.startswith("l1rl:") for k in r["kv_keys"])
+
+
+def test_token_path_skips_rate_limit(results: dict) -> None:
     for case in ("token_path", "token_only_deploy"):
         r = results[case]
         assert r["status"] == 201, case
-        assert r["verify"] == [], case
+        assert r["fetches"] == [], case
+        assert r["kv_keys"] == [], case
         assert r["inserts"][0]["auth_method"] == "token", case
 
 
-def test_no_secret_means_closed_not_open(results: dict) -> None:
-    r = results["no_secrets"]
+def test_no_ratelimit_binding_and_no_token_is_closed(results: dict) -> None:
+    r = results["no_ratelimit_no_token"]
     assert r["status"] == 503
     assert r["body"] == {"error": "review_disabled"}
     assert r["inserts"] == []
