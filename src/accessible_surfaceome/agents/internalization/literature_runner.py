@@ -791,6 +791,7 @@ def annotate_literature(
                     "cache_read_tokens": cache_read_tok,
                     "cache_write_tokens": cache_write_tok,
                 },
+                record=record.model_dump(mode="json"),
             )
             if intermediates_dir is not None:
                 save_intermediates_local(

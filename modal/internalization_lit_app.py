@@ -334,11 +334,24 @@ def annotate_one(payload: dict[str, Any]) -> dict[str, Any]:
 
         inter_path = intermediates_dir / f"{rec.gene_symbol}.json.gz"
         cache_read_tok = cache_write_tok = 0
+        missed_preprint_body = False
         if inter_path.exists():
             try:
-                inter_summary = decompress_intermediates(inter_path.read_bytes()).get("summary") or {}
+                inter_blob = decompress_intermediates(inter_path.read_bytes())
+                inter_summary = inter_blob.get("summary") or {}
                 cache_read_tok = int(inter_summary.get("cache_read_tokens", 0) or 0)
                 cache_write_tok = int(inter_summary.get("cache_write_tokens", 0) or 0)
+                disc_map = inter_blob.get("discovered_papers") or {}
+                missed_preprint_body = any(
+                    a.get("decision") == "worth_fetching"
+                    and not a.get("fetched_body")
+                    and (
+                        "10.1101/" in str(a.get("paper_id") or "")
+                        or "10.64898/" in str(a.get("paper_id") or "")
+                        or bool((disc_map.get(a.get("paper_id") or "") or {}).get("is_preprint"))
+                    )
+                    for a in (inter_blob.get("fetch_actions") or [])
+                )
             except Exception:  # noqa: BLE001
                 pass
         return {
@@ -355,6 +368,7 @@ def annotate_one(payload: dict[str, Any]) -> dict[str, Any]:
             "n_papers_discovered": lit.n_papers_discovered if lit else 0,
             "n_papers_fetched": lit.n_papers_fetched if lit else 0,
             "web_search_used": bool(lit.web_search_used) if lit else False,
+            "missed_preprint_body": missed_preprint_body,
             "cache_read_tokens": cache_read_tok,
             "cache_write_tokens": cache_write_tok,
             "cost_usd": round(float(lit.cost_usd), 4) if lit else 0.0,
@@ -580,6 +594,7 @@ def full_sweep(
     total_cost = 0.0
     total_refusals = 0
     budget_hit = False
+    missed_preprint_genes: list[str] = []
 
     with ledger_path.open("a", encoding="utf-8") as ledger_fh:
         for start in range(0, len(todo), max(1, wave_size)):
@@ -632,6 +647,8 @@ def full_sweep(
                     c = float(res.get("cost_usd", 0.0) or 0.0)
                     total_cost += c
                     total_refusals += int(res.get("n_refusals", 0) or 0)
+                    if res.get("missed_preprint_body"):
+                        missed_preprint_genes.append(g)
                 else:
                     fail += 1
                     print(f"  FAIL {g}: {res.get('error')}", flush=True)
@@ -640,6 +657,7 @@ def full_sweep(
                 purge_internalization_batch(wave_ok_genes, include_catalog=False)
             print(
                 f"Wave summary: ok={ok} fail={fail} refusals={total_refusals} "
+                f"missed_biorxiv={len(missed_preprint_genes)} "
                 f"total_cost=${total_cost:.2f} (mean=${(total_cost / ok) if ok else 0.0:.3f}/gene)",
                 flush=True,
             )
@@ -653,4 +671,14 @@ def full_sweep(
         flush=True,
     )
     print(f"Ledger saved to {ledger_path}")
+    if missed_preprint_genes:
+        rescue_file = local_run_dir / "missed_preprint_genes.txt"
+        rescue_file.write_text("\n".join(sorted(set(missed_preprint_genes))) + "\n", encoding="utf-8")
+        print(
+            f"\n{len(set(missed_preprint_genes))} gene(s) had a worth_fetching bioRxiv/medRxiv "
+            f"preprint blocked (HTTP 429) on Modal cloud IPs -> {rescue_file}\n"
+            f"Rescue them locally (reusing Modal discovery + Haiku triage from R2):\n"
+            f"  uv run python scripts/internalization_lit_sweep.py "
+            f"--genes-file {rescue_file} --from-r2 --skip-discovery --force --execute"
+        )
     print("Next step: uv run python scripts/build/build_paper_metadata_table.py --execute")

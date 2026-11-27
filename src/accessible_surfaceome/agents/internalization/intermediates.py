@@ -27,6 +27,7 @@ import gzip
 import json
 import logging
 import re
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -127,9 +128,19 @@ def _serialize_actions(actions: list[Any]) -> list[dict[str, Any]]:
                     "paper_id": getattr(a, "paper_id", None),
                     "decision": getattr(a, "decision", None),
                     "fetched_body": bool(getattr(a, "fetched_body", False)),
-                    "body_source": getattr(a, "body_source", None),
-                    "n_drafts": getattr(a, "n_drafts", None),
-                    "error": getattr(a, "error", None),
+                    "body_source": (
+                        getattr(a, "fetch_source", None)
+                        or getattr(a, "body_source", None)
+                    ),
+                    "n_drafts": (
+                        getattr(a, "drafts_added", None)
+                        if getattr(a, "drafts_added", None) is not None
+                        else getattr(a, "n_drafts", None)
+                    ),
+                    "error": (
+                        getattr(a, "fetch_error", None)
+                        or getattr(a, "error", None)
+                    ),
                 }
             )
     return out
@@ -162,8 +173,9 @@ def build_intermediates_payload(
     evidence_graded: list[Any],
     usage: list[Any],
     summary: dict[str, Any],
+    record: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Assemble the canonical JSON-serializable intermediates bundle for one gene."""
+    """Assemble the canonical JSON-serializable intermediates + output bundle for one gene."""
     return {
         "intermediates_version": INTERMEDIATES_VERSION,
         "gene_symbol": gene_symbol.upper(),
@@ -203,6 +215,7 @@ def build_intermediates_payload(
         ],
         "usage": _serialize_usage(usage),
         "summary": summary,
+        "record": record,
     }
 
 
@@ -231,34 +244,63 @@ def save_intermediates_local(path: Path, payload: dict[str, Any]) -> Path:
     return path
 
 
+def _put_with_retry(
+    *,
+    key: str,
+    body: bytes,
+    content_type: str,
+    cfg: R2Config | None,
+    max_retries: int = 3,
+) -> bool:
+    attempts = max(1, max_retries)
+    for attempt in range(1, attempts + 1):
+        if put_object(key=key, body=body, content_type=content_type, cfg=cfg):
+            return True
+        if attempt < attempts:
+            wait_s = float(2 ** (attempt - 1))
+            logger.warning(
+                "R2 upload failed for %s (attempt %d/%d, retrying in %.0fs)",
+                key,
+                attempt,
+                attempts,
+                wait_s,
+            )
+            time.sleep(wait_s)
+    return False
+
+
 def upload_intermediates_r2(
     payload: dict[str, Any],
     *,
     gene_symbol: str,
     run_id: str | None = None,
     cfg: R2Config | None = None,
+    max_retries: int = 3,
 ) -> tuple[bool, str]:
-    """Upload gzipped intermediates to R2 (``latest.json.gz`` + optional ``{run_id}.json.gz``).
+    """Upload gzipped intermediates + final record to R2 (``latest.json.gz`` +
+    optional ``{run_id}.json.gz``) with exponential backoff retry.
 
     Best-effort: returns ``(ok, latest_key)`` and never raises so an R2 blip
     never aborts a sweep or discards a completed gene.
     """
     gz_bytes = compress_intermediates(payload)
     latest_key = r2_latest_key(gene_symbol)
-    ok_latest = put_object(
+    ok_latest = _put_with_retry(
         key=latest_key,
         body=gz_bytes,
         content_type="application/gzip",
         cfg=cfg,
+        max_retries=max_retries,
     )
     ok_run = True
     if run_id:
         run_key = r2_run_key(gene_symbol, run_id)
-        ok_run = put_object(
+        ok_run = _put_with_retry(
             key=run_key,
             body=gz_bytes,
             content_type="application/gzip",
             cfg=cfg,
+            max_retries=max_retries,
         )
     return (ok_latest and ok_run), latest_key
 

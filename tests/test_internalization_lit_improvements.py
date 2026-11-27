@@ -763,3 +763,55 @@ def test_publish_seq_record_retries_and_skips_ddl_when_requested():
     )
     assert not any("CREATE TABLE" in c for c in d1.calls)
     assert sum(1 for c in d1.calls if c.startswith("INSERT OR REPLACE")) == 2
+
+
+
+def test_upload_intermediates_r2_retries_and_embeds_record(monkeypatch):
+    from accessible_surfaceome.agents.internalization import intermediates as inter_mod
+
+    attempts: dict[str, int] = {}
+
+    def _flaky_put(*, key: str, body, content_type: str = "application/json", cfg=None) -> bool:
+        attempts[key] = attempts.get(key, 0) + 1
+        # Fail once on latest.json.gz, then succeed
+        return not (key.endswith("/latest.json.gz") and attempts[key] == 1)
+
+    monkeypatch.setattr(inter_mod, "put_object", _flaky_put)
+    monkeypatch.setattr(inter_mod.time, "sleep", lambda _s: None)
+
+    payload = inter_mod.build_intermediates_payload(
+        gene_symbol="THBD",
+        hgnc_id="HGNC:11784",
+        uniprot_acc="P07204",
+        run_id="r2_retry_test",
+        schema_version="0.3.0",
+        lit_prompt_version="0.2.2",
+        lit_prompt_sha="abc",
+        triage_prompt_sha="def",
+        model="claude-sonnet-5-5",
+        triage_model="claude-haiku-5-5",
+        web_scout_model="claude-haiku-5-5",
+        web_search_mode="adaptive",
+        web_search_used=False,
+        web_search_reason=None,
+        web_search_paper_ids=[],
+        extra_paper_ids=[],
+        discovered={},
+        outcomes=[],
+        triage_input_shas={},
+        actions=[],
+        pool={},
+        evidence_pre_cap=[],
+        evidence_graded=[],
+        usage=[],
+        summary={"overall_grade": "moderate"},
+        record={"gene_symbol": "THBD", "schema_version": "0.3.0"},
+    )
+    assert payload["record"] == {"gene_symbol": "THBD", "schema_version": "0.3.0"}
+    ok, key = inter_mod.upload_intermediates_r2(
+        payload, gene_symbol="THBD", run_id="r2_retry_test", max_retries=3
+    )
+    assert ok is True
+    assert key == "internalization_lit_intermediates/THBD/latest.json.gz"
+    assert attempts["internalization_lit_intermediates/THBD/latest.json.gz"] == 2
+    assert attempts["internalization_lit_intermediates/THBD/r2_retry_test.json.gz"] == 1

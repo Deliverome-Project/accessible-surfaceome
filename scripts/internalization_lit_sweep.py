@@ -294,6 +294,22 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument(
         "--genes", nargs="+", default=None, help="Explicit gene list (overrides --cohort)."
     )
+    p.add_argument(
+        "--genes-file",
+        type=Path,
+        default=None,
+        help="File with one gene symbol per line (overrides --cohort; e.g. missed_preprint_genes.txt).",
+    )
+    p.add_argument(
+        "--from-r2",
+        action="store_true",
+        help="Seed discovered papers & Haiku triage verdicts from R2 intermediates before running.",
+    )
+    p.add_argument(
+        "--skip-discovery",
+        action="store_true",
+        help="Skip fresh EuropePMC/PubTator queries (reuse R2/local seeded papers only).",
+    )
     p.add_argument("--limit", type=int, default=None, help="Cap the number of genes.")
     p.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY)
     p.add_argument(
@@ -365,10 +381,19 @@ def main(argv: list[str] | None = None) -> int:
 
     from accessible_surfaceome.cloud.d1_client import D1Client
 
+    explicit_genes = list(args.genes or [])
+    if args.genes_file:
+        for line in args.genes_file.read_text(encoding="utf-8").splitlines():
+            sym = line.strip().split("\t")[0].strip().upper()
+            if sym and sym != "GENE_SYMBOL":
+                explicit_genes.append(sym)
+
     cur_sha = lit_prompt_sha()
     with D1Client.public() as d1:
         ensure_table(d1)
-        cohort, breakdown, manifest = load_cohort(d1, genes=args.genes, cohort=args.cohort)
+        cohort, breakdown, manifest = load_cohort(
+            d1, genes=explicit_genes or None, cohort=args.cohort
+        )
         if args.save_cohort:
             write_cohort_manifest(args.save_cohort, manifest)
             logger.info("wrote cohort manifest (%d genes) to %s", len(manifest), args.save_cohort)
@@ -473,6 +498,8 @@ def main(argv: list[str] | None = None) -> int:
                     triage_model=args.triage_model,
                     web_scout_model=args.web_scout_model,
                     triage_concurrency=args.triage_concurrency,
+                    load_from_r2=args.from_r2,
+                    skip_discovery=args.skip_discovery,
                     upload_to_r2=upload_r2,
                     intermediates_dir=intermediates_dir,
                     run_id=run_id,
