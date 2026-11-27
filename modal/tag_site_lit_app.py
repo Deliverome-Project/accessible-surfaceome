@@ -39,9 +39,9 @@ import modal
 from accessible_surfaceome.tools._shared.ratelimit import reserve_slot
 
 GATE_MAX_WAIT_S = 120.0
-# 12 containers × 2 inputs/container = 24 members in flight; keeps Cloudflare D1
+# 10 containers × 2 inputs/container = 20 members in flight; keeps Cloudflare D1
 # free of 429 bursts while rate_limit_gate enforces the global 350 ms EBI cap.
-MAX_CONTAINERS = int(os.environ.get("TAG_SITE_LIT_MAX_CONTAINERS", "12"))
+MAX_CONTAINERS = int(os.environ.get("TAG_SITE_LIT_MAX_CONTAINERS", "10"))
 MAX_INPUTS = int(os.environ.get("TAG_SITE_LIT_MAX_INPUTS", "2"))
 MEMBER_TIMEOUT_S = int(os.environ.get("TAG_SITE_LIT_MEMBER_TIMEOUT_S", str(20 * 60)))
 PER_MEMBER_USD_EST = 0.15
@@ -457,6 +457,177 @@ def enrich_one(payload: dict[str, Any]) -> dict[str, Any]:
             "elapsed_s": round(time.monotonic() - t0, 2),
             "ts": datetime.now(UTC).isoformat(),
         }
+
+
+@app.function(
+    image=image,
+    secrets=[secret],
+    volumes={VOL_MOUNT: volume},
+    timeout=12 * 3600,
+    max_containers=1,
+)
+def sweep_driver(
+    members_tsv: str = "data/tag_sites/expanded_multipass_members.tsv",
+    run_id: str = "",
+    run_series: str = "literature_enriched_v2",
+    web_search_mode: str = "adaptive",
+    max_budget_usd: float = 350.0,
+    wave_size: int = 100,
+    limit: int = 0,
+    force: bool = False,
+    upload_r2: bool = True,
+    retry_errors: bool = True,
+) -> dict[str, Any]:
+    """Detached cloud orchestrator: runs the remaining sweep entirely on Modal.
+
+    Survives laptop sleep / offline travel when launched via ``modal deploy`` +
+    ``.spawn()`` or ``modal run --detach modal/tag_site_lit_app.py::sweep_driver``.
+    """
+    from accessible_surfaceome.agents.tag_site.member_frames import load_members
+    from accessible_surfaceome.agents.tag_site.prompt import (
+        TAG_SITE_PROMPT_VERSION,
+        prompt_sha,
+    )
+    from accessible_surfaceome.agents.tag_site.runner import (
+        DEFAULT_TAG_SITE_MODEL,
+        DEFAULT_TAG_SITE_TRIAGE_MODEL,
+        DEFAULT_TAG_SITE_WEB_SCOUT_MODEL,
+    )
+    from accessible_surfaceome.cloud.d1_client import D1Client
+    from accessible_surfaceome.cloud.tag_site_genes import searched_members
+
+    rel_tsv = members_tsv.lstrip("/")
+    tsv_path = Path("/repo") / rel_tsv
+    members = load_members(tsv_path)
+    cur_sha = prompt_sha()
+    rid = run_id or datetime.now(UTC).strftime("tag_site_l1_modal_%Y%m%d_%H%M%S")
+
+    done: set[tuple[str, str]] = set()
+    if not force:
+        with D1Client.public() as pub:
+            done = searched_members(pub, run_series=run_series, prompt_sha=cur_sha)
+
+    todo = [m for m in members if (m.gene_symbol, m.candidate_id) not in done]
+    if limit > 0:
+        todo = todo[:limit]
+
+    print(f"Detached Modal tag-site sweep (run_id={rid})", flush=True)
+    print(f"  members TSV     : {rel_tsv} ({len(members)} members)", flush=True)
+    print(f"  prompt          : v{TAG_SITE_PROMPT_VERSION} sha={cur_sha[:12]}  series={run_series}", flush=True)
+    print(f"  already@sha     : {len(done)}  |  todo: {len(todo)}", flush=True)
+    print(f"  models          : synth/select={DEFAULT_TAG_SITE_MODEL}, triage/scout={DEFAULT_TAG_SITE_TRIAGE_MODEL}", flush=True)
+    print(f"  budget cap      : ${max_budget_usd:,.2f}", flush=True)
+
+    vol_run_dir = Path(VOL_MOUNT) / rid
+    vol_run_dir.mkdir(parents=True, exist_ok=True)
+    ledger_path = vol_run_dir / "driver_ledger.jsonl"
+
+    ok = fail = skipped = 0
+    total_cost = 0.0
+    missed_preprint_members: list[str] = []
+    failed_members: list[Any] = []
+
+    def _run_wave(batch: list[Any], label: str) -> list[Any]:
+        nonlocal ok, fail, skipped, total_cost
+        payloads = [
+            {
+                "candidate_id": m.candidate_id,
+                "gene_symbol": m.gene_symbol,
+                "members_tsv": rel_tsv,
+                "run_id": rid,
+                "run_series": run_series,
+                "web_search_mode": web_search_mode,
+                "model": DEFAULT_TAG_SITE_MODEL,
+                "triage_model": DEFAULT_TAG_SITE_TRIAGE_MODEL,
+                "web_scout_model": DEFAULT_TAG_SITE_WEB_SCOUT_MODEL,
+                "publish_d1": True,
+                "upload_r2": upload_r2,
+            }
+            for m in batch
+        ]
+        wave_failed: list[Any] = []
+        with ledger_path.open("a", encoding="utf-8") as fh:
+            for m, res in zip(batch, enrich_one.map(payloads, return_exceptions=True), strict=True):
+                if isinstance(res, BaseException):
+                    fail += 1
+                    wave_failed.append(m)
+                    fh.write(
+                        json.dumps(
+                            {
+                                "candidate_id": m.candidate_id,
+                                "gene_symbol": m.gene_symbol,
+                                "status": "error",
+                                "error": str(res)[:400],
+                                "ts": datetime.now(UTC).isoformat(),
+                            }
+                        )
+                        + "\n"
+                    )
+                    fh.flush()
+                    continue
+                fh.write(json.dumps(res) + "\n")
+                fh.flush()
+                st = res.get("status")
+                if st == "ok":
+                    ok += 1
+                    total_cost += float(res.get("cost_usd", 0.0) or 0.0)
+                    if res.get("missed_preprint_body"):
+                        missed_preprint_members.append(m.candidate_id)
+                elif st == "skipped":
+                    skipped += 1
+                else:
+                    fail += 1
+                    wave_failed.append(m)
+        volume.commit()
+        print(
+            f"{label}: ok={ok} skipped={skipped} fail={fail} "
+            f"missed_biorxiv={len(set(missed_preprint_members))} cost=${total_cost:.2f}",
+            flush=True,
+        )
+        return wave_failed
+
+    for start in range(0, len(todo), max(1, wave_size)):
+        if total_cost >= max_budget_usd:
+            print(
+                f"BUDGET CAP REACHED (${total_cost:.2f} >= ${max_budget_usd:.2f}) — stopping.",
+                flush=True,
+            )
+            break
+        wave = todo[start : start + max(1, wave_size)]
+        failed_members.extend(_run_wave(wave, f"Wave {start + 1}..{start + len(wave)}"))
+
+    if retry_errors and failed_members and total_cost < max_budget_usd:
+        print(f"Retrying {len(failed_members)} failed member(s)...", flush=True)
+        # Reset fail count to reflect only unresolved failures after cleanup pass.
+        prior_fail = fail
+        fail = 0
+        still_failed = _run_wave(failed_members, f"Retry ({len(failed_members)})")
+        print(
+            f"Retry pass complete: recovered={prior_fail - len(still_failed)} still_failed={len(still_failed)}",
+            flush=True,
+        )
+
+    if missed_preprint_members:
+        rescue = vol_run_dir / "missed_preprint_members.txt"
+        rescue.write_text("\n".join(sorted(set(missed_preprint_members))) + "\n", encoding="utf-8")
+        volume.commit()
+
+    summary = {
+        "run_id": rid,
+        "members_tsv": rel_tsv,
+        "already_done_before_driver": len(done),
+        "todo_dispatched": len(todo),
+        "ok": ok,
+        "skipped": skipped,
+        "fail": fail,
+        "missed_biorxiv": len(set(missed_preprint_members)),
+        "driver_cost_usd": round(total_cost, 4),
+        "finished_at": datetime.now(UTC).isoformat(),
+    }
+    (vol_run_dir / "driver_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    volume.commit()
+    print(f"DETACHED SWEEP COMPLETE: {json.dumps(summary)}", flush=True)
+    return summary
 
 
 @app.local_entrypoint()
