@@ -37,9 +37,9 @@ on:
   push:
     branches: [main]
     paths:
-      # Schema / SQL — any change to the D1 schema triggers a fresh dump.
-      - "cloudflare/d1_schema.sql"
-      - "cloudflare/d1_gpi_schema.sql"
+      # Schema / SQL — any change to D1 schemas or migrations triggers a fresh dump.
+      - "cloudflare/d1_*.sql"
+      - "cloudflare/migrations/**"
       # Eval data — benchmark TSV + any live run output.
       - "data/eval/triage_benchmark_v1.tsv"
       - "data/eval/triage_haiku_live_run.tsv"
