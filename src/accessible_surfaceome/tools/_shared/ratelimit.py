@@ -174,7 +174,7 @@ def default_limiter() -> RateLimiter:
             "rest.uniprot.org": 200,
             "rest.genenames.org": 200,
             "api.platform.opentargets.org": 250,
-            "www.ebi.ac.uk": 130,  # Europe PMC; ~7-8 qps courtesy ceiling
+            "www.ebi.ac.uk": 350,  # Europe PMC; ~2.8 qps — 130ms triggered EBI resets/503s on Modal
             "api.unpaywall.org": 600,  # polite; daily-cap service, no hard qps published
             "api.datacite.org": 1000,  # public REST API — keep to ~1 qps to be courteous
             "api.labs.crossref.org": 1000,  # Retraction Watch feed host (Crossref Labs)

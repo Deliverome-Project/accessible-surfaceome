@@ -9,6 +9,7 @@ no need to pass it manually.
 from __future__ import annotations
 
 import importlib
+import os
 
 import anthropic
 import httpx
@@ -41,4 +42,10 @@ _AGENT_MAX_RETRIES = 5
 
 
 def get_client() -> Anthropic:
-    return Anthropic(timeout=_AGENT_TIMEOUT, max_retries=_AGENT_MAX_RETRIES)
+    ws_id = (os.environ.get("ANTHROPIC_WORKSPACE_ID") or "").strip()
+    headers = {"anthropic-workspace-id": ws_id} if ws_id else None
+    return Anthropic(
+        timeout=_AGENT_TIMEOUT,
+        max_retries=_AGENT_MAX_RETRIES,
+        default_headers=headers,
+    )
