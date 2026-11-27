@@ -165,8 +165,11 @@ id = "REPLACE_WITH_FEEDBACK_RATELIMIT_KV_ID"
 #   npx wrangler secret put TURNSTILE_SECRET_KEY
 #   npx wrangler secret put MAGIC_LINK_SECRET
 #   npx wrangler secret put MAINTAINER_EMAIL
-#   npx wrangler secret put L1_REVIEW_TOKEN   # optional: L1 review reads + a Turnstile-free write path;
-#                                             # review writes otherwise use TURNSTILE_SECRET_KEY + FEEDBACK_RATELIMIT
+#   npx wrangler secret put L1_REVIEW_TOKEN   # optional: L1 review reads + unlimited write path
+#   npx wrangler secret put L1_INVITE_TOKENS  # optional: comma-separated write-only invite codes (`code` or `label:code`)
+#                                             # for invited reviewers (e.g. `?k=<code>` on /v1-review/); skips rate limits
+#                                             # without granting read/export access. Public writes without an invite code
+#                                             # are protected by Origin check, honeypot, burst limiter, 100/hr/IP, and 1000/day cap.
 # Values come from the root .env (RESEND_API_KEY, TURNSTILE_SECRET_KEY,
 # MAGIC_LINK_SECRET, MAINTAINER_EMAIL respectively).
 

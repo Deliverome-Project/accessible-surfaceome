@@ -35,7 +35,7 @@ _WORKER = _ROOT / "cloudflare/workers/surfaceome_api/src/index.js"
 
 _HARNESS = r"""
 import { writeFileSync } from "node:fs";
-import worker from "./worker.mjs";
+import worker, { classifyUsagePage } from "./worker.mjs";
 
 const [, , outPath] = process.argv;
 globalThis.caches = { default: { match: async () => undefined, put: async () => {} } };
@@ -84,9 +84,11 @@ const alt = { kind: "alt_tag", reviewer: "Ada", member_id: "l1-m0006", design_id
   load_version: "l1d-0123456789abcdef" };
 
 const ctx = { waitUntil() {}, passThroughOnException() {} };
-const call = async (env, { method = "POST", path = "/v1/l1-review", body, token, ip = "203.0.113.9" } = {}) => {
+const call = async (env, { method = "POST", path = "/v1/l1-review", body, token, invite, origin, ip = "203.0.113.9" } = {}) => {
   const headers = { "Content-Type": "application/json", "CF-Connecting-IP": ip };
   if (token) headers["X-L1-Review-Token"] = token;
+  if (invite) headers["X-L1-Invite-Token"] = invite;
+  if (origin) headers["Origin"] = origin;
   const r = await worker.fetch(
     new Request(`https://api.test${path}`, { method, headers, body: body && JSON.stringify(body) }), env, ctx);
   const text = await r.text();
@@ -96,7 +98,9 @@ const call = async (env, { method = "POST", path = "/v1/l1-review", body, token,
 };
 const baseEnv = (over = {}) => ({
   DB: makeDb(), FEEDBACK_DB: makeDb(), FEEDBACK_RATELIMIT: makeKv(),
-  L1_REVIEW_TOKEN: "s3cret", ...over,
+  L1_REVIEW_TOKEN: "s3cret",
+  L1_INVITE_TOKENS: "plain-invite,sab:sab-code-42",
+  ...over,
 });
 
 const out = {};
@@ -117,33 +121,111 @@ await run("wrong_token", baseEnv(), { body: verdict, token: "wrong" });
 await run("success_verdict", baseEnv(), { body: verdict });
 await run("success_alt", baseEnv(), { body: alt });
 await run("token_path", baseEnv(), { body: verdict, token: "s3cret" });
+await run("invite_plain", baseEnv(), { body: verdict, invite: "plain-invite" });
+await run("invite_labeled", baseEnv(), { body: verdict, invite: "sab-code-42" });
+await run("invite_wrong", baseEnv(), { body: verdict, invite: "not-a-valid-invite" });
+await run("foreign_origin", baseEnv(), { body: verdict, origin: "https://evil.example" });
+await run("allowed_origin", baseEnv(), { body: verdict, origin: "https://surfaceome.deliverome.org" });
+await run("honeypot", baseEnv(), { body: { ...verdict, website: "https://spam.example" } });
 await run("no_ratelimit_no_token", baseEnv({ FEEDBACK_RATELIMIT: undefined, L1_REVIEW_TOKEN: undefined }),
   { body: verdict });
 await run("token_only_deploy", baseEnv({ FEEDBACK_RATELIMIT: undefined }), { body: verdict, token: "s3cret" });
 await run("legacy_db", baseEnv({ FEEDBACK_DB: makeDb({ legacy: true }) }), { body: verdict });
 
-// Rate limit: 30 per IP per hour, then 429; another IP is unaffected; the token
-// path is not counted.
+// Rate limit: 100 per IP per hour, then 429; another IP is unaffected; token and
+// invite paths are not counted.
 {
   const env = baseEnv();
   const statuses = [];
-  for (let i = 0; i < 31; i++) {
+  for (let i = 0; i < 101; i++) {
     statuses.push((await call(env, { body: verdict })).status);
   }
   const other = await call(env, { body: verdict, ip: "198.51.100.7" });
   const viaToken = await call(env, { body: verdict, token: "s3cret" });
+  const viaInvite = await call(env, { body: verdict, invite: "sab-code-42" });
   out.rate = {
     statuses, last: (await call(env, { body: verdict })).body,
-    other: other.status, via_token: viaToken.status,
+    other: other.status, via_token: viaToken.status, via_invite: viaInvite.status,
     stored: env.FEEDBACK_DB.inserts.length,
     keys: [...env.FEEDBACK_RATELIMIT.store.keys()],
   };
 }
 
-// Reads unchanged: token required.
+// Global daily cap stops distributed IP floods while invite/token still succeed.
+{
+  const env = baseEnv({ L1_REVIEW_GLOBAL_DAILY_MAX: "2" });
+  const s1 = (await call(env, { body: verdict, ip: "198.51.100.1" })).status;
+  const s2 = (await call(env, { body: verdict, ip: "198.51.100.2" })).status;
+  const s3 = await call(env, { body: verdict, ip: "198.51.100.3" });
+  const inv = await call(env, { body: verdict, ip: "198.51.100.4", invite: "sab-code-42" });
+  out.global_cap = { s1, s2, s3_status: s3.status, s3_body: s3.body, inv_status: inv.status };
+}
+
+// Atomic burst limiter rejects immediately when tripped.
+{
+  const env = baseEnv({ RATE_LIMITER_HEAVY: { limit: async () => ({ success: false }) } });
+  out.burst_blocked = await call(env, { body: verdict });
+}
+
+// Reads unchanged: token required (invite token must NOT unlock reads).
 out.read_no_token = await call(baseEnv(), { method: "GET" });
+out.read_invite_token = await call(baseEnv(), { method: "GET", invite: "sab-code-42" });
 out.read_token = await call(baseEnv(), { method: "GET", token: "s3cret" });
 out.export_no_token = await call(baseEnv(), { method: "GET", path: "/v1/l1-review/export.tsv" });
+
+// Feedback moderation: GET returns confirmation form without mutating D1; POST mutates.
+{
+  const modSecret = "mod-secret-key";
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(modSecret),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode("fb-1:discard"));
+  const sig = Buffer.from(sigBuf).toString("base64url");
+  const updates = [];
+  const fbDb = {
+    prepare(sql) {
+      let args = [];
+      return {
+        bind(...v) { args = v; return this; },
+        async first() {
+          return { id: "fb-1", gene_symbol: "C11orf24", submitter_name: "Ada", comment: "hi", status: "pending" };
+        },
+        async run() { updates.push({ sql, args }); return { success: true }; },
+      };
+    },
+  };
+  const env = baseEnv({ FEEDBACK_DB: fbDb, MAGIC_LINK_SECRET: modSecret });
+  const getRes = await worker.fetch(
+    new Request(`https://api.test/v1/feedback/moderate?id=fb-1&action=discard&t=${sig}`, { method: "GET" }),
+    env, ctx,
+  );
+  const getHtml = await getRes.text();
+  const updatesAfterGet = updates.length;
+  const postRes = await worker.fetch(
+    new Request(`https://api.test/v1/feedback/moderate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ id: "fb-1", action: "discard", t: sig }).toString(),
+    }),
+    env, ctx,
+  );
+  const postHtml = await postRes.text();
+  out.moderate = {
+    get_status: getRes.status,
+    get_has_form: getHtml.includes('method="POST"'),
+    updates_after_get: updatesAfterGet,
+    post_status: postRes.status,
+    post_discarded: postHtml.includes("Discarded"),
+    updates_after_post: updates.length,
+  };
+}
+
+// Usage page classification covers /v1-review/ and /surface-proteomics/.
+out.usage = {
+  v1_review: classifyUsagePage("/v1-review/"),
+  surface_proteomics: classifyUsagePage("/surface-proteomics/"),
+};
 
 writeFileSync(outPath, JSON.stringify(out));
 """
@@ -208,7 +290,9 @@ def test_wrong_token_falls_back_to_rate_limited_path(results: dict) -> None:
     r = results["wrong_token"]
     assert r["status"] == 201
     assert r["body"]["auth_method"] == "rate_limited"
-    assert r["kv_keys"] and all(k.startswith("l1rl:") for k in r["kv_keys"])
+    assert r["kv_keys"] and all(
+        k.startswith("l1rl:") or k.startswith("l1rl_global:") for k in r["kv_keys"]
+    )
 
 
 def test_token_path_skips_rate_limit(results: dict) -> None:
@@ -218,6 +302,36 @@ def test_token_path_skips_rate_limit(results: dict) -> None:
         assert r["fetches"] == [], case
         assert r["kv_keys"] == [], case
         assert r["inserts"][0]["auth_method"] == "token", case
+
+
+def test_invite_tokens_skip_rate_limit_and_tag_cohort(results: dict) -> None:
+    plain = results["invite_plain"]
+    assert plain["status"] == 201
+    assert plain["kv_keys"] == []
+    assert plain["inserts"][0]["auth_method"] == "invite"
+
+    labeled = results["invite_labeled"]
+    assert labeled["status"] == 201
+    assert labeled["kv_keys"] == []
+    assert labeled["inserts"][0]["auth_method"] == "invite:sab"
+
+    wrong = results["invite_wrong"]
+    assert wrong["status"] == 201
+    assert wrong["body"]["auth_method"] == "rate_limited"
+
+
+def test_origin_check_and_honeypot(results: dict) -> None:
+    assert results["foreign_origin"]["status"] == 403
+    assert results["foreign_origin"]["body"] == {"error": "forbidden_origin"}
+    assert results["foreign_origin"]["inserts"] == []
+
+    assert results["allowed_origin"]["status"] == 201
+    assert len(results["allowed_origin"]["inserts"]) == 1
+
+    hp = results["honeypot"]
+    assert hp["status"] == 201
+    assert hp["inserts"] == [], "honeypot submission must not write to D1"
+    assert hp["kv_keys"] == []
 
 
 def test_no_ratelimit_binding_and_no_token_is_closed(results: dict) -> None:
@@ -235,20 +349,49 @@ def test_worker_before_migration_v2_still_stores_the_review(results: dict) -> No
     assert row["reviewer"] == "Dr. Ada Q. Reviewer"
 
 
-def test_rate_limit_is_30_per_ip_per_hour(results: dict) -> None:
+def test_rate_limit_is_100_per_ip_per_hour(results: dict) -> None:
     rate = results["rate"]
-    assert rate["statuses"][:30] == [201] * 30
-    assert rate["statuses"][30] == 429
+    assert rate["statuses"][:100] == [201] * 100
+    assert rate["statuses"][100] == 429
     assert rate["last"] == {"error": "rate_limited"}
     assert rate["other"] == 201, "another IP has its own counter"
     assert rate["via_token"] == 201, "the token path is not rate-limited"
-    assert rate["stored"] == 32
-    assert rate["keys"] and all(k.startswith("l1rl:") for k in rate["keys"]), (
-        "must not share the feedback form's rl: counter"
-    )
+    assert rate["via_invite"] == 201, "the invite path is not rate-limited"
+    assert rate["stored"] == 103
+    assert rate["keys"] and all(
+        k.startswith("l1rl:") or k.startswith("l1rl_global:") for k in rate["keys"]
+    ), "must not share the feedback form's rl: counter"
+
+
+def test_global_daily_cap_and_atomic_burst_limiter(results: dict) -> None:
+    gc = results["global_cap"]
+    assert gc["s1"] == 201
+    assert gc["s2"] == 201
+    assert gc["s3_status"] == 429
+    assert gc["s3_body"] == {"error": "daily_limit_reached"}
+    assert gc["inv_status"] == 201, "invited reviewers bypass the public daily cap"
+
+    assert results["burst_blocked"]["status"] == 429
+    assert results["burst_blocked"]["body"] == {"error": "rate_limited"}
 
 
 def test_reads_still_need_the_token(results: dict) -> None:
     assert results["read_no_token"]["status"] == 401
+    assert results["read_invite_token"]["status"] == 401, "invite tokens must be write-only"
     assert results["export_no_token"]["status"] == 401
     assert results["read_token"]["status"] == 200
+
+
+def test_feedback_moderation_requires_post(results: dict) -> None:
+    mod = results["moderate"]
+    assert mod["get_status"] == 200
+    assert mod["get_has_form"] is True
+    assert mod["updates_after_get"] == 0, "GET must never mutate D1"
+    assert mod["post_status"] == 200
+    assert mod["post_discarded"] is True
+    assert mod["updates_after_post"] == 1
+
+
+def test_usage_sections_classify_v1_review_and_surface_proteomics(results: dict) -> None:
+    assert results["usage"]["v1_review"] == {"page": "v1-review", "gene": ""}
+    assert results["usage"]["surface_proteomics"] == {"page": "surface-proteomics", "gene": ""}

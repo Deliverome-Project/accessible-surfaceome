@@ -438,6 +438,7 @@ export function ReviewPanel({
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
+  const [honeypot, setHoneypot] = useState("");
   const commentRef = useRef<HTMLTextAreaElement | null>(null);
   const residueRef = useRef<HTMLInputElement | null>(null);
   const draft = drafts[key] ?? EMPTY_DRAFT;
@@ -514,9 +515,11 @@ export function ReviewPanel({
       return;
     }
     const primarySig = l1PrimarySiteSignature(sites);
+    const inviteToken = store.get("l1-review-invite");
     const base = {
       reviewer: name, member_id: member.member_id, design_id: member.design_id, gene_symbol: member.gene_symbol,
       sequence_sha256: member.sequence_sha256 ?? null, load_version: loadVersion,
+      ...(honeypot ? { website: honeypot } : {}),
     };
     const reason = draft.reason.trim() || null;
     setSaving(true);
@@ -533,7 +536,7 @@ export function ReviewPanel({
         const r = await submitL1Review(API_BASE, {
           ...base, kind: "alt_tag", placement, insert_after_residue: residue,
           cassette_variant: cassette, reason, site_signature: primarySig,
-        });
+        }, inviteToken);
         if (!r.ok) return setMsg({ ok: false, text: `Not saved: ${reviewErrorMessage(r.error)}` });
         const row: L1AltTagRow = {
           suggestion_id: r.id, created_at: r.created_at, ...base, design_id: member.design_id,
@@ -550,7 +553,7 @@ export function ReviewPanel({
       const siteSig = targetSite ? l1SiteSignature(targetSite) : primarySig;
       const r = await submitL1Review(API_BASE, {
         ...base, kind: "verdict", verdict: v, reason, site_id: site, site_signature: siteSig,
-      });
+      }, inviteToken);
       if (!r.ok) return setMsg({ ok: false, text: `Not saved: ${reviewErrorMessage(r.error)}` });
       const row: L1ReviewRow = {
         review_id: r.id, created_at: r.created_at, ...base, design_id: member.design_id,
@@ -731,6 +734,16 @@ export function ReviewPanel({
         onBlur={() => setCommentOpen(false)}
         // One line until it is used: open while focused or holding text.
         rows={commentOpen || draft.reason ? 3 : 1}
+      />
+      <input
+        type="text"
+        name="website"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
       />
       <div className={styles.submitRow}>
         <button type="button" className={styles.primary} disabled={!draft.mode || saving} onClick={submit}>
@@ -1858,6 +1871,20 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
 
   useEffect(() => {
     setReviewer(store.get("l1-review-reviewer"));
+    // Capture an optional invite code (?k=... or ?invite=...) into localStorage
+    // and strip it from the URL so copied links do not leak the invite token.
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const invite = (sp.get("k") ?? sp.get("invite") ?? "").trim();
+      if (invite) {
+        store.set("l1-review-invite", invite);
+        sp.delete("k");
+        sp.delete("invite");
+        const nextSearch = sp.toString();
+        const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+        window.history.replaceState(null, "", nextUrl);
+      }
+    }
     loadIndex();
     fetchGeneSynonyms().then((s) => setSynonyms(s));
   }, [loadIndex]);

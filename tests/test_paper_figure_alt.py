@@ -20,7 +20,7 @@ sys.path.insert(0, str(REPO / "paper"))
 
 
 def _run(block: str):
-    from figure_alt import add_figure_alt_text  # ty: ignore[unresolved-import]
+    from figure_alt import add_figure_alt_text  # ty: ignore[import-not-found]
 
     doc = H.fromstring(f"<body>{block}</body>")
     n = add_figure_alt_text(doc)
@@ -74,7 +74,7 @@ def test_a_caption_without_a_marked_lead_still_yields_alt() -> None:
 
 def test_very_long_leads_are_truncated() -> None:
     """A screen reader cannot skim; the full legend is adjacent anyway."""
-    from figure_alt import MAX_ALT  # ty: ignore[unresolved-import]
+    from figure_alt import MAX_ALT  # ty: ignore[import-not-found]
 
     long_lead = "Figure 4. " + ("word " * 200) + "."
     n, doc = _run(
