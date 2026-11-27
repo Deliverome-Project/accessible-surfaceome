@@ -102,7 +102,7 @@ function cacheControl(ttl, { immutable = false } = {}) {
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, X-L1-Review-Token",
+  "Access-Control-Allow-Headers": "Content-Type, X-L1-Review-Token, X-L1-Invite-Token",
   // Let cross-origin clients read the record-history / degraded headers the
   // API docs tell them to act on (browsers hide non-safelisted headers).
   "Access-Control-Expose-Headers": "ETag, X-Surfaceome-Degraded, X-Surfaceome-Revision, X-Surfaceome-Content-Hash",
@@ -693,7 +693,8 @@ async function checkRate(env, request, path) {
   // there is NO bypass; public traffic can't reach this path without the exact
   // secret, so it stays rate-limited.
   const bypass = env.BUILD_BYPASS_TOKEN;
-  if (bypass && request.headers.get("X-Build-Bypass") === bypass) return null;
+  const gotBypass = request.headers.get("X-Build-Bypass") ?? "";
+  if (bypass && gotBypass && timingSafeEqualStr(gotBypass, bypass)) return null;
   // Archive bypass (see isArchiveBypass) also skips the rate limiter — the
   // archiver sweeps ~5k genes from one IP just like the build does above.
   if (await isArchiveBypass(request, env)) return null;
@@ -4313,7 +4314,8 @@ async function handleFeedbackSubmit(request, env, url) {
     return badRequest("invalid_json");
   }
   const gene = String(body.gene ?? "").trim();
-  if (!/^[A-Z0-9-]{1,30}$/.test(gene)) return badRequest("invalid_gene");
+  // Allow lowercase to match mixed-case HGNC symbols (e.g. C11orf24), same as handleFeedbackPublic.
+  if (!/^[A-Za-z0-9-]{1,30}$/.test(gene)) return badRequest("invalid_gene");
   const name = String(body.name ?? "").trim();
   if (name.length < 1 || name.length > 80) return badRequest("invalid_name");
   const email = String(body.email ?? "").trim();
@@ -4388,8 +4390,16 @@ async function handleFeedbackSubmit(request, env, url) {
   return json({ ok: true, id }, { status: 200, ttl: 0 });
 }
 
-// HTML confirmation page (no JS — just shows the outcome).
-function moderateHtmlPage({ title, message, accent = "#922038" }) {
+// HTML confirmation page (no JS — either shows the outcome or a POST confirm form).
+function moderateHtmlPage({ title, message, accent = "#922038", form = null }) {
+  const formHtml = form
+    ? `<form method="POST" action="" style="margin-top:1.5em">
+    <input type="hidden" name="id" value="${escapeHtml(form.id)}" />
+    <input type="hidden" name="action" value="${escapeHtml(form.action)}" />
+    <input type="hidden" name="t" value="${escapeHtml(form.t)}" />
+    <button type="submit" style="background:${accent};color:#fff;border:0;border-radius:6px;padding:0.65em 1.25em;font-size:1rem;cursor:pointer">${escapeHtml(form.buttonLabel)}</button>
+  </form>`
+    : `<p class="hint">You can close this tab.</p>`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8" /><title>${escapeHtml(title)}</title>
 <style>
@@ -4402,7 +4412,7 @@ function moderateHtmlPage({ title, message, accent = "#922038" }) {
 <body>
   <h1>${escapeHtml(title)}</h1>
   <p>${escapeHtml(message)}</p>
-  <p class="hint">You can close this tab.</p>
+  ${formHtml}
 </body></html>`;
 }
 
@@ -4417,59 +4427,110 @@ function htmlResponse(content, { status = 200 } = {}) {
   });
 }
 
-async function handleFeedbackModerate(env, url) {
-  const id = url.searchParams.get("id");
-  const action = url.searchParams.get("action");
-  const t = url.searchParams.get("t");
+async function verifyModerateRequest(env, { id, action, t }) {
   if (!id || !action || !t) {
-    return htmlResponse(
-      moderateHtmlPage({
-        title: "Invalid link",
-        message: "This moderation link is missing required parameters.",
-      }),
-      { status: 400 },
-    );
+    return {
+      error: htmlResponse(
+        moderateHtmlPage({
+          title: "Invalid link",
+          message: "This moderation link is missing required parameters.",
+        }),
+        { status: 400 },
+      ),
+    };
   }
   if (action !== "public" && action !== "discard") {
-    return htmlResponse(
-      moderateHtmlPage({
-        title: "Invalid link",
-        message: "Unknown action.",
-      }),
-      { status: 400 },
-    );
+    return {
+      error: htmlResponse(
+        moderateHtmlPage({
+          title: "Invalid link",
+          message: "Unknown action.",
+        }),
+        { status: 400 },
+      ),
+    };
   }
   const expected = await hmacSign(env.MAGIC_LINK_SECRET, `${id}:${action}`);
   if (!timingSafeEqualStr(expected, t)) {
-    return htmlResponse(
-      moderateHtmlPage({
-        title: "Invalid link",
-        message: "This link is invalid or has been tampered with.",
-      }),
-      { status: 403 },
-    );
+    return {
+      error: htmlResponse(
+        moderateHtmlPage({
+          title: "Invalid link",
+          message: "This link is invalid or has been tampered with.",
+        }),
+        { status: 403 },
+      ),
+    };
   }
 
   const row = await env.FEEDBACK_DB.prepare(
     "SELECT id, gene_symbol, submitter_name, comment, status FROM feedback WHERE id = ?",
   ).bind(id).first();
   if (!row) {
-    return htmlResponse(
-      moderateHtmlPage({
-        title: "Not found",
-        message: "We couldn't find that submission.",
-      }),
-      { status: 404 },
-    );
+    return {
+      error: htmlResponse(
+        moderateHtmlPage({
+          title: "Not found",
+          message: "We couldn't find that submission.",
+        }),
+        { status: 404 },
+      ),
+    };
   }
   if (row.status !== "pending") {
-    return htmlResponse(
-      moderateHtmlPage({
-        title: "Already handled",
-        message: `This submission was already marked "${row.status}".`,
-      }),
-    );
+    return {
+      error: htmlResponse(
+        moderateHtmlPage({
+          title: "Already handled",
+          message: `This submission was already marked "${row.status}".`,
+        }),
+      ),
+    };
   }
+  return { row, id, action, t };
+}
+
+// GET never mutates D1 so email link-scanners (Safe Links, Proofpoint, etc.)
+// cannot auto-approve or auto-discard pending submissions on prefetch.
+async function handleFeedbackModerate(env, url) {
+  const id = url.searchParams.get("id");
+  const action = url.searchParams.get("action");
+  const t = url.searchParams.get("t");
+  const checked = await verifyModerateRequest(env, { id, action, t });
+  if (checked.error) return checked.error;
+  const { row } = checked;
+  const isDiscard = action === "discard";
+  return htmlResponse(
+    moderateHtmlPage({
+      title: isDiscard ? "Confirm discard" : "Confirm publish",
+      message: isDiscard
+        ? `Discard the submission about ${row.gene_symbol} from ${row.submitter_name}?`
+        : `Approve and publish ${row.submitter_name}'s note on ${row.gene_symbol} to the public gene page?`,
+      accent: isDiscard ? "#6f5d5a" : "#922038",
+      form: {
+        id,
+        action,
+        t,
+        buttonLabel: isDiscard ? "Confirm discard" : "Confirm & publish",
+      },
+    }),
+  );
+}
+
+async function handleFeedbackModeratePost(request, env, url) {
+  let id = url.searchParams.get("id");
+  let action = url.searchParams.get("action");
+  let t = url.searchParams.get("t");
+  const ct = request.headers.get("Content-Type") ?? "";
+  if (ct.includes("application/x-www-form-urlencoded")) {
+    const params = new URLSearchParams(await request.text());
+    id = params.get("id") ?? id;
+    action = params.get("action") ?? action;
+    t = params.get("t") ?? t;
+  }
+  const checked = await verifyModerateRequest(env, { id, action, t });
+  if (checked.error) return checked.error;
+  const { row } = checked;
 
   if (action === "discard") {
     await env.FEEDBACK_DB.prepare(
@@ -4960,16 +5021,24 @@ async function handleL1Design(env, symbol, pinnedLoad = null) {
 // cloudflare/migrations/l1_review_v1.sql + l1_review_v2.sql), never in the public
 // mirror. Never edge-cached.
 //
-// Writes (POST /v1/l1-review) need a non-empty reviewer name (<=80 chars) and either
-//   * rate-limited per IP to L1_REVIEW_RATE_MAX per hour in FEEDBACK_RATELIMIT
-//     -> auth_method "rate_limited"; or
-//   * header `X-L1-Review-Token` equal to the optional L1_REVIEW_TOKEN secret, which
-//     skips the rate limit -> auth_method "token".
-// The name is trusted as typed: reviews are advisory and read by a person (Turnstile
-// was removed on 2026-11-26 at Becca Carlson's request). Reads (GET /v1/l1-review,
-// /export.tsv) still need the token; with it unset they answer 503 rather than run open.
+// Writes (POST /v1/l1-review) need a non-empty reviewer name (<=80 chars) and one of:
+//   * header `X-L1-Review-Token` equal to L1_REVIEW_TOKEN -> auth_method "token"
+//     (skips rate limits; also grants read/export access);
+//   * header `X-L1-Invite-Token` matching an entry in optional L1_INVITE_TOKENS
+//     (comma-separated `token` or `label:token` entries; write-only, never grants reads)
+//     -> auth_method "invite" or "invite:<label>" (skips rate limits); or
+//   * open public path -> auth_method "rate_limited", protected by Origin check
+//     (when Origin is present), silent honeypot (`website`), atomic Worker burst
+//     limiter (when bound), per-IP hourly KV cap (100/hr), and a global daily cap
+//     (1000/day) so bot swarms cannot fill FEEDBACK_DB.
+// Reads (GET /v1/l1-review, /export.tsv) still require L1_REVIEW_TOKEN; with it unset
+// they answer 503 rather than run open.
 const L1_REVIEW_HEADER = "X-L1-Review-Token";
-const L1_REVIEW_RATE_MAX = 30;
+const L1_INVITE_HEADER = "X-L1-Invite-Token";
+const L1_REVIEW_RATE_MAX = 100;
+const L1_REVIEW_GLOBAL_DAILY_MAX = 1000;
+const L1_REVIEW_ROW_LIMIT = 10000;
+const L1_ORIGIN_RE = /^(https:\/\/([a-z0-9-]+\.)*deliverome\.org|https:\/\/([a-z0-9-]+\.)*pages\.dev|http:\/\/localhost(:\d+)?)$/;
 const L1_PLACEMENTS = new Set(["rung_default", "n_term", "c_term", "internal", "after_sp", "igk_tag"]);
 const L1_ID_OK = /^l1-[mp]\d{4,5}$/;
 
@@ -4978,7 +5047,31 @@ async function l1TokenMatches(request, env) {
   const got = request.headers.get(L1_REVIEW_HEADER) ?? "";
   if (!got) return false;
   const [a, b] = await Promise.all([sha256Hex(got), sha256Hex(env.L1_REVIEW_TOKEN)]);
-  return a === b;
+  return timingSafeEqualStr(a, b);
+}
+
+// Write-only invite keys from optional env.L1_INVITE_TOKENS (`tok1,sab:tok2`).
+// Returns "invite" or "invite:<label>", or null if unmatched.
+async function l1InviteAuthMethod(request, env) {
+  const raw = env.L1_INVITE_TOKENS;
+  if (!raw) return null;
+  const got = (request.headers.get(L1_INVITE_HEADER) ?? "").trim();
+  if (!got) return null;
+  const gotHash = await sha256Hex(got);
+  for (const part of String(raw).split(",")) {
+    const entry = part.trim();
+    if (!entry) continue;
+    const colon = entry.indexOf(":");
+    const label = colon > 0 ? entry.slice(0, colon).trim() : "";
+    const secret = colon > 0 ? entry.slice(colon + 1).trim() : entry;
+    if (!secret) continue;
+    const expectedHash = await sha256Hex(secret);
+    if (timingSafeEqualStr(gotHash, expectedHash)) {
+      const cleanLabel = label.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 24);
+      return cleanLabel ? `invite:${cleanLabel}` : "invite";
+    }
+  }
+  return null;
 }
 
 // Read gate (list + export): token only, unchanged.
@@ -4996,16 +5089,37 @@ async function l1ReviewAuth(request, env) {
 // validates, so a form error never consumes the per-IP rate limit.
 async function l1ReviewWriteAuth(request, env) {
   if (await l1TokenMatches(request, env)) return { authMethod: "token" };
+  const inviteMethod = await l1InviteAuthMethod(request, env);
+  if (inviteMethod) return { authMethod: inviteMethod };
+  // Block cross-site browser CSRF from foreign origins while allowing direct
+  // non-browser clients (no Origin header) to continue through rate limits.
+  const origin = request.headers.get("Origin");
+  if (origin && !L1_ORIGIN_RE.test(origin)) {
+    return { denied: json({ error: "forbidden_origin" }, { status: 403, ttl: 0 }) };
+  }
   if (!env.FEEDBACK_RATELIMIT) {
     return { denied: json({ error: "review_disabled" }, { status: 503, ttl: 0 }) };
   }
   const remoteIp = request.headers.get("CF-Connecting-IP") ?? null;
+  // Atomic in-colo burst limiter (when bound) closes KV eventual-consistency races.
+  const burstLimiter = env.RATE_LIMITER_L1 ?? env.RATE_LIMITER_HEAVY;
+  if (burstLimiter) {
+    const { success } = await burstLimiter.limit({ key: `l1:${remoteIp ?? "anon"}` });
+    if (!success) return { denied: json({ error: "rate_limited" }, { status: 429, ttl: 0 }) };
+  }
   const day = new Date().toISOString().slice(0, 10);
+  const globalMax = Number(env.L1_REVIEW_GLOBAL_DAILY_MAX) || L1_REVIEW_GLOBAL_DAILY_MAX;
+  const globalKey = `l1rl_global:${day}`;
+  const globalCur = parseInt((await env.FEEDBACK_RATELIMIT.get(globalKey)) ?? "0", 10) || 0;
+  if (globalCur >= globalMax) {
+    return { denied: json({ error: "daily_limit_reached" }, { status: 429, ttl: 0 }) };
+  }
   const ipHash = await sha256Hex(`${remoteIp ?? "0"}|${day}`);
   const under = await checkRateLimit(env.FEEDBACK_RATELIMIT, ipHash, {
     prefix: "l1rl", max: L1_REVIEW_RATE_MAX,
   });
   if (!under) return { denied: json({ error: "rate_limited" }, { status: 429, ttl: 0 }) };
+  await env.FEEDBACK_RATELIMIT.put(globalKey, String(globalCur + 1), { expirationTtl: 86400 });
   return { authMethod: "rate_limited" };
 }
 
@@ -5064,11 +5178,15 @@ async function handleL1ReviewSubmit(request, env) {
   const sha = l1Str(body.sequence_sha256, 64);
   const siteSig = l1Str(body.site_signature, 512);
   const reason = l1Str(body.reason, 4000);
+  const honeypot = String(body.website ?? "").trim();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   if (body.kind === "verdict") {
     if (body.verdict !== "good" && body.verdict !== "no") return badRequest("invalid_verdict");
     if (body.verdict === "no" && !reason) return badRequest("reason_required");
+    if (honeypot) {
+      return json({ ok: true, review_id: id, created_at: now, auth_method: "rate_limited" }, { status: 201, ttl: 0 });
+    }
     const auth = await l1ReviewWriteAuth(request, env);
     if (auth.denied) return auth.denied;
     await l1Insert(
@@ -5092,6 +5210,9 @@ async function handleL1ReviewSubmit(request, env) {
     if (residue == null && (placement === "internal" || placement === "after_sp")) {
       return badRequest("residue_required");
     }
+    if (honeypot) {
+      return json({ ok: true, suggestion_id: id, created_at: now, auth_method: "rate_limited" }, { status: 201, ttl: 0 });
+    }
     const auth = await l1ReviewWriteAuth(request, env);
     if (auth.denied) return auth.denied;
     await l1Insert(
@@ -5110,8 +5231,12 @@ async function handleL1ReviewSubmit(request, env) {
 
 async function l1ReviewRows(env) {
   const [reviews, alts] = await Promise.all([
-    env.FEEDBACK_DB.prepare(`SELECT * FROM l1_review ORDER BY created_at, review_id`).all(),
-    env.FEEDBACK_DB.prepare(`SELECT * FROM l1_alt_tag ORDER BY created_at, suggestion_id`).all(),
+    env.FEEDBACK_DB.prepare(
+      `SELECT * FROM l1_review ORDER BY created_at, review_id LIMIT ?`,
+    ).bind(L1_REVIEW_ROW_LIMIT).all(),
+    env.FEEDBACK_DB.prepare(
+      `SELECT * FROM l1_alt_tag ORDER BY created_at, suggestion_id LIMIT ?`,
+    ).bind(L1_REVIEW_ROW_LIMIT).all(),
   ]);
   return { reviews: reviews?.results ?? [], alt_tags: alts?.results ?? [] };
 }
@@ -5340,7 +5465,8 @@ const USAGE_SALT_TTL_S = 48 * 3600;
 const USAGE_SALT_MEMO_MS = 5 * 60 * 1000;
 const usageSaltMemo = { day: "", salt: "", at: 0 };
 const USAGE_SECTIONS = new Set([
-  "benchmark", "compare", "api", "prompts", "reproducibility", "privacy", "l1-review",
+  "benchmark", "compare", "api", "prompts", "reproducibility", "privacy",
+  "l1-review", "v1-review", "surface-proteomics",
 ]);
 const USAGE_ORIGIN_RE = /^(https:\/\/([a-z0-9-]+\.)*deliverome\.org|http:\/\/localhost(:\d+)?)$/;
 
@@ -5488,10 +5614,13 @@ async function routeRequest(request, env, ctx) {
       if (limited) return limited;
     }
 
-    // POST is allowed ONLY on the feedback submit and usage-event endpoints.
+    // POST is allowed ONLY on feedback submit/moderate, usage events, and L1 review.
     if (request.method === "POST") {
       if (path === "/v1/feedback/submit") {
         return handleFeedbackSubmit(request, env, url);
+      }
+      if (path === "/v1/feedback/moderate") {
+        return handleFeedbackModeratePost(request, env, url);
       }
       if (path === "/v1/events") {
         const limited = await checkRate(env, request, path);

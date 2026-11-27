@@ -717,6 +717,7 @@ export interface L1Reviews {
 }
 
 export const REVIEW_HEADER = "X-L1-Review-Token";
+export const INVITE_HEADER = "X-L1-Invite-Token";
 
 /** Reads stay token-gated on the Worker; the page calls this without a token, so it
  *  answers "unauthorized" unless the read endpoints are opened. */
@@ -733,15 +734,18 @@ export async function fetchL1Reviews(apiBase: string, token = ""): Promise<L1Rev
   }
 }
 
-/** Writes need the reviewer's name (rate-limited per IP on the Worker). */
+/** Writes need the reviewer's name (rate-limited per IP on the Worker, or unlimited with an invite code). */
 export async function submitL1Review(
   apiBase: string,
   body: Record<string, unknown>,
+  inviteToken = "",
 ): Promise<{ ok: true; id: string; created_at: string } | { ok: false; error: string }> {
   try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (inviteToken) headers[INVITE_HEADER] = inviteToken;
     const res = await fetch(`${apiBase}/v1/l1-review`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
     });
     if (res.ok) {
@@ -763,7 +767,11 @@ export function reviewErrorMessage(code: string): string {
     case "turnstile_failed":
       return "The anti-bot check failed or expired. It has been reset: wait a moment, then submit again.";
     case "rate_limited":
-      return "Too many submissions from this network in the last hour (limit 30). Please try again later.";
+      return "Too many submissions from this network in the last hour. Please try again shortly.";
+    case "daily_limit_reached":
+      return "Public submissions have reached today's safety cap. If you have an invite link, reopen it and submit again.";
+    case "forbidden_origin":
+      return "Submissions must come from the review page.";
     case "review_disabled":
       return "Saving reviews is not switched on for this API yet.";
     case "reason_required":

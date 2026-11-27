@@ -15,7 +15,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import lxml.etree as ET  # ty: ignore[unresolved-import]
+import lxml.etree as ET  # ty: ignore[import-not-found]
 from lxml import html as H
 
 REPO = Path(__file__).resolve().parents[1]
@@ -23,7 +23,7 @@ sys.path.insert(0, str(REPO / "paper"))
 
 
 def _run(caption_inner: str) -> tuple[int, str]:
-    from caption_panels import bold_panel_labels  # ty: ignore[unresolved-import]
+    from caption_panels import bold_panel_labels  # ty: ignore[import-not-found]
 
     doc = H.fromstring(
         f'<body><div class="figure-block"><h5>{caption_inner}</h5></div></body>'

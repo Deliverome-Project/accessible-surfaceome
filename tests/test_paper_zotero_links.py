@@ -51,7 +51,7 @@ def _docx(tmp_path: Path, paragraphs: list[list[tuple[str, str | None]] | str],
 
 
 def _find(path: Path):
-    from zotero_links import find_broken_zotero_citations  # ty: ignore[unresolved-import]
+    from zotero_links import find_broken_zotero_citations  # ty: ignore[import-not-found]
 
     return find_broken_zotero_citations(path)
 
@@ -115,6 +115,6 @@ def test_reference_list_entries_are_skipped(tmp_path: Path) -> None:
 
 
 def test_report_is_empty_when_nothing_is_broken() -> None:
-    from zotero_links import format_broken_report  # ty: ignore[unresolved-import]
+    from zotero_links import format_broken_report  # ty: ignore[import-not-found]
 
     assert format_broken_report([]) == ""

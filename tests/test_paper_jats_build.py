@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import lxml.etree as ET  # ty: ignore[unresolved-import]
+import lxml.etree as ET  # ty: ignore[import-not-found]
 import pytest
 
 pypandoc = pytest.importorskip("pypandoc")
@@ -54,7 +54,7 @@ Prior work [(Betts et al., 2003)]({ZOTERO}) and Figure 1.
 
 
 def _build(tmp_path: Path, **kwargs):
-    from jats_build import build_jats  # ty: ignore[unresolved-import]
+    from jats_build import build_jats  # ty: ignore[import-not-found]
 
     src = tmp_path / "manuscript.md"
     src.write_text(MANUSCRIPT, encoding="utf-8")

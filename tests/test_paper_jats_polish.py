@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import lxml.etree as ET  # ty: ignore[unresolved-import]
+import lxml.etree as ET  # ty: ignore[import-not-found]
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "paper"))
@@ -81,7 +81,7 @@ ASSETS = {"1": "figures/db_overlap_upset.svg"}  # no entry for supplementary-2
 
 
 def _polished():
-    from jats_polish import polish  # ty: ignore[unresolved-import]
+    from jats_polish import polish  # ty: ignore[import-not-found]
 
     root = ET.fromstring(RAW.encode())
     report = polish(root, graphic_for=ASSETS.get)
@@ -127,7 +127,7 @@ def test_article_doi_and_pub_date_land_in_schema_order() -> None:
     """The .docx has no DOI or date; a post-posting deposit passes both in."""
     from datetime import date
 
-    from jats_polish import set_article_identity  # ty: ignore[unresolved-import]
+    from jats_polish import set_article_identity  # ty: ignore[import-not-found]
 
     root, _ = _polished()
     set_article_identity(root, "10.64898/2026.10.18.759859", date(2026, 10, 19))
@@ -145,7 +145,7 @@ def test_article_doi_and_pub_date_land_in_schema_order() -> None:
 def test_setting_the_identity_twice_replaces_rather_than_duplicates() -> None:
     from datetime import date
 
-    from jats_polish import set_article_identity  # ty: ignore[unresolved-import]
+    from jats_polish import set_article_identity  # ty: ignore[import-not-found]
 
     root, _ = _polished()
     set_article_identity(root, "10.1/old", date(2026, 1, 1))
@@ -156,7 +156,7 @@ def test_setting_the_identity_twice_replaces_rather_than_duplicates() -> None:
 
 
 def test_without_a_doi_or_date_the_front_matter_is_unchanged() -> None:
-    from jats_polish import set_article_identity  # ty: ignore[unresolved-import]
+    from jats_polish import set_article_identity  # ty: ignore[import-not-found]
 
     root, _ = _polished()
     before = ET.tostring(root)
@@ -270,7 +270,7 @@ def test_table_rows_pandoc_read_as_headers_move_to_the_body() -> None:
 
 
 def test_a_manuscript_missing_its_parts_is_reported_not_crashed() -> None:
-    from jats_polish import polish  # ty: ignore[unresolved-import]
+    from jats_polish import polish  # ty: ignore[import-not-found]
 
     root = ET.fromstring(
         b"<article><front><article-meta/></front><body>"

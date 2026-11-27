@@ -20,7 +20,7 @@ sys.path.insert(0, str(REPO / "paper"))
 
 
 def _check(fragment: str) -> tuple[list[str], list[str]]:
-    from figure_links import find_unlinked_figure_refs  # ty: ignore[unresolved-import]
+    from figure_links import find_unlinked_figure_refs  # ty: ignore[import-not-found]
 
     return find_unlinked_figure_refs(f"<body>{fragment}</body>")
 
