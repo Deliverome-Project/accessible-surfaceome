@@ -208,6 +208,8 @@ def web_discover_papers(
     usage_sink: list[Any] | None = None,
     max_hits: int = 15,
     include_preprints: bool = True,
+    max_uses: int | None = None,
+    model: str | None = None,
 ) -> list[Paper]:
     """Discover papers via one web_search Sonnet call, hydrated to real Papers.
 
@@ -224,6 +226,9 @@ def web_discover_papers(
         "Search the web and return the JSON object of id-anchored primary "
         "sources (PMIDs and/or DOIs)."
     )
+    tools = WEB_SEARCH_TOOL
+    if max_uses is not None:
+        tools = [{**WEB_SEARCH_TOOL[0], "max_uses": max_uses}]
     sink: list[Any] = usage_sink if usage_sink is not None else []
     result = call_builder(
         client,
@@ -232,7 +237,8 @@ def web_discover_papers(
         schema=WebDiscoveryResult,
         usage_sink=sink,
         label="web_lit_discover",
-        tools=WEB_SEARCH_TOOL,
+        tools=tools,
+        model=model,
     )
     if not isinstance(result, WebDiscoveryResult):
         logger.info("web_discover(%s): call returned no parseable result", names)

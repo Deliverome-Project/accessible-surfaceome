@@ -241,3 +241,7 @@ data/analysis/tag_site_gpi_terminal/*.tsv -filter -diff -merge text
 
 # Tag-site literature audit: small, diffable, served through raw GitHub for reanalysis.
 data/analysis/tag_site_corpus_audit/* -filter -diff -merge text
+
+# Internalization sweep cohort manifests (~230 KB plain text; keep out of LFS so
+# fresh clones and raw GitHub URLs read the gene list directly).
+data/processed/internalization/*.tsv -filter -diff -merge text

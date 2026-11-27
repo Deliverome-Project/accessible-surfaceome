@@ -273,6 +273,20 @@ def render_clip_menu(pool: dict[str, EvidenceClaimDraft], *, limit: int | None =
     )
 
 
+_SELECT_SCHEMA_JSON = json.dumps(SelectionResponse.model_json_schema(), indent=2)
+
+
+def _cached_select_system(system_prompt: str) -> str:
+    """Hoist the static SelectionResponse JSON schema into the cached system
+    prompt so Anthropic's ephemeral prompt cache covers it across batches and genes."""
+    return (
+        f"{system_prompt}\n\n# SelectionResponse JSON Schema\n"
+        "(note: `confidence` is strong|moderate|weak; `assay_context` is an "
+        "object with a required `species`)\n\n"
+        f"```json\n{_SELECT_SCHEMA_JSON}\n```"
+    )
+
+
 def _build_select_prompt(
     pool: dict[str, EvidenceClaimDraft],
     *,
@@ -281,14 +295,11 @@ def _build_select_prompt(
     menu_limit: int | None,
     menu_instruction: str,
 ) -> str:
-    schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
     aka = f"Also known as: {', '.join(synonyms)}\n" if synonyms else ""
     return (
         f"Gene: {gene}\n{aka}\nClip menu ({menu_instruction}):\n\n"
         f"{render_clip_menu(pool, limit=menu_limit)}\n\n"
-        f"Emit one ```json block matching this SelectionResponse schema exactly "
-        f"(note: `confidence` is strong|moderate|weak; `assay_context` is an "
-        f"object with a required `species`):\n\n```json\n{schema_str}\n```"
+        "Emit one ```json block matching the SelectionResponse schema in the system prompt."
     )
 
 
@@ -319,10 +330,11 @@ def select_clips(
     """
     if not pool:
         return SelectionResponse(selections=[], notes="empty pool")
+    full_system = _cached_select_system(system_prompt)
     if max_batches > 1 and len(pool) > _MAX_CLIP_MENU:
         return _select_batched(
             client, pool=pool, gene=gene, synonyms=synonyms,
-            system_prompt=system_prompt, model=model,
+            system_prompt=full_system, model=model,
             menu_instruction=menu_instruction, usage_sink=usage_sink,
             max_batches=max_batches,
         )
@@ -334,7 +346,7 @@ def select_clips(
             return call_model_structured(
                 client,
                 model=model,
-                system_prompt=system_prompt,
+                system_prompt=full_system,
                 user_prompt=_build_select_prompt(
                     pool, gene=gene, synonyms=synonyms, menu_limit=menu_limit,
                     menu_instruction=menu_instruction,

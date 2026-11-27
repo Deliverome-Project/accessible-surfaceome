@@ -138,6 +138,7 @@ def call_builder(
     max_tokens: int = MAX_TOKENS_BLOCK,
     tools: list[dict[str, Any]] | None = None,
     meta_sink: dict[str, Any] | None = None,
+    model: str | None = None,
 ) -> T | list[BaseModel] | None:
     """Call Sonnet with a repair loop until the emitted JSON validates.
 
@@ -186,6 +187,7 @@ def call_builder(
     # single ``create`` call — its extra ``server_tool_use`` /
     # ``web_search_tool_result`` content blocks are non-``TextBlock`` and
     # are ignored by the JSON extraction below, so no tool-loop is needed.
+    active_model = model or SONNET_MODEL
     extra_kwargs: dict[str, Any] = {}
     if tools:
         extra_kwargs["tools"] = tools
@@ -194,7 +196,7 @@ def call_builder(
         try:
             resp = messages_create_with_backoff(
                 client,
-                model=SONNET_MODEL,
+                model=active_model,
                 max_tokens=max_tokens,
                 system=cast("Any", cached_sys),
                 messages=cast("Any", messages),
@@ -215,14 +217,17 @@ def call_builder(
             extra_kwargs = {}
             resp = messages_create_with_backoff(
                 client,
-                model=SONNET_MODEL,
+                model=active_model,
                 max_tokens=max_tokens,
                 system=cast("Any", cached_sys),
                 messages=cast("Any", messages),
             )
         usage_sink.append(
-            record_from_response(resp.usage, SONNET_MODEL, response=resp)
+            record_from_response(resp.usage, active_model, response=resp)
         )
+        if getattr(resp, "stop_reason", None) == "refusal":
+            logger.warning("%s: model %s refused request (stop_reason=refusal)", label, active_model)
+            return None
         final_text = "\n".join(
             b.text for b in resp.content if isinstance(b, TextBlock)
         ).strip()

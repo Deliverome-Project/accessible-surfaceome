@@ -13,6 +13,10 @@ from pydantic import BaseModel, ValidationError
 
 from accessible_surfaceome.agents._support.api_retry import messages_create_with_backoff
 from accessible_surfaceome.agents._support.payload import cached_system
+from accessible_surfaceome.agents._support.pricing import (
+    record_from_response,
+    resolve_pricing_key,
+)
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -65,7 +69,14 @@ def call_model_structured(
             messages=messages,
         )
         if usage_sink is not None:
-            usage_sink.append(resp.usage)
+            raw_usage = getattr(resp, "usage", None)
+            pkey = resolve_pricing_key(model)
+            if raw_usage is not None and pkey is not None:
+                usage_sink.append(record_from_response(raw_usage, pkey, response=resp))
+            elif raw_usage is not None:
+                usage_sink.append(raw_usage)
+        if getattr(resp, "stop_reason", None) == "refusal":
+            raise ValueError(f"model {model} refused request (stop_reason=refusal)")
         text = _text_of(resp)
         try:
             return schema.model_validate(extract_json_object(text))

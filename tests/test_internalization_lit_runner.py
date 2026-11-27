@@ -75,10 +75,10 @@ def _wire(monkeypatch, *, discovered, llm, evidence=None):
     monkeypatch.setattr(
         mod,
         "triage_internalization_abstracts",
-        lambda c, *, papers, gene, synonyms: [],
+        lambda c, *, papers, gene, synonyms, **_: [],
     )
     monkeypatch.setattr(
-        mod, "build_pool", lambda outcomes, pbi, *, http, retraction_index: ({}, [])
+        mod, "build_pool", lambda outcomes, pbi, *, http, retraction_index, **_: ({}, [])
     )
     monkeypatch.setattr(
         mod,

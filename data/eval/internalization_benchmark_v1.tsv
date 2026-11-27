@@ -1,0 +1,25 @@
+gene_symbol	category	overall_allowed	basal_allowed	native_ligand_allowed	therapeutic_allowed	expect_quant	expected_species	key_pmids	notes
+TFRC	fast_constitutive	high	high	high	moderate|high	yes	human	6309781|21252237|19278030|10.1101/2025.06.08.658482	Classic rapid coated-pit cargo; t1/2 3.5 min in HepG2, ke 0.3-0.6/min
+LDLR	fast_constitutive	high	high	high	*	yes	human	6298247	Classic rapid coated-pit cargo; t1/2 5.0 min in human fibroblasts
+ASGR1	fast_constitutive	high	moderate|high	high	moderate|high	yes	human	6298247|6300113	Hepatocyte coated-pit cargo; t1/2 2.2 min; GalNAc-oligo delivery handle
+LRP1	fast_constitutive	high	moderate|high	high	*	yes	human	6298247	Rapid constitutive & ligand-driven endocytic receptor; t1/2 ~3.0 min
+EGFR	ligand_switch	high	low|moderate|unknown	high	moderate|high	yes	human	1314835|29592884|19278030	Unoccupied ~0.035/min vs EGF 0.27/min; Ab033 0.047-0.15/min
+ADRB2	ligand_switch	high	no|low|unknown	high	*	yes	human	7518433	Negative/minimal basal >1 h without agonist; isoproterenol 0.222/min (t1/2 3.1 min)
+CCR5	ligand_switch	high	low|moderate|unknown	high	*	yes	human	27310579	Slow constitutive (t1/2 5.1 h / 13.7%/h) vs rapid CCL5 agonist (9.3%/min)
+ACKR3	ligand_switch	high	moderate|high	high	*	no	human		Atypical chemokine scavenging receptor (CXCR7); constitutive + CXCL12 uptake
+MET	ligand_switch	high	*	high	moderate|high	no	human	11894096|15882443	Rapid HGF-induced endocytosis + ADC/mAb internalization; Listeria InlB entry
+ERBB2	therapeutic_anchor	moderate|high	low|moderate	unknown	moderate|high	yes	human	15385631|26912181|8993319	Orphan (native_ligand=unknown); gross 0.015/min, net 6.3-11 h trastuzumab/T-DM1
+CD22	therapeutic_anchor	high	moderate|high	*	high	yes	human	18676854|9774390	Rapid constitutive + inotuzumab/epratuzumab/RFB4 uptake (230% in 15 min)
+CD19	therapeutic_anchor	moderate|high	*	unknown	high	no	human	29298756	Validated B-cell ADC/mAb internalizing target (loncastuximab/anti-CD19)
+TNFRSF17	therapeutic_anchor	high	low|moderate|unknown	*	high	no	human		BCMA; rapid ADC uptake (belantamab/J6M0); must NOT file ADC in basal
+NECTIN4	therapeutic_anchor	moderate|high	*	unknown	moderate|high	no	human		Enfortumab vedotin ADC uptake; trans-endocytosis excluded from native_ligand
+EPHA2	therapeutic_anchor	high	*	moderate|high	high	yes	human	25894652	1C1 agonist IgG t1/2 14-15 min vs clone 3035 332-472 min (epitope-dependent)
+CD33	therapeutic_anchor	moderate|high	*	*	moderate|high	yes	human	21915304	Gemtuzumab complex ke 0.4-0.66/h vs free CD33 0.12-0.213/h in AML blasts
+FOLH1	therapeutic_anchor	moderate|high	low|moderate|high	unknown	moderate|high	yes	human	26801327	PSMA; constitutive + antibody/radioligand uptake (~20%/h in LNCaP xenografts)
+AXL	preprint_and_integrin	high	*	high	*	no	human	10.1101/2025.06.08.658482	GAS6-driven macropinocytosis/endocytosis + EndoNB +/-GAS6 arms
+TMEM123	preprint_and_integrin	moderate|high	moderate|high	unknown	unknown	no	any	10.1101/2025.06.08.658482	EndoNB preprint constitutive CME cargo; single-source preprint recall test
+ITGB1	preprint_and_integrin	moderate|high	moderate|high	*	*	yes	human	19581412|10.1101/2025.06.08.658482	Constitutive recycling ~1%/min (sulfo-NHS-SS-biotin MESNA strip)
+THBD	low_or_negative	no|low|moderate|unknown	no|low	*	*	yes	human	9684797	Measured basal negative: 5-10%/h (PMID:9684797); anti-TM mAbs can induce moderate therapeutic uptake (PMID:19569985)
+MS4A1	low_or_negative	no|low|moderate	no|low|unknown	unknown	no|low|moderate	no	human		CD20; classic poorly/slowly internalizing Type I mAb target (not high)
+OR10A3	abstention	unknown	unknown	unknown	unknown	no	any		Unstudied Likely olfactory receptor; must abstain with 0 observations
+OR10A4	abstention	unknown	unknown	unknown	unknown	no	any		Unstudied Likely olfactory receptor; must abstain with 0 observations

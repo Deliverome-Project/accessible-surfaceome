@@ -49,16 +49,21 @@ def select_clips(
     synonyms: list[str] | None = None,
     system_prompt: str | None = None,
     usage_sink: list[Any] | None = None,
+    max_batches: int = 2,
+    model: str | None = None,
 ) -> SelectionResponse:
-    return _select_clips(
-        client,
-        pool=pool,
-        gene=gene,
-        synonyms=synonyms,
-        system_prompt=system_prompt or load_select_prompt(),
-        usage_sink=usage_sink,
-        menu_instruction=_MENU_INSTRUCTION,
-    )
+    kwargs: dict[str, Any] = {
+        "pool": pool,
+        "gene": gene,
+        "synonyms": synonyms,
+        "system_prompt": system_prompt or load_select_prompt(),
+        "usage_sink": usage_sink,
+        "menu_instruction": _MENU_INSTRUCTION,
+        "max_batches": max_batches,
+    }
+    if model is not None:
+        kwargs["model"] = model
+    return _select_clips(client, **kwargs)
 
 
 def promote(
