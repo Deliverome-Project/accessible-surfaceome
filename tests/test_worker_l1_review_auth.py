@@ -99,7 +99,7 @@ const call = async (env, { method = "POST", path = "/v1/l1-review", body, token,
 const baseEnv = (over = {}) => ({
   DB: makeDb(), FEEDBACK_DB: makeDb(), FEEDBACK_RATELIMIT: makeKv(),
   L1_REVIEW_TOKEN: "s3cret",
-  L1_INVITE_TOKENS: "plain-invite,sab:sab-code-42",
+  L1_INVITE_TOKENS: "plain-invite,sab:sab-code-42,Dr. Aashish Manglik:aashish-key",
   ...over,
 });
 
@@ -123,6 +123,8 @@ await run("success_alt", baseEnv(), { body: alt });
 await run("token_path", baseEnv(), { body: verdict, token: "s3cret" });
 await run("invite_plain", baseEnv(), { body: verdict, invite: "plain-invite" });
 await run("invite_labeled", baseEnv(), { body: verdict, invite: "sab-code-42" });
+await run("invite_prefill_name", baseEnv(), { body: { ...verdict, reviewer: "" }, invite: "aashish-key" });
+await run("invite_plain_missing_name", baseEnv(), { body: { ...verdict, reviewer: "" }, invite: "plain-invite" });
 await run("invite_wrong", baseEnv(), { body: verdict, invite: "not-a-valid-invite" });
 await run("foreign_origin", baseEnv(), { body: verdict, origin: "https://evil.example" });
 await run("allowed_origin", baseEnv(), { body: verdict, origin: "https://surfaceome.deliverome.org" });
@@ -172,6 +174,12 @@ out.read_no_token = await call(baseEnv(), { method: "GET" });
 out.read_invite_token = await call(baseEnv(), { method: "GET", invite: "sab-code-42" });
 out.read_token = await call(baseEnv(), { method: "GET", token: "s3cret" });
 out.export_no_token = await call(baseEnv(), { method: "GET", path: "/v1/l1-review/export.tsv" });
+
+// Magic-link whoami resolves pre-filled reviewer name without leaking reviews.
+out.whoami_named = await call(baseEnv(), { method: "GET", path: "/v1/l1-review/whoami", invite: "aashish-key" });
+out.whoami_plain = await call(baseEnv(), { method: "GET", path: "/v1/l1-review/whoami", invite: "plain-invite" });
+out.whoami_bad = await call(baseEnv(), { method: "GET", path: "/v1/l1-review/whoami", invite: "nope" });
+out.whoami_none = await call(baseEnv(), { method: "GET", path: "/v1/l1-review/whoami" });
 
 // Feedback moderation: GET returns confirmation form without mutating D1; POST mutates.
 {
@@ -315,9 +323,37 @@ def test_invite_tokens_skip_rate_limit_and_tag_cohort(results: dict) -> None:
     assert labeled["kv_keys"] == []
     assert labeled["inserts"][0]["auth_method"] == "invite:sab"
 
+    prefill = results["invite_prefill_name"]
+    assert prefill["status"] == 201
+    assert prefill["kv_keys"] == []
+    assert prefill["inserts"][0]["reviewer"] == "Dr. Aashish Manglik"
+    assert prefill["inserts"][0]["auth_method"] == "invite:dr_aashish_manglik"
+
+    plain_no_name = results["invite_plain_missing_name"]
+    assert plain_no_name["status"] == 400
+    assert plain_no_name["body"] == {"error": "invalid_reviewer"}
+    assert plain_no_name["inserts"] == []
+
     wrong = results["invite_wrong"]
     assert wrong["status"] == 201
     assert wrong["body"]["auth_method"] == "rate_limited"
+
+
+def test_magic_link_whoami_resolves_display_name(results: dict) -> None:
+    assert results["whoami_named"]["status"] == 200
+    assert results["whoami_named"]["body"] == {
+        "valid": True,
+        "reviewer": "Dr. Aashish Manglik",
+        "auth_method": "invite:dr_aashish_manglik",
+    }
+    assert results["whoami_plain"]["status"] == 200
+    assert results["whoami_plain"]["body"] == {
+        "valid": True,
+        "reviewer": None,
+        "auth_method": "invite",
+    }
+    assert results["whoami_bad"]["status"] == 401
+    assert results["whoami_none"]["status"] == 401
 
 
 def test_origin_check_and_honeypot(results: dict) -> None:
