@@ -1,0 +1,14 @@
+title = "Deliverome accessible-surfaceome gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Synthetic Anthropic response-ID fixtures in unit tests"
+condition = "AND"
+paths = [
+    '''^tests/test_run_metadata\.py$''',
+]
+regexes = [
+    '''anthropic-msg_01[A-Z0-9]+''',
+]
