@@ -173,7 +173,11 @@ def _hydrate_one(
     if cit.doi:
         doi = _normalize_doi(cit.doi)
         if doi:
-            payload = europepmc_search(http=http, query=f'DOI:"{doi}"', page_size=1)
+            try:
+                payload = europepmc_search(http=http, query=f'DOI:"{doi}"', page_size=1)
+            except Exception as exc:  # noqa: BLE001 — transient EPMC 503 must not abort whole gene
+                logger.warning("EuropePMC DOI lookup failed for %s: %s", doi, exc)
+                payload = {}
             for rec in payload.get("resultList", {}).get("result", []):
                 try:
                     return paper_from_europepmc(

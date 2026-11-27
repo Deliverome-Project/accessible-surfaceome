@@ -601,6 +601,7 @@ def discover_internalization_papers(
                     citation_counts_out[sid] = c
 
     # 1. EuropePMC broad + measurement/delivery/negative queries
+    epmc_failures = 0
     for query in (
         build_internalization_query(broad_aliases),
         build_measurement_query(broad_aliases),
@@ -608,6 +609,7 @@ def discover_internalization_papers(
         try:
             payload = europepmc_search(http=http, query=query, page_size=_MAX_PER_SOURCE)
         except Exception as exc:  # noqa: BLE001 — one query failing must not abort discovery
+            epmc_failures += 1
             logger.warning("EuropePMC query failed for %s: %s", bundle.hgnc_symbol, exc)
             continue
         for rec in payload.get("resultList", {}).get("result", []):
@@ -630,6 +632,7 @@ def discover_internalization_papers(
             for rec in payload.get("resultList", {}).get("result", []):
                 _record_rec(rec)
         except Exception as exc:  # noqa: BLE001
+            epmc_failures += 1
             logger.warning("EuropePMC cited query failed for %s: %s", bundle.hgnc_symbol, exc)
 
     # 2b. Targeted $0 EuropePMC preprint/screen pass (bioRxiv/medRxiv).
@@ -642,7 +645,17 @@ def discover_internalization_papers(
         for rec in payload.get("resultList", {}).get("result", []):
             _record_rec(rec)
     except Exception as exc:  # noqa: BLE001
+        epmc_failures += 1
         logger.warning("EuropePMC preprint query failed for %s: %s", bundle.hgnc_symbol, exc)
+
+    # Refuse to silently degrade a gene into PubTator-only recall when EuropePMC
+    # is down/resetting — raise a retryable error instead of publishing a blind
+    # "unknown" record under the current prompt SHA.
+    if epmc_failures >= 3:
+        raise RuntimeError(
+            f"EuropePMC discovery degraded for {bundle.hgnc_symbol}: "
+            f"{epmc_failures}/5 EuropePMC queries failed"
+        )
 
     # 3. PubTator entity search with MINIMAL free text (overloading free-text terms
     # ANDs them and tanks recall). Dedup against ALL already-known PMIDs regardless

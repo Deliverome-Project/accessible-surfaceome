@@ -202,3 +202,33 @@ def test_discovery_keeps_doi_anchored_preprints(monkeypatch):
     )
     # Preprint kept (DOI key), integer-PMID kept, no-DOI record skipped.
     assert set(out) == {"DOI:10.1101/2025.06.08.658482", "PMID:5"}
+
+
+def test_discovery_raises_when_majority_of_europepmc_queries_fail(monkeypatch):
+    """Refuse to silently publish PubTator-only recall when EuropePMC is down."""
+    import pytest
+
+    monkeypatch.setattr(
+        mod,
+        "europepmc_search",
+        lambda *, http, query, page_size=25, sort=None: (_ for _ in ()).throw(
+            ConnectionResetError("Connection reset by peer")
+        ),
+    )
+    monkeypatch.setattr(
+        mod,
+        "pubtator_search",
+        lambda *, http, query, page=1, sort="score desc": SimpleNamespace(hits=[]),
+    )
+
+    bundle = SimpleNamespace(
+        hgnc_symbol="CD52",
+        aliases=[],
+        previous_symbols=[],
+        approved_name="CD52 molecule",
+        alias_names=[],
+    )
+    with pytest.raises(RuntimeError, match="EuropePMC discovery degraded for CD52: 5/5"):
+        discover_internalization_papers(
+            cast(Any, bundle), http=cast(Any, object()), retraction_index=cast(Any, object())
+        )
