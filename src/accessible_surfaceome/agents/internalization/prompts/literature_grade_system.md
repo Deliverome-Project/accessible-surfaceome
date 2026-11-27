@@ -26,12 +26,13 @@ Internalization depends on what drives it, so grade four modes independently
   PARTNER cell captures/pulls the target's membrane into the partner cell is NOT
   the target internalizing on its own cell; do NOT count it toward
   `native_ligand` or `basal`. Only a TRUE orphan receptor with NO endogenous
-  ligand of any kind (e.g. ERBB2, CD19, PSMA/FOLH1 enzymatic ectodomain with no
-  endocytosis-triggering native ligand in the ledger) gets `unknown` here — you
-  MUST output `unknown`, NOT `low` and NOT `no`. Do NOT substitute a chimeric
-  receptor or a heterodimer partner's ligand as native-ligand evidence. When the
-  ONLY native-ligand evidence is an engineered/synthetic mimic, cap `confidence`
-  at `low`. Pathogen/toxin entry goes in `pathogen_entry`, not here.
+  ligand of any kind (e.g. an orphan RTK, co-receptor, or enzymatic ectodomain
+  with no endocytosis-triggering native ligand in the ledger) gets `unknown`
+  here — you MUST output `unknown`, NOT `low` and NOT `no`. Do NOT substitute a
+  chimeric receptor or a heterodimer partner's ligand as native-ligand
+  evidence. When the ONLY native-ligand evidence is an engineered/synthetic
+  mimic, cap `confidence` at `low`. Pathogen/toxin entry goes in
+  `pathogen_entry`, not here.
 - **therapeutic** — internalization driven by an exogenous binder or delivery
   agent (antibody, ADC, siRNA/oligonucleotide/GalNAc, lipid nanoparticle, AAV,
   peptide, radioligand, or engineered ligand).
@@ -70,26 +71,28 @@ Use `grade` for **how strongly/rapidly** the receptor internalizes in that mode,
 and `confidence` for **evidence depth and rigor**. Do NOT conflate them!
 
 - **`high`** — rapid / robust internalization: e.g. gross entry `t1/2 <= 15 min`
-  (`k_e >= 0.045/min`, e.g. coated-pit cargoes TFRC/LDLR/ASGR1 or rapid
-  ligand/agonist-driven EGFR/ADRB2/CCR5/ACKR3/MET), `>= 50%` of surface pool
+  (`k_e >= 0.045/min`, such as constitutive coated-pit nutrient/scavenger
+  receptors or rapid agonist-stimulated GPCRs/RTKs), `>= 50%` of surface pool
   internalized within 30–60 min, or clear direct measurements across ≥2
   independent papers establishing rapid/robust internalization (e.g. validated
-  rapid-internalizing ADC targets like CD22, CD19, BCMA/TNFRSF17). Note: a
-  single primary paper with a clean *quantitative* rapid measurement may grade
-  `high` (with `confidence` capped at `moderate` or `low`), whereas a single
-  paper with only *qualitative* prose caps at `moderate`.
+  rapid-internalizing ADC targets). Note: a single primary paper with a clean
+  *quantitative* rapid measurement may grade `high` (with `confidence` capped at
+  `moderate` or `low`), whereas a single paper with only *qualitative* prose
+  caps at `moderate`.
 - **`moderate`** — intermediate / partial / slower internalization: e.g. gross
   entry `t1/2 ~ 15–90 min` (`k_e ~ 0.008–0.045/min`), net surface clearance of
-  `2–12 h` (e.g. HER2/trastuzumab), `20–50%` internalized over 1–4 h, or a
-  clearly real but partial/context-dependent direct uptake.
+  `2–12 h` (e.g. a conventional bivalent mAb on a recycling RTK), `20–50%`
+  internalized over 1–4 h, or a clearly real but partial/context-dependent
+  direct uptake.
 - **`low`** — slow / weak / minimal internalization: e.g. gross entry
-  `t1/2 > 2 h` (`k_e < 0.005/min`, `< 15%/h` such as unstimulated CCR5/CXCR4 or
-  slowly-internalizing Type I anti-CD20), or minimal measurable uptake over
-  hours.
+  `t1/2 > 2 h` (`k_e < 0.005/min`, `< 15%/h` such as unstimulated chemokine
+  receptors or a slowly-internalizing Type I mAb), or minimal measurable uptake
+  over hours.
 - **`no`** — directly measured as non-internalizing / remaining at the plasma
   membrane with negligible uptake indistinguishable from a non-internalizing
-  control (e.g. unstimulated ADRB2 over 1 h, THBD at background membrane
-  turnover). Nulls are real results — use `no` when directly measured!
+  control (e.g. an unstimulated GPCR over 1 h, or a membrane protein at
+  background plasma-membrane turnover). Nulls are real results — use `no` when
+  directly measured!
 - **`unknown`** — no direct internalization measurement in the ledger for this
   mode (or empty ledger → return empty `observations` and `overall_grade="unknown"`).
 
@@ -225,9 +228,10 @@ Sort every ledger clip by *what was manipulated*:
   `transcytoses` / `mixed` / `retained_intracellular` / `unknown`).
 - `epitope_or_valency_dependence_note`: one sentence if clips compare different
   clones/epitopes or monovalent vs. bivalent/multivalent/biparatopic binders
-  (e.g. biparatopic 30 min vs. trastuzumab 120 min); leave empty if unstated.
+  (e.g. biparatopic binder `t1/2` 30 min vs. conventional bivalent mAb 120 min);
+  leave empty if unstated.
 - `ligand_dependence_summary`: one concise line summarizing paired ±ligand
-  differences (e.g. `"CCL5 increases uptake ~40x over basal (13.7%/h -> 9.3%/min)"`);
+  differences (e.g. `"native agonist increases uptake ~40x over basal (13.7%/h -> 9.3%/min)"`);
   leave empty if unstated.
 - Prefer human evidence; note when a call rests on non-human data.
 
