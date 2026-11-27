@@ -66,7 +66,7 @@ residue_before (= N) and residue_after (= N+1) COPIED from the sequence given. A
 invalidates the site.
 
 A TAGGED CONSTRUCT WITH NO RESIDUE IS STILL A SITE. Two cases, both real findings:
-- the landmarks leave exactly ONE extracellular terminus ("TfR1-v5", "Myc-tagged hA1R") — the
+- the landmarks leave exactly ONE extracellular terminus ("ReceptorX-V5", "Myc-tagged ReceptorY") — the
   tag is there, because nowhere else is on the surface. `position_evidence`="topology_derived",
   junction from the landmarks (prepend = 0, the mature N-terminus after a signal peptide, or
   after the LAST residue for a C-terminal tag). The position is computed, not chosen.
@@ -92,9 +92,9 @@ N-terminus with no signal peptide — on a GPCR it is often the only extracellul
 there is.
 
 Papers state a position three ways, all valid:
-- spelled out in prose — "the tag follows the signal peptide (Alanine 34)", "at the codon for
-  glycine 101";
-- three-letter or spaced — "Thr436", "Ala 102";
+- spelled out in prose — "the tag follows the signal peptide (Alanine 30)", "at the codon for
+  glycine 110";
+- three-letter or spaced — "Thr220", "Ala 115";
 - a bare code in a PRIMER / HDR-TEMPLATE table amid nucleotide sequence — often the authoritative
   label where the prose is vague, so never dismiss a clip for looking like raw DNA.
 
@@ -378,7 +378,7 @@ SYSTEM_PROMPT = f"{SYSTEM_PROMPT}\n\n{format_output_contract()}"
 #: Bump in the SAME commit as any edit to SYSTEM_PROMPT or the user turn.
 #: `prompt_sha` fingerprints the text automatically; this is the human-readable
 #: half, so a reviewer can tell a deliberate revision from an incidental one.
-TAG_SITE_PROMPT_VERSION = "1.4.0"
+TAG_SITE_PROMPT_VERSION = "1.5.0"
 
 
 def prompt_sha() -> str:

@@ -794,35 +794,72 @@ def residue_mentions_detailed(
     return {n: frozenset(forms) for n, forms in out.items()}
 
 
-def boost_residue_clips(pool, *, sequence: str, topology: str) -> dict[str, set[int]]:
+_INTERNAL_LOOP_RE = re.compile(
+    r"(?:"
+    r"\b(?:first|second|third|fourth|fifth|1st|2nd|3rd|4th|large|small|major|minor)\s+"
+    r"(?:extracellular|exofacial|outer)\s+loop\b|"
+    r"\b(?:extracellular|exofacial)\s+loop(?:\s*[1-6A-E])?\b|"
+    r"\b(?:ECL|EC|EL)[1-6]\b|"
+    r"\bloop\s+[A-E]\b|"
+    r"\b(?:S[1-6][-–]S[2-6]|M[1-8][-–]M[2-8]|TM[1-9][-–]TM[1-9]\d?|P[- ]loop)\b|"
+    r"\binserted\s+(?:between|after|into\s+(?:the\s+)?(?:extracellular|exofacial|loop|ECL|EC|EL))\b|"
+    r"\breplaced\s+(?:with|by)\s+(?:an?\s+)?(?:HA|FLAG|Myc|ALFA|V5|HiBiT|BLAP|BBS|epitope|tag)\b|"
+    r"\b(?:insertional\s+mutagenesis|domain\s+insertion|transposon\s+insertion)\b"
+    r")",
+    re.IGNORECASE,
+)
+
+_CYTOPLASMIC_TERMINAL_FUSION_RE = re.compile(
+    r"(?:"
+    r"\b[NC][-\s]?terminal(?:ly)?\s+(?:tagged|fused|GFP|eGFP|EGFP|YFP|CFP|mCherry|mScarlet|"
+    r"mRuby|RFP|Venus|tdTomato|FLAG|HA|Myc|V5|His|GST|HaloTag|SNAP)\b|"
+    r"\b(?:GFP|eGFP|EGFP|YFP|CFP|mCherry|mScarlet|RFP|FLAG|HA|Myc|V5|His)\s+"
+    r"(?:tag\s+)?(?:fused|attached|appended|added)\s+(?:to|at)\s+the\s+[NC][-\s]?termin\w+\b|"
+    r"\b(?:fused|tagged)\s+at\s+(?:its|the)\s+[NC][-\s]?termin\w+\b|"
+    r"\b(?:C|N)[-\s]?terminus\s+(?:was\s+)?(?:tagged|fused)\s+with\b"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def is_internal_loop_mention(text: str | None) -> bool:
+    """True when ``text`` explicitly names an extracellular loop or internal
+    insertion event."""
+    return bool(text and _INTERNAL_LOOP_RE.search(text))
+
+
+def is_cytoplasmic_terminal_fusion(text: str | None) -> bool:
+    """True when ``text`` describes a generic N-/C-terminal fusion (cytoplasmic
+    noise on multipass proteins that lack an extracellular terminus)."""
+    return bool(text and _CYTOPLASMIC_TERMINAL_FUSION_RE.search(text))
+
+
+def boost_residue_clips(
+    pool,
+    *,
+    sequence: str,
+    topology: str,
+    alternate_frames: list | None = None,
+    internal_only: bool = False,
+) -> dict[str, set[int]]:
     """Raise the score of every clip that names an EXTRACELLULAR residue, so it
     survives the selector's menu cap. Mutates ``pool`` in place and returns
-    ``{clip_key: positions named}`` for the clips it lifted.
+    ``{clip_key: positions named}`` for the residue-pinned clips it lifted.
 
-    ``select_clips`` keeps only the top clips by score, which on a well-studied
-    gene throws away most of the evidence (one run: 1193 clips -> 100). A clip
-    that pins a real insertion is then never shown to the selector, so reading
-    residues at all is pointless unless the clip carrying one survives the cut.
+    When ``alternate_frames`` is provided (e.g. canonical, mature, isoform, or
+    ortholog frames on L1 members), clips confirming a residue in an alternate
+    frame that maps to an extracellular coordinate in ``topology`` are lifted
+    too, closing the non-canonical-member blind spot.
 
-    The return value is the diagnostic half. A run that logged only "boosted
-    1/123" for a gene whose decisive paper HAD been retrieved left no way to tell
-    whether that one clip was the relevant one, and the pool is not persisted, so
-    the question could not be answered afterwards.
-
-    A clip qualifies only when it BOTH names an extracellular residue AND reads as
-    describing an insertion; see the comment in the loop for why the residue alone
-    lets another protein's phosphosite through. The cost is that a pure
-    primer-table row, which carries a label but no prose, is no longer lifted --
-    acceptable, because such a row is a wall of nucleotides that the model cannot
-    quote a site out of, and it still reaches the pool through draft ranking.
-
-    Only extracellular positions count -- a residue in the cytoplasmic tail or a
-    TM helix is not a surface tag site. Both ``n`` and ``n - 1`` are tested
-    against the topology because papers differ on whether a label names the
-    residue before or after the junction.
-
-    This is a tag-site-only pre-pass: the shared selector is untouched, so the
-    internalization track keeps its own ranking."""
+    When ``internal_only=True`` (multipass L1 members with no extracellular
+    terminus):
+      * probative clips naming an extracellular loop (``ECL2``, ``loop C``,
+        ``S3-S4``, ``extracellular loop``) are lifted into a middle tier above
+        generic unboosted clips (below exact residue-pinned clips);
+      * explicit N-/C-terminal fusion clips that do NOT mention an extracellular
+        loop are demoted so cytoplasmic GFP/FLAG fusions stop crowding out real
+        loop-insertion clips.
+    """
     if not pool or not sequence or not topology:
         return {}
 
@@ -831,31 +868,61 @@ def boost_residue_clips(pool, *, sequence: str, topology: str) -> dict[str, set[
             1 <= pos <= len(topology) and topology[pos - 1] == "O" for pos in (n, n - 1)
         )
 
+    from .frames import map_to_reference
+
+    alt_frames = [
+        f for f in (alternate_frames or [])
+        if getattr(f, "sequence", None) and getattr(f, "sequence", None) != sequence
+    ]
+
     hits: dict[str, set[int]] = {}
+    loop_hits: set[str] = set()
+    demote_keys: set[str] = set()
+
     for key, clip in pool.items():
         text = " ".join(
             filter(None, (getattr(clip, "quote", None), getattr(clip, "context_excerpt", None)))
         )
-        # A residue alone is not enough. Sequence confirmation rules out tokens the
-        # protein does not have, but not text that names a residue it DOES have
-        # while talking about something else entirely -- another protein's
-        # phosphosite ("FAK Y397", and "phosphorylation of FAK at tyrosine 397"),
-        # a spectrophotometry reading ("A260/A280 ratio"), a variant in a different
-        # gene. All of those were boosted on one ITGB1 run, where residue 397 is
-        # indeed Y and 280 is indeed A. Requiring the clip to describe an insertion
-        # as well separated them cleanly: 3 of 3 real clips kept, 0 of 6 noise.
         if not quote_is_probative(text):
+            if internal_only and is_cytoplasmic_terminal_fusion(text) and not is_internal_loop_mention(text):
+                demote_keys.add(key)
             continue
         named = {n for n in residue_mentions(text, sequence=sequence) if _extracellular(n)}
+        if not named and alt_frames:
+            for fr in alt_frames:
+                detail = residue_mentions_detailed(text, sequence=fr.sequence)
+                # Require at least one letter-confirmed token when matching a
+                # foreign frame so bare integers do not spam-boost every clip.
+                if not any(forms & LETTER_CONFIRMED_FORMS for forms in detail.values()):
+                    continue
+                for pos in detail:
+                    mapped = map_to_reference(fr, pos, reference=sequence)
+                    if mapped is not None and _extracellular(mapped):
+                        named.add(mapped)
         if named:
             hits[key] = named
-    if not hits:
+        elif internal_only:
+            if is_internal_loop_mention(text):
+                loop_hits.add(key)
+            elif is_cytoplasmic_terminal_fusion(text):
+                demote_keys.add(key)
+
+    if demote_keys:
+        for key in demote_keys:
+            cur = getattr(pool[key], "score", 0.0) or 0.0
+            pool[key].score = min(cur, 0.05) - 5.0
+
+    if not hits and not loop_hits:
         return {}
-    # Lift boosted clips above every unboosted one while keeping their order
-    # among themselves, so this re-ranks without discarding the pool's own signal.
+
     ceiling = max((getattr(c, "score", 0.0) or 0.0) for c in pool.values())
-    for key in hits:
+    # Middle tier: named extracellular-loop insertion clips (no exact residue yet)
+    for key in loop_hits:
         pool[key].score = (getattr(pool[key], "score", 0.0) or 0.0) + ceiling + 1.0
+    # Top tier: exact extracellular residue-pinned clips (always outrank loop-only)
+    top_base = max((getattr(c, "score", 0.0) or 0.0) for c in pool.values())
+    for key in hits:
+        pool[key].score = (getattr(pool[key], "score", 0.0) or 0.0) + top_base + 1.0
     return hits
 
 

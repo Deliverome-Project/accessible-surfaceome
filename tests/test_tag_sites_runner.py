@@ -430,7 +430,7 @@ def test_run_accumulates_discovery_across_runs(tmp_path, monkeypatch):
                         lambda **k: dict(k.get("cached") or {}))
     monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
     monkeypatch.setattr(R, "triage_abstracts",
-                        lambda c, *, papers, gene: seen.setdefault("papers", papers) and [])
+                        lambda c, *, papers, gene, **kw: seen.setdefault("papers", papers) and [])
     monkeypatch.setattr(R, "build_pool", lambda *a, **k: ({}, []))
     monkeypatch.setattr(R, "build_source_store", lambda *a, **k: object())
     monkeypatch.setattr(R, "select_clips", lambda *a, **k: object())

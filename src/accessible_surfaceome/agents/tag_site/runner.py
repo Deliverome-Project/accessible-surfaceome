@@ -33,7 +33,7 @@ import logging
 from datetime import UTC, datetime
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from anthropic import Anthropic
 
@@ -45,8 +45,11 @@ from accessible_surfaceome.agents._support.literature_clips import (
     select_clips,
 )
 from accessible_surfaceome.agents._support.web_literature import web_discover_papers
-from accessible_surfaceome.agents.plan_trim_select.abstract_triage import triage_abstracts
-from accessible_surfaceome.agents.surfaceome_v2.builders._common import SONNET_MODEL, call_builder
+from accessible_surfaceome.agents.internalization.intermediates import (
+    force_worth_fetching_outcomes,
+    hydrate_paper_ids,
+)
+from accessible_surfaceome.agents.surfaceome_v2.builders._common import call_builder
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import Evidence, Paper, paper_source_id
 from accessible_surfaceome.tools._shared.retraction_watch import empty as _empty_retraction
@@ -60,29 +63,50 @@ from .enrichment import (
 )
 from .frames import Frame, resolve
 from .geometry import apply_geometry_pass
-from .member_frames import run_at
-from .prior_ledger import PriorClip, seed_pool
 from .literature_discovery import (
     DISCOVERY_CACHE_DIR,
     SOURCE_TIERS,
     best_supporting_quote,
     boost_residue_clips,
     discover_tag_site_papers,
-    load_discovery_cache,
-    quote_is_probative,
+    is_cytoplasmic_terminal_fusion,
+    is_internal_loop_mention,
     ledger_clip_within,
+    load_discovery_cache,
+    load_web_search_cache,
+    quote_is_probative,
     quote_supported,
     residue_mentions,
     save_discovery_cache,
+    save_web_search_cache,
 )
+from .literature_triage import (
+    HAIKU_MODEL as DEFAULT_TAG_SITE_TRIAGE_MODEL,
+)
+from .literature_triage import (
+    triage_tag_site_abstracts as triage_abstracts,
+)
+from .member_frames import run_at
 from .normalize import signal_peptide_end
 from .position_verify import verify_position_blind
+from .prior_ledger import PriorClip, seed_pool
 from .prompt import (
     SYSTEM_PROMPT,
     TAG_SITE_PROMPT_VERSION,
     build_user_prompt,
     keep_validated_sites,
     prompt_sha,
+)
+from .reference_followup import find_construct_followup_paper_ids
+from .schema import (
+    VALIDATION_LEVELS,
+    VALIDATION_RANK,
+    RejectedSite,
+    TagSiteProposal,
+    TagSiteResult,
+)
+from .triage_cache import (
+    input_sha as triage_input_sha,
 )
 from .triage_cache import (
     load as load_triage_cache,
@@ -94,27 +118,37 @@ from .triage_cache import (
     split as split_triage,
 )
 from .triage_cache import (
-    input_sha as triage_input_sha,
-)
-from .triage_cache import (
     triage_prompt_sha,
 )
-from .schema import (
-    VALIDATION_LEVELS,
-    VALIDATION_RANK,
-    RejectedSite,
-    TagSiteProposal,
-    TagSiteResult,
-)
+
+DEFAULT_TAG_SITE_MODEL = "claude-sonnet-5-5"
+DEFAULT_TAG_SITE_WEB_SCOUT_MODEL = "claude-haiku-5-5"
+SONNET_MODEL = DEFAULT_TAG_SITE_MODEL  # back-compat alias
+WebSearchMode = Literal["always", "adaptive", "off"]
+
+_WEB_SEARCH_MAX_USES = 6
+_MAX_WORTH_FETCHING = 25
+_MAX_POOL_PER_PAPER = 8
+_MAX_SYNTHESIS_EVIDENCE = 50
+_MAX_SYNTHESIS_PER_PAPER = 5
+_ADAPTIVE_MIN_FETCHED = 2
+_ADAPTIVE_MIN_BOOSTED_PAPERS = 2
 
 # web_search discovery is delegated to the shared ``web_literature`` module
 # (agents/_support), so the tag-site and internalization tracks share ONE
-# implementation. This is the tag-site topic phrase passed to it.
+# implementation. These are the tag-site topic phrases passed to it.
 _TAG_SITE_INTENT = (
     "epitope / peptide tag insertion for surface display — ecto-tagging and "
     "knock-in constructs that place a tag (HA, FLAG, Myc, ALFA, HiBiT, SpyTag, "
-    "bungarotoxin-binding site, snorkel) in an extracellular loop or terminus, "
-    "and their surface-display / functional validation"
+    "BLAP, bungarotoxin-binding site / BBS, snorkel) in an extracellular loop "
+    "or terminus, and their surface-display / functional validation"
+)
+_TAG_SITE_INTERNAL_INTENT = (
+    "extracellular loop epitope / peptide tag insertion into this multipass "
+    "membrane protein (ECL1-ECL4, EC1-EC2, EL1-EL4, S1-S2, S3-S4, loop C, "
+    "HA, FLAG, Myc, ALFA, HiBiT, BLAP, bungarotoxin-binding site / BBS, "
+    "pHluorin, SpyTag, DogTag, transposon or domain-insertion screen, or "
+    "snorkel tag) — EXCLUDING N-terminal or C-terminal cytoplasmic fusions"
 )
 #: Compartment -> DeepTMHMM char for the viewer shape. "unknown" maps to None,
 #: never to "O": an underived compartment that renders as extracellular is the
@@ -155,36 +189,193 @@ CODE_EXECUTION_TOOL: list[dict[str, Any]] = [
 log = logging.getLogger(__name__)
 
 
-def tag_site_relevance(sequence: str) -> Callable[[str], float]:
+def tag_site_relevance(
+    sequence: str, *, internal_only: bool = False
+) -> Callable[[str], float]:
     """A per-sentence relevance term for draft extraction, scoring what a
     tag-site clip has to contain to be worth anything.
 
-    Draft extraction otherwise ranks sentences by POSITION and keeps the first
-    few per section, so for a paper of any length the agent receives the section
-    preamble and none of its findings. On the preprint behind five of the curated
-    controls that cost the one sentence naming the insertion residue; the agent
-    cited the general-method line it did receive and invented a position 64
-    residues away.
-
-    Two signals, deliberately additive rather than either/or:
-
-    * the sentence describes an insertion at all (:func:`quote_is_probative`);
-    * it names a residue the canonical sequence CONFIRMS
-      (:func:`residue_mentions`), which is what separates a real label from a
-      cell line or a histone mark.
-
-    A sentence with both outranks one with either, and both outrank the 1..2
-    band positional scoring occupies — so a finding can displace preamble, which
-    is the whole point."""
+    Signals (additive):
+    * describes an insertion/tag (:func:`quote_is_probative`): +3.0
+    * names a residue confirmed by ``sequence`` (:func:`residue_mentions`): +3.0
+    * when ``internal_only=True``:
+        - names an extracellular loop or internal insertion: +2.0
+        - describes an explicit N-/C-terminal fusion without mentioning a loop:
+          -3.5 (pushes cytoplasmic terminal GFP/FLAG noise below real loop hits)
+    """
     def score(text: str) -> float:
         value = 0.0
+        has_loop = is_internal_loop_mention(text)
         if quote_is_probative(text):
             value += 3.0
-        if residue_mentions(text, sequence=sequence):
+        if sequence and residue_mentions(text, sequence=sequence):
             value += 3.0
+        if internal_only:
+            if has_loop:
+                value += 2.0
+            elif is_cytoplasmic_terminal_fusion(text):
+                value -= 3.5
         return value
 
     return score
+
+
+def _cap_worth_fetching(
+    outcomes: list[Any],
+    papers_by_id: Mapping[str, Any],
+    *,
+    sequence: str,
+    internal_only: bool = False,
+    max_fetch: int = _MAX_WORTH_FETCHING,
+    pinned_ids: set[str] | None = None,
+    citation_counts: Mapping[str, int] | None = None,
+) -> list[Any]:
+    """Keep at most ``max_fetch`` highest-value ``worth_fetching`` outcomes,
+    downgrading excess ones to ``keep_abstract`` so their abstracts stay in the
+    pool without stalling on 80+ redundant full-text downloads."""
+    pinned = pinned_ids or set()
+    cites = citation_counts or {}
+    wf_indices = [
+        i
+        for i, o in enumerate(outcomes)
+        if getattr(getattr(o, "response", None), "decision", None) == "worth_fetching"
+    ]
+    if len(wf_indices) <= max_fetch:
+        return outcomes
+    scorer = tag_site_relevance(sequence, internal_only=internal_only)
+
+    def _priority(idx: int) -> tuple[int, float, int, int]:
+        o = outcomes[idx]
+        p = papers_by_id.get(o.paper_id)
+        is_pinned = 1 if o.paper_id in pinned else 0
+        title = (getattr(p, "title", "") or "") if p is not None else ""
+        abstract = (getattr(p, "abstract", "") or "") if p is not None else ""
+        cited = int(cites.get(o.paper_id, 0) or 0)
+        has_pmc = 1 if (p is not None and getattr(p, "pmc_id", None)) else 0
+        return (is_pinned, scorer(f"{title}. {abstract}"), cited, has_pmc)
+
+    ranked = sorted(wf_indices, key=_priority, reverse=True)
+    keep_set = set(ranked[: max(max_fetch, len(pinned))])
+    out = list(outcomes)
+    downgraded = 0
+    for idx in wf_indices:
+        if idx not in keep_set:
+            o = out[idx]
+            resp = o.response
+            out[idx] = type(o)(
+                paper_id=o.paper_id,
+                response=resp.model_copy(update={"decision": "keep_abstract"}),
+                usage=o.usage,
+                elapsed_s=o.elapsed_s,
+                error=o.error,
+            )
+            downgraded += 1
+    if downgraded:
+        log.info(
+            "  capped worth_fetching at %d (downgraded %d excess to keep_abstract)",
+            max_fetch,
+            downgraded,
+        )
+    return out
+
+
+def _cap_pool_per_paper(
+    pool: dict[str, Any],
+    *,
+    max_per_paper: int = _MAX_POOL_PER_PAPER,
+    keep_ids: set[str] | None = None,
+) -> dict[str, Any]:
+    """Limit each paper to at most ``max_per_paper`` clips in the selector menu
+    so one verbose GFP/localization paper cannot swallow 30+ menu slots.
+    Always preserves ``keep_ids`` (carried clips and residue-boosted clips)."""
+    if not pool or max_per_paper <= 0:
+        return pool
+    must_keep = keep_ids or set()
+    ordered = sorted(
+        pool.items(),
+        key=lambda kv: (1 if kv[0] in must_keep else 0, getattr(kv[1], "score", 0.0) or 0.0),
+        reverse=True,
+    )
+    out: dict[str, Any] = {}
+    counts: dict[str, int] = {}
+    for cid, draft in ordered:
+        sid = getattr(draft, "source_id", None) or cid
+        if cid in must_keep or counts.get(sid, 0) < max_per_paper:
+            out[cid] = draft
+            counts[sid] = counts.get(sid, 0) + 1
+    return out
+
+
+def _select_evidence_for_synthesis(
+    evidence: list[Any],
+    *,
+    sequence: str,
+    internal_only: bool = False,
+    max_clips: int = _MAX_SYNTHESIS_EVIDENCE,
+    max_per_paper: int = _MAX_SYNTHESIS_PER_PAPER,
+) -> list[Any]:
+    """Bound and diversify the span-verified evidence ledger before synthesis
+    so one multi-clip paper cannot crowd out independent papers or trigger
+    output truncation."""
+    if len(evidence) <= max_clips:
+        return evidence
+    scorer = tag_site_relevance(sequence, internal_only=internal_only)
+    conf_rank = {"strong": 2, "moderate": 1, "weak": 0}
+
+    def _rank_key(e: Any) -> tuple[float, int, int]:
+        span = e.spans[0] if getattr(e, "spans", None) else None
+        quote = (span.quote if span else "") or ""
+        claim = getattr(e, "claim", "") or ""
+        is_primary = 1 if getattr(e, "evidence_tier", "") == "primary" else 0
+        c_rank = conf_rank.get(str(getattr(e, "confidence", "")), 0)
+        return (scorer(f"{quote} {claim}"), is_primary, c_rank)
+
+    ranked = sorted(evidence, key=_rank_key, reverse=True)
+    chosen: list[Any] = []
+    per_source: dict[str, int] = {}
+    overflow: list[Any] = []
+    for e in ranked:
+        span = e.spans[0] if getattr(e, "spans", None) else None
+        sid = span.source.source_id if span and span.source else e.evidence_id
+        if per_source.get(sid, 0) < max_per_paper:
+            chosen.append(e)
+            per_source[sid] = per_source.get(sid, 0) + 1
+            if len(chosen) >= max_clips:
+                break
+        else:
+            overflow.append(e)
+    if len(chosen) < max_clips and overflow:
+        chosen.extend(overflow[: max_clips - len(chosen)])
+    log.info(
+        "  capped synthesis evidence ledger %d -> %d clips across %d distinct sources",
+        len(evidence),
+        len(chosen),
+        len(per_source),
+    )
+    return chosen
+
+
+def _needs_adaptive_web_search(
+    *,
+    pool: Mapping[str, Any],
+    actions: list[Any],
+    boosted: Mapping[str, set[int]],
+) -> tuple[bool, str]:
+    n_fetched = sum(1 for a in actions if bool(getattr(a, "fetched_body", False)))
+    boosted_sources = {
+        getattr(pool[cid], "source_id", cid) for cid in boosted if cid in pool
+    }
+    if n_fetched < _ADAPTIVE_MIN_FETCHED:
+        return True, f"fetched={n_fetched}<{_ADAPTIVE_MIN_FETCHED}"
+    if len(boosted_sources) < _ADAPTIVE_MIN_BOOSTED_PAPERS:
+        return (
+            True,
+            f"boosted_papers={len(boosted_sources)}<{_ADAPTIVE_MIN_BOOSTED_PAPERS}",
+        )
+    return (
+        False,
+        f"sufficient (fetched={n_fetched}, boosted_papers={len(boosted_sources)}, clips={len(pool)})",
+    )
 
 
 def load_tag_select_prompt() -> str:
@@ -280,6 +471,8 @@ def enforce_position_claims(
     client: Any | None = None,
     frames: list[Frame] | None = None,
     reference_label: str = "member",
+    verifier_model: str = DEFAULT_TAG_SITE_TRIAGE_MODEL,
+    usage_sink: list[Any] | None = None,
 ) -> TagSiteResult:
     """Downgrade ``position_evidence`` to ``inferred`` on any site whose quote
     does not NAME its position.
@@ -345,7 +538,11 @@ def enforce_position_claims(
         # — it handles the spellings no pattern list covers, and returns NONE
         # for the numbers that are durations, figures and catalogue ids.
         stated = verify_position_blind(
-            s.supporting_quote, client=client, max_residue=len(sequence)
+            s.supporting_quote,
+            client=client,
+            max_residue=len(sequence),
+            model=verifier_model,
+            usage_sink=usage_sink,
         )
         if stated is not None and stated in {n - 1, n, n + 1}:
             # Say so. Without this the verifier is invisible: two sites were
@@ -556,59 +753,53 @@ def run_tag_site_agent(
     frame_label: str = "member",
     select_max_batches: int = 1,
     faceted_discovery: bool = False,
+    web_search_mode: WebSearchMode = "adaptive",
+    model: str = DEFAULT_TAG_SITE_MODEL,
+    triage_model: str = DEFAULT_TAG_SITE_TRIAGE_MODEL,
+    web_scout_model: str = DEFAULT_TAG_SITE_WEB_SCOUT_MODEL,
+    triage_concurrency: int | None = None,
+    use_caches: bool = True,
+    extra_paper_ids: list[str] | None = None,
+    skip_discovery: bool = False,
+    seed_papers: dict[str, Paper] | None = None,
+    seed_triage_cache: dict[str, dict[str, Any]] | None = None,
+    follow_construct_refs: bool | None = None,
+    max_worth_fetching: int = _MAX_WORTH_FETCHING,
+    max_pool_per_paper: int = _MAX_POOL_PER_PAPER,
 ) -> TagSiteResult:
-    """Discover papers (+ preprints, retraction-filtered), triage, pool + span-verify
-    tag-insertion clips (shared clip pipeline), then synthesize a validated, ranked
-    :class:`TagSiteResult` grounded in that evidence ledger. ``aliases`` should
-    include the protein name(s).
-
-    The ENRICHMENT parameters are all inert by default, so the single-gene
-    control path behaves exactly as before:
-
-    * ``loop_inventory`` — prompt text naming this construct's extracellular
-      regions in its OWN numbering, and saying terminal sites are out of scope.
-    * ``prior_clips`` — clips an earlier run cited, seeded into the pool so a
-      paper that degraded to abstract-only today cannot take a known site with
-      it (179 papers degraded across one 20-gene sweep).
-    * ``seen_keys`` / ``covered_junctions`` — what an earlier run already
-      examined, and the junctions we already publish. Clips matching either are
-      not new evidence; if nothing new survives, the run returns BEFORE the
-      selector and the synthesizer.
-    * ``numbered_against`` — the sha256 of the sequence these positions are
-      expressed in, stamped on the archive so a published position is never
-      ambiguous about which proteoform it belongs to.
-    * ``alternate_frames`` — the proteoforms a citation might be numbering in
-      (canonical, mature, sibling isoforms). A paper will essentially never use
-      a designed ORF's coordinates, so for those members canonical is the
-      EXPECTED frame and "the construct's own numbering does not confirm it" is
-      the normal state rather than a failure. Each accepted site records which
-      frame proved it in ``position_frame``.
-
-    ``sp_end`` is the AUTHORITATIVE signal-peptide end (UniProt's ``Signal``
-    feature). Pass it whenever you have it: it beats the DeepTMHMM run encoded in
-    ``topology``, which disagrees with UniProt for a real fraction of genes, and
-    it is what both the prompt landmarks and the geometry gate key off."""
+    """Discover papers (+ preprints, retraction-filtered), triage with the
+    dedicated tag-site Haiku prompt, cap & fetch full-text bodies with loop-
+    aware relevance, run adaptive web search + optional 1-hop construct-citation
+    follow-up, boost & select clips, then synthesize a validated, ranked
+    :class:`TagSiteResult` grounded in the span-verified evidence ledger."""
     client = client or get_client()
     http = http or open_default_client()
     usage_sink = usage_sink if usage_sink is not None else []
+    caches_active = use_caches and isinstance(http, CachedHTTP)
+    internal_only = bool(loop_inventory)
+    do_ref_followup = (
+        internal_only if follow_construct_refs is None else bool(follow_construct_refs)
+    )
+    web_intent = _TAG_SITE_INTERNAL_INTENT if internal_only else _TAG_SITE_INTENT
 
     try:
         ri = _retraction_from_http(http)  # best-effort Retraction Watch index
     except Exception:  # noqa: BLE001 - never block on the retraction fetch
         ri = _empty_retraction()
 
-    # What the run knows SO FAR. The three _empty() paths below returned before
-    # the stamping at the end of this function, so a gene that legitimately found
-    # nothing wrote an intermediates dict holding nothing — not even its own
-    # symbol. The first library sweep produced 759 such rows out of 1,825: $344
-    # of spend that could not be attributed to a gene, and a resume that would
-    # have paid for every one of them twice, because the skip set keys on
-    # gene_symbol. _empty() exists because the RESULT had this identical hole;
-    # this closes it for the archive, and the defaults below are the correct
-    # answers for a run that stopped early rather than placeholders.
     _progress: dict[str, Any] = {
         "gene_symbol": gene_symbol,
+        "model": model,
+        "triage_model": triage_model,
+        "web_scout_model": web_scout_model,
+        "web_search_mode": web_search_mode,
+        "web_search_used": False,
+        "web_search_reason": None,
+        "web_search_paper_ids": [],
+        "followup_ref_ids": [],
+        "extra_paper_ids": list(extra_paper_ids or ()),
         "n_papers": 0,
+        "n_papers_fetched": 0,
         "n_clips": 0,
         "n_boosted": 0,
         "boosted": {},
@@ -621,6 +812,9 @@ def run_tag_site_agent(
         "n_new_clips": 0,
         "n_carried": 0,
         "n_dropped_covered": 0,
+        "n_refusals": 0,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": 0,
         "numbered_against": numbered_against,
         "outcome": "incomplete",
         "sites": [],
@@ -629,22 +823,18 @@ def run_tag_site_agent(
     def _stamp(**final: Any) -> None:
         """Write the run's account into the caller's dict. Every return goes
         through here, so a new early return cannot silently skip it."""
+        n_ref = sum(
+            1 for u in usage_sink if getattr(u, "api_stop_reason", None) == "refusal"
+        )
+        cr = sum(int(getattr(u, "cache_read_input_tokens", 0) or 0) for u in usage_sink)
+        cw = sum(int(getattr(u, "cache_creation_input_tokens", 0) or 0) for u in usage_sink)
+        _progress["n_refusals"] = n_ref
+        _progress["cache_read_tokens"] = cr
+        _progress["cache_write_tokens"] = cw
         if intermediates is not None:
             intermediates.update({**_progress, **final})
 
     def _empty() -> TagSiteResult:
-        """An empty result is still a result, and carries its provenance.
-
-        There are three early returns through here — no papers, no evidence, a
-        synthesis that came back None — and each bypassed the stamping at the
-        end of the function. A gene that ran and legitimately found nothing was
-        therefore indistinguishable from one that never ran: ITGB5 came out of a
-        24-gene sweep with no prompt_sha while every other gene carried one,
-        including VANGL1, which also found nothing but reached the normal path.
-
-        "Ran under prompt X and found nothing" is exactly the fact the
-        provenance rule exists to preserve — a zero that cannot be dated has to
-        be re-run to be trusted."""
         _stamp()
         return TagSiteResult(
             gene_symbol=gene_symbol,
@@ -652,69 +842,338 @@ def run_tag_site_agent(
             sequence_length=len(sequence or ""),
             prompt_sha=prompt_sha(),
             prompt_version=TAG_SITE_PROMPT_VERSION,
-            model=SONNET_MODEL,
+            model=model,
             generated_at=datetime.now(UTC).isoformat(),
         )
 
-    # 1. Discovery: repo lit-search + shared web_search complement, hydrated to real
-    # Papers keyed by paper_source_id (deterministic pool wins on collision).
-    # Seed with everything previous runs found for this gene, so a paper that is
-    # only reachable through web search cannot vanish between runs.
-    papers = discover_tag_site_papers(
-        http=http,
-        gene_symbol=gene_symbol,
-        aliases=aliases,
-        retraction_index=ri,
-        cached=load_discovery_cache(gene_symbol, cache_dir=DISCOVERY_CACHE_DIR),
-        faceted=faceted_discovery,
-    )
-    for wp in web_discover_papers(
-        client,
-        intent=_TAG_SITE_INTENT,
-        gene_names=[protein_name, *aliases],
-        http=http,
-        retraction_index=ri,
-        usage_sink=usage_sink,
-    ):
-        papers.setdefault(paper_source_id(wp), wp)
+    all_names = [n for n in dict.fromkeys([gene_symbol, protein_name, *aliases]) if n]
+    triage_syns = [
+        s for s in all_names if s.strip().upper() != gene_symbol.strip().upper()
+    ]
+    _tsha = triage_prompt_sha(internal_only=internal_only)
+
+    def _triage_papers(target_papers: dict[str, Paper]) -> list[Any]:
+        if not target_papers:
+            return []
+        cached_map: dict[str, dict[str, Any]] = dict(seed_triage_cache or {})
+        if caches_active:
+            cached_map.update(load_triage_cache(gene_symbol))
+        todo, reused = split_triage(
+            target_papers, cached_map, prompt_sha=_tsha, model=triage_model
+        )
+        if reused:
+            log.info(
+                "  %s: reusing %d cached triage verdict(s) [%s]; %d to run",
+                gene_symbol,
+                len(reused),
+                triage_model,
+                len(todo),
+            )
+        triage_kw: dict[str, Any] = {
+            "papers": todo,
+            "gene": gene_symbol,
+            "synonyms": triage_syns,
+            "internal_only": internal_only,
+            "model": triage_model,
+        }
+        if triage_concurrency is not None:
+            triage_kw["concurrency"] = triage_concurrency
+        fresh = triage_abstracts(client, **triage_kw) if todo else []
+        usage_sink.extend(o.usage for o in fresh if getattr(o, "usage", None))
+        if fresh and caches_active:
+            save_triage_cache(
+                gene_symbol,
+                fresh,
+                prompt_sha=_tsha,
+                inputs={sid: triage_input_sha(p) for sid, p in target_papers.items()},
+                model=triage_model,
+            )
+        return reused + fresh
+
+    def _run_web_scout(known: dict[str, Paper] | None = None) -> list[Paper]:
+        _progress["web_search_used"] = True
+        if caches_active:
+            cached_ws_ids = load_web_search_cache(
+                gene_symbol,
+                model=web_scout_model,
+                max_uses=_WEB_SEARCH_MAX_USES,
+                intent=web_intent,
+                cache_dir=DISCOVERY_CACHE_DIR,
+            )
+            if cached_ws_ids is not None:
+                _progress["web_search_paper_ids"] = list(cached_ws_ids)
+                log.info(
+                    "  %s: reusing cached web_search result (%d hit(s), model=%s)",
+                    gene_symbol,
+                    len(cached_ws_ids),
+                    web_scout_model,
+                )
+                reused_hits: list[Paper] = []
+                missing_ids: list[str] = []
+                for cid in cached_ws_ids:
+                    if known and cid in known:
+                        reused_hits.append(known[cid])
+                    else:
+                        missing_ids.append(cid)
+                if missing_ids and isinstance(http, CachedHTTP):
+                    hydrated = hydrate_paper_ids(
+                        missing_ids, http=http, retraction_index=ri
+                    )
+                    reused_hits.extend(hydrated.values())
+                return reused_hits
+        hits = web_discover_papers(
+            client,
+            intent=web_intent,
+            gene_names=all_names,
+            http=http,
+            retraction_index=ri,
+            usage_sink=usage_sink,
+            max_uses=_WEB_SEARCH_MAX_USES,
+            model=web_scout_model,
+        )
+        hit_ids = [paper_source_id(p) for p in hits]
+        _progress["web_search_paper_ids"] = hit_ids
+        if caches_active:
+            save_web_search_cache(
+                gene_symbol,
+                hit_ids,
+                model=web_scout_model,
+                max_uses=_WEB_SEARCH_MAX_USES,
+                intent=web_intent,
+                cache_dir=DISCOVERY_CACHE_DIR,
+            )
+        return hits
+
+    # 1. Discovery: deterministic EuropePMC (TITLE_ABS + SRC:PPR) + PubTator,
+    # seeded from R2/local discovery cache + optional user-supplied extra papers.
+    cached_papers: dict[str, Paper] = dict(seed_papers or {})
+    if use_caches:
+        cached_papers.update(
+            load_discovery_cache(gene_symbol, cache_dir=DISCOVERY_CACHE_DIR)
+        )
+    citation_counts: dict[str, int] = {}
+    if skip_discovery and cached_papers:
+        papers: dict[str, Paper] = dict(cached_papers)
+        log.info("  %s: skip_discovery=True — using %d seeded paper(s)", gene_symbol, len(papers))
+    else:
+        papers = discover_tag_site_papers(
+            http=http,
+            gene_symbol=gene_symbol,
+            aliases=aliases,
+            retraction_index=ri,
+            cached=cached_papers or None,
+            faceted=faceted_discovery,
+            internal_only=internal_only,
+            include_preprint_pass=True,
+            citation_counts_out=citation_counts,
+        )
+
+    pinned_extra_papers: dict[str, Paper] = {}
+    if extra_paper_ids and isinstance(http, CachedHTTP):
+        pinned_extra_papers = hydrate_paper_ids(
+            extra_paper_ids, http=http, retraction_index=ri
+        )
+        for sid, paper in pinned_extra_papers.items():
+            papers[sid] = paper
+
+    if web_search_mode == "always":
+        _progress["web_search_reason"] = "mode=always"
+        for wp in _run_web_scout(papers):
+            sid = paper_source_id(wp)
+            papers.setdefault(sid, wp)
+            pinned_extra_papers.setdefault(sid, wp)
+    elif web_search_mode == "adaptive" and not papers:
+        _progress["web_search_reason"] = "deterministic_empty"
+        for wp in _run_web_scout(papers):
+            sid = paper_source_id(wp)
+            papers.setdefault(sid, wp)
+            pinned_extra_papers.setdefault(sid, wp)
+
     papers_by_id: dict[str, Paper] = {paper_source_id(p): p for p in papers.values()}
-    save_discovery_cache(gene_symbol, papers_by_id, cache_dir=DISCOVERY_CACHE_DIR)
+    if use_caches and papers_by_id:
+        save_discovery_cache(gene_symbol, papers_by_id, cache_dir=DISCOVERY_CACHE_DIR)
     _progress["n_papers"] = len(papers_by_id)
     if not papers_by_id:
-        # Distinct reasons, because "empty" without a reason is what made 10 of
-        # 26 live runs unexplainable from their own record.
         _progress["outcome"] = "no_papers_discovered"
         return _empty()
 
-    # 2. Abstract triage -> 3. body pool + real source store (shared).
-    # Resume: reuse verdicts this gene already has under the SAME triage prompt.
-    # Triage is ~90% of a run's model calls (one per discovered paper), and it
-    # was recomputed from scratch every time — so re-running a gene after a
-    # SYNTHESIS prompt edit paid the whole triage bill again for identical
-    # verdicts. A changed triage prompt_sha invalidates the lot automatically.
-    _tsha = triage_prompt_sha()
-    _cached = load_triage_cache(gene_symbol)
-    _todo, _reused = split_triage(papers_by_id, _cached, prompt_sha=_tsha)
-    if _reused:
-        log.info("  %s: reusing %d cached triage verdict(s); %d to run",
-                 gene_symbol, len(_reused), len(_todo))
-    outcomes = _reused + (
-        triage_abstracts(client, papers=_todo, gene=gene_symbol) if _todo else []
+    # 2. Dedicated tag-site abstract triage -> 3. capped body fetch -> clip pool.
+    pinned_ids = set(pinned_extra_papers)
+    papers_to_triage = {
+        sid: p for sid, p in papers_by_id.items() if sid not in pinned_ids
+    }
+    outcomes = _triage_papers(papers_to_triage)
+    if pinned_extra_papers:
+        outcomes.extend(force_worth_fetching_outcomes(pinned_extra_papers))
+    outcomes = _cap_worth_fetching(
+        outcomes,
+        papers_by_id,
+        sequence=sequence,
+        internal_only=internal_only,
+        max_fetch=max_worth_fetching,
+        pinned_ids=pinned_ids,
+        citation_counts=citation_counts,
     )
-    save_triage_cache(
-        gene_symbol, outcomes, prompt_sha=_tsha,
-        inputs={sid: triage_input_sha(p) for sid, p in papers_by_id.items()},
-    )
-    if usage_sink is not None:
-        # `TriageOutcome.usage` is a populated UsageRecord (Haiku-priced) that
-        # nothing collected, so abstract triage — the biggest fan-out, one call
-        # per paper — contributed nothing to any cost total.
-        usage_sink.extend(o.usage for o in outcomes if getattr(o, "usage", None))
+    rel_fn = tag_site_relevance(sequence, internal_only=internal_only) if sequence else None
     pool, actions = build_pool(
-        outcomes, papers_by_id, http=http, retraction_index=ri,
-        relevance=tag_site_relevance(sequence) if sequence else None,
+        outcomes, papers_by_id, http=http, retraction_index=ri, relevance=rel_fn
     )
+
+    # Initial boost pass so adaptive web search knows whether deterministic
+    # discovery already delivered residue-pinned extracellular clips.
+    boosted: dict[str, set[int]] = {}
+    if sequence and topology:
+        boosted = boost_residue_clips(
+            pool,
+            sequence=sequence,
+            topology=topology,
+            alternate_frames=alternate_frames,
+            internal_only=internal_only,
+        )
+
+    def _merge_extra_papers(
+        new_papers: dict[str, Paper],
+        *,
+        force_fetch: bool,
+        reason: str = "1-hop construct citation follow-up",
+    ) -> None:
+        if not new_papers:
+            return
+        for sid, p in new_papers.items():
+            papers_by_id[sid] = p
+        if use_caches:
+            save_discovery_cache(gene_symbol, papers_by_id, cache_dir=DISCOVERY_CACHE_DIR)
+        _progress["n_papers"] = len(papers_by_id)
+        if force_fetch:
+            sub_outcomes = force_worth_fetching_outcomes(new_papers, reason=reason)
+        else:
+            sub_outcomes = _triage_papers(new_papers)
+        outcomes.extend(sub_outcomes)
+        sub_pool, sub_actions = build_pool(
+            sub_outcomes, new_papers, http=http, retraction_index=ri, relevance=rel_fn
+        )
+        for cid, draft in sub_pool.items():
+            key = cid
+            k = 2
+            while key in pool:
+                key = f"{cid}_{k}"
+                k += 1
+            pool[key] = draft.model_copy(update={"suggested_evidence_id": key})
+        actions.extend(sub_actions)
+
+    # Adaptive web_search: only pay for the Haiku 5.5 web scout when
+    # deterministic discovery left thin full-text or residue-pinned coverage.
+    # Force-fetch the 1-6 targeted web_search hits directly (even if already
+    # in papers_by_id and discarded by abstract-only triage) because web_search
+    # searched full text for Methods-hidden extracellular loop tags.
+    if web_search_mode == "adaptive" and not _progress["web_search_used"]:
+        need_ws, ws_reason = _needs_adaptive_web_search(
+            pool=pool, actions=actions, boosted=boosted
+        )
+        _progress["web_search_reason"] = ws_reason
+        log.info("  %s: adaptive web_search=%s (%s)", gene_symbol, need_ws, ws_reason)
+        if need_ws:
+            already_fetched = set(pinned_ids) | {
+                o.paper_id
+                for o in outcomes
+                if o.response is not None and o.response.decision == "worth_fetching"
+            }
+            web_to_fetch: dict[str, Paper] = {}
+            for wp in _run_web_scout(papers_by_id):
+                sid = paper_source_id(wp)
+                if sid not in already_fetched:
+                    web_to_fetch[sid] = papers_by_id.get(sid, wp)
+            _merge_extra_papers(
+                web_to_fetch, force_fetch=True, reason="adaptive web_search hit"
+            )
+
+    # Optional 1-hop construct-citation follow-up (e.g. "BLAP-KCNN3 as
+    # previously described [18]") when we still have <2 residue-boosted papers.
+    if do_ref_followup and isinstance(http, CachedHTTP):
+        boosted_sources = {
+            getattr(pool[cid], "source_id", cid) for cid in boosted if cid in pool
+        }
+        if len(boosted_sources) < 2 and pool:
+            ref_ids = find_construct_followup_paper_ids(
+                pool.values(), papers_by_id=papers_by_id, http=http, max_refs=3
+            )
+            if ref_ids:
+                _progress["followup_ref_ids"] = list(ref_ids)
+                log.info(
+                    "  %s: 1-hop construct citation follow-up -> %s",
+                    gene_symbol,
+                    ref_ids,
+                )
+                hydrated_refs = hydrate_paper_ids(
+                    ref_ids, http=http, retraction_index=ri
+                )
+                new_refs = {
+                    sid: p for sid, p in hydrated_refs.items() if sid not in papers_by_id
+                }
+                _merge_extra_papers(new_refs, force_fetch=True)
+
+    # Re-run boosting if adaptive web search or 1-hop ref follow-up grew the pool.
+    if sequence and topology and (
+        _progress["web_search_paper_ids"] or _progress["followup_ref_ids"]
+    ):
+        boosted = boost_residue_clips(
+            pool,
+            sequence=sequence,
+            topology=topology,
+            alternate_frames=alternate_frames,
+            internal_only=internal_only,
+        )
+
+    if boosted:
+        log.info(
+            "  %s: boosted %d/%d clips naming an extracellular residue",
+            gene_symbol,
+            len(boosted),
+            len(pool),
+        )
+        for key, positions in list(boosted.items())[:12]:
+            clip = pool[key]
+            log.info(
+                "      %s @%s: %s",
+                getattr(clip, "source_id", key),
+                sorted(positions),
+                (getattr(clip, "quote", "") or "")[:110],
+            )
+
     fetched_by_id = {a.paper_id: bool(getattr(a, "fetched_body", False)) for a in actions}
+    _progress["n_papers_fetched"] = sum(1 for v in fetched_by_id.values() if v)
+    _progress["fetch_actions"] = [
+        {
+            "paper_id": getattr(a, "paper_id", None),
+            "decision": getattr(a, "decision", None),
+            "fetched_body": bool(getattr(a, "fetched_body", False)),
+            "body_source": getattr(a, "fetch_source", None) or getattr(a, "body_source", None),
+            "n_drafts": getattr(a, "drafts_added", None),
+            "error": getattr(a, "fetch_error", None) or getattr(a, "error", None),
+        }
+        for a in actions
+    ]
+    _progress["triage_verdicts"] = {
+        getattr(o, "paper_id", ""): {
+            "decision": getattr(getattr(o, "response", None), "decision", None),
+            "reason": getattr(getattr(o, "response", None), "reason", None),
+            "prompt_sha": _tsha,
+            "input_sha": (
+                triage_input_sha(papers_by_id[o.paper_id])
+                if getattr(o, "paper_id", None) in papers_by_id
+                else None
+            ),
+            "model": triage_model,
+            "error": getattr(o, "error", None),
+        }
+        for o in outcomes
+        if getattr(o, "paper_id", None)
+    }
+    _progress["discovered_papers"] = {
+        sid: (p.model_dump(mode="json") if hasattr(p, "model_dump") else dict(vars(p)))
+        for sid, p in papers_by_id.items()
+    }
+
     papers_by_source_id = {
         pid: (paper, fetched_by_id.get(pid, False)) for pid, paper in papers_by_id.items()
     }
@@ -722,41 +1181,12 @@ def run_tag_site_agent(
         pool, papers_by_source_id=papers_by_source_id, http=http, retraction_index=ri
     )
 
-    # 4. Clip select (tag-site prompt) -> 5. span-verified promotion. Keep only
-    # clips whose quote has a real char offset into the fetched body.
-    #
-    # First lift clips that NAME an extracellular residue. The selector keeps only
-    # the top clips by score, which on a well-studied gene drops most of the pool
-    # (TFRC: 746 -> 100), so a clip pinning a real insertion can be cut before the
-    # model ever sees it.
-    boosted: dict[str, set[int]] = {}
-    if sequence and topology:
-        boosted = boost_residue_clips(pool, sequence=sequence, topology=topology)
-        if boosted:
-            log.info("  %s: boosted %d/%d clips naming an extracellular residue",
-                     gene_symbol, len(boosted), len(pool))
-            # Name them. A bare count cannot answer "was the right clip lifted?"
-            # once the run is over, because the pool is not persisted.
-            for key, positions in list(boosted.items())[:12]:
-                clip = pool[key]
-                log.info("      %s @%s: %s",
-                         getattr(clip, "source_id", key), sorted(positions),
-                         (getattr(clip, "quote", "") or "")[:110])
-    # Carry forward what an earlier run cited. The pool is not monotonic across
-    # runs — 179 papers degraded to abstract-only across one 20-gene sweep, and
-    # a degraded paper contributes no methods clips — so a clip good enough to
-    # cite once is put back in front of the model regardless of what the
-    # publisher's server is doing today.
-    carried = (
-        seed_pool(pool, prior_clips, store=store) if prior_clips else set()
-    )
+    # Carry forward what an earlier run cited.
+    carried = seed_pool(pool, prior_clips, store=store) if prior_clips else set()
     if carried:
-        log.info("  %s: carried %d previously-cited clip(s) forward",
-                 gene_symbol, len(carried))
+        log.info("  %s: carried %d previously-cited clip(s) forward", gene_symbol, len(carried))
 
-    # Drop clips that only restate a junction we already publish. Menu budget
-    # is the scarce resource; corroboration does not need a slot. A clip naming
-    # one covered AND one uncovered residue is kept by `covered_clip_ids`.
+    # Drop clips that only restate a junction we already publish.
     dropped_covered = (
         covered_clip_ids(pool, sequence=sequence, covered_junctions=covered_junctions)
         if covered_junctions
@@ -765,13 +1195,17 @@ def run_tag_site_agent(
     for cid in dropped_covered:
         pool.pop(cid, None)
     if dropped_covered:
-        log.info("  %s: dropped %d clip(s) restating an already-published junction",
-                 gene_symbol, len(dropped_covered))
+        log.info(
+            "  %s: dropped %d clip(s) restating an already-published junction",
+            gene_symbol,
+            len(dropped_covered),
+        )
 
-    # Only an enrichment run has anything to subtract, and the bookkeeping reads
-    # each clip's source_id — so on the ordinary path it is skipped entirely
-    # rather than computed and discarded. "Inert by default" has to mean not
-    # running, not running to a no-op.
+    # Cap per-paper clips in the menu (always preserving carried & residue-boosted clips).
+    pool = _cap_pool_per_paper(
+        pool, max_per_paper=max_pool_per_paper, keep_ids=carried | set(boosted)
+    )
+
     enriching = bool(seen_keys or carried or dropped_covered)
     if enriching:
         scope = EnrichmentScope(
@@ -791,17 +1225,12 @@ def run_tag_site_agent(
         "new_clip_ids": fresh_ids,
     })
 
-    # The pause gate. The selector and the synthesizer are the expensive half of
-    # a run, and a gene whose every clip an earlier run already examined has a
-    # known answer — re-deriving it would pay full price for the same sites.
-    # Inert on the ordinary path: with no seen_keys every fresh clip is new.
     if enriching and n_new == 0:
-        log.info("  %s: no new evidence in %d clip(s) — stopping before synthesis",
-                 gene_symbol, len(pool))
-        # Set it on _progress, not via _stamp's overrides: _empty() stamps
-        # again on its way out, and `_stamp()` with no overrides re-applies
-        # _progress — so an outcome passed as an override would be wiped by the
-        # very call that records the empty result.
+        log.info(
+            "  %s: no new evidence in %d clip(s) — stopping before synthesis",
+            gene_symbol,
+            len(pool),
+        )
         _progress["outcome"] = "no_new_evidence"
         return _empty()
 
@@ -811,15 +1240,11 @@ def run_tag_site_agent(
         gene=gene_symbol,
         synonyms=aliases,
         system_prompt=load_tag_select_prompt(),
+        model=model,
         menu_instruction=_TAG_SELECT_MENU_INSTRUCTION,
         usage_sink=usage_sink,
         max_batches=select_max_batches,
     )
-    # Persist the pool the selector was OFFERED, with its decision per clip.
-    # Written here rather than earlier because `selected` is only known now, and
-    # written before the evidence filter so it survives every exit below — the
-    # artifact's whole purpose is answering "why was this clip not proposed"
-    # without paying for another run.
     _progress["pool"] = _pool_index(
         pool,
         boosted=boosted,
@@ -830,18 +1255,20 @@ def run_tag_site_agent(
         },
     )
 
-    evidence = [
+    evidence_all = [
         e
         for e in promote(
             selection, pool=pool, store=store, evidence_id_prefix=_TAG_EVIDENCE_ID_PREFIX
         )
         if e.entailment_verified
     ]
-    if not evidence:
-        # No span-verified tag-insertion clip -> the correct answer is ZERO sites
-        # (never a structural-inference guess); skip the synthesis call entirely.
+    if not evidence_all:
         _progress["outcome"] = "no_span_verified_evidence"
         return _empty()
+
+    evidence = _select_evidence_for_synthesis(
+        evidence_all, sequence=sequence, internal_only=internal_only
+    )
 
     # 6. Synthesis: the geometry/validation/snorkel rules read the span-verified ledger.
     user_prompt = build_user_prompt(
@@ -849,16 +1276,9 @@ def run_tag_site_agent(
         sp_end=sp_end,
     )
     if loop_inventory:
-        # Data, not prompt: this names the protein under study, so it belongs in
-        # the USER prompt. The system prompt stays gene-agnostic, which is what
-        # the prompt-leak tests enforce and why they exist — a worked example
-        # naming a real gene biases every other gene's call.
         user_prompt = f"{user_prompt}\n\nCONSTRUCT GEOMETRY: {loop_inventory}"
     user_prompt = f"{user_prompt}\n\n{format_evidence_ledger(evidence)}"
 
-    # n_repair_attempts + validation_error, as every v2 builder records. Without
-    # it a repair cascade is only visible by reading raw logs, which is how the
-    # KCNH2 13-error cascade went unnoticed.
     synth_meta: dict[str, Any] = {}
     result = call_builder(
         client,
@@ -867,46 +1287,21 @@ def run_tag_site_agent(
         schema=TagSiteResult,
         usage_sink=usage_sink,
         label=f"tag_site:{gene_symbol}",
-        max_tokens=32_000,  # 16k default truncated multi-site outputs (e.g. SLC6A4)
+        max_tokens=32_000,
         tools=CODE_EXECUTION_TOOL,
         meta_sink=synth_meta,
+        model=model,
     )
     if result is None:
         _progress["outcome"] = "synthesis_returned_nothing"
         return _empty()
-    assert isinstance(result, TagSiteResult)  # expect_array=False -> single instance
-    # Anything the model put here is its own editorial judgement, not a gate
-    # record; `notes` is where that belongs.
+    assert isinstance(result, TagSiteResult)
     result.rejected = []
 
-    # Identity is ours, not the model's: we passed the symbol and accession in and
-    # computed the sequence. Stamping them here keeps the record's provenance
-    # honest and lets the prompt stop asking for three fields it cannot know
-    # better than we do.
     result.gene_symbol = gene_symbol
     result.uniprot_accession = uniprot_accession
     result.sequence_length = len(sequence or "")
 
-    # 7. Post-process. Three gates, each removing a class of site that was
-    # previously shipped unchecked:
-    #   a) entailment — a quote that is not in the ledger is not evidence, so the
-    #      site is DROPPED, not merely down-ranked.
-    #   b) geometry — the junction is re-derived from the computed sequence and
-    #      topology, repaired where that is deterministic, rejected otherwise.
-    #   c) validation + ranking, as before.
-    # Repair before the gate — but ONLY a repair that proves the citation, which
-    # is the narrow case `apply_geometry_pass`'s "repair FIRST, then gate" rule
-    # actually licenses. `recover_overcomplete_quotes` fires only when the
-    # model's text CONTAINS a real ledger clip, and stores that clip, so it
-    # cannot invent support; this is what rescues KCNH2 T436, deleted for
-    # quoting its source more completely than the clip stored.
-    #
-    # `upgrade_quotes` stays AFTER the drop. It rescues a weak quote by swapping
-    # in another ledger line, and falls back to any probative quote when none
-    # names the residue — ahead of the gate that would let a wholly invented
-    # quote survive wearing a real but unrelated citation, which is worse than
-    # dropping the site.
-    # Resolve cited ids to their quotes BEFORE any check reads a quote.
     fill_quotes_from_ledger(result, evidence=evidence)
     verify_entailment(result, evidence=evidence)
     recover_overcomplete_quotes(result, evidence=evidence)
@@ -914,8 +1309,12 @@ def run_tag_site_agent(
 
     for _s in result.sites:
         if not _s.entailment_verified:
-            log.info("  %s: dropped %s — quote not found in the ledger: %.120r",
-                     gene_symbol, _s.residue_label, _s.supporting_quote or "")
+            log.info(
+                "  %s: dropped %s — quote not found in the ledger: %.120r",
+                gene_symbol,
+                _s.residue_label,
+                _s.supporting_quote or "",
+            )
             result.rejected.append(RejectedSite(
                 residue_label=_s.residue_label,
                 insert_after_residue=_s.insert_after_residue,
@@ -926,11 +1325,14 @@ def run_tag_site_agent(
     result.sites = [s for s in result.sites if s.entailment_verified]
     attach_source_pmids(result, evidence=evidence, papers_by_id=papers_by_id)
     upgrade_quotes(result, evidence=evidence)
-    #   b2) a site may claim a VALIDATED position only if its quote names it;
-    #       otherwise the position came from topology, not from the citation.
     enforce_position_claims(
-        result, sequence=sequence, client=client,
-        frames=alternate_frames, reference_label=frame_label,
+        result,
+        sequence=sequence,
+        client=client,
+        frames=alternate_frames,
+        reference_label=frame_label,
+        verifier_model=triage_model,
+        usage_sink=usage_sink,
     )
     enforce_evidence_type_coupling(result)
     if sequence and topology:
@@ -945,13 +1347,11 @@ def run_tag_site_agent(
             result.rejected.append(RejectedSite(
                 residue_label=site.residue_label,
                 insert_after_residue=site.insert_after_residue,
-                gate="geometry", reason=reason,
+                gate="geometry",
+                reason=reason,
             ))
         result.sites = kept
-    # The clip pool and the ledger were never persisted — the code says so twice
-    # — so after a run finished there was no way to ask which clips were
-    # available, what the model was shown, or why a site was not proposed. Every
-    # such question cost a fresh run to answer.
+
     _stamp(
         ledger=[
             {
@@ -966,22 +1366,14 @@ def run_tag_site_agent(
         notes=result.notes,
         n_sites=len(result.sites),
         rejected=[x.model_dump() for x in result.rejected],
-        # Published positions that are NOT surface sites: tolerated
-        # intracellular insertions, and positions a paper reports as
-        # function-abrogating. Both were visible only as numbers inside a ledger
-        # sentence before this.
         other_positions=[x.model_dump() for x in result.other_positions],
-        # The emitted sites themselves. The depth spike kept only n_sites, so
-        # verifying its own junctions afterwards meant reconstructing them from
-        # log prose — and a sweep that cannot be checked afterwards cannot be
-        # trusted afterwards.
         sites=[x.model_dump() for x in result.sites],
         outcome="synthesized",
     )
 
     result.prompt_sha = prompt_sha()
     result.prompt_version = TAG_SITE_PROMPT_VERSION
-    result.model = SONNET_MODEL
+    result.model = model
     result.generated_at = datetime.now(UTC).isoformat()
     return rank_sites(result)
 
