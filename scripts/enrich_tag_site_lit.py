@@ -56,6 +56,14 @@ load_env()
 
 from accessible_surfaceome.agents.tag_site.enrichment import seen_key  # noqa: E402
 from accessible_surfaceome.agents.tag_site.frames import Frame  # noqa: E402
+from accessible_surfaceome.agents.tag_site.intermediates import (  # noqa: E402
+    build_intermediates_payload,
+    has_missed_preprint_body,
+    load_intermediates_r2,
+    save_intermediates_local,
+    seed_from_intermediates,
+    upload_intermediates_r2,
+)
 from accessible_surfaceome.agents.tag_site.member_frames import (  # noqa: E402
     Member,
     MemberFrame,
@@ -375,6 +383,9 @@ def enrich_member(
     follow_construct_refs: bool = True,
     include_rodent_orthologs: bool = True,
     independent: bool = True,
+    from_r2: bool = False,
+    upload_r2: bool = False,
+    run_id: str = RUN_ID,
 ) -> dict[str, Any]:
     http_client = http or open_default_client()
     name, aliases, sp_end = uniprot_names(base_acc, http=http_client)
@@ -383,6 +394,17 @@ def enrich_member(
     else:
         clips, seen, covered = prior_state(m.gene_symbol, pri=pri, pub=pub)
     inventory = loop_inventory(m, fr.topology)
+
+    seed_papers = None
+    seed_triage = None
+    if from_r2:
+        blob = load_intermediates_r2(m.candidate_id)
+        if blob:
+            seed_papers, seed_triage, _ws = seed_from_intermediates(blob)
+            log.info(
+                "  %s: seeded %d paper(s) & %d triage verdict(s) from R2",
+                m.candidate_id, len(seed_papers), len(seed_triage),
+            )
 
     full_alts = list(alts)
     if include_rodent_orthologs:
@@ -430,19 +452,14 @@ def enrich_member(
         web_scout_model=web_scout_model,
         extra_paper_ids=extra_paper_ids,
         skip_discovery=skip_discovery,
+        seed_papers=seed_papers,
+        seed_triage_cache=seed_triage,
         follow_construct_refs=follow_construct_refs,
     )
     cost = sum(getattr(u, "cost_usd", 0.0) or 0.0 for u in usage)
     inter["cost_usd"] = round(cost, 4)
     inter["candidate_id"] = m.candidate_id
     inter["run_series"] = run_series
-    RUNS_DIR.mkdir(parents=True, exist_ok=True)
-    (RUNS_DIR / f"{m.candidate_id}.json").write_text(
-        json.dumps(inter, indent=2, default=str)
-    )
-    log.info("  %s COST: $%.4f  outcome=%s  sites=%d",
-             m.candidate_id, cost, inter.get("outcome"), len(result.sites))
-
     sites = to_viewer_sites(
         result,
         uniprot_acc=base_acc,
@@ -452,6 +469,27 @@ def enrich_member(
         numbered_against=fr.numbered_against,
         topology=fr.topology,
     )
+    payload = build_intermediates_payload(
+        member_key=m.candidate_id,
+        gene_symbol=m.gene_symbol,
+        candidate_id=m.candidate_id,
+        uniprot_acc=base_acc,
+        run_id=run_id,
+        run_series=run_series,
+        prompt_version=getattr(result, "prompt_version", "") or "",
+        prompt_sha=getattr(result, "prompt_sha", "") or "",
+        runner_intermediates=inter,
+        viewer_sites=sites,
+        usage=usage,
+        result_dump=result.model_dump(mode="json"),
+    )
+    save_intermediates_local(RUNS_DIR / f"{m.candidate_id}.json.gz", payload)
+    if upload_r2:
+        ok_r2, r2_key = upload_intermediates_r2(payload, member_key=m.candidate_id, run_id=run_id)
+        log.info("  %s R2 upload (%s): %s", m.candidate_id, r2_key, "ok" if ok_r2 else "FAILED")
+    log.info("  %s COST: $%.4f  outcome=%s  sites=%d",
+             m.candidate_id, cost, inter.get("outcome"), len(result.sites))
+
     if publish:
         from accessible_surfaceome.cloud.tag_sites import publish_tag_sites
 
@@ -489,6 +527,7 @@ def enrich_member(
         "n_sites": len(sites),
         "n_new_clips": inter.get("n_new_clips"),
         "n_carried": inter.get("n_carried"),
+        "missed_preprint_body": has_missed_preprint_body(payload),
     }
 
 
@@ -514,6 +553,10 @@ def main() -> int:
                     help="PMID/PMCID/DOI to hydrate and force-fetch (repeatable)")
     ap.add_argument("--skip-discovery", action="store_true")
     ap.add_argument("--no-ref-followup", action="store_true")
+    ap.add_argument("--from-r2", action="store_true",
+                    help="seed discovered papers + triage verdicts from R2 intermediates")
+    ap.add_argument("--upload-r2", action="store_true",
+                    help="upload gzipped intermediates + result to R2")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -587,6 +630,8 @@ def main() -> int:
                             extra_paper_ids=args.add_papers or None,
                             skip_discovery=args.skip_discovery,
                             follow_construct_refs=not args.no_ref_followup,
+                            from_r2=args.from_r2,
+                            upload_r2=args.upload_r2,
                         )
                     )
                 except Exception as exc:  # noqa: BLE001 - report per member, keep going
