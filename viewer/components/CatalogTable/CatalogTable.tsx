@@ -12,8 +12,17 @@ import type {
 // Client-safe module (no node:fs) — value-importing the grade list from
 // surfaceome.ts would drag its build-cache snapshot code into the browser bundle.
 import {
+  INTERNALIZATION_BINDER_TYPES,
+  INTERNALIZATION_FATES,
+  INTERNALIZATION_FATE_LABELS,
+  INTERNALIZATION_LIT_CONFIDENCES,
   INTERNALIZATION_LIT_GRADES,
+  INTERNALIZATION_LIT_MODE_GRADES,
+  INTERNALIZATION_MECHANISMS,
+  INTERNALIZATION_MODES,
+  type InternalizationLitConfidence,
   type InternalizationLitGrade,
+  type InternalizationModeKey,
 } from "../../lib/internalization";
 import { prettyEnum } from "../../lib/enums";
 import {
@@ -501,14 +510,36 @@ export function CatalogTable({
   // across active facets; reads the tag_site_counts overlay on each row.
   const [tagSiteFilter, setTagSiteFilter] =
     useState<TagSiteFilterState>(EMPTY_TAG_SITE_FILTER);
-  // Internalization literature-grade filter — a SEPARATE catalog category
-  // (its own top-level group), NOT part of the deep-dive filter set. Multi-
-  // select over the literature grade values (OR within the set); empty = off.
-  // Reads top-level `row.internalization_lit` so it applies to any cohort gene
-  // regardless of deep-dive coverage (mirrors the standalone SURFACE-Bind facet).
+  // Internalization literature filters — a SEPARATE top-level catalog category,
+  // NOT part of the deep-dive filter set. All multi-select facets use OR within
+  // a row and AND across rows; reads `row.internalization_lit` and `row.internalization_lit_facets`.
   const [internalizationFilter, setInternalizationFilter] = useState<
     Set<InternalizationLitGrade>
   >(() => new Set());
+  const [internConfFilter, setInternConfFilter] = useState<
+    Set<InternalizationLitConfidence>
+  >(() => new Set());
+  const [internModeFilters, setInternModeFilters] = useState<
+    Record<InternalizationModeKey, Set<InternalizationLitGrade>>
+  >(() => ({
+    basal: new Set(),
+    native: new Set(),
+    therapeutic: new Set(),
+    pathogen: new Set(),
+  }));
+  const [internFateFilter, setInternFateFilter] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [internBinderFilter, setInternBinderFilter] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [internMechFilter, setInternMechFilter] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [internPrimaryOnly, setInternPrimaryOnly] = useState(false);
+  const [internQuantFilter, setInternQuantFilter] = useState<
+    "any" | "quant" | "fitted"
+  >("any");
   const [internalizationGroupOpen, setInternalizationGroupOpen] =
     useState(false);
   // Deep-dive filters — 13 enum-valued + 8 boolean. Enum filters use
@@ -599,6 +630,36 @@ export function CatalogTable({
       return next;
     });
   }
+  function toggleInternConf(conf: InternalizationLitConfidence) {
+    setInternConfFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(conf)) next.delete(conf);
+      else next.add(conf);
+      return next;
+    });
+  }
+  function toggleInternModeGrade(
+    mode: InternalizationModeKey,
+    grade: InternalizationLitGrade,
+  ) {
+    setInternModeFilters((prev) => {
+      const cur = new Set(prev[mode]);
+      if (cur.has(grade)) cur.delete(grade);
+      else cur.add(grade);
+      return { ...prev, [mode]: cur };
+    });
+  }
+  function toggleInternSet(
+    setter: React.Dispatch<React.SetStateAction<Set<string>>>,
+    value: string,
+  ) {
+    setter((prev) => {
+      const next = new Set(prev);
+      if (next.has(value)) next.delete(value);
+      else next.add(value);
+      return next;
+    });
+  }
   function toggleDdEnumFilter(field: DdEnumKey, value: string) {
     setDdEnumFilters((prev) => {
       const nextSet = new Set(prev[field]);
@@ -625,6 +686,18 @@ export function CatalogTable({
     setProteomicsFilter(null);
     setTagSiteFilter(EMPTY_TAG_SITE_FILTER);
     setInternalizationFilter(new Set());
+    setInternConfFilter(new Set());
+    setInternModeFilters({
+      basal: new Set(),
+      native: new Set(),
+      therapeutic: new Set(),
+      pathogen: new Set(),
+    });
+    setInternFateFilter(new Set());
+    setInternBinderFilter(new Set());
+    setInternMechFilter(new Set());
+    setInternPrimaryOnly(false);
+    setInternQuantFilter("any");
     setDdEnumFilters(() => {
       const out = {} as Record<DdEnumKey, Set<string>>;
       for (const f of DD_ENUM_FIELDS) out[f.key] = new Set();
@@ -783,6 +856,19 @@ export function CatalogTable({
     (surfaceBindFilter !== null ? 1 : 0) +
     Object.values(tagSiteFilter).filter((v) => v > 0).length;
 
+  const internActiveCount =
+    internalizationFilter.size +
+    internConfFilter.size +
+    internModeFilters.basal.size +
+    internModeFilters.native.size +
+    internModeFilters.therapeutic.size +
+    internModeFilters.pathogen.size +
+    internFateFilter.size +
+    internBinderFilter.size +
+    internMechFilter.size +
+    (internPrimaryOnly ? 1 : 0) +
+    (internQuantFilter !== "any" ? 1 : 0);
+
   const activeFilterCount =
     (proteomicsFilter !== null ? 1 : 0) +
     dbFilter.size +
@@ -792,7 +878,7 @@ export function CatalogTable({
     (fgLibraryFilter !== null ? 1 : 0) +
     // Internalization is its own top-level category — counted here, but kept
     // OUT of ddActive so it never forces the deep-dive presence gate.
-    internalizationFilter.size +
+    internActiveCount +
     ddActiveCount;
   // `ddActive` gates the deep-dive predicate (requires deep_dive=true
   // and applies enum/bool filters). It does NOT include the SURFACE-
@@ -991,12 +1077,48 @@ export function CatalogTable({
         const thr = tagSiteFilter[f.key];
         if (thr > 0 && (r.tag_site_counts?.[f.key] ?? 0) < thr) return false;
       }
-      // Internalization literature-grade filter — standalone facet on the top-
-      // level `internalization_lit` field. OR within the selected grades; a gene
-      // with no literature internalization record drops when any grade is selected.
+      // Internalization literature filters — standalone facet group reading
+      // `internalization_lit` and `internalization_lit_facets`. OR within each
+      // multi-select row, AND across rows.
       if (internalizationFilter.size > 0) {
         const g = r.internalization_lit;
         if (g == null || !internalizationFilter.has(g)) return false;
+      }
+      if (internConfFilter.size > 0) {
+        const c = r.internalization_lit_facets?.conf;
+        if (c == null || !internConfFilter.has(c)) return false;
+      }
+      for (const m of INTERNALIZATION_MODES) {
+        const sel = internModeFilters[m.key];
+        if (sel.size > 0) {
+          const mg = r.internalization_lit_facets?.[m.key];
+          if (mg == null || !sel.has(mg)) return false;
+        }
+      }
+      if (internFateFilter.size > 0) {
+        const fate = r.internalization_lit_facets?.fate;
+        if (fate == null || !internFateFilter.has(fate)) return false;
+      }
+      if (internBinderFilter.size > 0) {
+        const binders = r.internalization_lit_facets?.binders;
+        if (!binders || !binders.some((b) => internBinderFilter.has(b))) {
+          return false;
+        }
+      }
+      if (internMechFilter.size > 0) {
+        const mechs = r.internalization_lit_facets?.mechs;
+        if (!mechs || !mechs.some((m) => internMechFilter.has(m))) {
+          return false;
+        }
+      }
+      if (internPrimaryOnly && !r.internalization_lit_facets?.primary) {
+        return false;
+      }
+      if (internQuantFilter === "quant" && !r.internalization_lit_facets?.quant) {
+        return false;
+      }
+      if (internQuantFilter === "fitted" && !r.internalization_lit_facets?.fitted) {
+        return false;
       }
       // Preset filter — runs the chosen preset's predicate against
       // the row's `deep_dive_filters`. Rows without a deep-dive
@@ -1080,6 +1202,13 @@ export function CatalogTable({
     proteomicsFilter,
     tagSiteFilter,
     internalizationFilter,
+    internConfFilter,
+    internModeFilters,
+    internFateFilter,
+    internBinderFilter,
+    internMechFilter,
+    internPrimaryOnly,
+    internQuantFilter,
     ddActive,
     ddEnumFilters,
     ddBoolFilters,
@@ -2023,9 +2152,9 @@ export function CatalogTable({
                   {internalizationGroupOpen ? "▾" : "▸"}
                 </span>
                 Internalization
-                {!internalizationGroupOpen && internalizationFilter.size > 0 ? (
+                {!internalizationGroupOpen && internActiveCount > 0 ? (
                   <span className={styles.chipCount}>
-                    {internalizationFilter.size}
+                    {internActiveCount}
                   </span>
                 ) : null}
               </button>
@@ -2038,9 +2167,9 @@ export function CatalogTable({
                 <div
                   className={styles.filterRow}
                   role="group"
-                  aria-label="Internalization literature grade"
+                  aria-label="Internalization literature overall grade"
                 >
-                  <span className={styles.filterLabel}>Literature</span>
+                  <span className={styles.filterLabel}>Overall</span>
                   <div className={styles.filterChips}>
                     {INTERNALIZATION_LIT_GRADES.map((g) => {
                       const on = internalizationFilter.has(g);
@@ -2058,8 +2187,171 @@ export function CatalogTable({
                       );
                     })}
                   </div>
+                </div>
+                <div
+                  className={styles.filterRow}
+                  role="group"
+                  aria-label="Internalization literature confidence"
+                >
+                  <span className={styles.filterLabel}>Confidence</span>
+                  <div className={styles.filterChips}>
+                    {INTERNALIZATION_LIT_CONFIDENCES.map((c) => {
+                      const on = internConfFilter.has(c);
+                      return (
+                        <button
+                          key={`intern-conf-${c}`}
+                          type="button"
+                          role="checkbox"
+                          aria-checked={on}
+                          className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                          onClick={() => toggleInternConf(c)}
+                        >
+                          {c}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {INTERNALIZATION_MODES.map((mode) => (
+                  <div
+                    key={`intern-mode-${mode.key}`}
+                    className={styles.filterRow}
+                    role="group"
+                    aria-label={`Internalization ${mode.label} grade`}
+                  >
+                    <span className={styles.filterLabel}>{mode.label}</span>
+                    <div className={styles.filterChips}>
+                      {INTERNALIZATION_LIT_MODE_GRADES.map((g) => {
+                        const on = internModeFilters[mode.key].has(g);
+                        return (
+                          <button
+                            key={`intern-${mode.key}-${g}`}
+                            type="button"
+                            role="checkbox"
+                            aria-checked={on}
+                            className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                            onClick={() => toggleInternModeGrade(mode.key, g)}
+                          >
+                            {INTERN_LIT_META[g].full}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+                <div
+                  className={styles.filterRow}
+                  role="group"
+                  aria-label="Predominant post-uptake fate"
+                >
+                  <span className={styles.filterLabel}>Post-uptake fate</span>
+                  <div className={styles.filterChips}>
+                    {INTERNALIZATION_FATES.map((f) => {
+                      const on = internFateFilter.has(f.key);
+                      return (
+                        <button
+                          key={`intern-fate-${f.key}`}
+                          type="button"
+                          role="checkbox"
+                          aria-checked={on}
+                          className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                          onClick={() => toggleInternSet(setInternFateFilter, f.key)}
+                        >
+                          {f.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div
+                  className={styles.filterRow}
+                  role="group"
+                  aria-label="Observed binder class"
+                >
+                  <span className={styles.filterLabel}>Binder class</span>
+                  <div className={styles.filterChips}>
+                    {INTERNALIZATION_BINDER_TYPES.map((b) => {
+                      const on = internBinderFilter.has(b.key);
+                      return (
+                        <button
+                          key={`intern-binder-${b.key}`}
+                          type="button"
+                          role="checkbox"
+                          aria-checked={on}
+                          className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                          onClick={() => toggleInternSet(setInternBinderFilter, b.key)}
+                        >
+                          {b.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div
+                  className={styles.filterRow}
+                  role="group"
+                  aria-label="Endocytic mechanism"
+                >
+                  <span className={styles.filterLabel}>Mechanism</span>
+                  <div className={styles.filterChips}>
+                    {INTERNALIZATION_MECHANISMS.map((m) => {
+                      const on = internMechFilter.has(m.key);
+                      return (
+                        <button
+                          key={`intern-mech-${m.key}`}
+                          type="button"
+                          role="checkbox"
+                          aria-checked={on}
+                          className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                          onClick={() => toggleInternSet(setInternMechFilter, m.key)}
+                        >
+                          {m.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div
+                  className={styles.filterRow}
+                  role="group"
+                  aria-label="Internalization evidence rigor"
+                >
+                  <span className={styles.filterLabel}>Evidence rigor</span>
+                  <div className={styles.filterChips}>
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={internPrimaryOnly}
+                      className={`${styles.filterVerdictChip} ${internPrimaryOnly ? styles.verdictYes : ""}`}
+                      onClick={() => setInternPrimaryOnly((v) => !v)}
+                    >
+                      primary cells / in vivo
+                    </button>
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={internQuantFilter === "quant"}
+                      className={`${styles.filterVerdictChip} ${internQuantFilter === "quant" ? styles.verdictYes : ""}`}
+                      onClick={() =>
+                        setInternQuantFilter((v) => (v === "quant" ? "any" : "quant"))
+                      }
+                    >
+                      quantitative data
+                    </button>
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={internQuantFilter === "fitted"}
+                      className={`${styles.filterVerdictChip} ${internQuantFilter === "fitted" ? styles.verdictYes : ""}`}
+                      onClick={() =>
+                        setInternQuantFilter((v) => (v === "fitted" ? "any" : "fitted"))
+                      }
+                    >
+                      fitted kₑ / t½
+                    </button>
+                  </div>
                   <span className={styles.filterHint}>
-                    {`PMID/DOI-anchored literature internalization grade across basal, native-ligand, therapeutic, and pathogen-entry modes. Select any grades (OR). Click an active chip to clear.`}
+                    {`OR within each row, AND across rows. Filters across all 3,213 internalization cohort genes independently of deep-dive coverage.`}
                   </span>
                 </div>
               </div>
@@ -2373,6 +2665,15 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
     "has_deep_dive",
     "n_counted_surface_proteomics_datasets",
     "internalization_lit_grade",
+    "internalization_lit_confidence",
+    "internalization_basal_grade",
+    "internalization_native_ligand_grade",
+    "internalization_therapeutic_grade",
+    "internalization_pathogen_entry_grade",
+    "internalization_predominant_fate",
+    "internalization_has_primary_or_invivo",
+    "internalization_has_quant",
+    "internalization_has_fitted_kinetics",
   ];
   const body: TsvCell[][] = rows.map((r) => [
     r.symbol,
@@ -2391,6 +2692,15 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
     r.deep_dive ? 1 : 0,
     r.sp_counted ?? 0,
     r.internalization_lit ?? "",
+    r.internalization_lit_facets?.conf ?? "",
+    r.internalization_lit_facets?.basal ?? "",
+    r.internalization_lit_facets?.native ?? "",
+    r.internalization_lit_facets?.therapeutic ?? "",
+    r.internalization_lit_facets?.pathogen ?? "",
+    r.internalization_lit_facets?.fate ?? "",
+    r.internalization_lit_facets?.primary ? 1 : "",
+    r.internalization_lit_facets?.quant ? 1 : "",
+    r.internalization_lit_facets?.fitted ? 1 : "",
   ]);
   return buildTsv(headers, body);
 }
@@ -2778,11 +3088,27 @@ function CatalogRowView({
                 );
               }
               const m = INTERN_LIT_META[g];
+              const f = row.internalization_lit_facets;
+              const tipParts = [`Internalization literature: ${m.full}`];
+              if (f?.conf) tipParts.push(`conf: ${f.conf}`);
+              if (f?.fate && f.fate !== "unknown") {
+                tipParts.push(`fate: ${INTERNALIZATION_FATE_LABELS[f.fate] ?? f.fate}`);
+              }
+              const modes = [
+                f?.basal ? `basal=${f.basal}` : null,
+                f?.native ? `native=${f.native}` : null,
+                f?.therapeutic ? `therapeutic=${f.therapeutic}` : null,
+                f?.pathogen ? `pathogen=${f.pathogen}` : null,
+              ].filter(Boolean);
+              if (modes.length) tipParts.push(modes.join(", "));
+              if (f?.fitted) tipParts.push("fitted kₑ/t½");
+              else if (f?.quant) tipParts.push("quantitative");
+              if (f?.primary) tipParts.push("primary/in vivo");
               return (
                 <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
                   <span
                     className={`${styles.ddVital} ${DD_TONE_CLASS[m.tone]}`}
-                    title={`Internalization literature grade: ${m.full}`}
+                    title={tipParts.join(" · ")}
                   >
                     {m.label}
                   </span>

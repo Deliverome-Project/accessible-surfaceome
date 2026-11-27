@@ -9,6 +9,7 @@ drop-stale-versions) but for the separate internalization record.
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import time
@@ -173,6 +174,17 @@ DDL: tuple[str, ...] = (
       n_seq_functional_motifs      INTEGER,
       has_literature               INTEGER NOT NULL DEFAULT 0,
       lit_overall_grade            TEXT,
+      lit_overall_confidence       TEXT,
+      lit_basal_grade              TEXT,
+      lit_native_ligand_grade      TEXT,
+      lit_therapeutic_grade        TEXT,
+      lit_pathogen_entry_grade     TEXT,
+      lit_predominant_fate         TEXT,
+      lit_has_primary_or_invivo    INTEGER,
+      lit_has_quant                INTEGER,
+      lit_has_fitted_kinetics      INTEGER,
+      lit_binder_types             TEXT,
+      lit_mechanisms               TEXT,
       lit_n_observations           INTEGER,
       lit_n_modulator_observations INTEGER,
       lit_prompt_sha               TEXT,
@@ -197,6 +209,10 @@ _COLS: tuple[str, ...] = (
     "seq_overall_grade", "seq_overall_confidence",
     "seq_canonical_grade", "seq_canonical_confidence", "n_seq_motifs",
     "n_seq_functional_motifs", "has_literature", "lit_overall_grade",
+    "lit_overall_confidence", "lit_basal_grade", "lit_native_ligand_grade",
+    "lit_therapeutic_grade", "lit_pathogen_entry_grade", "lit_predominant_fate",
+    "lit_has_primary_or_invivo", "lit_has_quant", "lit_has_fitted_kinetics",
+    "lit_binder_types", "lit_mechanisms",
     "lit_n_observations", "lit_n_modulator_observations",
     "lit_prompt_sha", "lit_prompt_version", "record_json",
     "generated_at", "updated_at",
@@ -210,6 +226,17 @@ _COLS: tuple[str, ...] = (
 _MIGRATIONS: tuple[str, ...] = (
     "ALTER TABLE surface_internalization ADD COLUMN lit_prompt_sha TEXT;",
     "ALTER TABLE surface_internalization ADD COLUMN lit_prompt_version TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_overall_confidence TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_basal_grade TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_native_ligand_grade TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_therapeutic_grade TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_pathogen_entry_grade TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_predominant_fate TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_has_primary_or_invivo INTEGER;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_has_quant INTEGER;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_has_fitted_kinetics INTEGER;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_binder_types TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_mechanisms TEXT;",
 )
 
 
@@ -238,6 +265,42 @@ def flat_row(record: InternalizationRecord) -> dict[str, object]:
         )
     motifs = list(canonical.motifs) if canonical else []
     lit = record.literature
+    lit_binders: str | None = None
+    lit_mechs: str | None = None
+    lit_has_quant: int | None = None
+    lit_has_fitted: int | None = None
+    if lit is not None:
+        obs = list(lit.observations)
+        binders = sorted({o.binder_type for o in obs if o.binder_type != "unknown"})
+        mechs = sorted(
+            {
+                o.mechanism
+                for o in obs
+                if o.mechanism and o.mechanism not in {"unknown", "receptor_mediated_unspecified"}
+            }
+        )
+        lit_binders = json.dumps(binders) if binders else None
+        lit_mechs = json.dumps(mechs) if mechs else None
+        lit_has_quant = (
+            1
+            if any(
+                o.quant.rate_value is not None
+                or o.quant.derived_t_half_min is not None
+                or o.quant.derived_ke_min_inv is not None
+                or o.quant.apparent_t_half_min is not None
+                for o in obs
+            )
+            else 0
+        )
+        lit_has_fitted = (
+            1
+            if any(
+                o.quant.derived_t_half_min is not None
+                or o.quant.derived_ke_min_inv is not None
+                for o in obs
+            )
+            else 0
+        )
     return {
         "gene_symbol": record.gene_symbol,
         "schema_version": record.schema_version,
@@ -256,6 +319,23 @@ def flat_row(record: InternalizationRecord) -> dict[str, object]:
         "n_seq_functional_motifs": sum(1 for m in motifs if m.functional_context),
         "has_literature": 1 if lit is not None else 0,
         "lit_overall_grade": lit.overall_grade if lit else None,
+        "lit_overall_confidence": lit.overall_confidence if lit else None,
+        "lit_basal_grade": lit.grades_by_mode.basal.grade if lit else None,
+        "lit_native_ligand_grade": lit.grades_by_mode.native_ligand.grade if lit else None,
+        "lit_therapeutic_grade": lit.grades_by_mode.therapeutic.grade if lit else None,
+        "lit_pathogen_entry_grade": (
+            lit.grades_by_mode.pathogen_entry.grade
+            if lit and lit.grades_by_mode.pathogen_entry
+            else None
+        ),
+        "lit_predominant_fate": lit.predominant_fate if lit else None,
+        "lit_has_primary_or_invivo": (
+            (1 if lit.has_primary_or_invivo_evidence else 0) if lit else None
+        ),
+        "lit_has_quant": lit_has_quant,
+        "lit_has_fitted_kinetics": lit_has_fitted,
+        "lit_binder_types": lit_binders,
+        "lit_mechanisms": lit_mechs,
         "lit_n_observations": lit.n_observations if lit else None,
         "lit_n_modulator_observations": (
             lit.n_modulator_observations if lit else None
