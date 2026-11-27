@@ -719,6 +719,26 @@ export interface L1Reviews {
 export const REVIEW_HEADER = "X-L1-Review-Token";
 export const INVITE_HEADER = "X-L1-Invite-Token";
 
+/** Resolve a magic invite code to its pre-filled reviewer name, if configured. */
+export async function fetchL1InviteIdentity(
+  apiBase: string,
+  inviteToken: string,
+): Promise<{ reviewer: string | null; auth_method: string } | null> {
+  if (!inviteToken) return null;
+  try {
+    const res = await fetch(`${apiBase}/v1/l1-review/whoami`, {
+      headers: { [INVITE_HEADER]: inviteToken },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { valid?: boolean; reviewer?: string | null; auth_method?: string };
+    if (!body.valid) return null;
+    return { reviewer: body.reviewer ?? null, auth_method: body.auth_method ?? "invite" };
+  } catch {
+    return null;
+  }
+}
+
 /** Reads stay token-gated on the Worker; the page calls this without a token, so it
  *  answers "unauthorized" unless the read endpoints are opened. */
 export async function fetchL1Reviews(apiBase: string, token = ""): Promise<L1Reviews | "unauthorized" | null> {

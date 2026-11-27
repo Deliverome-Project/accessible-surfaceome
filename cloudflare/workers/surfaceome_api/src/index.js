@@ -5050,9 +5050,10 @@ async function l1TokenMatches(request, env) {
   return timingSafeEqualStr(a, b);
 }
 
-// Write-only invite keys from optional env.L1_INVITE_TOKENS (`tok1,sab:tok2`).
-// Returns "invite" or "invite:<label>", or null if unmatched.
-async function l1InviteAuthMethod(request, env) {
+// Write-only invite keys from optional env.L1_INVITE_TOKENS
+// (`Aashish Manglik:tok1,Rob Oslund:tok2` or unlabeled `tok3`).
+// Returns `{ authMethod, displayName }`, or null if unmatched.
+async function l1InviteInfo(request, env) {
   const raw = env.L1_INVITE_TOKENS;
   if (!raw) return null;
   const got = (request.headers.get(L1_INVITE_HEADER) ?? "").trim();
@@ -5067,11 +5068,23 @@ async function l1InviteAuthMethod(request, env) {
     if (!secret) continue;
     const expectedHash = await sha256Hex(secret);
     if (timingSafeEqualStr(gotHash, expectedHash)) {
-      const cleanLabel = label.toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 24);
-      return cleanLabel ? `invite:${cleanLabel}` : "invite";
+      const displayName = label ? label.slice(0, 80) : null;
+      const cleanLabel = label.toLowerCase().replace(/[^a-z0-9_-]+/g, "_").replace(/^_|_$/g, "").slice(0, 24);
+      return {
+        authMethod: cleanLabel ? `invite:${cleanLabel}` : "invite",
+        displayName,
+      };
     }
   }
   return null;
+}
+
+// Resolves the pre-filled reviewer identity for a magic invite link without
+// exposing any reviews or other invite tokens.
+async function handleL1ReviewWhoami(request, env) {
+  const info = await l1InviteInfo(request, env);
+  if (!info) return json({ valid: false, error: "unauthorized" }, { status: 401, ttl: 0 });
+  return json({ valid: true, reviewer: info.displayName, auth_method: info.authMethod }, { ttl: 0 });
 }
 
 // Read gate (list + export): token only, unchanged.
@@ -5087,10 +5100,10 @@ async function l1ReviewAuth(request, env) {
 
 // Write gate. Returns { authMethod } or { denied: Response }. Called after the body
 // validates, so a form error never consumes the per-IP rate limit.
-async function l1ReviewWriteAuth(request, env) {
+async function l1ReviewWriteAuth(request, env, inviteInfo = undefined) {
   if (await l1TokenMatches(request, env)) return { authMethod: "token" };
-  const inviteMethod = await l1InviteAuthMethod(request, env);
-  if (inviteMethod) return { authMethod: inviteMethod };
+  const resolvedInvite = inviteInfo === undefined ? await l1InviteInfo(request, env) : inviteInfo;
+  if (resolvedInvite) return { authMethod: resolvedInvite.authMethod };
   // Block cross-site browser CSRF from foreign origins while allowing direct
   // non-browser clients (no Origin header) to continue through rate limits.
   const origin = request.headers.get("Origin");
@@ -5163,8 +5176,13 @@ async function handleL1ReviewSubmit(request, env) {
     return badRequest("invalid_json");
   }
   // Stored as typed (surrounding whitespace trimmed); too long is an error, not a cut.
+  // If a labeled magic-link invite token is present and the caller left reviewer blank,
+  // auto-fill the invite's display name so invited experts never need to type it.
+  const inviteInfo = await l1InviteInfo(request, env);
   const reviewerRaw = String(body.reviewer ?? "").trim();
-  const reviewer = reviewerRaw && reviewerRaw.length <= 80 ? reviewerRaw : null;
+  const reviewer = reviewerRaw
+    ? (reviewerRaw.length <= 80 ? reviewerRaw : null)
+    : (inviteInfo?.displayName ?? null);
   const memberId = l1Str(body.member_id, 12);
   const designId = l1Str(body.design_id, 12);
   const gene = l1Str(body.gene_symbol, 30);
@@ -5187,7 +5205,7 @@ async function handleL1ReviewSubmit(request, env) {
     if (honeypot) {
       return json({ ok: true, review_id: id, created_at: now, auth_method: "rate_limited" }, { status: 201, ttl: 0 });
     }
-    const auth = await l1ReviewWriteAuth(request, env);
+    const auth = await l1ReviewWriteAuth(request, env, inviteInfo);
     if (auth.denied) return auth.denied;
     await l1Insert(
       env,
@@ -5213,7 +5231,7 @@ async function handleL1ReviewSubmit(request, env) {
     if (honeypot) {
       return json({ ok: true, suggestion_id: id, created_at: now, auth_method: "rate_limited" }, { status: 201, ttl: 0 });
     }
-    const auth = await l1ReviewWriteAuth(request, env);
+    const auth = await l1ReviewWriteAuth(request, env, inviteInfo);
     if (auth.denied) return auth.denied;
     await l1Insert(
       env,
@@ -5698,6 +5716,7 @@ async function routeRequest(request, env, ctx) {
     if ((m = path.match(/^\/v1\/internalization\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleInternalization(env, m[1]));
     if ((m = path.match(/^\/v1\/tag-sites\/([^/]+)$/))) return withEdgeCache(request, env, ctx, () => handleTagSites(env, m[1]));
     if (path === "/v1/l1-review") return handleL1ReviewList(request, env);
+    if (path === "/v1/l1-review/whoami") return handleL1ReviewWhoami(request, env);
     if (path === "/v1/l1-review/export.tsv") return handleL1ReviewExport(request, env);
     // Not behind withEdgeCache: its KV tier holds a read for up to an hour, and a new
     // L1 load must show within a minute (overnight reloads). Indexed, small queries.

@@ -15,6 +15,7 @@ import {
   fetchL1ExternalTagSites,
   fetchL1GeneData,
   fetchL1IndexResult,
+  fetchL1InviteIdentity,
   fetchL1Reviews,
   filterIndex,
   groupByGene,
@@ -746,12 +747,21 @@ export function ReviewPanel({
         style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
       />
       <div className={styles.submitRow}>
-        <button type="button" className={styles.primary} disabled={!draft.mode || saving} onClick={submit}>
+        <button type="button" className={styles.primary} disabled={!draft.mode || !name || saving} onClick={submit}>
           {saving ? "Saving…" : "Submit"}
         </button>
-        <span className={styles.help}>
-          {draft.mode ? "⌘/Ctrl + Enter to submit" : "Choose a verdict (= / - / .) to submit"}
-        </span>
+        {!name ? (
+          <span className={styles.help}>
+            Add your name to submit ·{" "}
+            <button type="button" className={styles.clearBtn} onClick={onEditName}>
+              Add name
+            </button>
+          </span>
+        ) : (
+          <span className={styles.help}>
+            {draft.mode ? "⌘/Ctrl + Enter to submit" : "Choose a verdict (= / - / .) to submit"}
+          </span>
+        )}
         {msg ? (
           <span className={msg.ok ? styles.saved : styles.error} role={msg.ok ? "status" : "alert"}>
             {msg.text}
@@ -1870,20 +1880,46 @@ export function L1Review({ initialIndexState }: { initialIndexState?: L1IndexSta
   const [keyHelpOpen, setKeyHelpOpen] = useState(false);
 
   useEffect(() => {
-    setReviewer(store.get("l1-review-reviewer"));
-    // Capture an optional invite code (?k=... or ?invite=...) into localStorage
-    // and strip it from the URL so copied links do not leak the invite token.
+    let savedReviewer = store.get("l1-review-reviewer");
+    let inviteToken = store.get("l1-review-invite");
+    let fromInviteUrl = false;
+    // Capture an optional magic-link invite code (?k=... or ?invite=...) and/or
+    // pre-filled name (?name=... or ?n=...) into localStorage, then strip them from
+    // the URL so copied links do not leak the invite token.
     if (typeof window !== "undefined") {
       const sp = new URLSearchParams(window.location.search);
-      const invite = (sp.get("k") ?? sp.get("invite") ?? "").trim();
-      if (invite) {
-        store.set("l1-review-invite", invite);
+      const urlInvite = (sp.get("k") ?? sp.get("invite") ?? "").trim();
+      const urlName = (sp.get("name") ?? sp.get("n") ?? "").trim().slice(0, 80);
+      let dirty = false;
+      if (urlInvite) {
+        inviteToken = urlInvite;
+        fromInviteUrl = true;
+        store.set("l1-review-invite", urlInvite);
         sp.delete("k");
         sp.delete("invite");
+        dirty = true;
+      }
+      if (urlName) {
+        savedReviewer = urlName;
+        store.set("l1-review-reviewer", urlName);
+        sp.delete("name");
+        sp.delete("n");
+        dirty = true;
+      }
+      if (dirty) {
         const nextSearch = sp.toString();
         const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
         window.history.replaceState(null, "", nextUrl);
       }
+    }
+    setReviewer(savedReviewer);
+    if (inviteToken) {
+      fetchL1InviteIdentity(API_BASE, inviteToken).then((ident) => {
+        if (ident?.reviewer && (fromInviteUrl || !savedReviewer.trim())) {
+          setReviewer(ident.reviewer);
+          store.set("l1-review-reviewer", ident.reviewer);
+        }
+      });
     }
     loadIndex();
     fetchGeneSynonyms().then((s) => setSynonyms(s));
