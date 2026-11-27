@@ -23,6 +23,8 @@ Invoke before answering whenever the user:
 
 5. **Wants the genome-wide DB-vote matrix** for a query like "all genes that 5+ sources call surface". Fetch `/v1/catalog` and filter client-side; the response is ~6 MB so paginate intelligently.
 
+6. **Asks how rapidly a receptor internalizes** (for ADC, degrader, LNP/oligo, or viral-entry targeting — e.g. "does TFRC or CD22 internalize rapidly?", "what is the measured k_int or half-time for ERBB2?"). Fetch `/v1/internalization/{SYMBOL}` for the PMID/DOI-anchored literature track (primary) and sequence prior (secondary), or read `intern_lit_grade` from `/v1/catalog` to screen across the 3,213-gene cohort.
+
 Do **not** invoke this skill for non-human genes, for general protein-biology questions that don't reference a specific gene, or for questions that are already answered by domain knowledge without hitting an external service.
 
 ## Endpoints
@@ -42,7 +44,7 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 
 | Method | Path | Returns | TTL |
 |---|---|---|---|
-| `GET` | `/v1/catalog` | Per-gene-per-source DB-vote matrix (5 DBs) + latest triage verdict + deep-dive flag | 60s |
+| `GET` | `/v1/catalog` | Per-gene-per-source DB-vote matrix (5 DBs) + latest triage verdict + deep-dive flag + internalization grades (`intern_lit_grade`, `intern_lit`, `intern`) | 60s |
 | `GET` | `/v1/triage/{SYMBOL}` | Every triage run for one gene — model × variant × replicate, with cost + token counts and the agent's free-text `verdict_reasoning` | 60s |
 | `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, with per-source DB votes + `uniprot_acc` joined in server-side. Default `mainbench_canonical_v2` (the multi-model bench sweep); pass `run_id=genome_full_sonnet_ncbi_v2` for the full ~19k-gene Sonnet sweep. Reasoning columns omitted by default (figure-input exports stay prose-free). | 1d |
 | `GET` | `/v1/triage/export.tsv?…&with_reasoning=1` | Same export **with the agent's reasoning** appended (`predicted_key_uncertainty` + `verdict_reasoning` trailing columns). `with_reasoning=1` works on any `run_id`; use it with `run_id=genome_full_sonnet_ncbi_v2` for the **full genome-wide triage corpus with reasoning** — the bulk counterpart to per-gene `/v1/triage/{SYMBOL}`. | 1d |
@@ -56,7 +58,7 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 | `GET` | `/v1/genes` | List of genes with a deep-dive record (summary fields) | 60s |
 | `GET` | `/v1/genes/{SYMBOL}` | Full SurfaceomeRecord JSON (see schema below) | 1d |
 | `GET` | `/v1/orthologs/{SYMBOL}` | Mouse + cyno orthologs for any gene from the latest Ensembl Compara release (genome-wide raw Compara — see note) | 1d |
-| `GET` | `/v1/internalization/{SYMBOL}` | Full `InternalizationRecord` — sequence-prior `SeqGrade` (`very_high`…`very_low` \| `unknown`) with per-isoform topology, endocytic motifs, and reasoning (intrinsic / basal endocytic propensity, **not** antibody/ADC-induced uptake); `null` if not in the cohort. The one-word grade per gene is also on each `/v1/catalog` row as `intern`. | 1d |
+| `GET` | `/v1/internalization/{SYMBOL}` | Full `InternalizationRecord` (`schema_version 0.3.0`) across the 3,213-gene cohort: primary PMID/DOI-anchored `literature` track (`high|moderate|low|no|unknown`, per-mode basal/native_ligand/therapeutic/pathogen_entry grades, structured kinetics `k_int_per_min`/`t_half_min`/`apparent_t_half_min`, binder/valency/fate metadata, span-verified `sources` + joined `papers`) plus secondary blind `model_priors` sequence prior (`very_high`…`very_low`); `null` if not in the cohort. The literature grade also rides on each `/v1/catalog` row as `intern_lit_grade` (alongside `intern_lit` and sequence-prior `intern`). | 1d |
 | `GET` | `/v1/meta/sizes` | Approximate per-endpoint response sizes, computed live from D1 row counts + `LENGTH(...)` sums. Utility endpoint backing the size badges on the /api docs page. | 60s |
 
 `/v1/orthologs/{SYMBOL}` is the **broad** ortholog view — latest Ensembl Compara for any of ~5k genes with a mouse/cyno ortholog (~90% of the surfaceome), carrying full-length % identity + orthology type + high-confidence flag. The deep-dive record's `deterministic_features.orthologs` is the **deep** view — mouse/cyno canonical only, ECD % identity + projected topology + sequence, but only for genes that have been deep-dived. Use the endpoint for breadth, the record for depth.
@@ -120,6 +122,23 @@ a second fetch:
 - `surface_bind` — SURFACE-Bind MaSIF scoring (Balbi et al. 2026, PMID 41604262): `has_data`, `n_sites`, per-site `sites[]` (`anchor_residue`, `area_a2` BSA, α/β seed counts, `hydrophobicity`), `pdbs[]`.
 
 Older records may lack newer fields — use optional-chaining / `?? null` when reading. A markdown mirror of the full record (with the sequences + per-residue topology embedded) is at `https://surfaceome.deliverome.org/data/surfaceome/{SYMBOL}.md`.
+
+## InternalizationRecord shape (`GET /v1/internalization/{SYMBOL}`)
+
+`schema_version` is `0.3.0` (populated across the 3,213-gene internalization cohort: L1 ∪ Canonical ∪ Likely; returns `null` outside the cohort). Top-level fields:
+
+- `gene_symbol`, `hgnc_id`, `uniprot_acc`, `schema_version`, `runner_version`
+- `literature` *(primary — PMID/DOI-anchored, span-verified Claude 5.5 evidence; `null` if no literature run)*:
+  - `overall_grade` (`high` | `moderate` | `low` | `no` | `unknown`), `overall_confidence` (`high` | `moderate` | `low`), `rationale`, `cross_condition_note`, `species_scope`
+  - `predominant_fate` (`recycling` | `lysosomal_degradation` | `transcytosis` | `surface_retention` | `mixed` | `unknown`), `ligand_dependence_summary`, `epitope_or_valency_dependence_note`
+  - `grades_by_mode.{basal, native_ligand, therapeutic, pathogen_entry}` — each `{ grade, confidence, rationale, cited_source_ids[] }`
+  - `observations[]` — per-experiment structured rows: `assay_type`, `internalization_mode`, `species`, `cell_line`, `cell_context`, `expression_context`, `ligand_name`, `binder_type`, `binder_valency`, `mechanism`, `post_uptake_fate`, `magnitude`, `quant` (`rate_metric`, `rate_value`, `rate_unit`, `quant_summary`, normalized continuous `k_int_per_min` / `t_half_min` + `derived_kinetics_basis`, and single-endpoint `apparent_t_half_min` strictly separated from kinetic fits), `controls_note`, `cited_source_ids[]`
+  - `modulator_observations[]` — cross-gene perturbations recorded separately so they do not inflate the gene's own grade
+  - `sources[]` — verbatim span-verified evidence entries (`int_evi_NN`, `entailment_verified`, `spans[].{source, section, quote}`)
+- `papers` — joined bibliography metadata (`title`, `authors`, `journal`, `year`, preprint flag) keyed by `source_id` (`PMC:...`, `PMID:...`, `DOI:...`)
+- `model_priors[]` *(secondary — blind sequence + DeepTMHMM E/C topology estimate)*: `model`, `overall_grade` (`very_high` | `high` | `moderate` | `low` | `very_low` | `unknown`), `overall_confidence`, `per_isoform[]` (`isoform_id`, `is_canonical`, `topology_summary`, `motifs[]`, `grade`, `rationale`)
+
+On `/v1/catalog`, each cohort row carries `intern_lit_grade` (literature `overall_grade`, shown in the catalog table), `intern_lit: 1`, and `intern` (sequence-prior canonical grade).
 
 ## SurfaceBench matrix shape
 

@@ -78,6 +78,12 @@ interface Quant {
   rate_value: number | null;
   rate_unit: string | null;
   quant_summary: string;
+  // Additive schema 0.3.0 normalized continuous kinetics & single-endpoint estimates.
+  k_int_per_min?: number | null;
+  t_half_min?: number | null;
+  apparent_t_half_min?: number | null;
+  derived_kinetics_basis?: string | null;
+  steady_state_internal_pct?: number | null;
 }
 interface Observation {
   assay_type: string;
@@ -86,6 +92,10 @@ interface Observation {
   species?: string | null;
   internalization_mode: string;
   ligand_name: string | null;
+  binder_type?: string | null;
+  binder_valency?: string | null;
+  expression_context?: string | null;
+  post_uptake_fate?: string | null;
   mechanism: string | null;
   magnitude: string;
   quant: Quant;
@@ -116,6 +126,10 @@ interface Literature {
   rationale: string;
   cross_condition_note: string;
   species_scope: string;
+  // Additive schema 0.3.0 synthesis summaries.
+  predominant_fate?: string | null;
+  ligand_dependence_summary?: string | null;
+  epitope_or_valency_dependence_note?: string | null;
   grades_by_mode: {
     basal: ModeGrade;
     native_ligand: ModeGrade;
@@ -129,13 +143,14 @@ interface Literature {
   n_papers_discovered: number;
   n_papers_fetched: number;
 }
-interface Record {
+export interface InternalizationRecord {
   papers?: PaperMetadataMap;
   gene_symbol: string;
   uniprot_acc: string;
   model_priors: ModelPriorTrack[];
   literature: Literature | null;
 }
+type Record = InternalizationRecord;
 
 interface Props {
   symbol: string;
@@ -153,22 +168,50 @@ function em(v: unknown) {
 // quant_summary. Always show the summary next to the number so the reader knows
 // what the value is relative to; fall back to the summary alone when there is no
 // structured value.
+function fmtKinetic(v: number): string {
+  if (!Number.isFinite(v)) return "";
+  if (Math.abs(v) < 0.01) return v.toExponential(2);
+  if (Math.abs(v) < 1) return Number(v.toPrecision(3)).toString();
+  return Number(v.toFixed(2)).toString();
+}
+
 function QuantValue({
   value,
   unit,
   summary,
+  quant,
 }: {
   value: number | null | undefined;
   unit: string | null | undefined;
   summary?: string | null;
+  quant?: Quant;
 }) {
-  if (value === null || value === undefined) return em(summary);
+  const extras: string[] = [];
+  if (quant?.k_int_per_min != null) extras.push(`k_int ${fmtKinetic(quant.k_int_per_min)} min⁻¹`);
+  if (quant?.t_half_min != null) extras.push(`t½ ${fmtKinetic(quant.t_half_min)} min`);
+  if (quant?.apparent_t_half_min != null && quant?.t_half_min == null) {
+    extras.push(`apparent t½ ${fmtKinetic(quant.apparent_t_half_min)} min`);
+  }
+  const extraTag = extras.length ? (
+    <span className={styles.mono}> ({extras.join(" · ")})</span>
+  ) : null;
+
+  if (value === null || value === undefined) {
+    if (!summary && !extraTag) return em(summary);
+    return (
+      <>
+        {extraTag}
+        {summary ? <span className={styles.muted}>{extraTag ? " — " : ""}{summary}</span> : null}
+      </>
+    );
+  }
   return (
     <>
       <strong>
         {value}
         {unit ? ` ${unit}` : ""}
       </strong>
+      {extraTag}
       {summary ? <span className={styles.muted}> — {summary}</span> : null}
     </>
   );
@@ -285,6 +328,235 @@ function SortTh({
   );
 }
 
+export function InternalizationCardBody({
+  rec,
+  obsSort,
+  toggleObsSort,
+}: {
+  rec: InternalizationRecord;
+  obsSort: { key: string; dir: 1 | -1 };
+  toggleObsSort: (k: string) => void;
+}) {
+  const lit = rec.literature ?? null;
+
+  return (
+    <div className={styles.body}>
+      {/* Literature track FIRST — observed, PMID/DOI-anchored evidence */}
+      <div className={styles.sub}>
+        <div className={styles.subHead}>
+          <span className={styles.trackLabelLit}>Literature</span>
+          {lit && (
+            <span className={styles.muted}>
+              {lit.n_papers_discovered} papers discovered · {lit.sources.length} evidence sources
+            </span>
+          )}
+        </div>
+        {!lit && <p className={styles.muted}>No literature track.</p>}
+        {lit && (
+          <>
+            <div className={styles.overall}>
+              overall <Pill grade={lit.overall_grade} /> <Conf level={lit.overall_confidence} />
+              {lit.species_scope && lit.species_scope !== "unspecified" ? (
+                <> · species {lit.species_scope}</>
+              ) : null}
+              {lit.predominant_fate && lit.predominant_fate !== "unknown" ? (
+                <> · fate <Badge value={lit.predominant_fate} /></>
+              ) : null}
+            </div>
+            <p>{linkifyIntEvi(lit.rationale)}</p>
+            {lit.ligand_dependence_summary ? (
+              <p className={styles.muted}>
+                <strong>Ligand dependence:</strong> {linkifyIntEvi(lit.ligand_dependence_summary)}
+              </p>
+            ) : null}
+            {lit.epitope_or_valency_dependence_note ? (
+              <p className={styles.muted}>
+                <strong>Epitope / valency:</strong> {linkifyIntEvi(lit.epitope_or_valency_dependence_note)}
+              </p>
+            ) : null}
+            <div className={styles.modes}>
+              {(
+                ["basal", "native_ligand", "therapeutic", "pathogen_entry"] as const
+              ).map((k) => {
+                const mg = lit.grades_by_mode[k];
+                // pathogen_entry is additive + usually unknown — only surface
+                // it when it carries a real grade, so the card isn't cluttered
+                // with an empty 4th row for every gene (and old records that
+                // lack the field entirely just skip it).
+                if (!mg) return null;
+                if (
+                  k === "pathogen_entry" &&
+                  (!mg.grade || mg.grade === "unknown")
+                )
+                  return null;
+                return (
+                  <div key={k} className={styles.mode}>
+                    <span className={styles.modeName}>{k.replace(/_/g, " ")}</span>{" "}
+                    <Pill grade={mg.grade} /> <Conf level={mg.confidence} />
+                    <p className={styles.modeRat}>{linkifyIntEvi(mg.rationale)}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <h4 className={styles.h4}>Observations ({lit.observations.length})</h4>
+            <div className={styles.tablewrap}>
+              <table className={styles.table}>
+                <colgroup>
+                  <col className={styles.colAssay} />
+                  <col className={styles.colMode} />
+                  <col className={styles.colSpecies} />
+                  <col className={styles.colCell} />
+                  <col className={styles.colMag} />
+                  <col className={styles.colMetric} />
+                  <col />
+                  <col className={styles.colCites} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <SortTh k="assay" label="assay" sort={obsSort} onSort={toggleObsSort} />
+                    <SortTh k="mode" label="mode" sort={obsSort} onSort={toggleObsSort} />
+                    <SortTh k="species" label="species" sort={obsSort} onSort={toggleObsSort} />
+                    <SortTh k="cell_line" label="cell line" sort={obsSort} onSort={toggleObsSort} />
+                    <SortTh k="mag" label="mag" sort={obsSort} onSort={toggleObsSort} />
+                    <SortTh k="metric" label="value type" sort={obsSort} onSort={toggleObsSort} />
+                    <th>value / summary</th>
+                    <th>cites</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortObs(lit.observations, obsSort).map((o, i) => (
+                    <tr key={i}>
+                      <td><Badge value={o.assay_type} /></td>
+                      <td><Badge value={o.internalization_mode} /></td>
+                      <td><Badge value={o.species} /></td>
+                      <td>{em(o.cell_line)}</td>
+                      <td>
+                        <Pill grade={o.magnitude} />
+                      </td>
+                      <td><Badge value={o.quant.rate_metric} /></td>
+                      <td>
+                        <QuantValue
+                          value={o.quant.rate_value}
+                          unit={o.quant.rate_unit}
+                          summary={o.quant.quant_summary}
+                          quant={o.quant}
+                        />
+                      </td>
+                      <td><CiteChips ids={o.cited_source_ids} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {lit.modulator_observations && lit.modulator_observations.length > 0 && (
+              <>
+                <h4 className={styles.h4}>
+                  Cross-gene modulators ({lit.modulator_observations.length})
+                </h4>
+                <p className={styles.muted}>
+                  Perturbing a <em>different</em> gene changes this protein&apos;s
+                  internalization. Recorded separately — these do <em>not</em> drive the grade.
+                </p>
+                <div className={styles.tablewrap}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>modulator</th>
+                        <th>perturbation</th>
+                        <th>effect on target</th>
+                        <th>cell line</th>
+                        <th>value / summary</th>
+                        <th>cites</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lit.modulator_observations.map((m, i) => (
+                        <tr key={i}>
+                          <td className={styles.mono}>{em(m.modulator)}</td>
+                          <td>{em(m.perturbation)}</td>
+                          <td>{em(m.effect_on_target)}</td>
+                          <td>{em(m.cell_line)}</td>
+                          <td>
+                            <QuantValue
+                              value={m.quant.rate_value}
+                              unit={m.quant.rate_unit}
+                              summary={m.quant.quant_summary || m.note}
+                              quant={m.quant}
+                            />
+                          </td>
+                          <td><CiteChips ids={m.cited_source_ids} /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+
+            {/* One drawer instance fed this card's own sources. */}
+            <EvidenceDrawer
+              evidence={lit.sources as unknown as Evidence[]}
+              papers={rec.papers}
+            />
+          </>
+        )}
+      </div>
+
+      {/* Model-prior track SECOND — sequence/topology estimate */}
+      {rec.model_priors && rec.model_priors.length > 0 && (
+        <div className={styles.sub}>
+          <div className={styles.subHead}>
+            <span className={styles.trackLabelMp}>Sequence prior</span>
+            <span className={styles.badge}>model estimate — not citation-backed</span>
+          </div>
+          {rec.model_priors.map((m) => (
+            <div key={m.model} className={styles.mp}>
+              <div className={styles.mpHead}>
+                <code>{m.model}</code> overall <Pill grade={m.overall_grade} /> <Conf level={m.overall_confidence} />
+              </div>
+              {m.per_isoform.map((iso) => (
+                <div key={iso.isoform_id} className={styles.iso}>
+                  <div>
+                    <Pill grade={iso.grade} /> <code>{iso.isoform_id}</code>
+                    {iso.is_canonical ? " · canonical" : ""} · <Conf level={iso.confidence} />
+                  </div>
+                  <div className={styles.mono}>{em(iso.topology_summary)}</div>
+                  {iso.motifs && iso.motifs.length > 0 ? (
+                    <div className={styles.motifs}>
+                      {iso.motifs.map((mo, mi) => (
+                        <span
+                          key={mi}
+                          className={`${styles.motif} ${mo.functional_context ? styles.motifOn : ""}`}
+                          title={`${mo.region}${mo.approx_position ? ` · ${mo.approx_position}` : ""}${mo.note ? ` — ${mo.note}` : ""}`}
+                        >
+                          <span className={styles.motifType}>
+                            {MOTIF_LABEL[mo.motif_type] ?? mo.motif_type}
+                          </span>{" "}
+                          <code>{mo.sequence}</code>
+                          {mo.functional_context ? (
+                            <span className={styles.motifOk}> ✓ cytoplasmic</span>
+                          ) : (
+                            <span className={styles.muted}> · {mo.region}</span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  ) : iso.endocytic_motifs_noted ? (
+                    <div className={styles.muted}>motifs: {em(iso.endocytic_motifs_noted)}</div>
+                  ) : null}
+                  <p>{em(iso.rationale)}</p>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function InternalizationCard({ symbol, n }: Props) {
   const [rec, setRec] = useState<Record | null>(null);
   const [state, setState] = useState<"loading" | "ok" | "none">("loading");
@@ -299,7 +571,7 @@ export function InternalizationCard({ symbol, n }: Props) {
   useEffect(() => {
     let live = true;
     setState("loading");
-    // D1-backed Worker first (the full 3,357-gene sweep), then the committed
+    // D1-backed Worker first (the full 3,213-gene sweep), then the committed
     // static snapshot (curated / offline / Worker-down fallback). The Worker
     // returns `null` (200) for a gene not in the sweep — fall through to the
     // snapshot rather than declaring "none" prematurely.
@@ -329,14 +601,12 @@ export function InternalizationCard({ symbol, n }: Props) {
     };
   }, [symbol]);
 
-  const lit = rec?.literature ?? null;
-
   return (
     <SectionCard
       n={n}
       eyebrow="Internalization"
       title="Internalization evidence"
-      meta="Two tracks — a sequence prior (model estimate) and PMID-anchored literature by mode"
+      meta="PMID/DOI-anchored literature evidence by mode, followed by the sequence prior (model estimate)"
     >
       <div className={styles.root}>
       {state === "loading" && <p className={styles.muted}>Loading…</p>}
@@ -345,211 +615,7 @@ export function InternalizationCard({ symbol, n }: Props) {
       )}
 
       {state === "ok" && rec && (
-        <div className={styles.body}>
-          {/* Model-prior track */}
-          <div className={styles.sub}>
-            <div className={styles.subHead}>
-              <span className={styles.trackLabelMp}>Sequence prior</span>
-              <span className={styles.badge}>model estimate — not citation-backed</span>
-            </div>
-            {rec.model_priors.map((m) => (
-              <div key={m.model} className={styles.mp}>
-                <div className={styles.mpHead}>
-                  <code>{m.model}</code> overall <Pill grade={m.overall_grade} /> <Conf level={m.overall_confidence} />
-                </div>
-                {m.per_isoform.map((iso) => (
-                  <div key={iso.isoform_id} className={styles.iso}>
-                    <div>
-                      <Pill grade={iso.grade} /> <code>{iso.isoform_id}</code>
-                      {iso.is_canonical ? " · canonical" : ""} · <Conf level={iso.confidence} />
-                    </div>
-                    <div className={styles.mono}>{em(iso.topology_summary)}</div>
-                    {iso.motifs && iso.motifs.length > 0 ? (
-                      <div className={styles.motifs}>
-                        {iso.motifs.map((mo, mi) => (
-                          <span
-                            key={mi}
-                            className={`${styles.motif} ${mo.functional_context ? styles.motifOn : ""}`}
-                            title={`${mo.region}${mo.approx_position ? ` · ${mo.approx_position}` : ""}${mo.note ? ` — ${mo.note}` : ""}`}
-                          >
-                            <span className={styles.motifType}>
-                              {MOTIF_LABEL[mo.motif_type] ?? mo.motif_type}
-                            </span>{" "}
-                            <code>{mo.sequence}</code>
-                            {mo.functional_context ? (
-                              <span className={styles.motifOk}> ✓ cytoplasmic</span>
-                            ) : (
-                              <span className={styles.muted}> · {mo.region}</span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    ) : iso.endocytic_motifs_noted ? (
-                      <div className={styles.muted}>motifs: {em(iso.endocytic_motifs_noted)}</div>
-                    ) : null}
-                    <p>{em(iso.rationale)}</p>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          {/* Literature track */}
-          <div className={styles.sub}>
-            <div className={styles.subHead}>
-              <span className={styles.trackLabelLit}>Literature</span>
-              {lit && (
-                <span className={styles.muted}>
-                  {lit.n_papers_discovered} papers discovered · {lit.sources.length} evidence sources
-                </span>
-              )}
-            </div>
-            {!lit && <p className={styles.muted}>No literature track.</p>}
-            {lit && (
-              <>
-                <div className={styles.overall}>
-                  overall <Pill grade={lit.overall_grade} /> <Conf level={lit.overall_confidence} />
-                  {lit.species_scope && lit.species_scope !== "unspecified" ? (
-                    <> · species {lit.species_scope}</>
-                  ) : null}
-                </div>
-                <p>{linkifyIntEvi(lit.rationale)}</p>
-                <div className={styles.modes}>
-                  {(
-                    ["basal", "native_ligand", "therapeutic", "pathogen_entry"] as const
-                  ).map((k) => {
-                    const mg = lit.grades_by_mode[k];
-                    // pathogen_entry is additive + usually unknown — only surface
-                    // it when it carries a real grade, so the card isn't cluttered
-                    // with an empty 4th row for every gene (and old records that
-                    // lack the field entirely just skip it).
-                    if (!mg) return null;
-                    if (
-                      k === "pathogen_entry" &&
-                      (!mg.grade || mg.grade === "unknown")
-                    )
-                      return null;
-                    return (
-                      <div key={k} className={styles.mode}>
-                        <span className={styles.modeName}>{k.replace(/_/g, " ")}</span>{" "}
-                        <Pill grade={mg.grade} /> <Conf level={mg.confidence} />
-                        <p className={styles.modeRat}>{linkifyIntEvi(mg.rationale)}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <h4 className={styles.h4}>Observations ({lit.observations.length})</h4>
-                <div className={styles.tablewrap}>
-                  <table className={styles.table}>
-                    <colgroup>
-                      <col className={styles.colAssay} />
-                      <col className={styles.colMode} />
-                      <col className={styles.colSpecies} />
-                      <col className={styles.colCell} />
-                      <col className={styles.colMag} />
-                      <col className={styles.colMetric} />
-                      <col />
-                      <col className={styles.colCites} />
-                    </colgroup>
-                    <thead>
-                      <tr>
-                        <SortTh k="assay" label="assay" sort={obsSort} onSort={toggleObsSort} />
-                        <SortTh k="mode" label="mode" sort={obsSort} onSort={toggleObsSort} />
-                        <SortTh k="species" label="species" sort={obsSort} onSort={toggleObsSort} />
-                        <SortTh k="cell_line" label="cell line" sort={obsSort} onSort={toggleObsSort} />
-                        <SortTh k="mag" label="mag" sort={obsSort} onSort={toggleObsSort} />
-                        <SortTh k="metric" label="value type" sort={obsSort} onSort={toggleObsSort} />
-                        <th>value / summary</th>
-                        <th>cites</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortObs(lit.observations, obsSort).map((o, i) => (
-                        <tr key={i}>
-                          <td><Badge value={o.assay_type} /></td>
-                          <td><Badge value={o.internalization_mode} /></td>
-                          <td><Badge value={o.species} /></td>
-                          <td>{em(o.cell_line)}</td>
-                          <td>
-                            <Pill grade={o.magnitude} />
-                          </td>
-                          <td><Badge value={o.quant.rate_metric} /></td>
-                          <td>
-                            <QuantValue
-                              value={o.quant.rate_value}
-                              unit={o.quant.rate_unit}
-                              summary={o.quant.quant_summary}
-                            />
-                          </td>
-                          <td><CiteChips ids={o.cited_source_ids} /></td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {lit.modulator_observations && lit.modulator_observations.length > 0 && (
-                  <>
-                    <h4 className={styles.h4}>
-                      Cross-gene modulators ({lit.modulator_observations.length})
-                    </h4>
-                    <p className={styles.muted}>
-                      Perturbing a <em>different</em> gene changes this protein&apos;s
-                      internalization. Recorded separately — these do <em>not</em> drive the grade.
-                    </p>
-                    <div className={styles.tablewrap}>
-                      <table className={styles.table}>
-                        <thead>
-                          <tr>
-                            <th>modulator</th>
-                            <th>perturbation</th>
-                            <th>effect on target</th>
-                            <th>cell line</th>
-                            <th>value / summary</th>
-                            <th>cites</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {lit.modulator_observations.map((m, i) => (
-                            <tr key={i}>
-                              <td className={styles.mono}>{em(m.modulator)}</td>
-                              <td>{em(m.perturbation)}</td>
-                              <td>{em(m.effect_on_target)}</td>
-                              <td>{em(m.cell_line)}</td>
-                              <td>
-                                <QuantValue
-                                  value={m.quant.rate_value}
-                                  unit={m.quant.rate_unit}
-                                  summary={m.quant.quant_summary || m.note}
-                                />
-                              </td>
-                              <td><CiteChips ids={m.cited_source_ids} /></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </>
-                )}
-
-                {/* No standalone "Cited sources" list — every cite in the tables
-                    above is an EvidenceChip that opens the drawer below with the
-                    claim, verbatim quote, and source link. */}
-                {/* One drawer instance fed this card's own sources. The
-                    page-level EvidenceClickDelegator dispatches the open event;
-                    this drawer only opens for ``int_evi_*`` ids (the deep-dive
-                    drawer ignores them — namespaces don't collide), so an
-                    evidence chip in the tables above slides open the same
-                    detail panel the rest of the page uses. */}
-                <EvidenceDrawer
-                  evidence={lit.sources as unknown as Evidence[]}
-                  papers={rec.papers}
-                />
-              </>
-            )}
-          </div>
-        </div>
+        <InternalizationCardBody rec={rec} obsSort={obsSort} toggleObsSort={toggleObsSort} />
       )}
       </div>
     </SectionCard>

@@ -16,5 +16,6 @@ Project documentation, by kind. (Navigation index — descriptions are brief poi
 | `figures/` | Figure-related documentation. |
 | `superpowers/` | Specs and implementation plans authored via the skills workflow. |
 | `prompt_review.html` | Generated render of the live deep-dive prompts. |
+| `internalization.md` | Production internalization pipeline (`schema_version 0.3.0`): 3,213-gene cohort, Claude 5.5 literature track, kinetics normalization, R2/bioRxiv rescue, API & viewer surface. |
 | `coding-style.md`, `evidence-retrieval-prd.md`, `figure-reproducibility-schema.md` | Standalone design / reference notes. |
 | `tools-design.md` | Historical design note — describes a package layout that no longer exists. |

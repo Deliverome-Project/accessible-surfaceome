@@ -30,7 +30,7 @@ Grouped by scope: **SurfaceBench** (labeled eval) → **genome-wide** sweep → 
 
 | Method | Path | Returns |
 |---|---|---|
-| `GET` | `/v1/internalization/:symbol` | Saved sequence-prior and literature internalization tracks; `null` when no analysis exists. Catalog rows carry `intern`, `intern_lit`, and `intern_lit_grade`. |
+| `GET` | `/v1/internalization/:symbol` | Full `InternalizationRecord` (`schema_version 0.3.0`) across the 3,213-gene cohort: primary PMID/DOI-anchored `literature` track (per-mode grades, structured kinetics, verbatim quotes + joined `papers` metadata) and secondary blind `model_priors` sequence prior; `null` outside the cohort. Catalog rows carry `intern_lit_grade` (literature grade, shown in catalog UI), `intern_lit`, and `intern` (sequence prior). |
 | `GET` | `/v1/tag-sites/:symbol` | Engineered tag insertion sites from `tag_site_public`. |
 | `GET` | `/v1/genes/:symbol` | `SurfaceomeRecord` JSON (latest schema_version): executive summary, evidence-grade rationale, per-method observations, deterministic features, accessibility risks. The citation ledger is **no longer inlined** here (moved to `/evidence`; record ~45% smaller). |
 | `GET` | `/v1/genes/:symbol/evidence` | The citation ledger for one gene — verbatim quotes + provenance as `{ gene, evidence[], papers{} }`, split out of the core record and served via KV read-through. `papers` is NCBI citation metadata (title, byline, journal, year) joined in from `paper_metadata` and keyed by the same `source_id` the spans carry; the stored records hold only an accession, so this is where a readable reference line comes from. Empty `{}` when the join finds nothing — consumers must treat every field as optional. |

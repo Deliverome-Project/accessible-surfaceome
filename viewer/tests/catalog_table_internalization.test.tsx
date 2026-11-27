@@ -62,26 +62,24 @@ function render(): string {
   );
 }
 
-test("renders SEPARATE seq + lit internalization sortable column headers", () => {
+test("renders ONLY the literature internalization column (not sequence prior)", () => {
   const html = render();
   assert.ok(
-    /Intern[^<]*seq/i.test(html),
-    "the internalization SEQUENCE-prior column header must render",
+    html.includes("Intern · lit"),
+    "the internalization LITERATURE column header must render",
   );
   assert.ok(
-    /Intern[^<]*lit/i.test(html),
-    "the internalization LITERATURE column header must render",
+    !html.includes("Intern · seq"),
+    "the internalization SEQUENCE-prior column header must NOT render in the catalog",
   );
 });
 
-test("renders a SEPARATE 'Internalization' filter group (own top-level group)", () => {
+test("renders internalization literature tooltip & column metadata", () => {
   const html = render();
-  // The collapsible group control carries this aria hook only when the
-  // standalone Internalization group is emitted (not the deep-dive/DB groups).
   assert.ok(
     html.includes("catalog-filter-group-internalization") ||
-      /Internalization<\/?/.test(html),
-    "the standalone Internalization filter group must render",
+      /Internalization \(literature\)/.test(html),
+    "the Internalization (literature) column/filter metadata must render",
   );
 });
 
