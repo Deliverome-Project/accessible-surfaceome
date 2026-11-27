@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents.internalization.ids import resolve_hgnc_id
@@ -47,6 +48,7 @@ def annotate_model_prior(
     persist: bool = True,
     annotations_dir: Path | None = None,
     canonical_only: bool = True,
+    usage_sink: list[Any] | None = None,
 ) -> InternalizationRecord:
     client = client or get_client()
     http = http or open_default_client()
@@ -65,6 +67,7 @@ def annotate_model_prior(
             system_prompt=system_prompt,
             gene_symbol=bundle.hgnc_symbol,
             isoforms=isoforms,
+            usage_sink=usage_sink,
         )
         for model in models
     ]

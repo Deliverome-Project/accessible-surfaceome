@@ -1,17 +1,22 @@
-"""Modal app — internalization literature sweep (3,213-gene L1 ∪ Canonical ∪ Likely).
+"""Modal app — internalization literature sweep (5,333-gene deep_dive ∪ L1).
 
 $0 preflight (checks secrets, R2 write access, and container reference TSVs):
 
     uv run --extra modal modal run modal/internalization_lit_app.py::check_secret
+
+Cloud-detached sweep (recommended — entire wave loop runs inside Modal so the
+sweep survives laptop sleep / internet loss; ledger + missed_preprint_genes.txt
+are committed to the Modal Volume after every wave):
+
+    uv run --extra modal modal run --detach modal/internalization_lit_app.py::driver
+    uv run --extra modal modal run --detach modal/internalization_lit_app.py::driver --execute
 
 5-gene Modal canary (verifies prompt caching, R2 intermediates, and rate gate;
 writes to Modal Volume + R2 only unless ``--publish-d1`` is passed):
 
     uv run --extra modal modal run modal/internalization_lit_app.py::canary
 
-Full 3,213-gene sweep (dry-run by default; pass ``--execute`` to back up D1 to R2,
-annotate in waves with a hard ``--max-budget-usd 3000`` cap, publish to public D1,
-upload gzipped intermediates to R2, and batch-purge Cloudflare edge cache):
+Local-driver sweep (streams directly to local ledger under data/runs/):
 
     uv run --extra modal modal run modal/internalization_lit_app.py::full_sweep
     uv run --extra modal modal run modal/internalization_lit_app.py::full_sweep --execute
@@ -201,7 +206,7 @@ def secret_presence_check() -> dict[str, Any]:
     except Exception:  # noqa: BLE001
         hgnc_ok = False
 
-    cohort_tsv = Path("/repo/data/processed/internalization/cohort_l1_canonical_likely_2026-11-26.tsv")
+    cohort_tsv = Path("/repo/data/processed/internalization/cohort_deep_dive_and_l1_2026-11-27.tsv")
     return {
         "present": present,
         "ncbi_pool_size": len([x for x in pool.split(",") if x.strip()]),
@@ -277,7 +282,10 @@ def annotate_one(payload: dict[str, Any]) -> dict[str, Any]:
         )
         from accessible_surfaceome.agents.internalization.models import ModelPriorTrack
         from accessible_surfaceome.cloud.d1_client import D1Client
-        from accessible_surfaceome.cloud.internalization import publish_seq_record
+        from accessible_surfaceome.cloud.internalization import (
+            publish_seq_record,
+            read_existing_model_priors,
+        )
         from accessible_surfaceome.tools._shared.http import CachedHTTP
 
         priors = [ModelPriorTrack.model_validate(mp) for mp in seq_priors_raw]
@@ -306,6 +314,12 @@ def annotate_one(payload: dict[str, Any]) -> dict[str, Any]:
 
         if publish_d1:
             with D1Client.public() as d1:
+                # Fresh per-gene read-back-merge right before publish so a
+                # concurrent sequence-prior sweep's newer model_priors are
+                # NEVER overwritten by stale pre-wave priors.
+                fresh_priors = read_existing_model_priors(d1, rec.gene_symbol)
+                if fresh_priors:
+                    rec = rec.model_copy(update={"model_priors": fresh_priors})
                 publish_seq_record(
                     rec,
                     client=d1,
@@ -389,6 +403,249 @@ def annotate_one(payload: dict[str, Any]) -> dict[str, Any]:
             "elapsed_s": round(time.monotonic() - t0, 2),
             "ts": datetime.now(UTC).isoformat(),
         }
+
+
+@app.function(
+    image=image,
+    cpu=0.5,
+    memory=1024,
+    timeout=24 * 3600,
+    volumes={VOL_MOUNT: volume},
+    secrets=[secret],
+)
+def driver(
+    cohort_tsv: str = "data/processed/internalization/cohort_deep_dive_and_l1_2026-11-27.tsv",
+    run_id: str = "",
+    web_search_mode: str = "adaptive",
+    max_budget_usd: float = 1000.0,
+    wave_size: int = 150,
+    limit: int = 0,
+    force: bool = False,
+    no_backup: bool = False,
+    upload_r2: bool = True,
+    reverse: bool = False,
+    execute: bool = False,
+) -> dict[str, Any]:
+    """Cloud-resident wave orchestrator (invoke with ``modal run --detach``).
+
+    Runs the entire wave loop inside Modal so the sweep completes unattended
+    even if the caller's laptop disconnects or sleeps. Writes ``ledger.jsonl``
+    and ``missed_preprint_genes.txt`` to the Modal Volume after every wave.
+
+    DRY-RUN by default — pass ``--execute`` to back up D1 to R2 and publish.
+    """
+    sys.path.insert(0, "/repo/src")
+    from accessible_surfaceome.agents.internalization.literature_runner import (
+        DEFAULT_LIT_MODEL,
+        DEFAULT_LIT_TRIAGE_MODEL,
+        DEFAULT_LIT_WEB_SCOUT_MODEL,
+        lit_prompt_sha,
+    )
+    from accessible_surfaceome.agents.internalization.models import (
+        LIT_PROMPT_VERSION,
+        SCHEMA_VERSION,
+    )
+    from accessible_surfaceome.cloud.d1_client import D1Client
+    from accessible_surfaceome.cloud.internalization import (
+        backup_table_to_r2,
+        ensure_table,
+        purge_catalog_cache,
+        purge_internalization_batch,
+    )
+    from accessible_surfaceome.env import REPO_ROOT, load_env
+
+    load_env()
+    tsv_path = Path(cohort_tsv)
+    if not tsv_path.is_absolute():
+        tsv_path = REPO_ROOT / tsv_path
+    cohort = _load_genes_from_tsv(tsv_path)
+    cur_sha = lit_prompt_sha()
+    rid = run_id or datetime.now(UTC).strftime("int_lit_cloud_%Y%m%d_%H%M%S")
+    per_gene_est = 0.13
+
+    with D1Client.public() as d1:
+        ensure_table(d1)
+        done: set[str] = set()
+        if not force:
+            rows = d1.query(
+                "SELECT gene_symbol, lit_prompt_sha FROM surface_internalization "
+                "WHERE schema_version = ? AND has_literature = 1;",
+                [SCHEMA_VERSION],
+            )
+            done = {r["gene_symbol"].upper() for r in rows if r.get("lit_prompt_sha") == cur_sha}
+
+        todo = [g for g in cohort if g not in done]
+        if reverse:
+            todo = list(reversed(todo))
+        if limit > 0:
+            todo = todo[:limit]
+
+        est = len(todo) * per_gene_est
+        print(f"Modal CLOUD internalization lit driver (run_id={rid})", flush=True)
+        print(f"  cohort TSV      : {tsv_path} ({len(cohort)} genes)", flush=True)
+        print(f"  prompt          : v{LIT_PROMPT_VERSION} sha={cur_sha[:12]}", flush=True)
+        print(f"  already-lit@sha : {len(done)}  |  todo: {len(todo)}  |  reverse={reverse}", flush=True)
+        print(
+            f"  models          : grade/select={DEFAULT_LIT_MODEL}, "
+            f"triage={DEFAULT_LIT_TRIAGE_MODEL}, web_scout={DEFAULT_LIT_WEB_SCOUT_MODEL}",
+            flush=True,
+        )
+        print(
+            f"  concurrency     : {MAX_CONTAINERS} containers x {MAX_INPUTS} inputs = "
+            f"{MAX_CONTAINERS * MAX_INPUTS} genes in flight",
+            flush=True,
+        )
+        print(
+            f"  est spend       : ~${est:,.0f} (@ ~${per_gene_est:.2f}/gene)  |  "
+            f"budget cap: ${max_budget_usd:,.0f}",
+            flush=True,
+        )
+        print(f"  R2 intermediates: {upload_r2}  |  wave_size: {wave_size}", flush=True)
+
+        if not execute:
+            print(
+                "\nDRY RUN — pass --execute to run R2 backup + cloud sweep. Nothing written.",
+                flush=True,
+            )
+            return {
+                "run_id": rid,
+                "dry_run": True,
+                "cohort": len(cohort),
+                "already_done": len(done),
+                "todo": len(todo),
+                "est_usd": round(est, 2),
+            }
+
+        if not todo:
+            print(
+                "Nothing to do — all cohort genes are already lit-annotated at current prompt SHA.",
+                flush=True,
+            )
+            return {"run_id": rid, "published": 0, "failed": 0, "todo": 0, "total_cost_usd": 0.0}
+
+        if not no_backup:
+            print("Running pre-sweep R2 backup of public D1 surface_internalization…", flush=True)
+            key = backup_table_to_r2(d1, label=f"pre-lit-{rid}")
+            print(f"  backup complete -> r2://{key}", flush=True)
+
+    run_dir = Path(VOL_MOUNT) / rid
+    run_dir.mkdir(parents=True, exist_ok=True)
+    ledger_path = run_dir / "ledger.jsonl"
+    rescue_path = run_dir / "missed_preprint_genes.txt"
+
+    ok = fail = 0
+    total_cost = 0.0
+    total_refusals = 0
+    budget_hit = False
+    missed_preprint_genes: set[str] = set()
+
+    for start in range(0, len(todo), max(1, wave_size)):
+        if total_cost >= max_budget_usd:
+            budget_hit = True
+            print(
+                f"BUDGET CAP REACHED (${total_cost:.2f} >= ${max_budget_usd:.2f}) "
+                f"— stopping before wave {start}.",
+                flush=True,
+            )
+            break
+        wave = todo[start : start + max(1, wave_size)]
+        payloads = [
+            {
+                "gene": g,
+                "run_id": rid,
+                "web_search_mode": web_search_mode,
+                "model": DEFAULT_LIT_MODEL,
+                "triage_model": DEFAULT_LIT_TRIAGE_MODEL,
+                "web_scout_model": DEFAULT_LIT_WEB_SCOUT_MODEL,
+                "triage_concurrency": 4,
+                "publish_d1": True,
+                "upload_r2": upload_r2,
+                # Fresh model_priors are read back per gene inside annotate_one right
+                # before D1 publish, so no stale pre-wave snapshot is needed here.
+                "model_priors": [],
+            }
+            for g in wave
+        ]
+        print(
+            f"\n--- Wave {start + 1}..{start + len(wave)} / {len(todo)} "
+            f"(cum_cost=${total_cost:.2f}) ---",
+            flush=True,
+        )
+        wave_ok_genes: list[str] = []
+        wave_entries: list[dict[str, Any]] = []
+        for g, res in zip(wave, annotate_one.map(payloads, return_exceptions=True), strict=True):
+            if isinstance(res, BaseException):
+                fail += 1
+                entry: dict[str, Any] = {
+                    "gene": g,
+                    "status": "error",
+                    "error": f"Modal exception: {res}"[:400],
+                    "ts": datetime.now(UTC).isoformat(),
+                }
+                wave_entries.append(entry)
+                print(f"  FAIL {g}: {res}", flush=True)
+                continue
+            wave_entries.append(res)
+            if res.get("status") == "ok":
+                ok += 1
+                wave_ok_genes.append(g)
+                total_cost += float(res.get("cost_usd", 0.0) or 0.0)
+                total_refusals += int(res.get("n_refusals", 0) or 0)
+                if res.get("missed_preprint_body"):
+                    missed_preprint_genes.add(g)
+            else:
+                fail += 1
+                print(f"  FAIL {g}: {res.get('error')}", flush=True)
+
+        with ledger_path.open("a", encoding="utf-8") as ledger_fh:
+            for entry in wave_entries:
+                ledger_fh.write(json.dumps(entry) + "\n")
+        if missed_preprint_genes:
+            rescue_path.write_text(
+                "\n".join(sorted(missed_preprint_genes)) + "\n", encoding="utf-8"
+            )
+        volume.commit()
+
+        if wave_ok_genes:
+            purge_internalization_batch(wave_ok_genes, include_catalog=False)
+        print(
+            f"Wave summary: ok={ok} fail={fail} refusals={total_refusals} "
+            f"missed_biorxiv={len(missed_preprint_genes)} "
+            f"total_cost=${total_cost:.2f} (mean=${(total_cost / ok) if ok else 0.0:.3f}/gene)",
+            flush=True,
+        )
+
+    if ok > 0:
+        purge_catalog_cache()
+    summary = {
+        "run_id": rid,
+        "published": ok,
+        "failed": fail,
+        "refusals": total_refusals,
+        "missed_biorxiv": len(missed_preprint_genes),
+        "total_cost_usd": round(total_cost, 4),
+        "mean_cost_usd": round((total_cost / ok) if ok else 0.0, 4),
+        "budget_hit": budget_hit,
+        "volume_ledger": f"/{rid}/ledger.jsonl",
+        "volume_missed_preprints": f"/{rid}/missed_preprint_genes.txt" if missed_preprint_genes else None,
+    }
+    (run_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    volume.commit()
+    print(
+        f"\nDONE: published={ok}, failed={fail}, refusals={total_refusals}, "
+        f"missed_biorxiv={len(missed_preprint_genes)}, "
+        f"total_cost=${total_cost:.2f} (mean=${(total_cost / ok) if ok else 0.0:.3f}/gene)"
+        f"{' [STOPPED AT BUDGET CAP]' if budget_hit else ''}",
+        flush=True,
+    )
+    if missed_preprint_genes:
+        print(
+            f"Pull missed bioRxiv preprints from Modal Volume:\n"
+            f"  uv run --extra modal modal volume get surfaceome-internalization-lit "
+            f"/{rid}/missed_preprint_genes.txt data/runs/internalization_lit/{rid}_missed_preprints.txt",
+            flush=True,
+        )
+    return summary
 
 
 # ---------------------------------------------------------------------------
