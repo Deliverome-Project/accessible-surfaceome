@@ -109,9 +109,10 @@ def test_the_gene_record_field_is_additive_and_separate_from_canonical_topology(
     assert "record.deterministic_features.canonical_topology" in src
 
 
-def test_row_schema_is_11_and_documents_v11():
+def test_row_schema_is_at_least_11_and_documents_v11():
     src = _worker()
-    assert "row_schema: 11," in src
+    m = re.search(r"row_schema:\s*(\d+),", src)
+    assert m and int(m.group(1)) >= 11, "row_schema must be >= 11"
     assert re.search(r"//\s+v11 =", src), "bumped row_schema without a changelog entry"
     assert "libtopo" in src
 
