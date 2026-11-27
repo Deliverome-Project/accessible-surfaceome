@@ -23,9 +23,11 @@ co-tested control (union 11/11 vs web 10/11 vs lit 9/11).
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import re
+import time
 from pathlib import Path
 
 
@@ -53,33 +55,162 @@ from accessible_surfaceome.tools._shared.retraction_watch import (
 # Tagging-methods vocabulary. Deliberately broad: many surface-labeling constructs
 # are never called "tags" in the abstract, so we OR in the concrete modalities.
 _TAG_METHODS = (
-    '"epitope tag" OR "HA tag" OR "FLAG tag" OR "Myc tag" OR "ecto-tagged" OR '
-    '"epitope-tagged" OR "extracellular epitope" OR "surface labeling" OR '
-    '"cell surface expression" OR "knock-in" OR pHluorin OR HiBiT OR HaloTag OR '
-    'ALFA OR DogTag OR SpyTag OR bungarotoxin OR "extracellular loop"'
+    '"epitope tag" OR "HA tag" OR "FLAG tag" OR "Myc tag" OR "V5 tag" OR '
+    '"VSV-G" OR "ecto-tagged" OR "epitope-tagged" OR "extracellular epitope" OR '
+    '"surface labeling" OR "cell surface expression" OR "knock-in" OR '
+    'pHluorin OR HiBiT OR HaloTag OR ALFA OR DogTag OR SpyTag OR '
+    'BLAP OR "biotin acceptor peptide" OR bungarotoxin OR "alpha-bungarotoxin" OR '
+    '"extracellular loop" OR "domain insertion" OR "insertional mutagenesis"'
 )
 #: Results per EuropePMC / PubTator pass. Was 30, which with two EuropePMC
 #: passes plus PubTator put a ~90-paper ceiling over a measured median of 77
 #: discovered papers — so discovery was capped, not exhausted.
 _MAX_PER_SOURCE = 60
 
+# Alias-hygiene rules mirrored from ``agents/internalization/literature_discovery.py``:
+# drop ultra-short / protein-mass aliases (e.g. TR, T9, p90, M1, C1), common
+# 3-letter English/lab words (BAR, TAG, MAP, NET, SET, CAT, FAT, ATP, ION),
+# and clinical disease names ("syndrome", "dystrophy", ...) that flood EuropePMC
+# with unrelated papers.
+_NOISY_SHORT_ALIAS_RE = re.compile(r"^(?:[A-Za-z]{1,2}\d?|p\d{2,3})$")
+_COLLISION_ALIAS_WORDS: frozenset[str] = frozenset({
+    "act", "add", "age", "aid", "aim", "air", "all", "and", "ant", "any", "arc",
+    "are", "arm", "art", "ask", "ate", "atp", "avg", "bad", "bag", "ban", "bar",
+    "bat", "bay", "bed", "bet", "bid", "big", "bin", "bio", "bit", "box", "boy",
+    "bud", "bug", "bus", "but", "buy", "can", "cap", "car", "cat", "cell", "cut",
+    "dad", "dam", "day", "den", "did", "die", "dig", "dim", "dip", "dna", "dog",
+    "dot", "dry", "due", "ear", "eat", "egg", "end", "era", "eve", "eye", "fab",
+    "fan", "far", "fat", "fbs", "fed", "fee", "few", "fig", "fin", "fit", "fix",
+    "fly", "for", "fox", "fun", "fur", "gap", "gas", "gdp", "gel", "get", "got",
+    "gtp", "gum", "gun", "gut", "guy", "had", "ham", "has", "hat", "her", "hid",
+    "him", "hip", "his", "hit", "hot", "how", "hub", "hue", "hug", "ice", "igg",
+    "ill", "ink", "inn", "ion", "its", "jam", "jar", "jaw", "jet", "job", "jog",
+    "joy", "key", "kid", "kin", "kit", "lab", "lac", "lad", "lag", "lap", "law",
+    "lay", "led", "leg", "let", "lid", "lie", "lip", "lit", "log", "lot", "low",
+    "mad", "man", "map", "mat", "max", "may", "men", "met", "mid", "min", "mix",
+    "mob", "mod", "mom", "mop", "mud", "mug", "nap", "net", "new", "nil", "nod",
+    "nor", "not", "now", "nut", "oak", "oar", "odd", "off", "oil", "old", "one",
+    "opt", "orb", "ore", "our", "out", "ova", "owe", "owl", "own", "pad", "pan",
+    "par", "pat", "paw", "pay", "pbs", "pcr", "pea", "peg", "pen", "pep", "per",
+    "pet", "pie", "pig", "pin", "pit", "pod", "pop", "pot", "pro", "pub", "pun",
+    "pup", "put", "rad", "rag", "ram", "ran", "rap", "rat", "raw", "ray", "red",
+    "ref", "rep", "rib", "rid", "rig", "rim", "rip", "rna", "rob", "rod", "rot",
+    "row", "rub", "rug", "run", "rut", "sad", "sag", "sap", "sat", "saw", "say",
+    "sea", "sec", "see", "set", "sew", "sex", "she", "shy", "sin", "sip", "sir",
+    "sis", "sit", "six", "ski", "sky", "sob", "sod", "son", "sow", "soy", "spa",
+    "spy", "std", "sub", "sum", "sun", "sup", "tab", "tag", "tan", "tap", "tar",
+    "tax", "tea", "ten", "the", "thy", "tic", "tie", "tin", "tip", "toe", "ton",
+    "too", "top", "tot", "tow", "toy", "try", "tub", "tug", "two", "urn", "use",
+    "van", "vat", "vet", "via", "vow", "wad", "wag", "war", "was", "wax", "way",
+    "web", "wed", "wee", "wet", "who", "why", "wig", "win", "wit", "woe", "wok",
+    "won", "woo", "wow", "yak", "yam", "yap", "yaw", "yea", "yen", "yes", "yet",
+    "yew", "yin", "yip", "yok", "you", "zap", "zed", "zen", "zip", "zoo",
+})
+_DISEASE_ALIAS_RE = re.compile(
+    r"\b(?:syndrome|disease|hypercholesterolemia|deficiency|susceptibility|"
+    r"dystrophy|carcinoma|leukemia|lymphoma|neuropathy|myopathy|cardiomyopathy|"
+    r"ataxia|deafness|blindness|anemia|albinism)\b",
+    re.IGNORECASE,
+)
+_TRAILING_NUM_RE = re.compile(r"^(.+?)\s+[1-9]\d?$")
+_GENERIC_STEM_RE = re.compile(
+    r"^(?:transmembrane protein|solute carrier|olfactory receptor|taste receptor|"
+    r"vomeronasal|membrane spanning|g protein-coupled receptor|"
+    r"immunoglobulin superfamily|zinc finger|ring finger|leucine rich repeat|"
+    r"chromosome \w+ open reading frame|family with sequence similarity|"
+    r"coiled-coil domain|tetraspanin|claudin|cadherin|integrin|protocadherin|"
+    r"cell adhesion molecule|receptor tyrosine kinase|protein tyrosine phosphatase)\b",
+    re.IGNORECASE,
+)
+
 logger = logging.getLogger(__name__)
+
+
+def _is_noisy_short_alias(alias: str, *, primary_symbol: str) -> bool:
+    s = alias.strip()
+    if not s or s.upper() == primary_symbol.upper():
+        return False
+    if " " in s:
+        return False
+    if s.lower() in _COLLISION_ALIAS_WORDS:
+        return True
+    return bool(_NOISY_SHORT_ALIAS_RE.match(s))
+
+
+def _is_disease_alias(name: str) -> bool:
+    return bool(_DISEASE_ALIAS_RE.search(name))
+
+
+def _stem_without_trailing_num(name: str | None) -> str | None:
+    if not name or " " not in name.strip():
+        return None
+    m = _TRAILING_NUM_RE.match(name.strip())
+    if not m:
+        return None
+    stem = m.group(1).strip()
+    if len(stem) < 12 or " " not in stem or _GENERIC_STEM_RE.match(stem):
+        return None
+    return stem
+
+
+def clean_tag_site_aliases(
+    gene_symbol: str,
+    aliases: list[str],
+    *,
+    primary_name: str | None = None,
+) -> list[str]:
+    """Filter noisy short/collision/disease aliases before building EuropePMC
+    queries, while keeping the primary gene symbol, specific protein names, and
+    non-generic trailing-number stems (e.g. ``asialoglycoprotein receptor``)."""
+    raw: list[str] = [gene_symbol]
+    if primary_name:
+        raw.append(primary_name)
+        stem = _stem_without_trailing_num(primary_name)
+        if stem:
+            raw.append(stem)
+    for a in aliases:
+        if not a or not a.strip():
+            continue
+        raw.append(a)
+        stem = _stem_without_trailing_num(a)
+        if stem:
+            raw.append(stem)
+
+    out: list[str] = []
+    seen: set[str] = set()
+    primary_lower = (primary_name or "").strip().lower()
+    for a in raw:
+        s = a.strip()
+        if not s:
+            continue
+        if _is_noisy_short_alias(s, primary_symbol=gene_symbol):
+            continue
+        if s.lower() != primary_lower and _is_disease_alias(s):
+            continue
+        k = s.lower()
+        if k not in seen:
+            seen.add(k)
+            out.append(s)
+    return out
 
 
 def _alias_or(aliases: list[str]) -> str:
     """OR-join aliases, PHRASE-quoting multi-word ones. Unquoted, ``transferrin
     receptor`` parses as ``transferrin AND receptor`` across all fields and
     inflates the match set — quoting keeps the gene scope tight."""
-    parts = [f'"{a}"' if " " in a else a for a in sorted({a for a in aliases if a})]
+    parts = [f'"{a}"' if " " in a else a for a in sorted({a.strip() for a in aliases if a and a.strip()})]
     return " OR ".join(parts)
 
 
 def build_tag_site_query(aliases: list[str]) -> str:
-    """EuropePMC boolean: (gene aliases) AND (tagging-methods vocabulary).
+    """Gene-in-TITLE_ABS EuropePMC boolean: ``(TITLE_ABS:(aliases)) AND (methods)``.
 
-    The single broad query. Kept for callers that want one request; prefer
-    :func:`build_tag_site_queries`, which splits the same vocabulary by facet."""
-    return f"({_alias_or(aliases)}) AND ({_TAG_METHODS})"
+    Scoping the gene alias clause to ``TITLE_ABS`` prevents PMC-OA full-text
+    table/reference-list mentions from flooding discovery with 350-450 unrelated
+    papers per gene, while leaving the tagging-method clause free to match
+    Materials & Methods (where most extracellular loop tag insertions live).
+    """
+    return f"(TITLE_ABS:({_alias_or(aliases)})) AND ({_TAG_METHODS})"
 
 
 # The same vocabulary as ``_TAG_METHODS``, split by MODALITY. One monolithic
@@ -91,7 +222,8 @@ def build_tag_site_query(aliases: list[str]) -> str:
 _TAG_METHOD_FACETS = {
     "epitope": (
         '"epitope tag" OR "HA tag" OR "FLAG tag" OR "Myc tag" OR "V5 tag" OR '
-        'ALFA OR "epitope-tagged" OR "extracellular epitope"'
+        '"VSV-G" OR ALFA OR BLAP OR "biotin acceptor peptide" OR '
+        '"epitope-tagged" OR "extracellular epitope"'
     ),
     "fluorescent": (
         'pHluorin OR "fluorescent protein" OR GFP OR "GFP fusion" OR mCherry OR '
@@ -103,31 +235,76 @@ _TAG_METHOD_FACETS = {
     ),
     "surface_display": (
         '"cell surface expression" OR "surface labeling" OR "surface labelling" OR '
-        '"non-permeabilized" OR "ecto-tagged" OR "surface display"'
+        '"non-permeabilized" OR "ecto-tagged" OR "surface display" OR '
+        '"intact cells"'
     ),
     "insertion": (
         '"extracellular loop" OR "domain insertion" OR "insertion screen" OR '
-        'transposon OR bungarotoxin OR SpyTag OR DogTag'
+        '"transposon insertion" OR "random insertion" OR transposon OR '
+        'bungarotoxin OR "alpha-bungarotoxin" OR BBS OR SpyTag OR DogTag'
     ),
     # Every gene in the L1 internal-site set is multipass with no extracellular
     # terminus, so its tag can ONLY go in a loop — and the vocabulary above
     # names loops only generically. Papers name the specific loop ("the second
-    # extracellular loop", "ECL2"), which no other facet matches.
+    # extracellular loop", "ECL2", "S3-S4", "loop C"), which no other facet matches.
     "internal_loop": (
-        '"second extracellular loop" OR "third extracellular loop" OR '
-        '"first extracellular loop" OR ECL1 OR ECL2 OR ECL3 OR '
+        '"first extracellular loop" OR "second extracellular loop" OR '
+        '"third extracellular loop" OR "fourth extracellular loop" OR '
+        'ECL1 OR ECL2 OR ECL3 OR ECL4 OR EC1 OR EC2 OR EL1 OR EL2 OR EL3 OR EL4 OR '
         '"extracellular loop 1" OR "extracellular loop 2" OR '
-        '"extracellular loop 3" OR "loop insertion" OR "inserted into the loop" OR '
+        '"extracellular loop 3" OR "extracellular loop 4" OR '
+        '"loop A" OR "loop C" OR "loop E" OR "S1-S2" OR "S3-S4" OR "S5-S6" OR '
+        '"P-loop" OR "M1-M2" OR "M3-M4" OR '
+        '"loop insertion" OR "inserted into the loop" OR '
         '"insertional mutagenesis" OR snorkel OR "re-entrant loop"'
     ),
 }
 
+# Internal-loop-only facets: drop generic GFP/mCherry fusions that flood
+# multipass targets with cytoplasmic N-/C-terminal localization constructs,
+# keeping extracellular/pH-sensitive/self-labeling/loop-insertion modalities.
+_TAG_METHOD_FACETS_INTERNAL = {
+    "epitope_ecto": (
+        '"extracellular epitope" OR "ecto-tagged" OR "epitope-tagged" OR '
+        'ALFA OR BLAP OR "biotin acceptor peptide" OR "biotin ligase acceptor" OR '
+        '(("HA tag" OR "HA-tagged" OR "HA epitope") AND ("extracellular" OR "surface" OR "loop")) OR '
+        '(("FLAG tag" OR "FLAG-tagged" OR "FLAG epitope") AND ("extracellular" OR "surface" OR "loop")) OR '
+        '(("Myc tag" OR "Myc-tagged" OR "Myc epitope") AND ("extracellular" OR "surface" OR "loop"))'
+    ),
+    "biosensor_self_label": (
+        'pHluorin OR HiBiT OR HaloTag OR "SNAP-tag" OR '
+        'bungarotoxin OR "alpha-bungarotoxin" OR BBS OR SpyTag OR DogTag'
+    ),
+    "surface_display": _TAG_METHOD_FACETS["surface_display"],
+    "insertion": _TAG_METHOD_FACETS["insertion"],
+    "internal_loop": _TAG_METHOD_FACETS["internal_loop"],
+}
 
-def build_tag_site_queries(aliases: list[str]) -> list[str]:
-    """One EuropePMC boolean per tagging MODALITY, all scoped to the same gene
-    aliases. Union the results rather than relying on a single ranked cut."""
+
+def build_tag_site_queries(
+    aliases: list[str], *, internal_only: bool = False
+) -> list[str]:
+    """One EuropePMC boolean per tagging MODALITY with the gene aliases scoped
+    to ``TITLE_ABS`` and the tagging method free to match Methods/full text."""
     alias_clause = _alias_or(aliases)
-    return [f"({alias_clause}) AND ({facet})" for facet in _TAG_METHOD_FACETS.values()]
+    facets = _TAG_METHOD_FACETS_INTERNAL if internal_only else _TAG_METHOD_FACETS
+    return [
+        f"(TITLE_ABS:({alias_clause})) AND ({facet})"
+        for facet in facets.values()
+    ]
+
+
+def build_tag_site_preprint_query(aliases: list[str]) -> str:
+    """Targeted $0 EuropePMC preprint pass (bioRxiv/medRxiv) searching full text
+    so recent tagging/insertion methods preprints that list a target only in
+    Results/Tables (e.g. EndoNB, DMS/domain-insertion screens) are discovered
+    even when web_search is skipped."""
+    return (
+        f"SRC:PPR AND ({_alias_or(aliases)}) AND "
+        '(TITLE_ABS:("epitope tag" OR "domain insertion" OR "extracellular loop" '
+        'OR "ecto-tagged" OR "surface display" OR HiBiT OR ALFA OR pHluorin '
+        'OR "insertional mutagenesis" OR transposon OR snorkel) OR "EndoNB")'
+    )
 
 
 def merge_discovery_cache(*, cached: dict, fresh: dict) -> dict:
@@ -150,6 +327,9 @@ def discover_tag_site_papers(
     retraction_index: RetractionIndex | None = None,
     cached: dict[str, Paper] | None = None,
     faceted: bool = False,
+    internal_only: bool = False,
+    include_preprint_pass: bool = False,
+    citation_counts_out: dict[str, int] | None = None,
 ) -> dict[str, Paper]:
     """Return ``{paper_source_id: Paper}`` for tagging-methods papers on this gene,
     via the repo lit-search: EuropePMC (alias + methods vocabulary) UNION PubTator
@@ -162,40 +342,54 @@ def discover_tag_site_papers(
     should include the protein name(s) — methods papers rarely use the symbol."""
     ri = retraction_index or _empty_retraction_index()
     discovered: dict[str, Paper] = {}
-    all_aliases = [gene_symbol, *aliases]
+    all_aliases = clean_tag_site_aliases(gene_symbol, aliases)
 
-    # EuropePMC passes, widest first:
-    #   * the broad alias+methods query under the default (relevance/recency)
-    #     sort AND a CITATION-sorted pass, which surfaces the classic
-    #     heavily-cited methods papers the default sort buries;
-    #   * with ``faceted``, one pass per tagging MODALITY, so a paper matching a
-    #     single narrow facet gets its own top-N instead of competing with every
-    #     other facet inside one ranked cut.
-    #
-    # Faceting is OFF by default. Measured on the six control genes: 1 site with
-    # it on against 4 with it off. It triples the clip pool (one gene 441 ->
-    # 1193) against a selector that still keeps only the top 100, so the extra
-    # recall arrives as a smaller SHARE of evidence reaching the model. And it
-    # cannot help the case it was built for: the preprint that motivated it has
-    # no EuropePMC full text and names none of its genes in the abstract, so
-    # only the web-search leg reaches it and more EuropePMC passes do nothing.
-    # Revisit together with the menu cap, not before.
-    # Preprints are kept (DOI-anchored) and retracted papers dropped.
-    passes: list[tuple[str, str | None]] = [
-        (build_tag_site_query(all_aliases), None),
-        (build_tag_site_query(all_aliases), "CITED desc"),
+    passes: list[tuple[str, str | None, int]] = [
+        (build_tag_site_query(all_aliases), None, _MAX_PER_SOURCE),
+        (build_tag_site_query(all_aliases), "CITED desc", _MAX_PER_SOURCE),
     ]
     if faceted:
-        passes += [(q, None) for q in build_tag_site_queries(all_aliases)]
+        passes += [
+            (q, None, _MAX_PER_SOURCE)
+            for q in build_tag_site_queries(all_aliases, internal_only=internal_only)
+        ]
+    if include_preprint_pass or faceted:
+        passes.append((build_tag_site_preprint_query(all_aliases), None, 20))
 
-    for query, sort in passes:
+    epmc_failures = 0
+    for query, sort, page_size in passes:
         try:
             payload = europepmc_search(
-                http=http, query=query, page_size=_MAX_PER_SOURCE, sort=sort
+                http=http, query=query, page_size=page_size, sort=sort
             )
-        except Exception:  # noqa: BLE001 - one facet failing must not lose the rest
+        except Exception as exc:  # noqa: BLE001 - one facet failing must not lose the rest
+            epmc_failures += 1
+            logger.warning("EuropePMC query failed for %s: %s", gene_symbol, exc)
             continue
         records = payload.get("resultList", {}).get("result", [])
+        cited_by_pmid: dict[int, int] = {}
+        cited_by_pmc: dict[str, int] = {}
+        cited_by_doi: dict[str, int] = {}
+        if citation_counts_out is not None:
+            for rec in records:
+                raw_cited = rec.get("citedByCount")
+                if not (
+                    isinstance(raw_cited, (int, float))
+                    or (isinstance(raw_cited, str) and raw_cited.isdigit())
+                ):
+                    continue
+                c = int(raw_cited)
+                if rec.get("pmcid"):
+                    cited_by_pmc[str(rec["pmcid"]).upper()] = max(
+                        c, cited_by_pmc.get(str(rec["pmcid"]).upper(), 0)
+                    )
+                if rec.get("pmid") and str(rec["pmid"]).isdigit():
+                    p = int(str(rec["pmid"]))
+                    cited_by_pmid[p] = max(c, cited_by_pmid.get(p, 0))
+                if rec.get("doi"):
+                    d = str(rec["doi"]).strip().lower()
+                    cited_by_doi[d] = max(c, cited_by_doi.get(d, 0))
+
         for paper in papers_from_europepmc_records(
             records,
             retraction_index=ri,
@@ -203,18 +397,68 @@ def discover_tag_site_papers(
             include_preprints=True,
         ):
             if not paper.is_retracted:
-                discovered.setdefault(paper_source_id(paper), paper)
+                sid = paper_source_id(paper)
+                discovered.setdefault(sid, paper)
+                if citation_counts_out is not None:
+                    c = 0
+                    if paper.pmc_id:
+                        c = max(c, cited_by_pmc.get(str(paper.pmc_id).upper(), 0))
+                    if paper.pmid is not None:
+                        c = max(c, cited_by_pmid.get(int(paper.pmid), 0))
+                    if paper.doi:
+                        c = max(c, cited_by_doi.get(str(paper.doi).strip().lower(), 0))
+                    if c > citation_counts_out.get(sid, 0):
+                        citation_counts_out[sid] = c
+
+    # Fail loudly when EuropePMC is resetting/outaged rather than silently
+    # degrading to PubTator-only recall and publishing a blind empty record
+    # under the current prompt SHA. Modal retries the member cleanly.
+    degraded_threshold = max(2, (len(passes) + 1) // 2)
+    if passes and epmc_failures >= degraded_threshold:
+        raise RuntimeError(
+            f"EuropePMC discovery degraded for {gene_symbol}: "
+            f"{epmc_failures}/{len(passes)} EuropePMC queries failed"
+        )
 
     # PubTator entity search — MINIMAL free text (overloading it tanks recall),
     # hydrated to Paper objects via EuropePMC. Retracted papers dropped.
-    hits = pubtator_search(
-        http=http, query=build_gene_entity_query(gene_symbol, "epitope tag")
-    ).hits
+    pubtator_terms = (
+        ("extracellular loop", "epitope tag") if internal_only else ("epitope tag",)
+    )
     known_pmids = {p.pmid for p in discovered.values() if p.pmid}
-    pmids = [h.pmid for h in hits if h.pmid and h.pmid not in known_pmids][:_MAX_PER_SOURCE]
-    for paper in europepmc_bulk_by_pmid(http=http, pmids=pmids, retraction_index=ri):
-        if not paper.is_retracted:
-            discovered.setdefault(paper_source_id(paper), paper)
+    pmids: list[int] = []
+    seen_pt: set[int] = set()
+    for term in pubtator_terms:
+        try:
+            hits = pubtator_search(
+                http=http, query=build_gene_entity_query(gene_symbol, term)
+            ).hits
+        except Exception:  # noqa: BLE001
+            continue
+        for h in hits:
+            if h.pmid and h.pmid not in known_pmids and h.pmid not in seen_pt:
+                seen_pt.add(h.pmid)
+                pmids.append(h.pmid)
+                if len(pmids) >= _MAX_PER_SOURCE:
+                    break
+        if len(pmids) >= _MAX_PER_SOURCE:
+            break
+    if pmids:
+        try:
+            hydrated = europepmc_bulk_by_pmid(
+                http=http, pmids=pmids, retraction_index=ri
+            )
+        except Exception as exc:  # noqa: BLE001 - transient EuropePMC outage must not drop discovered papers
+            logger.warning(
+                "EuropePMC bulk PMID hydration failed for %s (%d pmids): %s",
+                gene_symbol,
+                len(pmids),
+                exc,
+            )
+            hydrated = []
+        for paper in hydrated:
+            if not paper.is_retracted:
+                discovered.setdefault(paper_source_id(paper), paper)
 
     # Union with anything previous runs found for this gene. Discovery is
     # non-deterministic where it counts, so a paper reachable only through web
@@ -321,9 +565,10 @@ def ledger_clip_within(quote: str | None, evidence) -> str | None:
 _PROBATIVE_TERMS = (
     "tag", "tagged", "epitope", "insert", "inserted", "insertion", "fusion",
     "fused", "knock-in", "knockin", "knocked in", "appended", "engineered",
-    "ha ", "flag", "myc", "alfa", "v5", "gfp", "yfp", "cfp", "mcherry",
+    "ha ", "flag", "myc", "alfa", "v5", "vsv-g", "gfp", "yfp", "cfp", "mcherry",
     "phluorin", "hibit", "halotag", "snap-tag", "clip-tag", "spytag", "dogtag",
-    "bungarotoxin", "avitag", "biotin-acceptor", "tetracysteine", "flash",
+    "blap", "biotin acceptor", "bungarotoxin", "bbs", "avitag",
+    "biotin-acceptor", "tetracysteine", "flash", "snorkel",
     "transposon", "chimera", "chimeric", "reporter",
 )
 
@@ -384,6 +629,14 @@ _MAX_RESIDUE = 40_000  # longest human protein (titin) ~34k
 _RE_FULL = re.compile(rf"\b({'|'.join(_AA_FULL)})\s*-?\s*(\d{{1,5}})(?!\d)", re.I)
 _RE_THREE = re.compile(rf"\b({'|'.join(_AA_THREE)})\s*-?\s*(\d{{1,5}})(?!\d)", re.I)
 _RE_CODE = re.compile(r"(?<![A-Za-z0-9])([ACDEFGHIKLMNPQRSTVWY])(\d{1,5})(?![A-Za-z0-9])")
+# JATS XML tag-stripping turns ``G<sub>60</sub>`` or ``V<sup>141</sup>`` into
+# ``position G 60`` / ``at V 141``. Only match uppercase AA letters preceded by
+# a positional preposition so English words ("at a 60") never match, and still
+# require sequence-letter confirmation when ``sequence`` is supplied.
+_RE_CODE_SPACED = re.compile(
+    r"(?i:\b(?:position|residue|codon|at|after|before|between|and))\s+"
+    r"([ACDEFGHIKLMNPQRSTVWY])\s+(\d{1,5})(?![A-Za-z0-9])"
+)
 _RE_POSITIONAL = re.compile(r"\b(?:residue|position|codon)\s+(?:no\.?\s*)?(\d{1,5})\b", re.I)
 # A SPAN: "residues 484-516", "aa 120 to 135". Both boundaries are real position
 # claims — a replaced or deleted segment starts at one and ends at the other —
@@ -528,15 +781,16 @@ def residue_mentions_detailed(
         if 0 < n <= _MAX_RESIDUE:
             _add(n, "aa_tight")
 
-    for m in _RE_CODE.finditer(clean):
-        letter, n = m.group(1).upper(), int(m.group(2))
-        if not 0 < n <= _MAX_RESIDUE:
-            continue
-        if sequence:
-            if n <= len(sequence) and sequence[n - 1].upper() == letter:
-                _add(n, "code")  # the sequence confirms a residue, not noise
-        elif not dna_heavy:
-            _add(n, "code")  # nothing to verify against; distrust DNA blocks
+    for rx_code in (_RE_CODE, _RE_CODE_SPACED):
+        for m in rx_code.finditer(clean):
+            letter, n = m.group(1).upper(), int(m.group(2))
+            if not 0 < n <= _MAX_RESIDUE:
+                continue
+            if sequence:
+                if n <= len(sequence) and sequence[n - 1].upper() == letter:
+                    _add(n, "code")  # the sequence confirms a residue, not noise
+            elif not dna_heavy:
+                _add(n, "code")  # nothing to verify against; distrust DNA blocks
     return {n: frozenset(forms) for n, forms in out.items()}
 
 
@@ -640,3 +894,68 @@ def save_discovery_cache(
         )
     except Exception:  # noqa: BLE001
         logger.warning("could not write discovery cache for %s", gene_symbol)
+
+
+_WEB_CACHE_TTL_DAYS = 30
+
+
+def _intent_sha(intent: str | None) -> str:
+    return hashlib.sha256((intent or "").encode("utf-8")).hexdigest()[:16]
+
+
+def load_web_search_cache(
+    gene_symbol: str,
+    *,
+    model: str,
+    max_uses: int,
+    intent: str | None = None,
+    ttl_days: int = _WEB_CACHE_TTL_DAYS,
+    cache_dir: Path | None = None,
+) -> list[str] | None:
+    """Return cached web-search paper IDs (possibly ``[]`` for a negative hit),
+    or ``None`` on cache miss / expired / different model, max_uses, or intent."""
+    path = Path(cache_dir or DISCOVERY_CACHE_DIR) / f"{gene_symbol.upper()}.web_cache.json"
+    if not path.exists():
+        return None
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return None
+    if not isinstance(raw, dict):
+        return None
+    if raw.get("model") != model or raw.get("max_uses") != max_uses:
+        return None
+    if intent is not None and raw.get("intent_sha") != _intent_sha(intent):
+        return None
+    ran_at = raw.get("ran_at")
+    if not isinstance(ran_at, (int, float)):
+        return None
+    if (time.time() - float(ran_at)) > ttl_days * 86_400:
+        return None
+    ids = raw.get("paper_ids")
+    return [str(x) for x in ids] if isinstance(ids, list) else []
+
+
+def save_web_search_cache(
+    gene_symbol: str,
+    paper_ids: list[str],
+    *,
+    model: str,
+    max_uses: int,
+    intent: str | None = None,
+    cache_dir: Path | None = None,
+) -> None:
+    """Record a completed web-search scout call (including 0-hit negative cache)."""
+    path = Path(cache_dir or DISCOVERY_CACHE_DIR) / f"{gene_symbol.upper()}.web_cache.json"
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
+            "model": model,
+            "max_uses": max_uses,
+            "intent_sha": _intent_sha(intent) if intent is not None else None,
+            "ran_at": int(time.time()),
+            "paper_ids": sorted(set(paper_ids)),
+        }
+        path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("could not write tag-site web_search cache for %s: %s", gene_symbol, exc)

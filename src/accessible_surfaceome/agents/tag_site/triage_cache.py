@@ -42,13 +42,22 @@ log = logging.getLogger(__name__)
 TRIAGE_CACHE_DIR = Path(__file__).resolve().parents[3].parent / "data/external/tag_site_triage"
 
 
-def triage_prompt_sha() -> str:
-    """sha256 of the exact triage system prompt in force."""
-    from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
-        _SYSTEM_PROMPT_CACHED,
+def triage_prompt_sha(
+    system_prompt: str | None = None, *, internal_only: bool = False
+) -> str:
+    """sha256 of the exact tag-site triage system prompt (and scope) in force.
+
+    Includes an ``internal_only`` discriminator so a verdict produced under
+    loop-only scoping (which discards cytoplasmic terminal GFP/FLAG fusions)
+    cannot collide with a general-mode verdict for the same gene.
+    """
+    from accessible_surfaceome.agents.tag_site.literature_triage import (
+        load_triage_prompt,
     )
 
-    return hashlib.sha256(_SYSTEM_PROMPT_CACHED.encode("utf-8")).hexdigest()
+    text = system_prompt if system_prompt is not None else load_triage_prompt()
+    scope_tag = "\0scope=internal_only" if internal_only else ""
+    return hashlib.sha256(f"{text}{scope_tag}".encode("utf-8")).hexdigest()
 
 
 def input_sha(paper: Any) -> str:
@@ -83,6 +92,7 @@ def save(
     *,
     prompt_sha: str,
     inputs: dict[str, str] | None = None,
+    model: str | None = None,
     cache_dir: Path | None = None,
 ) -> int:
     """Merge this run's successful verdicts into the gene's cache.
@@ -95,12 +105,15 @@ def save(
         resp = getattr(o, "response", None)
         if resp is None or getattr(o, "error", None):
             continue  # a transient failure must not become permanent
-        cached[o.paper_id] = {
+        entry: dict[str, Any] = {
             "decision": getattr(resp, "decision", None),
             "reason": getattr(resp, "reason", None),
             "prompt_sha": prompt_sha,
             "input_sha": (inputs or {}).get(o.paper_id),
         }
+        if model is not None:
+            entry["model"] = model
+        cached[o.paper_id] = entry
         n += 1
     path = _path(gene_symbol, cache_dir=cache_dir)
     try:
@@ -117,13 +130,15 @@ def split(
     cached: dict[str, dict[str, Any]],
     *,
     prompt_sha: str,
+    model: str | None = None,
 ) -> tuple[list[Any], list[Any]]:
     """``(to_triage, reusable_outcomes)``.
 
-    A cached entry is reusable only when BOTH its ``prompt_sha`` matches the
-    prompt in force AND its ``input_sha`` matches the paper's current title and
-    abstract. Anything else re-runs, which is the sha-aware skip the provenance
-    rule requires, extended to the input the prompt was applied to.
+    A cached entry is reusable only when its ``prompt_sha`` matches the prompt
+    in force, its ``input_sha`` matches the paper's current title and abstract,
+    and (when ``model`` is provided) its ``model`` matches. Anything else
+    re-runs, which is the sha-aware skip the provenance rule requires, extended
+    to the input and model the prompt was applied to.
 
     An entry written before ``input_sha`` existed carries None and is re-run:
     the cheap, correct reading of "we cannot tell what this verdict saw"."""
@@ -140,6 +155,7 @@ def split(
             not hit
             or hit.get("prompt_sha") != prompt_sha
             or hit.get("input_sha") != input_sha(paper)
+            or (model is not None and hit.get("model") != model)
         ):
             to_triage.append(paper)
             continue

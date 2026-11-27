@@ -31,9 +31,21 @@ import logging
 import re
 from typing import Any
 
+from accessible_surfaceome.agents._support.api_retry import messages_create_with_backoff
+from accessible_surfaceome.agents._support.model_config import model_rejects_sampling_params
+from accessible_surfaceome.agents._support.pricing import (
+    record_from_response,
+    resolve_pricing_key,
+)
+
 logger = logging.getLogger(__name__)
 
-HAIKU_MODEL = "claude-haiku-4-5-20251001"
+HAIKU_MODEL = "claude-haiku-5-5"
+# Empirically, claude-haiku-5-5 occasionally issues spurious refusals on benign
+# published epitope-tag insertion sentences (e.g. a myc-tag insertion quote);
+# falling back once to claude-haiku-4-5 avoids wrongly downgrading a validated
+# position to 'inferred'.
+FALLBACK_HAIKU_MODEL = "claude-haiku-4-5-20251001"
 
 #: Deliberately free of gene names, tag names and any mention of review, so the
 #: answer cannot be steered toward a position the caller is hoping for.
@@ -55,25 +67,51 @@ _INT = re.compile(r"-?\d{1,6}")
 
 
 def verify_position_blind(
-    quote: str | None, *, client: Any, max_residue: int | None = None
+    quote: str | None,
+    *,
+    client: Any,
+    max_residue: int | None = None,
+    model: str = HAIKU_MODEL,
+    usage_sink: list[Any] | None = None,
 ) -> int | None:
     """The residue position ``quote`` states, or None.
 
-    Any failure — no client, an API error, an unparseable reply — returns None,
-    which leaves the caller's deterministic verdict exactly as it was.
+    Any failure — no client, an API error, a refusal, an unparseable reply —
+    returns None, which leaves the caller's deterministic verdict unchanged.
     """
     if not quote or client is None or len(quote.strip()) < 12:
         return None
-    try:
-        resp = client.messages.create(
-            model=HAIKU_MODEL,
-            max_tokens=8,
-            system=_SYSTEM,
-            messages=[{"role": "user", "content": quote.strip()}],
-        )
-        text = "".join(
-            getattr(b, "text", "") for b in getattr(resp, "content", []) or []
+    def _call(target_model: str) -> tuple[str | None, bool]:
+        call_kwargs: dict[str, Any] = {
+            "model": target_model,
+            "max_tokens": 16,
+            "system": _SYSTEM,
+            "messages": [{"role": "user", "content": quote.strip()}],
+        }
+        # Claude 5.x models enable adaptive thinking by default; with a tiny
+        # max_tokens budget, thinking consumes all tokens and emits empty text.
+        if model_rejects_sampling_params(target_model):
+            call_kwargs["thinking"] = {"type": "disabled"}
+        resp = messages_create_with_backoff(client, **call_kwargs)
+        raw_usage = getattr(resp, "usage", None)
+        if usage_sink is not None and raw_usage is not None:
+            pkey = resolve_pricing_key(target_model)
+            if pkey is not None:
+                usage_sink.append(record_from_response(raw_usage, pkey, response=resp))
+        if getattr(resp, "stop_reason", None) == "refusal":
+            logger.warning("blind position verify refused by %s", target_model)
+            return None, True
+        out_text = "".join(
+            getattr(b, "text", "")
+            for b in getattr(resp, "content", []) or []
+            if getattr(b, "type", "text") == "text"
         ).strip()
+        return out_text, False
+
+    try:
+        text, refused = _call(model)
+        if refused and model != FALLBACK_HAIKU_MODEL:
+            text, _ = _call(FALLBACK_HAIKU_MODEL)
     except Exception as exc:  # noqa: BLE001 - a verifier must never fail a run
         logger.warning("blind position verify failed: %s", exc)
         return None
