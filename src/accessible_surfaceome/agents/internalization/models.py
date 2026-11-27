@@ -81,7 +81,7 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 #        ligand_dependence_summary, richer RateMetric values, and code-derived
 #        universal kinetics (derived_t_half_min / derived_ke_min_inv). Hoists
 #        static JSON schemas into cached system prompts across triage/select/grade.
-LIT_PROMPT_VERSION = "0.2.1"
+LIT_PROMPT_VERSION = "0.2.2"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
@@ -335,6 +335,14 @@ class GradesByMode(BaseModel):
     pathogen_entry: ModeGrade = Field(default_factory=ModeGrade)
 
 
+DerivedKineticsBasis = Literal[
+    "direct_half_life",
+    "direct_rate_constant",
+    "percent_rate",
+    "none",
+]
+
+
 class InternalizationQuant(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -343,11 +351,16 @@ class InternalizationQuant(BaseModel):
     rate_unit: str | None = None
     time_point: str | None = None
     quant_summary: str = ""
-    # Deterministically derived universal kinetics (computed in Python code from
-    # verbatim gross_entry / net_accumulation rates — NEVER guessed by the LLM;
-    # always None for endpoint_fraction / relative / qualitative_only).
+    # Deterministically derived universal cellular first-order kinetics
+    # (computed in Python from verbatim first-order rates — NEVER guessed by
+    # the LLM; None for endpoint_fraction / relative / in_vivo PK fits).
     derived_t_half_min: float | None = None
     derived_ke_min_inv: float | None = None
+    derived_kinetics_basis: DerivedKineticsBasis | None = None
+    # Strictly separated apparent half-life (min) from single-timepoint
+    # percent_internalized (5-95% at a single duration <= 4 h) assuming
+    # first-order entry without recycling; upper bound on true t1/2.
+    apparent_t_half_min: float | None = None
 
 
 class InternalizationObservation(BaseModel):

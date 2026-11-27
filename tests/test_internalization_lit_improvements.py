@@ -466,41 +466,61 @@ def test_cap_worth_fetching_and_grade_evidence_ledger_cap():
 
 
 def test_derive_universal_kinetics_converts_valid_rates_and_skips_endpoints():
-    # 1. CCR5 basal 13.7 %/h -> t1/2 ~ 282 min (~4.7 h)
+    # 1. CCR5 basal 13.7 %/h -> continuous k_e = 13.7/6000 = 0.00228/min, t1/2 ~ 303.6 min
     q_ccr5_basal = derive_universal_kinetics(
         InternalizationQuant(rate_metric="other", rate_value=13.7, rate_unit="%/h"),
         rate_class="gross_entry",
     )
     assert q_ccr5_basal.rate_metric == "percent_per_hour"
+    assert q_ccr5_basal.derived_kinetics_basis == "percent_rate"
     assert q_ccr5_basal.derived_t_half_min is not None
-    assert 275.0 <= q_ccr5_basal.derived_t_half_min <= 290.0
+    assert 300.0 <= q_ccr5_basal.derived_t_half_min <= 307.0
 
-    # 2. CCR5 + CCL5 9.3 %/min -> t1/2 ~ 7.1 min
+    # 2. Rapid >= 100 %/h rate (120 %/h = 0.02 /min -> t1/2 = 34.66 min) MUST convert cleanly
+    q_fast_hr = derive_universal_kinetics(
+        InternalizationQuant(rate_metric="percent_per_hour", rate_value=120.0, rate_unit="%/h"),
+        rate_class="gross_entry",
+    )
+    assert q_fast_hr.derived_ke_min_inv == 0.02
+    assert q_fast_hr.derived_t_half_min == 34.66
+
+    # 3. CCR5 + CCL5 9.3 %/min -> continuous k_e = 0.093 /min, t1/2 = 7.45 min
     q_ccr5_ccl5 = derive_universal_kinetics(
         InternalizationQuant(rate_metric="other", rate_value=9.3, rate_unit="%/min"),
         rate_class="gross_entry",
     )
     assert q_ccr5_ccl5.rate_metric == "percent_per_min"
-    assert q_ccr5_ccl5.derived_t_half_min is not None
-    assert 6.5 <= q_ccr5_ccl5.derived_t_half_min <= 7.8
+    assert q_ccr5_ccl5.derived_ke_min_inv == 0.093
+    assert q_ccr5_ccl5.derived_t_half_min == 7.45
 
-    # 3. ERBB2 gross 0.015 /min -> t1/2 = 46.21 min
+    # 4. ERBB2 gross 0.015 /min -> t1/2 = 46.21 min
     q_her2 = derive_universal_kinetics(
         InternalizationQuant(rate_metric="rate_per_min", rate_value=0.015, rate_unit="min^-1"),
         rate_class="gross_entry",
     )
     assert q_her2.derived_t_half_min == 46.21
     assert q_her2.derived_ke_min_inv == 0.015
+    assert q_her2.derived_kinetics_basis == "direct_rate_constant"
 
-    # 4. Half-life in hours (7.5 h) -> 450 min
+    # 5. Half-life in hours (7.5 h) -> 450 min; in_vivo multi-day PK fit excluded
     q_hl = derive_universal_kinetics(
         InternalizationQuant(rate_metric="half_life", rate_value=7.5, rate_unit="h"),
         rate_class="net_accumulation",
+        cell_context="cell_line",
     )
     assert q_hl.derived_t_half_min == 450.0
+    assert q_hl.derived_kinetics_basis == "direct_half_life"
 
-    # 5. Endpoint fraction (60% at 12 h) MUST NOT be converted to a rate constant
-    q_ep = derive_universal_kinetics(
+    q_pk = derive_universal_kinetics(
+        InternalizationQuant(rate_metric="half_life", rate_value=5.0, rate_unit="days"),
+        rate_class="net_accumulation",
+        cell_context="in_vivo",
+    )
+    assert q_pk.derived_t_half_min is None
+    assert q_pk.derived_ke_min_inv is None
+
+    # 6. Endpoint fraction (60% at 12 h > 4h) -> neither exact nor apparent
+    q_ep_long = derive_universal_kinetics(
         InternalizationQuant(
             rate_metric="percent_internalized",
             rate_value=60.0,
@@ -510,8 +530,50 @@ def test_derive_universal_kinetics_converts_valid_rates_and_skips_endpoints():
         ),
         rate_class="endpoint_fraction",
     )
-    assert q_ep.derived_t_half_min is None
-    assert q_ep.derived_ke_min_inv is None
+    assert q_ep_long.derived_t_half_min is None
+    assert q_ep_long.derived_ke_min_inv is None
+    assert q_ep_long.apparent_t_half_min is None
+
+    # 7. Clean short endpoint (50% at 1 h) -> exact=None, apparent_t_half_min=60.0 min
+    q_ep_short = derive_universal_kinetics(
+        InternalizationQuant(
+            rate_metric="percent_internalized",
+            rate_value=50.0,
+            rate_unit="%",
+            time_point="1 h",
+        ),
+        rate_class="endpoint_fraction",
+    )
+    assert q_ep_short.derived_t_half_min is None
+    assert q_ep_short.apparent_t_half_min == 60.0
+
+
+def test_clean_query_aliases_adds_cd_stem_and_drops_disease_names():
+    from accessible_surfaceome.agents.internalization.literature_discovery import (
+        build_preprint_screen_query,
+        clean_query_aliases,
+    )
+    from accessible_surfaceome.tools._shared.models import IdentifierBundle
+
+    b = IdentifierBundle(
+        hgnc_symbol="ASGR1",
+        hgnc_id="HGNC:742",
+        uniprot_acc="P07306",
+        approved_name="asialoglycoprotein receptor 1",
+        cd_designation="CD71",
+        alias_names=["familial hypercholesterolemia", "hepatic lectin H1"],
+        aliases=["ASGPR", "HL-1"],
+    )
+    aliases = clean_query_aliases(b, extra_names=["Asialoglycoprotein receptor 1", "ASGP-R 1"])
+    lower = {a.lower() for a in aliases}
+    assert "asialoglycoprotein receptor" in lower
+    assert "cd71" in lower
+    assert "asgp-r 1" in lower
+    assert "familial hypercholesterolemia" not in lower
+
+    ppr_q = build_preprint_screen_query(aliases)
+    assert "SRC:PPR" in ppr_q
+    assert "EndoNB" in ppr_q
 
 
 

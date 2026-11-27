@@ -18,7 +18,7 @@ import math
 import re
 from collections import Counter
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from accessible_surfaceome.agents.internalization.benchmark import (
     check_observation_mode_issue,
@@ -215,20 +215,59 @@ _DAY_UNIT_RE = re.compile(r"^(?:d|day|days)$", re.IGNORECASE)
 
 _GRADE_SCHEMA_JSON: str = json.dumps(LiteratureLLMOut.model_json_schema(), indent=2)
 
+# Single clean duration in time_point (e.g. "15 min", "~1 h", "2.5 h", "90 min").
+# Deliberately rejects ranges ("1-4 h", "0.25–4 h"), multi-clause strings, or
+# non-duration labels ("37 C") so apparent_t_half_min is never guessed from noise.
+_SINGLE_TIME_POINT_RE = re.compile(
+    r"^\s*(?:~|≈|about\s+|approx\.?\s*)?(\d+(?:\.\d+)?)\s*"
+    r"(s|sec|secs|second|seconds|min|mins|minute|minutes|h|hr|hrs|hour|hours)\s*$",
+    re.IGNORECASE,
+)
+
+
+def _parse_single_time_point_min(time_point: str | None) -> float | None:
+    if not time_point:
+        return None
+    m = _SINGLE_TIME_POINT_RE.match(time_point)
+    if not m:
+        return None
+    num = float(m.group(1))
+    unit = m.group(2).lower()
+    if num <= 0:
+        return None
+    if unit.startswith("s"):
+        return num / 60.0
+    if unit.startswith("m"):
+        return num
+    if unit.startswith("h"):
+        return num * 60.0
+    return None
+
 
 def derive_universal_kinetics(
     quant: InternalizationQuant,
     *,
     rate_class: str,
+    cell_context: str = "unknown",
 ) -> InternalizationQuant:
-    """Deterministically normalize ``rate_metric`` from verbatim units and derive
-    universal ``derived_t_half_min`` (minutes) and ``derived_ke_min_inv`` (min^-1)
-    ONLY when mathematically convertible.
+    """Deterministically normalize ``rate_metric`` from verbatim units and derive:
 
-    Never converts ``endpoint_fraction`` (a % at one timepoint cannot identify a
-    rate constant without assuming no recycling), ``relative`` fold-changes, or
-    ``qualitative_only`` rows. Always overwrites any LLM-supplied derived values
-    so unit conversions are 100% deterministic and auditable.
+    1. **Exact cellular first-order kinetics** (``derived_t_half_min`` in min,
+       ``derived_ke_min_inv`` in min^-1, ``derived_kinetics_basis``) ONLY for
+       directly reported first-order rates/half-lives:
+       - ``half_life`` (s / min / h; excludes multi-day ``in_vivo`` PK fits)
+       - ``rate_per_min`` (min^-1) and ``ke_h_inv`` (h^-1)
+       - ``percent_per_min`` (%/min -> k_e = val / 100 min^-1) and
+         ``percent_per_hour`` (%/h -> k_e = val / 6000 min^-1), using the
+         instantaneous fractional rate constant (valid for any val > 0,
+         including >= 100 %/h such as rapid endocytosis).
+    2. **Strictly separated single-endpoint apparent half-life**
+       (``apparent_t_half_min``) via ``t * ln(2) / (-ln(1 - f))`` ONLY when
+       ``rate_metric == "percent_internalized"``, ``5 <= val <= 95``, and
+       ``time_point`` is a single clean duration ``<= 240 min`` (4 h).
+
+    Always overwrites any LLM-supplied derived fields so all conversions are
+    100% deterministic and auditable.
     """
     val = quant.rate_value
     unit = (quant.rate_unit or "").strip()
@@ -247,8 +286,21 @@ def derive_universal_kinetics(
 
     t_half_min: float | None = None
     ke_min_inv: float | None = None
+    basis: Literal["direct_half_life", "direct_rate_constant", "percent_rate", "none"] = "none"
+    apparent_t_half_min: float | None = None
 
-    if val is not None and val > 0 and rate_class not in ("endpoint_fraction", "relative", "qualitative_only"):
+    # Exclude whole-body in_vivo PK/TMDD net_accumulation fits (e.g. 5-day
+    # antibody clearance) from cellular entry rate constants.
+    is_invivo_pk = cell_context == "in_vivo" and (
+        rate_class == "net_accumulation" or _DAY_UNIT_RE.match(unit)
+    )
+
+    if (
+        val is not None
+        and val > 0
+        and not is_invivo_pk
+        and rate_class not in ("endpoint_fraction", "relative", "qualitative_only")
+    ):
         if metric == "half_life":
             if _MIN_UNIT_RE.match(unit):
                 t_half_min = val
@@ -260,29 +312,51 @@ def derive_universal_kinetics(
                 t_half_min = val * 1440.0
             if t_half_min is not None and t_half_min > 0:
                 ke_min_inv = math.log(2.0) / t_half_min
+                basis = "direct_half_life"
         elif metric == "rate_per_min":
             ke_min_inv = val
             t_half_min = math.log(2.0) / ke_min_inv
+            basis = "direct_rate_constant"
         elif metric == "ke_h_inv":
             # Guard: only treat as h^-1 if unit isn't per-minute
             if not _PER_MIN_UNIT_RE.match(unit):
                 ke_min_inv = val / 60.0
                 t_half_min = math.log(2.0) / ke_min_inv
-        elif metric == "percent_per_min" and val < 100.0:
-            ke_min_inv = -math.log(1.0 - val / 100.0)
-            if ke_min_inv > 0:
-                t_half_min = math.log(2.0) / ke_min_inv
-        elif metric == "percent_per_hour" and val < 100.0:
-            ke_hr_inv = -math.log(1.0 - val / 100.0)
-            if ke_hr_inv > 0:
-                ke_min_inv = ke_hr_inv / 60.0
-                t_half_min = math.log(2.0) / ke_min_inv
+                basis = "direct_rate_constant"
+        elif metric == "percent_per_min":
+            # Continuous fractional rate constant: X %/min => k_e = (X/100) min^-1
+            ke_min_inv = val / 100.0
+            t_half_min = math.log(2.0) / ke_min_inv
+            basis = "percent_rate"
+        elif metric == "percent_per_hour":
+            # Continuous fractional rate constant: X %/h => k_e = (X/100) h^-1 = (X/6000) min^-1
+            ke_min_inv = val / 6000.0
+            t_half_min = math.log(2.0) / ke_min_inv
+            basis = "percent_rate"
+
+    # Strictly separated single-endpoint apparent half-life for clean
+    # percent_internalized rows (5-95% at a single time_point <= 4 h).
+    if (
+        t_half_min is None
+        and val is not None
+        and metric == "percent_internalized"
+        and 5.0 <= val <= 95.0
+    ):
+        tp_min = _parse_single_time_point_min(quant.time_point)
+        if tp_min is not None and 0.0 < tp_min <= 240.0:
+            denom = -math.log(1.0 - val / 100.0)
+            if denom > 0:
+                apparent_t_half_min = tp_min * math.log(2.0) / denom
 
     return quant.model_copy(
         update={
             "rate_metric": metric,
             "derived_t_half_min": round(t_half_min, 2) if t_half_min is not None else None,
             "derived_ke_min_inv": round(ke_min_inv, 5) if ke_min_inv is not None else None,
+            "derived_kinetics_basis": basis if t_half_min is not None else None,
+            "apparent_t_half_min": (
+                round(apparent_t_half_min, 2) if apparent_t_half_min is not None else None
+            ),
         }
     )
 
@@ -322,13 +396,17 @@ def _sanitize_observation(obs: InternalizationObservation) -> InternalizationObs
             quant_summary=q.quant_summary,
             derived_t_half_min=None,
             derived_ke_min_inv=None,
+            derived_kinetics_basis=None,
+            apparent_t_half_min=None,
         )
         updates["rate_class"] = "qualitative_only"
     else:
         if q.rate_value is None and eff_rate_class == "unknown" and q.quant_summary:
             eff_rate_class = "qualitative_only"
             updates["rate_class"] = eff_rate_class
-        derived_q = derive_universal_kinetics(q, rate_class=eff_rate_class)
+        derived_q = derive_universal_kinetics(
+            q, rate_class=eff_rate_class, cell_context=obs.cell_context
+        )
         if derived_q != q:
             updates["quant"] = derived_q
 

@@ -225,12 +225,14 @@ def _cap_worth_fetching(
     gene_names: list[str],
     max_fetch: int = _MAX_WORTH_FETCHING,
     pinned_ids: set[str] | None = None,
+    citation_counts: dict[str, int] | None = None,
 ) -> list[Any]:
     """Keep at most ``max_fetch`` highest-value ``worth_fetching`` outcomes,
     downgrading lower-priority excess ones to ``keep_abstract`` so their
     abstracts remain in the pool without stalling on 50+ full-text downloads.
     Explicitly user-pinned paper IDs are never downgraded."""
     pinned = pinned_ids or set()
+    cites = citation_counts or {}
     wf_indices = [
         i
         for i, o in enumerate(outcomes)
@@ -246,9 +248,11 @@ def _cap_worth_fetching(
         is_pinned = 1 if o.paper_id in pinned else 0
         abstract = (getattr(p, "abstract", "") or "") if p is not None else ""
         title = (getattr(p, "title", "") or "") if p is not None else ""
+        cited = int(cites.get(o.paper_id, 0) or 0)
         has_pmc = 1 if (p is not None and getattr(p, "pmc_id", None)) else 0
-        cited = int(getattr(p, "cited_by_count", 0) or 0) if p is not None else 0
-        return (is_pinned, scorer(f"{title}. {abstract}"), has_pmc, cited)
+        # Relevance score first, then citation count (so foundational pre-PMC
+        # kinetics papers beat low-cited OA papers), then PMC availability.
+        return (is_pinned, scorer(f"{title}. {abstract}"), cited, has_pmc)
 
     ranked = sorted(wf_indices, key=_priority, reverse=True)
     keep_set = set(ranked[: max(max_fetch, len(pinned))])
@@ -426,12 +430,24 @@ def annotate_literature(
         if caches_active:
             cached_papers.update(load_discovery_cache(bundle.hgnc_symbol))
 
+        citation_counts: dict[str, int] = {}
         if skip_discovery and cached_papers:
             discovered = dict(cached_papers)
             logger.info("%s: skip_discovery=True — using %d seeded paper(s)", bundle.hgnc_symbol, len(discovered))
         elif cached_papers:
             discovered = discover_internalization_papers(
-                bundle, http=http_client, retraction_index=retraction, cached=cached_papers
+                bundle,
+                http=http_client,
+                retraction_index=retraction,
+                cached=cached_papers,
+                citation_counts_out=citation_counts,
+            )
+        elif isinstance(http_client, CachedHTTP):
+            discovered = discover_internalization_papers(
+                bundle,
+                http=http_client,
+                retraction_index=retraction,
+                citation_counts_out=citation_counts,
             )
         else:
             discovered = discover_internalization_papers(
@@ -526,7 +542,11 @@ def annotate_literature(
         if pinned_extra_papers:
             outcomes.extend(force_worth_fetching_outcomes(pinned_extra_papers))
         outcomes = _cap_worth_fetching(
-            outcomes, papers_by_id, gene_names=all_names, pinned_ids=pinned_ids
+            outcomes,
+            papers_by_id,
+            gene_names=all_names,
+            pinned_ids=pinned_ids,
+            citation_counts=citation_counts,
         )
         rel_fn = internalization_relevance(all_names)
         pool, actions = build_pool(
@@ -768,6 +788,8 @@ def annotate_literature(
                     "n_refusals": track.n_refusals,
                     "predominant_fate": track.predominant_fate,
                     "cost_usd": track.cost_usd,
+                    "cache_read_tokens": cache_read_tok,
+                    "cache_write_tokens": cache_write_tok,
                 },
             )
             if intermediates_dir is not None:

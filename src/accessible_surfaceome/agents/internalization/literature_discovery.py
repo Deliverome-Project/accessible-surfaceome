@@ -190,6 +190,77 @@ def _is_noisy_short_alias(alias: str, *, primary_symbol: str) -> bool:
 
 
 _PAREN_NAME_RE = re.compile(r"\(([^()]{5,60})\)")
+_DISEASE_ALIAS_RE = re.compile(
+    r"\b(?:syndrome|disease|hypercholesterolemia|deficiency|susceptibility|"
+    r"dystrophy|carcinoma|leukemia|lymphoma|neuropathy|myopathy|cardiomyopathy|"
+    r"ataxia|deafness|blindness|anemia|albinism)\b",
+    re.IGNORECASE,
+)
+_TRAILING_NUM_RE = re.compile(r"^(.+?)\s+[1-9]\d?$")
+_GENERIC_STEM_RE = re.compile(
+    r"^(?:transmembrane protein|solute carrier|olfactory receptor|taste receptor|"
+    r"vomeronasal|membrane spanning|g protein-coupled receptor|"
+    r"immunoglobulin superfamily|zinc finger|ring finger|leucine rich repeat|"
+    r"chromosome \w+ open reading frame|family with sequence similarity|"
+    r"coiled-coil domain|tetraspanin|claudin|cadherin|integrin|protocadherin|"
+    r"cell adhesion molecule|receptor tyrosine kinase|protein tyrosine phosphatase)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_disease_alias(name: str) -> bool:
+    return bool(_DISEASE_ALIAS_RE.search(name))
+
+
+def _uniprot_protein_names(uniprot_acc: str | None, http: Any) -> list[str]:
+    """Read UniProt's recommended + alternative full/short protein names from
+    the already-cached UniProt JSON entry (zero extra network calls after
+    ``resolve_by_hgnc_id``). Rescues classic common names missing from HGNC
+    (e.g. 'Beta-2 adrenergic receptor' for ADRB2, 'LDL receptor' for LDLR)."""
+    if not uniprot_acc or not isinstance(http, CachedHTTP):
+        return []
+    try:
+        data = http.get_json(
+            f"https://rest.uniprot.org/uniprotkb/{uniprot_acc}.json",
+            source="uniprot_entry",
+            ttl_days=30,
+        )
+    except Exception:  # noqa: BLE001
+        return []
+    desc = data.get("proteinDescription") if isinstance(data, dict) else None
+    if not isinstance(desc, dict):
+        return []
+    names: list[str] = []
+
+    def _collect(block: Any) -> None:
+        if not isinstance(block, dict):
+            return
+        full = (block.get("fullName") or {}).get("value")
+        if isinstance(full, str) and 4 <= len(full.strip()) <= 65:
+            names.append(full.strip())
+        for sh in block.get("shortNames") or []:
+            val = sh.get("value") if isinstance(sh, dict) else None
+            if isinstance(val, str) and 3 <= len(val.strip()) <= 40:
+                names.append(val.strip())
+
+    _collect(desc.get("recommendedName"))
+    for alt in desc.get("alternativeNames") or []:
+        _collect(alt)
+    return names
+
+
+def _stem_without_trailing_num(name: str | None) -> str | None:
+    """For specific multi-word receptor names like 'asialoglycoprotein receptor 1',
+    also return the stem 'asialoglycoprotein receptor' used in classic papers."""
+    if not name or " " not in name.strip():
+        return None
+    m = _TRAILING_NUM_RE.match(name.strip())
+    if not m:
+        return None
+    stem = m.group(1).strip()
+    if len(stem) < 12 or " " not in stem or _GENERIC_STEM_RE.match(stem):
+        return None
+    return stem
 
 
 def _extract_previous_names(bundle: IdentifierBundle) -> list[str]:
@@ -211,12 +282,21 @@ def _extract_previous_names(bundle: IdentifierBundle) -> list[str]:
     return out
 
 
-def clean_query_aliases(bundle: IdentifierBundle) -> list[str]:
+def clean_query_aliases(
+    bundle: IdentifierBundle,
+    *,
+    extra_names: list[str] | None = None,
+) -> list[str]:
     """Aliases for broad/measurement EuropePMC queries: primary symbol + full
-    protein names + non-collision symbol aliases (drops 2-char / p90-style noise)."""
+    protein names (HGNC + UniProt + CD designation) + non-collision symbol
+    aliases (drops 2-char / p90 / clinical-disease noise)."""
+    stem = _stem_without_trailing_num(bundle.approved_name)
     raw = [
         bundle.hgnc_symbol,
         bundle.approved_name,
+        stem,
+        getattr(bundle, "cd_designation", None),
+        *(extra_names or []),
         *(bundle.alias_names or []),
         *_extract_previous_names(bundle),
         *(bundle.aliases or []),
@@ -230,6 +310,8 @@ def clean_query_aliases(bundle: IdentifierBundle) -> list[str]:
         s = a.strip()
         if _is_noisy_short_alias(s, primary_symbol=bundle.hgnc_symbol):
             continue
+        if s.lower() != (bundle.approved_name or "").lower() and _is_disease_alias(s):
+            continue
         k = s.lower()
         if k not in seen:
             seen.add(k)
@@ -237,11 +319,19 @@ def clean_query_aliases(bundle: IdentifierBundle) -> list[str]:
     return out
 
 
-def kinetics_query_aliases(bundle: IdentifierBundle) -> list[str]:
+def kinetics_query_aliases(
+    bundle: IdentifierBundle,
+    *,
+    extra_names: list[str] | None = None,
+) -> list[str]:
     """Tight name-weighted aliases for the CITED-desc kinetics pass."""
+    stem = _stem_without_trailing_num(bundle.approved_name)
     raw = [
         bundle.hgnc_symbol,
         bundle.approved_name,
+        stem,
+        getattr(bundle, "cd_designation", None),
+        *(extra_names or []),
         *(bundle.alias_names or []),
         *_extract_previous_names(bundle),
     ]
@@ -255,6 +345,10 @@ def kinetics_query_aliases(bundle: IdentifierBundle) -> list[str]:
         if not a or not a.strip():
             continue
         s = a.strip()
+        if _is_noisy_short_alias(s, primary_symbol=bundle.hgnc_symbol):
+            continue
+        if s.lower() != (bundle.approved_name or "").lower() and _is_disease_alias(s):
+            continue
         k = s.lower()
         if k not in seen:
             seen.add(k)
@@ -283,6 +377,16 @@ def build_classic_cited_query(aliases: list[str]) -> str:
     """Tight citation-sorted pass for foundational internalization papers whose
     abstracts report kinetics without using exact phrases like 'rate constant'."""
     return f"(TITLE_ABS:({_alias_or(aliases)})) AND (TITLE_ABS:(internali* OR endocytos*))"
+
+
+def build_preprint_screen_query(aliases: list[str]) -> str:
+    """Targeted $0 EuropePMC preprint pass (bioRxiv/medRxiv) searching full text
+    so recent endocytosis methods/screen preprints that list a target only in
+    Results/Tables (e.g. EndoNB) are discovered even when web_search is skipped."""
+    return (
+        f"SRC:PPR AND ({_alias_or(aliases)}) AND "
+        '(TITLE_ABS:(internali* OR endocytos* OR "surface protein" OR "receptor uptake") OR "EndoNB")'
+    )
 
 
 def internalization_relevance(gene_names: list[str]) -> Callable[[str], float]:
@@ -471,10 +575,30 @@ def discover_internalization_papers(
     http: CachedHTTP,
     retraction_index: Any,
     cached: dict[str, Paper] | None = None,
+    citation_counts_out: dict[str, int] | None = None,
 ) -> dict[str, Paper]:
-    broad_aliases = clean_query_aliases(bundle)
-    kinetics_aliases = kinetics_query_aliases(bundle)
+    uniprot_names = _uniprot_protein_names(getattr(bundle, "uniprot_acc", None), http)
+    broad_aliases = clean_query_aliases(bundle, extra_names=uniprot_names)
+    kinetics_aliases = kinetics_query_aliases(bundle, extra_names=uniprot_names)
     discovered: dict[str, Paper] = {}  # keyed on paper_source_id (PMC>PMID>DOI)
+
+    def _record_rec(rec: dict[str, Any]) -> None:
+        try:
+            paper = paper_from_europepmc(
+                rec, retraction_index=retraction_index, include_preprints=True
+            )
+        except LookupError:
+            return
+        if getattr(paper, "is_retracted", False):
+            return
+        sid = paper_source_id(paper)
+        discovered.setdefault(sid, paper)
+        if citation_counts_out is not None:
+            raw_cited = rec.get("citedByCount")
+            if isinstance(raw_cited, (int, float)) or (isinstance(raw_cited, str) and raw_cited.isdigit()):
+                c = int(raw_cited)
+                if c > citation_counts_out.get(sid, 0):
+                    citation_counts_out[sid] = c
 
     # 1. EuropePMC broad + measurement/delivery/negative queries
     for query in (
@@ -487,14 +611,7 @@ def discover_internalization_papers(
             logger.warning("EuropePMC query failed for %s: %s", bundle.hgnc_symbol, exc)
             continue
         for rec in payload.get("resultList", {}).get("result", []):
-            try:
-                paper = paper_from_europepmc(
-                    rec, retraction_index=retraction_index, include_preprints=True
-                )
-            except LookupError:
-                continue
-            if not getattr(paper, "is_retracted", False):
-                discovered.setdefault(paper_source_id(paper), paper)
+            _record_rec(rec)
 
     # 2. Citation-sorted passes: (a) quantitative kinetics terms, and (b) top
     # foundational internalization papers (rescues classics like Austin 2004
@@ -511,16 +628,21 @@ def discover_internalization_papers(
                 sort="CITED desc",
             )
             for rec in payload.get("resultList", {}).get("result", []):
-                try:
-                    paper = paper_from_europepmc(
-                        rec, retraction_index=retraction_index, include_preprints=True
-                    )
-                except LookupError:
-                    continue
-                if not getattr(paper, "is_retracted", False):
-                    discovered.setdefault(paper_source_id(paper), paper)
+                _record_rec(rec)
         except Exception as exc:  # noqa: BLE001
             logger.warning("EuropePMC cited query failed for %s: %s", bundle.hgnc_symbol, exc)
+
+    # 2b. Targeted $0 EuropePMC preprint/screen pass (bioRxiv/medRxiv).
+    try:
+        payload = europepmc_search(
+            http=http,
+            query=build_preprint_screen_query(kinetics_aliases),
+            page_size=15,
+        )
+        for rec in payload.get("resultList", {}).get("result", []):
+            _record_rec(rec)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("EuropePMC preprint query failed for %s: %s", bundle.hgnc_symbol, exc)
 
     # 3. PubTator entity search with MINIMAL free text (overloading free-text terms
     # ANDs them and tanks recall). Dedup against ALL already-known PMIDs regardless

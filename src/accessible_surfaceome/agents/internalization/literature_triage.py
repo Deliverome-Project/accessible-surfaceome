@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from accessible_surfaceome.agents._support.api_retry import messages_create_with_backoff
+from accessible_surfaceome.agents._support.model_config import model_rejects_sampling_params
 from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     record_from_response,
@@ -76,13 +77,18 @@ def _triage_one(
     t0 = time.monotonic()
     usage_rec = None
     try:
-        resp = messages_create_with_backoff(
-            client,
-            model=model,
-            max_tokens=MAX_TOKENS_TRIAGE,
-            system=cached_system(system_prompt),
-            messages=[{"role": "user", "content": user}],
-        )
+        call_kwargs: dict[str, Any] = {
+            "model": model,
+            "max_tokens": MAX_TOKENS_TRIAGE,
+            "system": cached_system(system_prompt),
+            "messages": [{"role": "user", "content": user}],
+        }
+        # Claude 5.x models enable adaptive thinking by default; on a 512-token
+        # abstract classifier, thinking can consume all 512 tokens and emit empty
+        # text (silently dropping ~10-20% of papers). Disable thinking for triage.
+        if model_rejects_sampling_params(model):
+            call_kwargs["thinking"] = {"type": "disabled"}
+        resp = messages_create_with_backoff(client, **call_kwargs)
         raw_usage = getattr(resp, "usage", None)
         pkey = resolve_pricing_key(model)
         if raw_usage is not None and pkey is not None:

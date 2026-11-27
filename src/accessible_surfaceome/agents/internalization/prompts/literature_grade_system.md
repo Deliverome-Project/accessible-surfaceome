@@ -169,8 +169,9 @@ for the exact same mode + cell context + ligand into one row citing all their
 Whenever a clip reports a **real internalization number**, populate structured
 `quant` (`rate_metric`, `rate_value`, `rate_unit`, `time_point`) AND verbatim
 `quant_summary`. **NEVER silently convert units** — report `rate_value` and
-`rate_unit` exactly as published, and leave `derived_t_half_min` and
-`derived_ke_min_inv` as `null` (downstream code computes them deterministically):
+`rate_unit` exactly as published, and leave `derived_t_half_min`,
+`derived_ke_min_inv`, `derived_kinetics_basis`, and `apparent_t_half_min` as
+`null` (downstream code computes them deterministically):
 - first-order rate constant in `/h` (`k_e = 0.6 h^-1`) → `rate_metric="ke_h_inv"`, `rate_unit="h^-1"`;
 - first-order rate constant in `/min` (`k_e = 0.015/min`) → `rate_metric="rate_per_min"`, `rate_unit="min^-1"`;
 - percentage rate per minute (`9.3 %/min`) → `rate_metric="percent_per_min"`, `rate_unit="%/min"`;
@@ -205,7 +206,10 @@ Sort every ledger clip by *what was manipulated*:
   knockout, overexpression, inhibitor, mutation, or partner block) that changes
   THIS target's internalization RATE or ROUTE (NOT mere surface abundance,
   stability, expression, or degradative sorting). Fixed direction: other gene →
-  THIS target. Exclude target-self perturbations (specificity controls go in
+  THIS target. Route perturbed-machinery kinetic arms (e.g., clathrin/CHC
+  depletion, dynamin inhibition, kinase-inhibitor block) HERE rather than into
+  `observations` so wild-type uptake rates stay uncontaminated. Exclude
+  target-self perturbations (specificity controls go in
   `observations.controls_note`) and target → other-gene effects (omit).
 
 # Rules
