@@ -51,10 +51,11 @@ import modal
 from accessible_surfaceome.tools._shared.ratelimit import reserve_slot
 
 GATE_MAX_WAIT_S = 120.0
-# Default concurrency: 10 containers × 3 inputs/container = 30 genes in flight.
-# Keeps Anthropic RPM/OTPM comfortable while finishing 3,213 genes in ~1.5-2 h.
-MAX_CONTAINERS = int(os.environ.get("INT_LIT_MAX_CONTAINERS", "10"))
-MAX_INPUTS = int(os.environ.get("INT_LIT_MAX_INPUTS", "3"))
+# Default concurrency: 15 containers × 2 inputs/container = 30 genes in flight.
+# rate_limit_gate enforces the global 350ms (~2.8 qps) EuropePMC cap across all
+# containers, so higher Claude concurrency speeds up the sweep without extra EBI load.
+MAX_CONTAINERS = int(os.environ.get("INT_LIT_MAX_CONTAINERS", "15"))
+MAX_INPUTS = int(os.environ.get("INT_LIT_MAX_INPUTS", "2"))
 GENE_TIMEOUT_S = int(os.environ.get("INT_LIT_GENE_TIMEOUT_S", str(20 * 60)))
 
 _IMAGE_ENV = {"ACCESSIBLE_SURFACEOME_REPO_ROOT": "/repo"}
@@ -241,7 +242,7 @@ def _get_container_runtime() -> tuple[Any, Any, Any]:
     cpu=0.5,
     memory=2048,
     timeout=GENE_TIMEOUT_S,
-    retries=modal.Retries(max_retries=1, backoff_coefficient=2.0),
+    retries=modal.Retries(max_retries=2, backoff_coefficient=2.0, initial_delay=5.0),
     volumes={VOL_MOUNT: volume},
     secrets=[secret],
     max_containers=MAX_CONTAINERS,

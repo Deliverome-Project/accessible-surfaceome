@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json as _json
 import os
+import random
 import threading
 import time
 from pathlib import Path
@@ -22,13 +23,25 @@ from .cache import Cache, cache_key
 from .ratelimit import RateLimiter
 
 USER_AGENT = "accessible-surfaceome/0.1 (research; https://github.com/Deliverome-Project)"
-DEFAULT_TIMEOUT = httpx.Timeout(connect=5.0, read=20.0, write=10.0, pool=5.0)
+DEFAULT_TIMEOUT = httpx.Timeout(connect=5.0, read=25.0, write=10.0, pool=5.0)
 # PDFs are larger and served by slower publisher hosts than the JSON/XML APIs,
 # so the binary path (``get_bytes``) gets a longer read budget than DEFAULT_TIMEOUT.
 PDF_TIMEOUT = httpx.Timeout(connect=5.0, read=30.0, write=10.0, pool=5.0)
 RETRYABLE_STATUS = {408, 409, 425, 429, 500, 502, 503, 504}
 NCBI_EUTILS_HOST = "eutils.ncbi.nlm.nih.gov"
 NCBI_KEYED_INTERVAL_MS = 110.0  # ~9 qps/key, leaves headroom under NCBI's 10 qps/key cap
+
+
+def _retry_delay_s(attempt: int, retry_after: str | None = None) -> float:
+    """Exponential backoff with jitter (respecting numeric Retry-After up to 15s)."""
+    if retry_after:
+        try:
+            parsed = float(retry_after.strip())
+            if parsed > 0:
+                return min(parsed, 15.0) + random.uniform(0.0, 0.5)
+        except ValueError:
+            pass
+    return float(min(2**attempt, 8)) + random.uniform(0.0, 0.75)
 
 
 class CachedHTTP:
@@ -39,7 +52,7 @@ class CachedHTTP:
         cache: Cache,
         limiter: RateLimiter,
         *,
-        max_retries: int = 3,
+        max_retries: int = 4,
         blob_dir: Path | None = None,
         fresh_sources: frozenset[str] = frozenset(),
     ):
@@ -191,7 +204,7 @@ class CachedHTTP:
                     "GET", url, params=params, headers=headers, timeout=timeout
                 ) as resp:
                     if resp.status_code in RETRYABLE_STATUS and attempt < self._max_retries:
-                        time.sleep(min(2**attempt, 8))
+                        time.sleep(_retry_delay_s(attempt, resp.headers.get("retry-after")))
                         continue
                     resp.raise_for_status()
                     if max_bytes is not None:
@@ -210,7 +223,7 @@ class CachedHTTP:
                 last_exc = e
                 if attempt == self._max_retries:
                     raise
-                time.sleep(min(2**attempt, 8))
+                time.sleep(_retry_delay_s(attempt))
 
         assert last_exc is not None  # unreachable: loop exits via return or raise
         raise last_exc
@@ -256,10 +269,10 @@ class CachedHTTP:
                 last_exc = e
                 if attempt == self._max_retries:
                     raise
-                time.sleep(min(2**attempt, 8))
+                time.sleep(_retry_delay_s(attempt))
                 continue
             if resp.status_code in RETRYABLE_STATUS and attempt < self._max_retries:
-                time.sleep(min(2**attempt, 8))
+                time.sleep(_retry_delay_s(attempt, resp.headers.get("retry-after")))
                 continue
             resp.raise_for_status()
             return resp
