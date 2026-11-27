@@ -102,13 +102,60 @@ def published(db: _SqliteD1) -> dict[str, str]:
     }
 
 
-def _publish(db, data, provenances=None):
+def _publish(db, data, provenances=None, candidate_id=None):
     return TS.publish_tag_sites(
         data,
         tag_sites_version="test-1",
         client=cast(D1Client, db),
         provenances=provenances,
+        candidate_id=candidate_id,
     )
+
+
+def test_member_scoped_enriched_publish_preserves_sibling_members() -> None:
+    """Multi-member genes (e.g. human + ortholog or multiple isoforms) must not
+    clobber each other's ``literature_enriched`` rows when published per member."""
+    db = _SqliteD1()
+    _publish(
+        db,
+        file_of(
+            site(
+                "GENEX-l1-p0001-internal-55-enr",
+                provenance=ENRICHED,
+                junction=55,
+                candidate_id="l1-p0001",
+            )
+        ),
+        provenances=[ENRICHED],
+        candidate_id="l1-p0001",
+    )
+    # Publishing sibling member l1-p0002 (even with 0 sites!) leaves l1-p0001 intact.
+    _publish(
+        db,
+        file_of(),
+        provenances=[ENRICHED],
+        candidate_id="l1-p0002",
+    )
+    assert published(db) == {"GENEX-l1-p0001-internal-55-enr": ENRICHED}
+
+    # Publishing a site for l1-p0002 keeps both members side by side.
+    _publish(
+        db,
+        file_of(
+            site(
+                "GENEX-l1-p0002-internal-77-enr",
+                provenance=ENRICHED,
+                junction=77,
+                candidate_id="l1-p0002",
+            )
+        ),
+        provenances=[ENRICHED],
+        candidate_id="l1-p0002",
+    )
+    assert published(db) == {
+        "GENEX-l1-p0001-internal-55-enr": ENRICHED,
+        "GENEX-l1-p0002-internal-77-enr": ENRICHED,
+    }
 
 
 # --------------------------------------------------------------------------
