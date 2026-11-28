@@ -65,16 +65,27 @@ def test_a_corrupt_cache_is_ignored_not_fatal(tmp_path) -> None:
 
 
 def test_the_sha_tracks_the_triage_prompt() -> None:
-    from accessible_surfaceome.agents.plan_trim_select import abstract_triage as at
-
     before = tc.triage_prompt_sha()
-    original = at._SYSTEM_PROMPT_CACHED
-    try:
-        at._SYSTEM_PROMPT_CACHED = original + "\n(edit)"
-        assert tc.triage_prompt_sha() != before
-    finally:
-        at._SYSTEM_PROMPT_CACHED = original
+    assert tc.triage_prompt_sha(system_prompt="edited prompt") != before
+    assert tc.triage_prompt_sha(internal_only=True) != before
     assert tc.triage_prompt_sha() == before
+
+
+def test_model_mismatch_invalidates_cached_verdict(tmp_path) -> None:
+    p = _paper(abstract="tag inserted in ECL2")
+    tc.save(
+        "GENE",
+        [_outcome("PMC:1")],
+        prompt_sha="s",
+        inputs={"PMC:1": tc.input_sha(p)},
+        model="claude-haiku-4-5-20251001",
+        cache_dir=tmp_path,
+    )
+    cached = tc.load("GENE", cache_dir=tmp_path)
+    todo, reused = tc.split({"PMC:1": p}, cached, prompt_sha="s", model="claude-haiku-5-5")
+    assert len(todo) == 1 and not reused
+    todo2, reused2 = tc.split({"PMC:1": p}, cached, prompt_sha="s", model="claude-haiku-4-5-20251001")
+    assert len(reused2) == 1 and not todo2
 
 
 def test_a_changed_abstract_invalidates_the_verdict(tmp_path) -> None:
