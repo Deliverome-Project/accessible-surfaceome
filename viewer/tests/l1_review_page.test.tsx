@@ -1057,3 +1057,69 @@ test("ExternalTagSitesTable renders Tedman controls and literature tag sites wit
   );
   assert.match(unalignedHtml, /not drawn on this isoform\/ortholog/);
 });
+
+test("renderableExternalTagSites includes literature_enriched, skips unpinned internal rows, and deduplicates overlapping ortholog pins", async () => {
+  const { renderableExternalTagSites, isL1LiteratureTagProvenance } = await import("../lib/l1-design");
+  assert.equal(isL1LiteratureTagProvenance("literature_retrieved"), true);
+  assert.equal(isL1LiteratureTagProvenance("literature_enriched"), true);
+  assert.equal(isL1LiteratureTagProvenance("deterministic_computed"), false);
+
+  const got = renderableExternalTagSites(
+    [
+      // Pinned literature_enriched internal site (human)
+      {
+        site_id: "slc2a1-55-h",
+        provenance: "literature_enriched",
+        site_kind: "internal",
+        insert_after_residue: 55,
+        extracellular: true,
+        tag_type: "2xFLAG",
+      },
+      // Duplicate ortholog row at the same residue (e.g., cyno SLC2A1 @55) -> deduplicated
+      {
+        site_id: "slc2a1-55-c",
+        provenance: "literature_enriched",
+        site_kind: "internal",
+        insert_after_residue: 55,
+        extracellular: true,
+        tag_type: "FLAG",
+      },
+      // Unpinned internal literature note (even if extracellular=true) -> must NOT draw at residue 1
+      {
+        site_id: "slc2a1-unpinned",
+        provenance: "literature_enriched",
+        site_kind: "internal",
+        insert_after_residue: null,
+        extracellular: true,
+        tag_type: "HA",
+      },
+      // Distinct validated internal site
+      {
+        site_id: "slc2a1-56",
+        provenance: "literature_enriched",
+        site_kind: "internal",
+        insert_after_residue: 56,
+        extracellular: true,
+        tag_type: "myc",
+      },
+      // Terminal N with null residue still anchors cleanly at residue 1
+      {
+        site_id: "gpcr-nterm",
+        provenance: "screen_validated",
+        site_kind: "terminal_n",
+        insert_after_residue: null,
+        extracellular: true,
+        tag_type: "HA",
+      },
+    ],
+    492,
+  );
+  assert.deepEqual(
+    got.map((x) => [x.siteId, x.residue, x.isTedman]),
+    [
+      ["slc2a1-55-h", 55, false],
+      ["slc2a1-56", 56, false],
+      ["gpcr-nterm", 1, true],
+    ],
+  );
+});
