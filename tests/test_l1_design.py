@@ -37,6 +37,8 @@ from pathlib import Path
 
 import pytest
 
+from _worker_test_util import read_all_worker_source, stage_worker_for_node
+
 ROOT = Path(__file__).resolve().parents[1]
 MIGRATION = ROOT / "cloudflare/migrations/l1_design_v1.sql"
 REVIEW_MIGRATION = ROOT / "cloudflare/migrations/l1_review_v1.sql"
@@ -74,8 +76,10 @@ def _columns(table: str, path: Path = MIGRATION) -> set[str]:
     return cols
 
 
+
+
 def _worker_fn(name: str) -> str:
-    src = WORKER.read_text()
+    src = read_all_worker_source()
     start = src.index(f"async function {name}(")
     return src[start : src.index("\n}\n", start)]
 
@@ -119,7 +123,7 @@ def test_every_column_the_worker_selects_exists(table):
         + _worker_fn("l1Annotations")
     )
     migration = ANNOT_MIGRATION if table == "l1_member_annotation_public" else MIGRATION
-    load_cols = re.search(r'L1_LOAD_COLS =\s*"([^"]+)"', WORKER.read_text())
+    load_cols = re.search(r'L1_LOAD_COLS =\s*"([^"]+)"', read_all_worker_source())
     assert load_cols, "L1_LOAD_COLS moved"
     src = src.replace("${L1_LOAD_COLS}", load_cols.group(1))
     found = False
@@ -1420,14 +1424,13 @@ def test_worker_routes_against_sqlite(built):
     empty = tmp / "empty.sqlite"
     sqlite3.connect(empty).close()
 
-    source = WORKER.read_text().replace(
-        'import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";',
-        "const deepDiveTier = () => ({tier: 'no', facet: null}); const isLowLiteratureSurface = () => false;",
+    stage_worker_for_node(
+        tmp,
+        catalog_presets_stub=(
+            "const deepDiveTier = () => ({tier: 'no', facet: null});\n"
+            "const isLowLiteratureSurface = () => false;"
+        ),
     )
-    for js in WORKER.parent.glob("*.js"):
-        if js.name != "index.js":
-            shutil.copy2(js, tmp / js.name)
-    (tmp / "worker.mjs").write_text(source)
     (tmp / "test.mjs").write_text(NODE_TEST)
     res = subprocess.run(
         [node, "test.mjs", str(pub), str(empty), str(priv), str(noannot)],
@@ -1573,14 +1576,13 @@ def test_worker_l1_design_error_handling(tmp_path):
     unmigrated = tmp_path / "unmigrated.sqlite"
     sqlite3.connect(unmigrated).close()
 
-    source = WORKER.read_text().replace(
-        'import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";',
-        "const deepDiveTier = () => ({tier: 'no', facet: null}); const isLowLiteratureSurface = () => false;",
+    stage_worker_for_node(
+        tmp_path,
+        catalog_presets_stub=(
+            "const deepDiveTier = () => ({tier: 'no', facet: null});\n"
+            "const isLowLiteratureSurface = () => false;"
+        ),
     )
-    for js in WORKER.parent.glob("*.js"):
-        if js.name != "index.js":
-            shutil.copy2(js, tmp_path / js.name)
-    (tmp_path / "worker.mjs").write_text(source)
     (tmp_path / "test_errors.mjs").write_text(NODE_ERROR_HANDLING_TEST)
     res = subprocess.run(
         [node, "test_errors.mjs", str(migrated_empty), str(unmigrated)],

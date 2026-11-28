@@ -19,6 +19,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from _worker_test_util import read_all_worker_source
+
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "cloudflare/workers/surfaceome_api/src/index.js"
 SCHEMA = ROOT / "cloudflare/d1_public_schema.sql"
@@ -26,8 +28,10 @@ UPLOADER = ROOT / "scripts/cloud/upload_library_topology_to_d1.py"
 TABLE = "library_topology_public"
 
 
+
+
 def _worker() -> str:
-    return WORKER.read_text()
+    return read_all_worker_source()
 
 
 def _library_topology_query() -> str:

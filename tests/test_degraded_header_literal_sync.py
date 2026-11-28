@@ -14,8 +14,10 @@ _WORKER = (
 
 
 def test_worker_and_archiver_use_the_same_degraded_header() -> None:
+    from _worker_test_util import read_all_worker_source
+
     m = re.search(
-        r'const DEGRADED_HEADER = "([^"]+)";', _WORKER.read_text(encoding="utf-8")
+        r'DEGRADED_HEADER = "([^"]+)";', read_all_worker_source()
     )
     assert m, "DEGRADED_HEADER literal not found in the Worker"
     assert m.group(1) == DEGRADED_HEADER

@@ -2,7 +2,6 @@
   "max_file_lines": 600,
   "max_src_function_lines": 150,
   "files": {
-    "cloudflare/workers/surfaceome_api/src/index.js": 5812,
     "scripts/audit/audit_db_vs_sonnet_inclusion.py": 1402,
     "scripts/build/build_surface_proteomics_studies.py": 2525,
     "scripts/build/deep_dive_sweep.py": 710,

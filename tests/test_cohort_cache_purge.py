@@ -86,12 +86,14 @@ def _long_cached_routes() -> set[str]:
     Parsed rather than hardcoded so a handler dropped to ``CACHE_TTL_SHORT``
     (or promoted to long) shows up here.
     """
-    src = _WORKER.read_text(encoding="utf-8")
+    from _worker_test_util import read_all_worker_source
+
+    src = read_all_worker_source()
     # Map handler name -> whether it returns ttl: CACHE_TTL_LONG.
     long_handlers = {
         name
         for name, body in re.findall(
-            r"^async function (\w+)\(env[^)]*\)\s*\{(.*?)^\}",
+            r"^(?:export\s+)?async function (\w+)\(env[^)]*\)\s*\{(.*?)^\}",
             src,
             re.MULTILINE | re.DOTALL,
         )

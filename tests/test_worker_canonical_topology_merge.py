@@ -22,6 +22,8 @@ from pathlib import Path
 
 import pytest
 
+from _worker_test_util import stage_worker_for_node
+
 _ROOT = Path(__file__).resolve().parents[1]
 
 _STORED_BLOCK = {
@@ -140,6 +142,8 @@ def _topology(acc: str) -> dict:
     }
 
 
+
+
 @pytest.fixture(scope="module")
 def served(tmp_path_factory: pytest.TempPathFactory) -> dict:
     node = shutil.which("node")
@@ -148,17 +152,7 @@ def served(tmp_path_factory: pytest.TempPathFactory) -> dict:
             pytest.fail("Worker checks require Node; refusing to skip")
         pytest.skip("Node is required for Worker tests")
     tmp = tmp_path_factory.mktemp("topology_merge")
-    source = (_ROOT / "cloudflare/workers/surfaceome_api/src/index.js").read_text()
-    source = source.replace(
-        'import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";',
-        "const deepDiveTier = () => ({tier: 'likely', facet: null}); "
-        "const isLowLiteratureSurface = () => false;",
-    )
-    shutil.copy2(
-        _ROOT / "cloudflare/workers/surfaceome_api/src/contact-sites.js",
-        tmp / "contact-sites.js",
-    )
-    (tmp / "worker.mjs").write_text(source)
+    stage_worker_for_node(tmp)
     (tmp / "harness.mjs").write_text(_HARNESS)
     fixture = {
         "symbols": ["GENEX", "GENEY"],

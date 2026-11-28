@@ -26,13 +26,14 @@ default ``pytest -q`` gate (it is NOT network-marked).
 from __future__ import annotations
 
 import json
-import re
 import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
 
 import pytest
+
+from _worker_test_util import stage_worker_for_node
 
 from accessible_surfaceome.cloud import surface_annotation as _sa
 from accessible_surfaceome.cloud.surface_annotation import _kv_keys_for
@@ -172,31 +173,11 @@ def _pin_cache_epoch(monkeypatch):
     monkeypatch.setattr(_sa, "_EPOCH_CACHE", None)
 
 
-def _patched_worker_source() -> str:
-    """Worker source with its lone TS import replaced by inert stubs.
 
-    ``viewer/lib/catalog-presets`` (a .ts module) is unresolvable in plain
-    Node and is only reached from the deep-dive classification, which the
-    test record does not trigger (no ``filters`` block). Replacing it keeps
-    every code path under test byte-for-byte identical.
-    """
-    src = WORKER_SRC.read_text(encoding="utf-8")
-    stub = (
-        "const deepDiveTier = () => ({ tier: 'no', facet: null });\n"
-        "const isLowLiteratureSurface = () => false;"
-    )
-    patched, n = re.subn(
-        r'^import \{[^}]*\} from "[^"]*catalog-presets";\s*$',
-        stub,
-        src,
-        count=1,
-        flags=re.MULTILINE,
-    )
-    assert n == 1, (
-        "expected exactly one catalog-presets import to stub in index.js; "
-        f"found {n}. The Worker's import shape changed — update this test."
-    )
-    return patched
+_STUB = (
+    "const deepDiveTier = () => ({ tier: 'no', facet: null });\n"
+    "const isLowLiteratureSurface = () => false;"
+)
 
 
 def _run_worker() -> dict[str, Any]:
@@ -207,8 +188,7 @@ def _run_worker() -> dict[str, Any]:
 
     with tempfile.TemporaryDirectory() as td:
         d = Path(td)
-        shutil.copy2(WORKER_SRC.with_name("contact-sites.js"), d / "contact-sites.js")
-        (d / "worker.mjs").write_text(_patched_worker_source(), encoding="utf-8")
+        stage_worker_for_node(d, catalog_presets_stub=_STUB)
         (d / "harness.mjs").write_text(_HARNESS, encoding="utf-8")
         proc = subprocess.run(  # noqa: S603 — fixed argv, temp files we wrote
             [node, "harness.mjs"],

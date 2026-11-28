@@ -21,6 +21,8 @@ from pathlib import Path
 
 import pytest
 
+from _worker_test_util import REPO_ROOT, stage_worker_for_node
+
 DDL_TABLES = [
     "record_revision",
     "data_release",
@@ -97,23 +99,18 @@ def _require_node() -> str:
     return node
 
 
+
+
 def _write_worker_mjs(tmp_path: Path) -> Path:
-    """Writes the real Worker source (with its one non-relative-URL import
-    stubbed) to ``tmp_path/worker.mjs``, alongside the sibling module it
-    imports relatively. Shared by every test in this file that runs the
-    real router offline."""
-    root = Path(__file__).resolve().parents[1]
-    source = (root / "cloudflare/workers/surfaceome_api/src/index.js").read_text()
-    source = source.replace(
-        'import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";',
-        "const deepDiveTier = () => ({tier: 'no', facet: null}); const isLowLiteratureSurface = () => false;",
+    """Stage the real Worker ES modules to ``tmp_path/worker.mjs`` for offline Node runs."""
+    stage_worker_for_node(
+        tmp_path,
+        catalog_presets_stub=(
+            "const deepDiveTier = () => ({tier: 'no', facet: null});\n"
+            "const isLowLiteratureSurface = () => false;"
+        ),
     )
-    shutil.copy2(
-        root / "cloudflare/workers/surfaceome_api/src/contact-sites.js",
-        tmp_path / "contact-sites.js",
-    )
-    (tmp_path / "worker.mjs").write_text(source)
-    return root
+    return REPO_ROOT
 
 
 def test_record_history_routes(tmp_path: Path) -> None:
