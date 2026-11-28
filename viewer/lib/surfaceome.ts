@@ -33,7 +33,11 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 // Type-only import (erased at compile) so `CatalogRow.internalization` can be
 // typed here; the runtime list is re-exported below from the client-safe module.
-import type { InternalizationGrade, InternalizationLitGrade } from "./internalization";
+import type {
+  InternalizationGrade,
+  InternalizationLitFacets,
+  InternalizationLitGrade,
+} from "./internalization";
 
 // Build-time snapshot cache for the two over-2MB Worker endpoints
 // (/v1/catalog ≈ 5.7 MB, /v1/benchmark/matrix ≈ 3 MB). Pre-written by
@@ -321,7 +325,11 @@ export interface DeepDiveFilters {
 // `./internalization` module (this file imports `node:fs` for the build-cache
 // snapshot, so client components must not value-import from here). Re-exported
 // for back-compat with existing `from "./surfaceome"` type imports.
-export type { InternalizationGrade, InternalizationLitGrade };
+export type {
+  InternalizationGrade,
+  InternalizationLitFacets,
+  InternalizationLitGrade,
+};
 export { INTERNALIZATION_GRADES, INTERNALIZATION_LIT_GRADES } from "./internalization";
 
 export interface CatalogRow {
@@ -365,6 +373,10 @@ export interface CatalogRow {
    *  row_schema 9+). A SEPARATE facet from the sequence prior above — different
    *  enum (adds `no`, drops `very_*`). ``undefined`` = no literature run yet. */
   internalization_lit?: InternalizationLitGrade;
+  /** Deeper literature internalization facets (Worker `intl`, row_schema 12+):
+   *  confidence, per-mode grades, predominant fate, primary/in vivo flag,
+   *  quantitative/fitted kinetics flags, binder classes, and mechanisms. */
+  internalization_lit_facets?: InternalizationLitFacets;
   /** Slimmed deep-dive `filters` projection — present only when
    *  `deep_dive=true` AND the annotation_json parsed. See the
    *  DeepDiveFilters docstring for the field set; the catalog
@@ -710,6 +722,10 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
   const internLit = (r.intern_lit_grade ?? r.internalization_lit) as
     | InternalizationLitGrade
     | undefined;
+  // Worker row_schema v12+ adds ``intl`` — deeper schema 0.3.0 literature facets.
+  const internLitFacets = (r.intl ?? r.internalization_lit_facets) as
+    | InternalizationLitFacets
+    | undefined;
   const row: CatalogRow = {
     symbol: r.symbol as string,
     uniprot: (r.uniprot as string | undefined) ?? "",
@@ -724,6 +740,7 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     internalization_has_lit:
       Boolean(r.intern_lit ?? r.internalization_has_lit) || undefined,
     internalization_lit: internLit,
+    internalization_lit_facets: internLitFacets,
     deep_dive_filters: ddf,
     // Absent unless true — the build-time `enrichRowsWithFgLibrary` overlay
     // sets it for library members (the Worker doesn't ship this facet). A

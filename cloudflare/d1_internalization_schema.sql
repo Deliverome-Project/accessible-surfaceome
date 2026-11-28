@@ -27,6 +27,17 @@ CREATE TABLE IF NOT EXISTS surface_internalization (
   -- literature track projections (NULL until a literature run lands)
   has_literature               INTEGER NOT NULL DEFAULT 0,
   lit_overall_grade            TEXT,
+  lit_overall_confidence       TEXT,
+  lit_basal_grade              TEXT,
+  lit_native_ligand_grade      TEXT,
+  lit_therapeutic_grade        TEXT,
+  lit_pathogen_entry_grade     TEXT,
+  lit_predominant_fate         TEXT,
+  lit_has_primary_or_invivo    INTEGER,
+  lit_has_quant                INTEGER,
+  lit_has_fitted_kinetics      INTEGER,
+  lit_binder_types             TEXT,   -- JSON array of distinct non-unknown binder_type values
+  lit_mechanisms               TEXT,   -- JSON array of distinct non-unknown mechanism values
   lit_n_observations           INTEGER,
   lit_n_modulator_observations INTEGER,
   lit_prompt_sha               TEXT,   -- sha256 of the lit prompt corpus (triage+select+grade)

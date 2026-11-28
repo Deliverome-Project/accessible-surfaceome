@@ -9,13 +9,19 @@ drop-stale-versions) but for the separate internalization record.
 
 from __future__ import annotations
 
+import gzip
+import json
 import logging
 import os
 import time
 from datetime import UTC, datetime
 from urllib.parse import urlparse
 
-from accessible_surfaceome.agents.internalization.models import InternalizationRecord
+from accessible_surfaceome.agents.internalization.models import (
+    InternalizationRecord,
+    LiteratureTrack,
+    ModelPriorTrack,
+)
 from accessible_surfaceome.cloud.d1_client import D1Client
 
 logger = logging.getLogger(__name__)
@@ -173,6 +179,17 @@ DDL: tuple[str, ...] = (
       n_seq_functional_motifs      INTEGER,
       has_literature               INTEGER NOT NULL DEFAULT 0,
       lit_overall_grade            TEXT,
+      lit_overall_confidence       TEXT,
+      lit_basal_grade              TEXT,
+      lit_native_ligand_grade      TEXT,
+      lit_therapeutic_grade        TEXT,
+      lit_pathogen_entry_grade     TEXT,
+      lit_predominant_fate         TEXT,
+      lit_has_primary_or_invivo    INTEGER,
+      lit_has_quant                INTEGER,
+      lit_has_fitted_kinetics      INTEGER,
+      lit_binder_types             TEXT,
+      lit_mechanisms               TEXT,
       lit_n_observations           INTEGER,
       lit_n_modulator_observations INTEGER,
       lit_prompt_sha               TEXT,
@@ -197,6 +214,10 @@ _COLS: tuple[str, ...] = (
     "seq_overall_grade", "seq_overall_confidence",
     "seq_canonical_grade", "seq_canonical_confidence", "n_seq_motifs",
     "n_seq_functional_motifs", "has_literature", "lit_overall_grade",
+    "lit_overall_confidence", "lit_basal_grade", "lit_native_ligand_grade",
+    "lit_therapeutic_grade", "lit_pathogen_entry_grade", "lit_predominant_fate",
+    "lit_has_primary_or_invivo", "lit_has_quant", "lit_has_fitted_kinetics",
+    "lit_binder_types", "lit_mechanisms",
     "lit_n_observations", "lit_n_modulator_observations",
     "lit_prompt_sha", "lit_prompt_version", "record_json",
     "generated_at", "updated_at",
@@ -210,6 +231,17 @@ _COLS: tuple[str, ...] = (
 _MIGRATIONS: tuple[str, ...] = (
     "ALTER TABLE surface_internalization ADD COLUMN lit_prompt_sha TEXT;",
     "ALTER TABLE surface_internalization ADD COLUMN lit_prompt_version TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_overall_confidence TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_basal_grade TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_native_ligand_grade TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_therapeutic_grade TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_pathogen_entry_grade TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_predominant_fate TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_has_primary_or_invivo INTEGER;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_has_quant INTEGER;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_has_fitted_kinetics INTEGER;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_binder_types TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_mechanisms TEXT;",
 )
 
 
@@ -238,6 +270,42 @@ def flat_row(record: InternalizationRecord) -> dict[str, object]:
         )
     motifs = list(canonical.motifs) if canonical else []
     lit = record.literature
+    lit_binders: str | None = None
+    lit_mechs: str | None = None
+    lit_has_quant: int | None = None
+    lit_has_fitted: int | None = None
+    if lit is not None:
+        obs = list(lit.observations)
+        binders = sorted({o.binder_type for o in obs if o.binder_type != "unknown"})
+        mechs = sorted(
+            {
+                o.mechanism
+                for o in obs
+                if o.mechanism and o.mechanism not in {"unknown", "receptor_mediated_unspecified"}
+            }
+        )
+        lit_binders = json.dumps(binders) if binders else None
+        lit_mechs = json.dumps(mechs) if mechs else None
+        lit_has_quant = (
+            1
+            if any(
+                o.quant.rate_value is not None
+                or o.quant.derived_t_half_min is not None
+                or o.quant.derived_ke_min_inv is not None
+                or o.quant.apparent_t_half_min is not None
+                for o in obs
+            )
+            else 0
+        )
+        lit_has_fitted = (
+            1
+            if any(
+                o.quant.derived_t_half_min is not None
+                or o.quant.derived_ke_min_inv is not None
+                for o in obs
+            )
+            else 0
+        )
     return {
         "gene_symbol": record.gene_symbol,
         "schema_version": record.schema_version,
@@ -256,6 +324,23 @@ def flat_row(record: InternalizationRecord) -> dict[str, object]:
         "n_seq_functional_motifs": sum(1 for m in motifs if m.functional_context),
         "has_literature": 1 if lit is not None else 0,
         "lit_overall_grade": lit.overall_grade if lit else None,
+        "lit_overall_confidence": lit.overall_confidence if lit else None,
+        "lit_basal_grade": lit.grades_by_mode.basal.grade if lit else None,
+        "lit_native_ligand_grade": lit.grades_by_mode.native_ligand.grade if lit else None,
+        "lit_therapeutic_grade": lit.grades_by_mode.therapeutic.grade if lit else None,
+        "lit_pathogen_entry_grade": (
+            lit.grades_by_mode.pathogen_entry.grade
+            if lit and lit.grades_by_mode.pathogen_entry
+            else None
+        ),
+        "lit_predominant_fate": lit.predominant_fate if lit else None,
+        "lit_has_primary_or_invivo": (
+            (1 if lit.has_primary_or_invivo_evidence else 0) if lit else None
+        ),
+        "lit_has_quant": lit_has_quant,
+        "lit_has_fitted_kinetics": lit_has_fitted,
+        "lit_binder_types": lit_binders,
+        "lit_mechanisms": lit_mechs,
         "lit_n_observations": lit.n_observations if lit else None,
         "lit_n_modulator_observations": (
             lit.n_modulator_observations if lit else None
@@ -346,3 +431,117 @@ def publish_seq_record(
     finally:
         if owns:
             client.close()
+
+
+def read_existing_literature(d1: D1Client, gene_symbol: str) -> LiteratureTrack | None:
+    """Read back an existing gene's ``literature`` track from D1 so updating
+    ``model_priors`` NEVER clobbers curated literature evidence.
+
+    Raises if ``has_literature == 1`` in D1 yet the stored JSON is missing or
+    fails to parse — failing loud is strictly safer than silently dropping a
+    literature record.
+    """
+    rows = d1.query(
+        "SELECT has_literature, json_extract(record_json, '$.literature') AS lit_json "
+        "FROM surface_internalization WHERE gene_symbol = ? "
+        "ORDER BY schema_version DESC LIMIT 1;",
+        [gene_symbol],
+    )
+    if not rows:
+        return None
+    row = rows[0]
+    raw_lit = row.get("lit_json")
+    has_lit = bool(row.get("has_literature"))
+    if raw_lit is None or raw_lit == "":
+        if has_lit:
+            raise RuntimeError(
+                f"Refusing to clobber {gene_symbol}: D1 has_literature=1 but $.literature is null"
+            )
+        return None
+    data = json.loads(raw_lit) if isinstance(raw_lit, str) else raw_lit
+    return LiteratureTrack.model_validate(data)
+
+
+def read_existing_model_priors(d1: D1Client, gene_symbol: str) -> list[ModelPriorTrack]:
+    """Read back an existing gene's ``model_priors`` list from D1 so updating
+    ``literature`` NEVER clobbers sequence-prior predictions (including when
+    literature and sequence-prior sweeps run concurrently).
+
+    Raises if ``seq_model`` is populated in D1 yet ``$.model_priors`` is null
+    or unparseable.
+    """
+    rows = d1.query(
+        "SELECT seq_model, json_extract(record_json, '$.model_priors') AS mp_json "
+        "FROM surface_internalization WHERE gene_symbol = ? "
+        "ORDER BY schema_version DESC LIMIT 1;",
+        [gene_symbol],
+    )
+    if not rows:
+        return []
+    row = rows[0]
+    raw_mp = row.get("mp_json")
+    has_seq = bool((row.get("seq_model") or "").strip())
+    if raw_mp is None or raw_mp == "":
+        if has_seq:
+            raise RuntimeError(
+                f"Refusing to clobber {gene_symbol}: D1 seq_model={row.get('seq_model')!r} "
+                "but $.model_priors is null"
+            )
+        return []
+    data = json.loads(raw_mp) if isinstance(raw_mp, str) else raw_mp
+    if not isinstance(data, list):
+        raise RuntimeError(f"Expected list for $.model_priors on {gene_symbol}, got {type(data).__name__}")
+    return [ModelPriorTrack.model_validate(item) for item in data]
+
+
+def backup_table_to_r2(
+    d1: D1Client,
+    *,
+    prefix: str = "surface_internalization",
+    label: str = "",
+    page_size: int = 500,
+) -> str:
+    """Paginated pure-Python backup of ``surface_internalization`` to R2 (gzipped JSONL).
+
+    Works identically locally and inside Modal containers (no Node/wrangler needed).
+    Raises if the table is empty or the R2 upload fails.
+    """
+    from accessible_surfaceome.cloud import r2_client
+
+    all_rows: list[dict[str, object]] = []
+    offset = 0
+    while True:
+        chunk = d1.query(
+            "SELECT * FROM surface_internalization "
+            "ORDER BY gene_symbol, schema_version LIMIT ? OFFSET ?;",
+            [page_size, offset],
+        )
+        if not chunk:
+            break
+        all_rows.extend(chunk)
+        if len(chunk) < page_size:
+            break
+        offset += page_size
+
+    if not all_rows:
+        raise RuntimeError("Refusing R2 backup: surface_internalization table is empty.")
+
+    lines = [json.dumps(r, sort_keys=True) for r in all_rows]
+    gz_bytes = gzip.compress(("\n".join(lines) + "\n").encode("utf-8"), compresslevel=6)
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    tag = f"-{label}" if label else ""
+    key = f"{prefix}/surface_internalization-{stamp}-{len(all_rows)}rows{tag}.jsonl.gz"
+    ok = r2_client.put_object(
+        key=key,
+        body=gz_bytes,
+        content_type="application/gzip",
+    )
+    if not ok:
+        raise RuntimeError(f"R2 backup upload failed for key={key!r}")
+    logger.info(
+        "backed up %d surface_internalization row(s) -> r2://%s (%.2f MB gzipped)",
+        len(all_rows),
+        key,
+        len(gz_bytes) / 1e6,
+    )
+    return key

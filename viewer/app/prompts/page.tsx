@@ -297,6 +297,61 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
     ],
   },
+  {
+    id: "internalization",
+    label: "Internalization — literature & sequence prior",
+    description:
+      "Standalone two-track pipeline across the 3,213-gene internalization " +
+      "cohort (L1 ∪ Canonical ∪ Likely). The primary literature track runs " +
+      "three stages — Haiku 5.5 abstract triage, Sonnet 5.5 full-text " +
+      "selection, and Sonnet 5.5 span-verified grading across basal, " +
+      "native-ligand, therapeutic, and pathogen-entry modes with structured " +
+      "kinetics. The secondary sequence prior grades intrinsic endocytic " +
+      "propensity blind from amino-acid sequence and DeepTMHMM topology.",
+    prompts: [
+      {
+        id: "intern-lit-triage",
+        label: "Literature — abstract triage (Haiku 5.5)",
+        rel: "src/accessible_surfaceome/agents/internalization/prompts/literature_triage_system.md",
+        blurb:
+          "Screens EuropePMC, PubTator, and preprint abstracts for direct " +
+          "internalization/endocytosis measurements of the target protein " +
+          "(filtering out cross-gene regulators and unrelated mentions) to " +
+          "decide which papers warrant full-text retrieval.",
+      },
+      {
+        id: "intern-lit-select",
+        label: "Literature — paper selector (Sonnet 5.5)",
+        rel: "src/accessible_surfaceome/agents/internalization/prompts/literature_select_system.md",
+        blurb:
+          "Ranks triaged papers across modes (basal, native-ligand, " +
+          "therapeutic/ADC, pathogen entry) and prioritizes quantitative " +
+          "kinetics, primary cells/in vivo assays, and negative evidence " +
+          "before full-text grading.",
+      },
+      {
+        id: "intern-lit-grade",
+        label: "Literature — evidence grader (Sonnet 5.5)",
+        rel: "src/accessible_surfaceome/agents/internalization/prompts/literature_grade_system.md",
+        blurb:
+          "Reads full-text clips and emits schema 0.3.0 structured " +
+          "observations (assay, mode, binder/valency, post-uptake fate, " +
+          "rate metrics, normalized continuous k_int/t½ vs single-endpoint " +
+          "apparent t½), cross-gene modulators, per-mode grades, and " +
+          "verbatim quote-anchored evidence citations.",
+      },
+      {
+        id: "intern-seq-prior",
+        label: "Sequence prior — blind topology & motif grader",
+        rel: "src/accessible_surfaceome/agents/internalization/prompts/model_prior_system.md",
+        blurb:
+          "Grades intrinsic/basal endocytic propensity blind to protein " +
+          "identity from per-isoform amino-acid sequence and DeepTMHMM E/C " +
+          "topology, identifying cytoplasmic sorting motifs (YXXΦ, NPXY, " +
+          "dileucine, acidic clusters).",
+      },
+    ],
+  },
 ];
 
 interface TocItem {

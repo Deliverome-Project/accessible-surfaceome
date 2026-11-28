@@ -142,3 +142,88 @@
   gap: 3px;
   align-items: center;
 }
+
+.summaryNotes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: var(--space-2) 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--line);
+  font-size: 0.88rem;
+}
+.summaryNote { margin: 0; color: var(--muted); }
+.summaryNote strong { color: var(--ink); font-weight: var(--fw-medium); }
+
+.tealBadge {
+  display: inline-block;
+  padding: 0.08rem 0.5rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  background: var(--teal-soft);
+  color: var(--teal-dark);
+  border: 1px solid color-mix(in srgb, var(--teal-mid) 35%, transparent);
+}
+
+.obsFilterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0 0 var(--space-2);
+}
+.obsFilterChip {
+  appearance: none;
+  background: var(--bg-warm);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-pill);
+  padding: 0.12rem 0.6rem;
+  font-size: 0.74rem;
+  font-weight: var(--fw-medium);
+  color: var(--muted);
+  cursor: pointer;
+}
+.obsFilterChip:hover { color: var(--ink); border-color: var(--line); }
+.obsFilterChipOn {
+  background: var(--teal-soft);
+  color: var(--teal-dark);
+  border-color: color-mix(in srgb, var(--teal-mid) 45%, transparent);
+}
+
+.cellStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: flex-start;
+}
+.cellSub {
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.kineticTag {
+  display: inline-block;
+  margin-left: 0.25rem;
+  padding: 0.04rem 0.42rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  background: var(--teal-soft);
+  color: var(--teal-dark);
+  border: 1px solid color-mix(in srgb, var(--teal-mid) 30%, transparent);
+  white-space: nowrap;
+}
+.apparentTag {
+  display: inline-block;
+  margin-left: 0.25rem;
+  padding: 0.04rem 0.42rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  background: var(--bg-warm);
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  white-space: nowrap;
+}

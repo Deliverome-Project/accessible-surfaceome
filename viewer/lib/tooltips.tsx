@@ -657,28 +657,28 @@ export const tooltips: Record<string, ReactNode> = {
   catalog_internalization_lit: (
     <>
       <strong>Internalization (literature)</strong> — the{" "}
-      <em>observed</em> internalization grade, distinct from the sequence prior:
-      built from PMID/DOI-anchored, span-verified evidence in the literature
-      (per-mode basal / native-ligand / therapeutic, rolled to one overall
-      call). Scale: high → moderate → low → <em>no</em> (observed
-      non-internalizing) → <em>unknown</em>. Because it reads real measurements
-      rather than sequence, it can diverge from the prior — e.g. a modest
-      sequence prior with strong literature evidence. Shown only for genes with
-      a literature run; a dash means none yet.
+      <em>observed</em> internalization grade: built from PMID/DOI-anchored,
+      span-verified literature evidence across basal, native-ligand,
+      therapeutic, and pathogen-entry modes, rolled to one overall call. Scale:
+      high → moderate → low → <em>no</em> (observed non-internalizing) →{" "}
+      <em>unknown</em>. Populated across the 3,213-gene internalization cohort
+      (L1 ∪ Canonical ∪ Likely); open a gene&apos;s Internalization tab for
+      per-mode grades, quantitative kinetics, citations, and the secondary
+      sequence prior.
     </>
   ),
 
   catalog_internalization_group: (
     <>
-      <strong>Internalization sequence prior</strong> — a standalone pass,
-      separate from the triage / DB-vote and deep-dive filters. A frontier
-      model grades each protein&apos;s intrinsic endocytic propensity from
-      sequence + E/C topology alone, blind to identity: it locates the
-      cytoplasmic regions and weighs canonical sorting motifs (YXX&Phi;, NPXY,
-      dileucine) against the topology, while allowing for non-motif routes
-      (bulk-membrane flow, raft / clathrin-independent uptake). Filter by grade
-      (very&nbsp;high … very&nbsp;low, or unknown); selecting several grades
-      matches any of them.
+      <strong>Internalization (literature)</strong> — a standalone facet group
+      across the 3,213-gene internalization cohort (independent of deep-dive
+      coverage). Filter by overall grade, confidence, per-mode grades (basal,
+      native ligand, therapeutic / Ab / ADC, pathogen entry), predominant
+      post-uptake fate (lysosomal degradation, recycling, transcytosis,
+      intracellular retention, mixed), observed binder class, endocytic
+      mechanism, primary/in vivo evidence, and quantitative / fitted kinetics.
+      The sequence prior stays on each gene&apos;s Internalization tab below
+      literature.
     </>
   ),
 
