@@ -259,9 +259,11 @@ export async function handleTagSites(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return notFound("gene_not_found");
   // Resilient to deploy order: if tag_site_public isn't provisioned yet (Worker
-  // shipped before the sync), or any transient DB error, return an empty
-  // TaggedSitesFile rather than a 500 — the viewer then falls back to the static
-  // asset. Backwards-compatible: no existing route or table is touched.
+  // shipped before the sync), return an empty TaggedSitesFile silently. Any
+  // OTHER D1 failure (transient timeout / export lock) marks `degraded` so
+  // `json()` sets `X-Surfaceome-Degraded` + `Cache-Control: no-store` and
+  // `withEdgeCache` never caches a bogus empty `has_data: false` response.
+  const degraded = [];
   let rows = [];
   try {
     const res = await env.DB.prepare(
@@ -271,7 +273,11 @@ export async function handleTagSites(env, symbol) {
       .bind(sym)
       .all();
     rows = res?.results ?? [];
-  } catch {
+  } catch (e) {
+    if (!isMissingTable(e)) {
+      degraded.push("tag_site_public");
+      console.warn("enrichment_failed", "tag_site_public", e?.message);
+    }
     rows = [];
   }
   const sites = rows.map((r) => ({
@@ -331,9 +337,11 @@ export async function handleTagSites(env, symbol) {
     )
       .bind(sym)
       .first();
-  } catch {
-    // Table not provisioned yet (Worker deployed before the sync): degrade to
-    // the previous shape rather than 500, exactly as the site query does.
+  } catch (e) {
+    if (!isMissingTable(e)) {
+      degraded.push("tag_site_gene_public");
+      console.warn("enrichment_failed", "tag_site_gene_public", e?.message);
+    }
     gene = null;
   }
 
@@ -346,21 +354,24 @@ export async function handleTagSites(env, symbol) {
     }
   }
 
-  return json({
-    // Unchanged meaning for existing consumers: "are there sites to draw".
-    has_data: sites.length > 0,
-    gene_symbol: rows[0]?.gene_symbol ?? sym,
-    uniprot_acc: rows[0]?.uniprot_acc ?? "",
-    sites,
-    // Presence of prompt_sha is the claim "this gene was searched", which is
-    // what lets the viewer say "Literature-validated (0)" instead of nothing.
-    prompt_sha: gene?.prompt_sha ?? null,
-    prompt_version: gene?.prompt_version ?? null,
-    generated_at: gene?.searched_at ?? null,
-    n_papers_searched: gene?.n_papers ?? null,
-    literature_other_positions: otherPositions,
-    literature_notes: gene?.notes ?? null,
-  });
+  return json(
+    {
+      // Unchanged meaning for existing consumers: "are there sites to draw".
+      has_data: sites.length > 0,
+      gene_symbol: rows[0]?.gene_symbol ?? sym,
+      uniprot_acc: rows[0]?.uniprot_acc ?? "",
+      sites,
+      // Presence of prompt_sha is the claim "this gene was searched", which is
+      // what lets the viewer say "Literature-validated (0)" instead of nothing.
+      prompt_sha: gene?.prompt_sha ?? null,
+      prompt_version: gene?.prompt_version ?? null,
+      generated_at: gene?.searched_at ?? null,
+      n_papers_searched: gene?.n_papers ?? null,
+      literature_other_positions: otherPositions,
+      literature_notes: gene?.notes ?? null,
+    },
+    { degraded },
+  );
 }
 
 // Serve the pre-generated rich Markdown export for a gene from R2.

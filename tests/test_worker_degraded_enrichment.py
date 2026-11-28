@@ -322,3 +322,35 @@ def test_evidence_route_missing_paper_metadata_table_is_silent() -> None:
     assert out["cacheControl"] == HEALTHY_CACHE_CONTROL
     assert out["cachePuts"] == 1
     assert out["kvPuts"] == 1
+
+
+def test_tag_sites_transient_d1_error_marks_degraded_and_skips_cache() -> None:
+    """A transient D1 error on `/v1/tag-sites/:symbol` must NEVER be cached as
+    an empty `has_data: false` response at the edge or browser."""
+    degraded_out = _run_scenario(
+        "/v1/tag-sites/TESTG",
+        throw_table="tag_site_public",
+        throw_message="D1_ERROR: Currently processing a long-running export",
+    )
+    assert degraded_out["status"] == 200
+    assert degraded_out["degraded"] == "tag_site_public"
+    assert degraded_out["cacheControl"] == "no-store"
+    assert degraded_out["cachePuts"] == 0
+    assert degraded_out["kvPuts"] == 0
+    body = json.loads(degraded_out["body"])
+    assert body["has_data"] is False
+    assert body["sites"] == []
+
+
+def test_tag_sites_missing_table_is_silent() -> None:
+    """Deploy-order missing-table tolerance on `tag_site_public` stays silent."""
+    out = _run_scenario(
+        "/v1/tag-sites/TESTG",
+        throw_table="tag_site_public",
+        throw_message="D1_ERROR: no such table: tag_site_public: SQLITE_ERROR",
+    )
+    assert out["status"] == 200
+    assert out["degraded"] is None
+    assert out["cacheControl"].startswith("public, ")
+    assert out["cachePuts"] == 1
+    assert out["kvPuts"] == 1

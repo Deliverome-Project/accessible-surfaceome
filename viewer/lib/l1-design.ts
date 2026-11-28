@@ -1582,24 +1582,23 @@ export function renderableExternalTagSites(
 ): L1RenderableExternalTagSite[] {
   if (length <= 0) return [];
   const out: L1RenderableExternalTagSite[] = [];
+  const seen = new Set<string>();
   for (const s of sites) {
     const isTedman = s.provenance === "screen_validated";
     if (!isTedman && !isL1LiteratureTagProvenance(s.provenance)) continue;
     if (!isTedman && !s.extracellular && s.site_kind !== "terminal_n") continue;
+    // Unpinned internal sites stay in the table only; never collapse them onto residue 1.
     const raw =
       s.site_kind === "terminal_c"
         ? length
-        : s.insert_after_residue == null || s.insert_after_residue === 0
-          ? 1
-          : s.insert_after_residue;
+        : s.site_kind === "terminal_n"
+          ? s.insert_after_residue || 1
+          : (s.insert_after_residue ?? 0);
     if (raw < 1 || raw > length) continue;
-    out.push({
-      siteId: s.site_id,
-      residue: raw,
-      isTedman,
-      tagType: s.tag_type || (isTedman ? "HA" : "tag"),
-      siteKind: s.site_kind,
-    });
+    const key = `${isTedman ? "t" : "l"}:${s.site_kind}:${raw}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ siteId: s.site_id, residue: raw, isTedman, tagType: s.tag_type || (isTedman ? "HA" : "tag"), siteKind: s.site_kind });
   }
   return out;
 }
