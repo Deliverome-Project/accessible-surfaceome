@@ -387,6 +387,7 @@ def publish_tag_sites(
     tag_sites_version: str,
     client: D1Client | None = None,
     provenances: Iterable[str] | None = None,
+    candidate_id: str | None = None,
     allow_downgrade: bool = False,
 ) -> int:
     """UPSERT one gene's tag-sites into public D1 and return the row count written.
@@ -437,11 +438,15 @@ def publish_tag_sites(
         enrich_sources_with_paper_metadata(rows, client=client)
         protected: set[str] = set()
         if not allow_downgrade:
-            live = client.query(
+            live_sql = (
                 "SELECT site_id, tag_sites_version FROM tag_site_public "
-                "WHERE gene_symbol = ?;",
-                [data["gene_symbol"]],
+                "WHERE gene_symbol = ?"
             )
+            live_params: list[Any] = [data["gene_symbol"]]
+            if candidate_id is not None:
+                live_sql += " AND candidate_id = ?"
+                live_params.append(candidate_id)
+            live = client.query(live_sql + ";", live_params)
             protected = newer_live_rows(
                 live, {r["site_id"]: r["tag_sites_version"] for r in rows}, tag_sites_version
             )
@@ -460,6 +465,9 @@ def publish_tag_sites(
                 f"AND provenance IN ({marks})"
             )
             params: list[Any] = [data["gene_symbol"], *scope]
+            if candidate_id is not None:
+                sql += " AND candidate_id = ?"
+                params.append(candidate_id)
             if keep:
                 sql += f" AND site_id NOT IN ({', '.join(['?'] * len(keep))})"
                 params += keep

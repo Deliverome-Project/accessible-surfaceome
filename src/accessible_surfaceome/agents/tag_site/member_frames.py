@@ -270,6 +270,15 @@ def loop_inventory(member: Member, topology: str) -> str:
         )
 
     listed = ", ".join(f"{r.start}-{r.end} ({r.length} aa)" for r in loops)
+    term_runs = [r for r in runs if r.position in (N_TERMINAL, C_TERMINAL)]
+    if term_runs:
+        return (
+            "This pass targets INTERNAL extracellular loop insertion sites ONLY "
+            "(N- and C-terminal tag sites are out of scope even where a terminus "
+            "is extracellular). Its extracellular inter-helix loops, in residue "
+            f"numbering of this construct's own sequence, are: {listed}. Every "
+            "proposed site must fall inside one of those inter-helix loops."
+        )
     return (
         "This construct has NO extracellular terminus, so N- and C-terminal "
         "tag sites are out of scope. Its extracellular inter-helix loops, in "

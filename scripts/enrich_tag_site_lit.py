@@ -63,11 +63,20 @@ from accessible_surfaceome.agents.tag_site.member_frames import (  # noqa: E402
     loop_inventory,
     resolve_member_frame,
 )
+from accessible_surfaceome.agents.tag_site.ortholog_frames import (  # noqa: E402
+    build_aliases,
+    fetch_rodent_ortholog_frames,
+    fetch_uniprot_names_cached,
+)
 from accessible_surfaceome.agents.tag_site.prior_ledger import (  # noqa: E402
     parse_prior_clips,
 )
 from accessible_surfaceome.agents.tag_site.prompt import prompt_sha  # noqa: E402
 from accessible_surfaceome.agents.tag_site.runner import (  # noqa: E402
+    DEFAULT_TAG_SITE_MODEL,
+    DEFAULT_TAG_SITE_TRIAGE_MODEL,
+    DEFAULT_TAG_SITE_WEB_SCOUT_MODEL,
+    WebSearchMode,
     run_tag_site_agent,
     to_viewer_sites,
 )
@@ -78,6 +87,7 @@ from accessible_surfaceome.cloud.tag_site_genes import (  # noqa: E402
     searched_members,
 )
 from accessible_surfaceome.paths import REPO_ROOT  # noqa: E402
+from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client  # noqa: E402
 
 MEMBERS_TSV = REPO_ROOT / "data/tag_sites/l1_internal_members.tsv"
 COHORT_TSV = (
@@ -274,28 +284,29 @@ def prior_state(
     )
     clips = parse_prior_clips(rows)
     seen = {seen_key(c.source_id, c.quote) for c in clips}
+    # Only treat previously published LITERATURE sites as covered — never
+    # ``deterministic_computed`` predictions (otherwise real literature clips
+    # landing near a computational prediction get silently dropped).
     covered = {
         r["insert_after_residue"]
         for r in pub.query(
             "SELECT DISTINCT insert_after_residue FROM tag_site_public "
-            "WHERE gene_symbol = ? AND insert_after_residue IS NOT NULL;",
+            "WHERE gene_symbol = ? "
+            "AND provenance IN ('literature_retrieved', 'literature_enriched') "
+            "AND insert_after_residue IS NOT NULL;",
             [gene],
         )
     }
     return clips, seen, covered
 
 
-def uniprot_names(acc: str) -> tuple[str, list[str], int]:
-    """protein_name, aliases, signal-peptide end — reused from the control
-    driver so both passes search on the same vocabulary."""
-    # Bare sibling import: scripts/ is on sys.path when this runs as a script,
-    # which is how regenerate_tag_sites.py already reaches this same module.
-    # Both passes must search on identical vocabulary, so this is shared rather
-    # than reimplemented.
-    import regenerate_tag_site_lit as lit  # noqa: PLC0415
-
-    name, cands, sp_end = lit.fetch_uniprot_names(acc)
-    return name, lit.build_aliases("", name, cands), sp_end
+def uniprot_names(
+    acc: str, *, http: CachedHTTP | None = None
+) -> tuple[str, list[str], int]:
+    """protein_name, aliases, signal-peptide end — fetched via CachedHTTP."""
+    client = http or open_default_client()
+    name, cands, sp_end = fetch_uniprot_names_cached(acc, http=client)
+    return name, build_aliases("", name, cands), sp_end
 
 
 def searched_row(
@@ -354,22 +365,46 @@ def enrich_member(
     dry_run: bool,
     publish: bool,
     run_series: str = RUN_SERIES,
+    http: CachedHTTP | None = None,
+    web_search_mode: WebSearchMode = "adaptive",
+    model: str = DEFAULT_TAG_SITE_MODEL,
+    triage_model: str = DEFAULT_TAG_SITE_TRIAGE_MODEL,
+    web_scout_model: str = DEFAULT_TAG_SITE_WEB_SCOUT_MODEL,
+    extra_paper_ids: list[str] | None = None,
+    skip_discovery: bool = False,
+    follow_construct_refs: bool = True,
+    include_rodent_orthologs: bool = True,
+    independent: bool = True,
 ) -> dict[str, Any]:
-    name, aliases, sp_end = uniprot_names(base_acc)
-    clips, seen, covered = prior_state(m.gene_symbol, pri=pri, pub=pub)
+    http_client = http or open_default_client()
+    name, aliases, sp_end = uniprot_names(base_acc, http=http_client)
+    if independent:
+        clips, seen, covered = [], set(), set()
+    else:
+        clips, seen, covered = prior_state(m.gene_symbol, pri=pri, pub=pub)
     inventory = loop_inventory(m, fr.topology)
+
+    full_alts = list(alts)
+    if include_rodent_orthologs:
+        existing_seqs = {f.sequence for f in full_alts if f.sequence}
+        rodent_frames = fetch_rodent_ortholog_frames(
+            m.gene_symbol, http=http_client, exclude_sequences=existing_seqs
+        )
+        full_alts.extend(rodent_frames)
+
     log.info(
-        "  %s / %s: %d prior clip(s), %d seen, %d covered junction(s)",
-        m.gene_symbol, m.candidate_id, len(clips), len(seen), len(covered),
+        "  %s / %s: %d prior clip(s), %d seen, %d covered junction(s), %d alt frame(s)",
+        m.gene_symbol, m.candidate_id, len(clips), len(seen), len(covered), len(full_alts),
     )
     log.info("  %s: %s", m.candidate_id, inventory)
     if dry_run:
         return {"candidate_id": m.candidate_id, "dry_run": True,
-                "n_prior": len(clips), "n_covered": len(covered)}
+                "n_prior": len(clips), "n_covered": len(covered), "n_alt_frames": len(full_alts)}
 
     usage: list[Any] = []
     inter: dict[str, Any] = {}
     result = run_tag_site_agent(
+        http=http_client,
         usage_sink=usage,
         intermediates=inter,
         gene_symbol=m.gene_symbol,
@@ -385,10 +420,17 @@ def enrich_member(
         seen_keys=seen,
         covered_junctions=covered,
         numbered_against=fr.numbered_against,
-        alternate_frames=alts,
+        alternate_frames=full_alts,
         frame_label="member",
         select_max_batches=4,
         faceted_discovery=True,
+        web_search_mode=web_search_mode,
+        model=model,
+        triage_model=triage_model,
+        web_scout_model=web_scout_model,
+        extra_paper_ids=extra_paper_ids,
+        skip_discovery=skip_discovery,
+        follow_construct_refs=follow_construct_refs,
     )
     cost = sum(getattr(u, "cost_usd", 0.0) or 0.0 for u in usage)
     inter["cost_usd"] = round(cost, 4)
@@ -426,6 +468,7 @@ def enrich_member(
             tag_sites_version=run_series,
             client=pub,
             provenances=[ENRICHED_PROVENANCE],
+            candidate_id=m.candidate_id,
         )
         log.info("  %s: published %d enriched row(s)", m.candidate_id, n)
 
@@ -463,6 +506,14 @@ def main() -> int:
                     help="skip members already searched in this series under the "
                          "CURRENT prompt_sha (one archived under a different sha is "
                          "stale and re-runs)")
+    ap.add_argument("--web-search-mode", choices=("always", "adaptive", "off"), default="adaptive")
+    ap.add_argument("--model", default=DEFAULT_TAG_SITE_MODEL)
+    ap.add_argument("--triage-model", default=DEFAULT_TAG_SITE_TRIAGE_MODEL)
+    ap.add_argument("--web-scout-model", default=DEFAULT_TAG_SITE_WEB_SCOUT_MODEL)
+    ap.add_argument("--add-papers", action="append", default=[],
+                    help="PMID/PMCID/DOI to hydrate and force-fetch (repeatable)")
+    ap.add_argument("--skip-discovery", action="store_true")
+    ap.add_argument("--no-ref-followup", action="store_true")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -514,31 +565,40 @@ def main() -> int:
                       m.topology_cohort)
 
         results = []
-        for m in members:
-            fr = frames.get(m.candidate_id)
-            base_acc = accs.get(m.candidate_id)
-            if fr is None or not base_acc:
-                continue
-            log.info("\n=== %s / %s ===", m.gene_symbol, m.candidate_id)
-            try:
-                results.append(
-                    enrich_member(
-                        m, fr, alternates[m.candidate_id], base_acc=base_acc,
-                        pri=pri, pub=pub,
-                        dry_run=args.dry_run, publish=not args.no_publish,
-                        run_series=args.run_series,
+        with open_default_client() as http_client:
+            for m in members:
+                fr = frames.get(m.candidate_id)
+                base_acc = accs.get(m.candidate_id)
+                if fr is None or not base_acc:
+                    continue
+                log.info("\n=== %s / %s ===", m.gene_symbol, m.candidate_id)
+                try:
+                    results.append(
+                        enrich_member(
+                            m, fr, alternates[m.candidate_id], base_acc=base_acc,
+                            pri=pri, pub=pub,
+                            dry_run=args.dry_run, publish=not args.no_publish,
+                            run_series=args.run_series,
+                            http=http_client,
+                            web_search_mode=args.web_search_mode,
+                            model=args.model,
+                            triage_model=args.triage_model,
+                            web_scout_model=args.web_scout_model,
+                            extra_paper_ids=args.add_papers or None,
+                            skip_discovery=args.skip_discovery,
+                            follow_construct_refs=not args.no_ref_followup,
+                        )
                     )
-                )
-            except Exception as exc:  # noqa: BLE001 - report per member, keep going
-                log.exception("  %s FAILED: %s", m.candidate_id, exc)
-                results.append({"candidate_id": m.candidate_id, "error": str(exc)})
+                except Exception as exc:  # noqa: BLE001 - report per member, keep going
+                    log.exception("  %s FAILED: %s", m.candidate_id, exc)
+                    results.append({"candidate_id": m.candidate_id, "error": str(exc)})
 
     print("\n" + "=" * 78)
     print(f"ENRICHMENT{'  [DRY RUN]' if args.dry_run else ''}")
     print("=" * 78)
     total = 0.0
     for r in results:
-        total += r.get("cost_usd") or 0.0
+        total += float(r.get("cost_usd") or 0.0)
         print("  " + json.dumps(r, default=str))
     print(f"\n  {len(results)} member(s), {len(unresolved)} skipped, "
           f"total ${total:.2f}")
