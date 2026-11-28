@@ -27,6 +27,8 @@ from pathlib import Path
 
 import pytest
 
+from _worker_test_util import read_all_worker_source, stage_worker_for_node
+
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "cloudflare/workers/surfaceome_api/src/index.js"
 
@@ -41,7 +43,7 @@ def _module_constant(path: Path, name: str):
 
 
 def test_worker_run_ids_match_the_universe_builder() -> None:
-    js = WORKER.read_text()
+    js = read_all_worker_source()
     block = re.search(r"const RESCUE_RUN_IDS = \[(.*?)\];", js, re.S)
     assert block, "RESCUE_RUN_IDS not found in the Worker"
     worker_rescue = re.findall(r'"([^"]+)"', block.group(1))
@@ -58,19 +60,15 @@ def test_worker_run_ids_match_the_universe_builder() -> None:
     )
 
 
+
+
 def test_catalog_triage_verdict_follows_the_two_stage_rule(tmp_path: Path) -> None:
     node = shutil.which("node")
     if node is None:
         if os.environ.get("REQUIRE_WORKER_NODE") == "1":
             pytest.fail("Worker checks require Node; refusing to skip")
         pytest.skip("Node is required for Worker tests")
-    source = WORKER.read_text().replace(
-        'import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";',
-        "const deepDiveTier = () => ({tier: 'likely', facet: null}); "
-        "const isLowLiteratureSurface = () => false;",
-    )
-    shutil.copy2(WORKER.parent / "contact-sites.js", tmp_path / "contact-sites.js")
-    (tmp_path / "worker.mjs").write_text(source)
+    stage_worker_for_node(tmp_path)
     (tmp_path / "test.mjs").write_text(r'''
 import assert from "node:assert/strict";
 import worker from "./worker.mjs";

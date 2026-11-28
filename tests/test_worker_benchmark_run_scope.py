@@ -18,6 +18,8 @@ import re
 import sqlite3
 from pathlib import Path
 
+from _worker_test_util import read_all_worker_source
+
 _WORKER = (
     Path(__file__).resolve().parents[1]
     / "cloudflare/workers/surfaceome_api/src/index.js"
@@ -26,15 +28,19 @@ _MODELS = ["claude-sonnet-4-6"]
 _VARIANTS = ["ncbi", "pubmed_ncbi"]
 
 
+
+
 def _src() -> str:
-    return _WORKER.read_text(encoding="utf-8")
+    return read_all_worker_source()
 
 
 def _function_body(name: str) -> str:
     src = _src()
-    start = src.index(f"async function {name}(")
-    end = src.index("\nasync function ", start + 1)
-    return src[start:end]
+    m = re.search(rf"^(?:export\s+)?async function {re.escape(name)}\(", src, re.MULTILINE)
+    assert m, f"function {name} not found in Worker source"
+    nxt = re.search(r"\n(?:export\s+)?async function |\n// === ", src[m.end() :])
+    end = m.end() + nxt.start() if nxt else len(src)
+    return src[m.start() : end]
 
 
 def _sql(body: str, head: str) -> str:

@@ -9,6 +9,9 @@ from pathlib import Path
 
 import pytest
 
+from _worker_test_util import stage_worker_for_node
+
+
 
 def test_internalization_routes_and_catalog(tmp_path: Path) -> None:
     node = shutil.which("node")
@@ -16,19 +19,13 @@ def test_internalization_routes_and_catalog(tmp_path: Path) -> None:
         if os.environ.get("REQUIRE_WORKER_NODE") == "1":
             pytest.fail("Shared API compatibility checks require Node; refusing to skip")
         pytest.skip("Node is required for Worker tests")
-    root = Path(__file__).resolve().parents[1]
-    source = (root / "cloudflare/workers/surfaceome_api/src/index.js").read_text()
-    # Classification is unrelated to this fixture, which has no deep-dive filters.
-    source = source.replace(
-        'import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";',
-        "const deepDiveTier = () => ({tier: 'no', facet: null}); "
-        "const isLowLiteratureSurface = () => false;",
+    stage_worker_for_node(
+        tmp_path,
+        catalog_presets_stub=(
+            "const deepDiveTier = () => ({tier: 'no', facet: null});\n"
+            "const isLowLiteratureSurface = () => false;"
+        ),
     )
-    shutil.copy2(
-        root / "cloudflare/workers/surfaceome_api/src/contact-sites.js",
-        tmp_path / "contact-sites.js",
-    )
-    (tmp_path / "worker.mjs").write_text(source)
     (tmp_path / "test.mjs").write_text(r'''
 import assert from "node:assert/strict";
 import worker from "./worker.mjs";

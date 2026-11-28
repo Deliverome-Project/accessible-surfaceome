@@ -12,6 +12,8 @@ import re
 import sqlite3
 from pathlib import Path
 
+from _worker_test_util import read_all_worker_source
+
 _WORKER = (
     Path(__file__).resolve().parents[1]
     / "cloudflare/workers/surfaceome_api/src/index.js"
@@ -24,8 +26,10 @@ _OLD = (
 )
 
 
+
+
 def _worker_release_queries() -> dict[str, str]:
-    src = _WORKER.read_text(encoding="utf-8")
+    src = read_all_worker_source()
     found = re.findall(
         r"`(SELECT r\.topology_version FROM topology_release r[\s\S]*?LIMIT 1)`", src
     )

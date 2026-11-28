@@ -17,14 +17,13 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from _worker_test_util import read_all_worker_source
 from accessible_surfaceome.tools._shared.models import Filters
 
 _ROOT = Path(__file__).resolve().parents[1]
 _DDF = (_ROOT / "viewer" / "lib" / "deep-dive-fields.ts").read_text()
 _SURF = (_ROOT / "viewer" / "lib" / "surfaceome.ts").read_text()
-_WORKER = (
-    _ROOT / "cloudflare" / "workers" / "surfaceome_api" / "src" / "index.js"
-).read_text()
+_WORKER = read_all_worker_source()
 
 # Derived bands live in the TS/Worker facet set but are NOT Filters fields
 # (Python carries the *_ecd_pct_identity floats; the band is derived).

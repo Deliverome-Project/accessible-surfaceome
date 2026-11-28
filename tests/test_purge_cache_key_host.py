@@ -22,6 +22,7 @@ from __future__ import annotations
 import re
 
 from accessible_surfaceome.cloud import surface_annotation as sa
+from _worker_test_util import read_all_worker_source
 from accessible_surfaceome.paths import REPO_ROOT
 
 WORKER = REPO_ROOT / "cloudflare/workers/surfaceome_api/src/index.js"
@@ -31,7 +32,7 @@ _KEY_HOST_RE = re.compile(r'new URL\([^,]+,\s*"(https://[^"]+)"\)')
 
 
 def _worker_cache_hosts() -> set[str]:
-    return set(_KEY_HOST_RE.findall(WORKER.read_text()))
+    return set(_KEY_HOST_RE.findall(read_all_worker_source()))
 
 
 def test_worker_declares_its_cache_key_hosts() -> None:
@@ -82,7 +83,7 @@ def test_worker_namespaces_both_cache_keys_by_the_deploy_epoch() -> None:
     """Both tiers must carry it. Epoching only one leaves the other serving
     the old response shape after a deploy — up to an hour for a KV read,
     up to a day for a caches.default entry."""
-    src = WORKER.read_text()
+    src = read_all_worker_source()
     assert len(_EPOCH_CALL_RE.findall(src)) >= 3, (
         "expected cacheEpoch(env) in withEdgeCache's key, handleCatalog's "
         "key, and /v1/health's payload"
@@ -93,7 +94,7 @@ def test_worker_falls_back_when_the_binding_is_absent() -> None:
     """`version_metadata` is optional (wrangler.toml is gitignored, so a
     stale local config is likely). Absent binding must degrade to the old
     behaviour, never crash."""
-    src = WORKER.read_text()
+    src = read_all_worker_source()
     assert 'env?.CF_VERSION_METADATA?.id || "v0"' in src
 
 

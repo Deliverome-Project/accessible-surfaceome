@@ -24,6 +24,8 @@ from pathlib import Path
 
 import pytest
 
+from _worker_test_util import read_all_worker_source, stage_worker_for_node
+
 ROOT = Path(__file__).resolve().parents[1]
 WORKER = ROOT / "cloudflare/workers/surfaceome_api/src/index.js"
 VIEWER = ROOT / "viewer/lib/deep-dive-fields.ts"
@@ -42,9 +44,11 @@ def _js_rules(text: str) -> list[tuple[str, str, str]]:
     return [tuple(r) for r in json.loads(re.sub(r",\s*\]$", "]", m.group(1).strip()))]
 
 
+
+
 def test_rule_tables_identical() -> None:
     py = [tuple(r) for r in SURFACE_METHOD_RULES]
-    assert _js_rules(WORKER.read_text()) == py, "Worker rules drifted from the figure"
+    assert _js_rules(read_all_worker_source()) == py, "Worker rules drifted from the figure"
     assert _js_rules(VIEWER.read_text()) == py, "viewer rules drifted from the figure"
 
 
@@ -66,14 +70,7 @@ def test_worker_projection(tmp_path: Path) -> None:
         if os.environ.get("REQUIRE_WORKER_NODE") == "1":
             pytest.fail("Worker checks require Node; refusing to skip")
         pytest.skip("Node is required for Worker tests")
-    source = WORKER.read_text().replace(
-        'import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";',
-        "const deepDiveTier = () => ({tier: 'likely', facet: null}); "
-        "const isLowLiteratureSurface = () => false;",
-    )
-    shutil.copy2(WORKER.parent / "contact-sites.js", tmp_path / "contact-sites.js")
-    source += "\nexport { projectSurfaceMethods };\n"
-    (tmp_path / "worker.mjs").write_text(source)
+    stage_worker_for_node(tmp_path)
 
     rows = [
         ("glycoproteomics", "cell_surface_capture", "direct_surface_accessibility", "overexpression", "live_cell"),
@@ -85,7 +82,7 @@ def test_worker_projection(tmp_path: Path) -> None:
     ]
     packed = ",".join("|".join(r) for r in rows)
     (tmp_path / "test.mjs").write_text(
-        'import { projectSurfaceMethods } from "./worker.mjs";\n'
+        'import { projectSurfaceMethods } from "./lib/catalog_projection.js";\n'
         f"console.log(JSON.stringify(projectSurfaceMethods({json.dumps(packed)})));\n"
         "console.log(JSON.stringify(projectSurfaceMethods(null)));\n"
         'console.log(JSON.stringify(projectSurfaceMethods("proximity_labeling|surface_biotinylation|direct_surface_accessibility|knock_in_tag|live_cell")));\n'

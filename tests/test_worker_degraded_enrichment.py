@@ -37,7 +37,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import shutil
 import subprocess
 import tempfile
@@ -45,6 +44,8 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+
+from _worker_test_util import stage_worker_for_node
 
 from accessible_surfaceome.paths import REPO_ROOT
 
@@ -157,31 +158,11 @@ console.log(JSON.stringify(result));
 """
 
 
-def _patched_worker_source() -> str:
-    """Worker source with its lone TS import replaced by inert stubs.
 
-    Same rationale as ``test_worker_evidence_split.py``: the test record
-    carries no ``filters``, so the deep-dive classification (the sole
-    caller of the TS import) is never reached — the stub is purely to make
-    the module resolvable in plain Node.
-    """
-    src = WORKER_SRC.read_text(encoding="utf-8")
-    stub = (
-        "const deepDiveTier = () => ({ tier: 'no', facet: null });\n"
-        "const isLowLiteratureSurface = () => false;"
-    )
-    patched, n = re.subn(
-        r'^import \{[^}]*\} from "[^"]*catalog-presets";\s*$',
-        stub,
-        src,
-        count=1,
-        flags=re.MULTILINE,
-    )
-    assert n == 1, (
-        "expected exactly one catalog-presets import to stub in index.js; "
-        f"found {n}. The Worker's import shape changed — update this test."
-    )
-    return patched
+_STUB = (
+    "const deepDiveTier = () => ({ tier: 'no', facet: null });\n"
+    "const isLowLiteratureSurface = () => false;"
+)
 
 
 def _run_scenario(
@@ -204,8 +185,7 @@ def _run_scenario(
 
     with tempfile.TemporaryDirectory() as td:
         d = Path(td)
-        shutil.copy2(WORKER_SRC.with_name("contact-sites.js"), d / "contact-sites.js")
-        (d / "worker.mjs").write_text(_patched_worker_source(), encoding="utf-8")
+        stage_worker_for_node(d, catalog_presets_stub=_STUB)
         (d / "harness.mjs").write_text(harness, encoding="utf-8")
         proc = subprocess.run(  # noqa: S603 — fixed argv, temp files we wrote
             [node, "harness.mjs"],

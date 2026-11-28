@@ -92,7 +92,7 @@ dev = [
 
 [tool.ty.environment]
 python-version = "3.14"
-root = ["./src"]
+root = ["./src", "./tests"]
 
 [tool.ty.src]
 include = ["src", "tests"]

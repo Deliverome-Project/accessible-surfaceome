@@ -11,7 +11,6 @@ fill tested ``=== undefined``, which a stored null never matches. Result: the
 from __future__ import annotations
 
 from accessible_surfaceome.agents.surfaceome_v1 import d1_deterministic as dd
-from accessible_surfaceome.paths import REPO_ROOT
 
 ROW = {
     "uniprot_acc_full": "P00533",
@@ -50,6 +49,8 @@ def test_canonical_topology_carries_the_deeptmhmm_call(monkeypatch) -> None:
 
 
 def test_worker_fills_the_call_when_stored_as_null() -> None:
-    src = (REPO_ROOT / "cloudflare/workers/surfaceome_api/src/index.js").read_text()
+    from _worker_test_util import read_all_worker_source
+
+    src = read_all_worker_source()
     assert "existingCanonTopo.predicted_surface_membrane == null" in src
     assert "existingCanonTopo.predicted_surface_membrane === undefined" not in src

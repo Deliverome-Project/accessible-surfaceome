@@ -156,9 +156,12 @@ def test_worker_imports_shared_predicates_not_a_clone():
     low_lit_uniprot (and the Zenodo deposit records built from /v1/genes) on
     the SAME rule as the viewer. A re-implemented copy would be a fourth
     un-enforced clone."""
-    assert WORKER_SRC.exists(), f"Worker source missing: {WORKER_SRC}"
-    src = WORKER_SRC.read_text()
-    assert 'from "../../../../viewer/lib/catalog-presets"' in src, (
+    import re
+
+    from _worker_test_util import read_all_worker_source
+
+    src = read_all_worker_source()
+    assert re.search(r'from "(\.\./)+viewer/lib/catalog-presets"', src), (
         "Worker must import predicates from the shared catalog-presets module"
     )
     assert "deepDiveTier" in src and "isLowLiteratureSurface" in src
