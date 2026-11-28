@@ -781,6 +781,7 @@ def test_pipeline_internal_fields_never_reach_the_prompt() -> None:
 #: decide whether that was intended before you touch this map.
 PINNED_PROMPT_SHA = {
     "1.4.0": "db34c960a2f5278d46fbe69f10ca1b970f71d3835fb2f15f155e8416b2b45120",
+    "1.5.0": "fc4449de469f2e1670614d779350ae9e49611366592757ca8f0fe580b302bdc3",
 }
 
 

@@ -47,8 +47,9 @@ For each pick set:
 - `clip_id` — the id of the clip you are selecting (the quote is auto-filled from
   it; do NOT retype the quote).
 - `claim` — a one-sentence factual statement of the insertion + what was measured
-  (e.g. "An ALFA tag inserted after G101 in extracellular loop 2 was displayed on
-  the cell surface by non-permeabilized staining without loss of function").
+  (e.g. "An epitope tag inserted after a named residue in extracellular loop 2
+  was displayed on the cell surface by non-permeabilized staining without loss
+  of function").
 - `claim_type` — use `methodological` (an engineered tagged construct) or
   `surface_expression` (the clip primarily reports surface display of the tagged
   protein).
