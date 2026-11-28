@@ -189,3 +189,31 @@ def test_fetched_store_body_still_contains_the_abstract(monkeypatch):
     assert st is not None
     assert "ABSTRACT_SENTENCE_ONLY_IN_ABSTRACT" in st.raw_text  # abstract kept
     assert "BODY_SENTENCE_ONLY_IN_BODY" in st.raw_text  # full text kept too
+
+
+def test_source_store_survives_fetch_fulltext_lookup_error(monkeypatch):
+    # Regression (TMEM67 / PMC4518622): a PMC XML record lacking an integer PMID
+    # raises LookupError inside fetch_fulltext. build_source_store must fall back
+    # to the abstract + body-derived clip drafts instead of crashing the member.
+    pool = {"c1": _real_draft("c1", "HA tag inserted into extracellular loop", sid="PMC:4518622")}
+    paper = SimpleNamespace(
+        pmid=None, pmc_id="PMC4518622", doi="10.1000/test", title="t",
+        abstract="abstract fallback text",
+        publication_type="primary_research", is_retracted=False,
+        year=2015, journal="J", authors=[],
+    )
+
+    def _boom(**kw):
+        raise LookupError("NCBI PMC XML for PMC4518622 missing integer PMID")
+
+    monkeypatch.setattr(mod, "fetch_fulltext", _boom)
+    store = build_source_store(
+        cast(Any, pool),
+        papers_by_source_id=cast(Any, {"PMC:4518622": (paper, True)}),
+        http=cast(Any, object()),
+        retraction_index=cast(Any, object()),
+    )
+    st = store.get("PMC:4518622")
+    assert st is not None
+    assert "abstract fallback text" in st.raw_text
+    assert "HA tag inserted into extracellular loop" in st.raw_text

@@ -126,7 +126,17 @@ def _body_text(
     if abstract:
         parts.append(abstract)
     if fetched and paper.pmc_id:
-        full = fetch_fulltext(http=http, pmcid=paper.pmc_id, retraction_index=retraction_index)
+        try:
+            full = fetch_fulltext(
+                http=http, pmcid=paper.pmc_id, retraction_index=retraction_index
+            )
+        except Exception as exc:  # noqa: BLE001 - best-effort; body drafts folded below
+            logger.warning(
+                "build_source_store: fetch_fulltext failed for %s (%s); using abstract + body drafts",
+                paper.pmc_id,
+                exc,
+            )
+            full = None
         secs = getattr(full, "sections", None) or []
         parts.extend(s.text for s in secs if getattr(s, "text", None))
     if fetched:
